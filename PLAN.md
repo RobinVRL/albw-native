@@ -50,3 +50,16 @@ first frame -> title screen -> file select -> gameplay.
 - boot depth: last function reached / constructors completed / frames rendered
 - functions natively decompiled (native/game) and SDK functions replaced (native/sdk)
 - unresolved names after link, failing sources, 64-bit failing sources
+
+## Agent hand-off queue (next step per track; launch the follow-up when an agent finishes)
+
+| Track | Current | Next when it finishes |
+|---|---|---|
+| Boot | framework task setup -> main loop | (1) first frames: verify swap/present, input pump, `ALBW_SCANOUT` orientation; (2) then follow the game state machine to the title screen (scene load, resource loading from RomFS) |
+| Systemic fixes | float casts, no-return, return types, `tools/systemic_rebuild.sh` | run the combined rebuild at a boot-agent pause point; re-run the boot to confirm no regressions; commit |
+| Font / layout | RectDrawer + nw::lyt producers, hand-written GLSL | title screen correctness pass once the boot reaches it (text, layout panes, masks, colours) |
+| Models (queued) | — | hook native/assets into the game's h3d model load/draw (00568224/00568798/005681C0, uniform writers 00565204/005683D0, vertex setup 00113388); hand-write the nw::h3d DefaultShader GLSL (15 variants via defines) |
+| Primitive renderer / effects (queued) | — | sead PrimitiveRenderer (004979CC) and eft particle producers + hand-written GLSL |
+| Audio (queued) | — | nn::snd / DSP -> SDL3 audio (BCSTM streams, BCSAR banks) |
+| 64-bit (queued) | — | shared type headers (sead, game objects), retype pointer-in-int functions, build --arch x86_64 to zero errors |
+| Robustness (queued) | 104 rewrites done | next batch from native/robust/PRIORITY.md (369 boot-reachable defects) after the systemic rebuild re-ranks them |
