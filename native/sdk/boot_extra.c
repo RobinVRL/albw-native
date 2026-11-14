@@ -144,3 +144,14 @@ int32_t func_0010013C(char *buf, uint32_t size, const char *fmt, void *args) {
 #undef EMIT
     return (int32_t)out;
 }
+
+/* USA 00104560 (EU 00104560) err:f ThrowFatalErr(const FatalErrInfo *info): connects to the
+ * "err:f" port (svc 0x2D) and sends the info block; the system shows the error screen and the
+ * application never continues. Callers fill the block themselves (0010AC24 kind 0 {pc,
+ * result}; 003D302C kind 5 {result at +4, value at +8}, ...). Native: report and abort.
+ * Confidence: high. */
+void func_00104560(const uint8_t *info) {
+    const uint32_t *w = (const uint32_t *)info;
+    runtime_fatal("nn::err::ThrowFatalErr (err:f) type %u: %08X %08X %08X %08X %08X %08X", info[0],
+                  w[0], w[1], w[2], w[3], w[4], w[5]);
+}
