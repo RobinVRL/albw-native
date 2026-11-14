@@ -293,6 +293,9 @@ def main():
         return re.sub(r"\bFUN_([0-9a-f]{8})\b",
                       lambda m: "func_" + eu2usa[m.group(1)] if m.group(1) in eu2usa else m.group(0), text)
 
+    sigs = import_ghidra.signatures(fallback_dir) if fallback_dir else {}
+    print("callee prototypes from Ghidra: %d" % len(sigs))
+
     def ghidra_source(addr):
         """Per-address Ghidra C (mirrored path relative to OUT), or None."""
         raw = os.path.join(fallback_dir, "func_%s.c" % addr)
@@ -306,7 +309,7 @@ def main():
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
             with open(dst, "w") as fh:
-                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(text, addr))))
+                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(text, addr, sigs))))
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many

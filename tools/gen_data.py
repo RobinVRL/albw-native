@@ -30,6 +30,7 @@ END = BSS + BSS_SIZE
 SECTIONS = [("ro", RO, RO_SIZE, ".rodata.albw"), ("data", DATA, DATA_SIZE, ".data.albw")]
 POOL_NAME = re.compile(r"^(?:[a-z]*Ram|DAT_|PTR_)([0-9a-f]{8})$")
 # any other name that ends in an 8-digit address (str_00694EBC, gTable_006F0000, ...)
+LABEL_NAME = re.compile(r"^(?:[su]_.*_|_DAT_)([0-9a-f]{8})$")  # Ghidra full-analysis labels (EU addresses)
 ADDR_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]*_(?:0x)?([0-9A-Fa-f]{8})$")
 
 
@@ -137,6 +138,22 @@ def main():
                 ndata += 1
             else:
                 nbad += 1
+            continue
+        m = LABEL_NAME.match(sym)
+        if m:
+            addr = int(m.group(1), 16)
+            r = section_ref(addr)
+            if r:  # string/data in the data sections: same address in USA and EU
+                out += ["    .globl %s" % sym, "    .set %s, %s" % (sym, r)]
+            elif TEXT <= addr < text_end and sym[0] in "su":  # string placed among the code
+                end = code.index(b"\0", addr - TEXT)
+                raw = code[addr - TEXT:end + 1]
+                out += ["    .section .rodata.albw_str,\"a\"", "    .globl %s" % sym, "%s:" % sym,
+                        "    .byte " + ",".join(str(b) for b in raw)]
+            else:
+                nbad += 1
+                continue
+            ndata += 1
             continue
         m = ADDR_NAME.match(sym)
         if m and not POOL_NAME.match(sym) and not sym.startswith("func_"):
