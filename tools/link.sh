@@ -13,6 +13,13 @@ for f in native/platform/platform.c native/runtime/*.c $(ls native/render/*.c na
     o=$B/native/$(basename "$f" .c).o
     EXTRA=()
     [[ "$f" == native/game/* || "$f" == native/robust/* ]] && EXTRA=(-Inative/robust -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
+    # sound: the real layer (native/sdk/snd.c, in progress) is linked only with ALBW_REAL_SND=1;
+    # then the silent stopgap (snd_silent.c) compiles to nothing
+    if [[ "$f" == native/sdk/snd.c && "${ALBW_REAL_SND:-0}" != 1 ]]; then continue; fi
+    if [[ "$f" == native/sdk/snd_silent.c ]]; then
+        [[ "${ALBW_REAL_SND:-0}" == 1 ]] && EXTRA+=(-DALBW_REAL_SND)
+        rm -f "$o"
+    fi
     [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
         $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")

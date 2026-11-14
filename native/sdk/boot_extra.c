@@ -60,3 +60,87 @@ uint32_t func_001007C0(uint16_t *pwc, const char *s, uint32_t n, uint32_t *state
     if (pwc) *pwc = (uint8_t)*s;
     return *s ? 1 : 0;
 }
+
+/* USA 0010013C (EU 0010013C) the game's vsnprintf(char *buf, u32 size, const char *fmt,
+ * void *args) -> length that the full output needs (C99 vsnprintf semantics; callers such as
+ * 00111A20 clamp). `args` is an ARM-style va_list: a plain pointer to consecutive argument
+ * words. Natively every caller hands it a pointer to its own variadic arguments on the i386
+ * stack (e.g. 00689650 passes &param_3), which has the same shape: 32-bit words, doubles in 8
+ * consecutive bytes (no 8-byte alignment on i386). The Thumb decompilation of the armcc
+ * formatter jumps to raw Thumb addresses. Native: each conversion is formatted by the host
+ * snprintf with the value fetched from the word array. Confidence: high (format semantics),
+ * medium (double alignment if a caller ever builds an ARM-aligned array). */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+int32_t func_0010013C(char *buf, uint32_t size, const char *fmt, void *args) {
+    const uint32_t *ap = (const uint32_t *)args;
+    uint32_t out = 0;
+    char tmp[512];
+#define EMIT(s, n) do { for (uint32_t _i = 0; _i < (uint32_t)(n); _i++, out++) \
+        if (size && out < size - 1) buf[out] = (s)[_i]; } while (0)
+    for (const char *p = fmt; *p; p++) {
+        if (*p != '%') { EMIT(p, 1); continue; }
+        char spec[32];
+        int k = 0;
+        spec[k++] = '%';
+        p++;
+        while (*p && strchr("-+ #0", *p) && k < 20) spec[k++] = *p++;
+        if (*p == '*') { k += snprintf(spec + k, sizeof spec - k, "%d", (int32_t)*ap++); p++; }
+        else while (*p >= '0' && *p <= '9' && k < 24) spec[k++] = *p++;
+        if (*p == '.') {
+            spec[k++] = *p++;
+            if (*p == '*') { k += snprintf(spec + k, sizeof spec - k, "%d", (int32_t)*ap++); p++; }
+            else while (*p >= '0' && *p <= '9' && k < 28) spec[k++] = *p++;
+        }
+        int lng = 0;   /* 0 int, 1 long long */
+        while (*p && strchr("hlLqjzt", *p)) {
+            if ((*p == 'l' && p[1] == 'l') || *p == 'q' || *p == 'j' || *p == 'L') { lng = 1; if (*p == 'l') p++; }
+            p++;
+        }
+        char c = *p;
+        if (!c) break;
+        int n = 0;
+        switch (c) {
+        case '%': EMIT("%", 1); continue;
+        case 'd': case 'i':
+            if (lng) { uint64_t v = ap[0] | (uint64_t)ap[1] << 32; ap += 2; spec[k++] = 'l'; spec[k++] = 'l'; spec[k++] = c; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (long long)v); }
+            else { spec[k++] = c; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (int32_t)*ap++); }
+            break;
+        case 'u': case 'x': case 'X': case 'o':
+            if (lng) { uint64_t v = ap[0] | (uint64_t)ap[1] << 32; ap += 2; spec[k++] = 'l'; spec[k++] = 'l'; spec[k++] = c; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (unsigned long long)v); }
+            else { spec[k++] = c; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (uint32_t)*ap++); }
+            break;
+        case 'c': spec[k++] = 'c'; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (int)(uint8_t)*ap++); break;
+        case 'p': spec[k++] = 'x'; spec[k] = 0; n = snprintf(tmp, sizeof tmp, spec, (uint32_t)*ap++); break;
+        case 's': {
+            const char *s = (const char *)(uintptr_t)*ap++;
+            spec[k++] = 's'; spec[k] = 0;
+            n = snprintf(tmp, sizeof tmp, spec, s ? s : "(null)");
+            if (n >= (int)sizeof tmp) {   /* long string: emit directly */
+                n = snprintf(NULL, 0, spec, s ? s : "(null)");
+                char *big = __builtin_alloca((size_t)n + 1);
+                snprintf(big, (size_t)n + 1, spec, s ? s : "(null)");
+                EMIT(big, n);
+                continue;
+            }
+            break;
+        }
+        case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': {
+            double d;
+            memcpy(&d, ap, 8);
+            ap += 2;
+            spec[k++] = c; spec[k] = 0;
+            n = snprintf(tmp, sizeof tmp, spec, d);
+            break;
+        }
+        case 'n': { int32_t *dst = (int32_t *)(uintptr_t)*ap++; if (dst) *dst = (int32_t)out; continue; }
+        default: EMIT(p - 0, 1); continue;
+        }
+        if (n > (int)sizeof tmp - 1) n = sizeof tmp - 1;
+        if (n > 0) EMIT(tmp, n);
+    }
+    if (size) buf[out < size ? out : size - 1] = 0;
+#undef EMIT
+    return (int32_t)out;
+}
