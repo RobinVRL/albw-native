@@ -18,6 +18,26 @@ int gl_load(void *(*get_proc)(const char *)) {
     return missing;
 }
 
+/* KHR_debug (core in 4.3, extension on most 3.3 drivers): optional, never required */
+typedef void (*GLDebugProc)(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar *, const void *);
+static void debug_cb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei len, const GLchar *msg,
+                     const void *user) {
+    if (severity == 0x826B) return;  /* GL_DEBUG_SEVERITY_NOTIFICATION */
+    fprintf(stderr, "GL debug [type %#x sev %#x]: %s\n", type, severity, msg);
+}
+
+void gl_enable_debug(void *(*get_proc)(const char *)) {
+    void (*cb)(GLDebugProc, const void *) = (void (*)(GLDebugProc, const void *))get_proc("glDebugMessageCallback");
+    if (!cb) {
+        fprintf(stderr, "GL: KHR_debug not available, ALBW_GL_DEBUG ignored\n");
+        return;
+    }
+    glEnable(0x92E0);  /* GL_DEBUG_OUTPUT */
+    glEnable(0x8242);  /* GL_DEBUG_OUTPUT_SYNCHRONOUS */
+    cb(debug_cb, NULL);
+    fprintf(stderr, "GL: debug output enabled\n");
+}
+
 static GLuint shader(GLenum type, const char *src) {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &src, NULL);
@@ -105,24 +125,48 @@ int plat_init(const char *title, const PlatConfig *c) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return -1;
     }
+    int debug = getenv("ALBW_GL_DEBUG") != NULL;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    win = SDL_CreateWindow(title, TOP_W * cfg.scale, SCREEN_H * 2 * cfg.scale, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG |
+                                              (debug ? SDL_GL_CONTEXT_DEBUG_FLAG : 0));
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    /* the window needs no depth/stencil: the game renders into the screen targets */
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    win = SDL_CreateWindow(title, TOP_W * cfg.scale, SCREEN_H * 2 * cfg.scale,
+                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!win) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return -1;
     }
     ctx = SDL_GL_CreateContext(win);
     if (!ctx) {
-        fprintf(stderr, "OpenGL 3.3 context: %s\n", SDL_GetError());
+        fprintf(stderr, "Could not create an OpenGL 3.3 core context (%s).\n"
+                "This port needs OpenGL 3.3: any Intel GPU since 2011 (HD 2000+), AMD since 2009 (HD 5000+)\n"
+                "or NVIDIA since 2008 (GeForce 400+), with Mesa or the vendor driver.\n", SDL_GetError());
         return -1;
     }
-    SDL_GL_SetSwapInterval(cfg.vsync ? 1 : 0);
+    /* vsync: adaptive if the driver has it, else on, else off */
+    if (cfg.vsync) {
+        if (!SDL_GL_SetSwapInterval(-1) && !SDL_GL_SetSwapInterval(1)) SDL_GL_SetSwapInterval(0);
+    } else {
+        SDL_GL_SetSwapInterval(0);
+    }
     if (gl_load((void *(*)(const char *))SDL_GL_GetProcAddress)) return -1;
-    fprintf(stderr, "GL: %s / %s\n", glGetString(GL_RENDERER), glGetString(GL_VERSION));
+    GLint major = 0, minor = 0;
+    glGetIntegerv(GL_MAJOR_VERSION, &major);
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    fprintf(stderr, "GL: %s | %s | %s (context %d.%d)\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER),
+            glGetString(GL_VERSION), major, minor);
+    if (major * 10 + minor < 33) {
+        fprintf(stderr, "OpenGL %d.%d is too old: 3.3 is required.\n", major, minor);
+        return -1;
+    }
+    if (debug) gl_enable_debug((void *(*)(const char *))SDL_GL_GetProcAddress);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
     target_init(&screens[SCREEN_TOP], TOP_W * cfg.render_scale, SCREEN_H * cfg.render_scale);
     target_init(&screens[SCREEN_BOTTOM], BOTTOM_W * cfg.render_scale, SCREEN_H * cfg.render_scale);

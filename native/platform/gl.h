@@ -51,12 +51,17 @@ typedef void GLvoid;
 #define GL_COLOR_ATTACHMENT0 0x8CE0
 #define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
 #define GL_FRAMEBUFFER_COMPLETE 0x8CD5
+#define GL_VENDOR 0x1F00
 #define GL_RENDERER 0x1F01
 #define GL_VERSION 0x1F02
 #define GL_SRC_ALPHA 0x0302
 #define GL_ONE_MINUS_SRC_ALPHA 0x0303
 #define GL_LESS 0x0201
 #define GL_LEQUAL 0x0203
+#define GL_MAJOR_VERSION 0x821B
+#define GL_MINOR_VERSION 0x821C
+#define GL_UNPACK_ALIGNMENT 0x0CF5
+#define GL_PACK_ALIGNMENT 0x0D05
 
 /* X(return type, name, parameters) for every function the port uses */
 #define GL_FUNCS(X) \
@@ -71,6 +76,8 @@ typedef void GLvoid;
     X(void, glDepthMask, (GLboolean)) \
     X(const GLubyte *, glGetString, (GLenum)) \
     X(GLenum, glGetError, (void)) \
+    X(void, glGetIntegerv, (GLenum, GLint *)) \
+    X(void, glPixelStorei, (GLenum, GLint)) \
     X(void, glGenTextures, (GLsizei, GLuint *)) \
     X(void, glDeleteTextures, (GLsizei, const GLuint *)) \
     X(void, glBindTexture, (GLenum, GLuint)) \
@@ -121,3 +128,4 @@ GL_FUNCS(GL_DECLARE)
 
 int gl_load(void *(*get_proc)(const char *));   /* returns number of missing functions */
 GLuint gl_program(const char *vs, const char *fs);  /* compile + link, aborts with the log on error */
+void gl_enable_debug(void *(*get_proc)(const char *)); /* KHR_debug messages to stderr if available */
