@@ -10,6 +10,7 @@ extern int func_001022A0(void);
 extern int func_001022F4(void);
 extern int func_00102304(uint param_1);
 extern int func_00103198(undefined4 param_1,int param_2);
+extern int func_00103C10();
 extern int func_001031B4(undefined4 *param_1,undefined4 *param_2);
 extern int func_00103210(undefined4 *param_1);
 extern int func_00103220(undefined4 *param_1);
@@ -202,6 +203,10 @@ void func_00100F68(void)
   if (iVar2 != 1) {
     func_0010983C(*puVar1,iVar2);
   }
+  /* root task class id at sp: {kind 2 = create function, func_00103C10} (EU 00101248..0010125C
+   * `strb r2, [sp]` / `str r0, [sp, #4]`; Ghidra dropped both stores) */
+  albw_frame[0] = 2;
+  *(undefined4 *)(albw_frame + 0x4) = (undefined4)(uintptr_t)func_00103C10;
   func_001031B4(&local_b0,(undefined4 *)(albw_frame + 0x0) /* entry sp - 0x110: start of the frame */);
   uVar8 = func_00103220(&local_100);
   (**(code **)(*piVar6 + 0x10))(piVar6,piVar3,&local_b0,uVar8);
