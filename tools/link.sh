@@ -9,15 +9,15 @@ SDL=$(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags --libs sdl3)
 
 mkdir -p $B/native
 NATIVE=()
-for f in native/platform/platform.c native/runtime/*.c $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c 2>/dev/null); do
+for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c native/audio/fx.c native/audio/output.c $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c 2>/dev/null); do
     o=$B/native/$(basename "$f" .c).o
     EXTRA=()
     [[ "$f" == native/game/* || "$f" == native/robust/* ]] && EXTRA=(-Inative/robust -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
-    # sound: the real layer (native/sdk/snd.c, in progress) is linked only with ALBW_REAL_SND=1;
-    # then the silent stopgap (snd_silent.c) compiles to nothing
-    if [[ "$f" == native/sdk/snd.c && "${ALBW_REAL_SND:-0}" != 1 ]]; then continue; fi
+    # sound: the real nn::snd layer (native/sdk/snd.c + native/audio) by default; with
+    # ALBW_REAL_SND=0 the silent stopgap in snd_silent.c instead (its dsp:: part is always used)
+    if [[ "${ALBW_REAL_SND:-1}" == 0 && ( "$f" == native/sdk/snd.c || "$f" == native/audio/* ) ]]; then continue; fi
     if [[ "$f" == native/sdk/snd_silent.c ]]; then
-        [[ "${ALBW_REAL_SND:-0}" == 1 ]] && EXTRA+=(-DALBW_REAL_SND)
+        [[ "${ALBW_REAL_SND:-1}" != 0 ]] && EXTRA+=(-DALBW_REAL_SND)
         rm -f "$o"
     fi
     [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \

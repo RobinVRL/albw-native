@@ -1,8 +1,10 @@
 /* SILENT native nn::snd / dsp layer (TEMPORARY stopgap).
  *
- * To be replaced by native/sdk/snd.c from the audio agent (SDL3 audio). Every replacement here
- * is guarded by `#ifndef ALBW_REAL_SND`: the real layer defines ALBW_REAL_SND (e.g. -D in
- * link.sh, or a #define in a shared header) and provides the same func_<USA> set.
+ * The nn::snd part is replaced by native/sdk/snd.c (real layer, SDL3 audio): tools/link.sh
+ * compiles this file with -DALBW_REAL_SND by default, which removes the nn::snd functions
+ * below; ALBW_REAL_SND=0 tools/link.sh links the silent layer instead (snd.c and
+ * native/audio/ left out). The dsp:: part (no DSP: dsp::Initialize and the dsp::DSP IPC
+ * wrappers) is not nn::snd and is always linked from here.
  *
  * Model: there is no DSP. Nothing here emulates the DSP or its IPC: the dsp::DSP session is
  * never opened, so the SDK's dsp:: helpers (003D2AC0, 003D2AEC, 003D2B18, 003D2A48...) take
@@ -24,8 +26,6 @@
  */
 #include <stdint.h>
 #include <string.h>
-
-#ifndef ALBW_REAL_SND
 
 #define DSP_RESULT_NOT_AVAILABLE 0xC8A0A7FCu   /* the "no session" result of the SDK dsp helpers */
 
@@ -62,6 +62,7 @@ uint32_t func_003D2F54(const uint32_t *s, uint32_t a, uint16_t *out)
 { if (out) *out = 0; return DSP_RESULT_NOT_AVAILABLE; }                       /* 0x01 RecvData */
 
 /* ---------------------------------------------------------------------------------- nn::snd */
+#ifndef ALBW_REAL_SND   /* the real layer native/sdk/snd.c provides these */
 
 extern uint8_t data_00714A40[];  /* snd init state: [0] initialised, [1..3], [4] output mode, [5] */
 extern uint8_t data_007A06A0[];  /* sound manager object (003DC8F0 initialises it) */
