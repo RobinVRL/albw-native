@@ -26,7 +26,8 @@
 extern "C" {
 #endif
 /* the game's thread-local storage block (TLS), provided by the native platform layer */
-unsigned albw_tls(void);
+#include <stdint.h>
+uintptr_t albw_tls(void);
 #ifdef __cplusplus
 }
 #endif
