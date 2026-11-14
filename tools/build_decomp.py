@@ -159,6 +159,9 @@ def void_tail_returns(text, addr, sigs):
     body = RE_CALL_AT_END.sub(sub_end, body)
     if body == text[body_at:]:
         return text
+    # the other exits of the now non-void function (r0 is whatever it held there; 0 natively;
+    # a bare `return;` in a non-void function does not compile)
+    body = re.sub(r"\breturn;", "return 0;", body)
     return text[:m.start(1)] + "undefined4" + text[m.end(1):body_at] + body
 
 
