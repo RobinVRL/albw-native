@@ -41,6 +41,26 @@ for n in sys.stdin.read().split():
 llvm-objcopy --remove-section=.init_array --remove-section=.rel.init_array \
              --remove-section=.ctors --remove-section=.rel.ctors $B/albw_game.o
 
+# functions that return their first argument on ARM (tools/returns_this.py) but whose matched
+# source is void: build_decomp exported them as func_<ADDR>__impl; the thunk calls the impl with
+# the caller's argument words and returns the first argument (unless a native definition exists)
+llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_defs.txt
+llvm-nm --defined-only --format=just-symbols $B/albw_game.o | grep '__impl$' | sort -u | python3 -c "
+import sys
+native = set(open('$B/native_defs.txt').read().split())
+out = ['.text']
+for impl in sys.stdin.read().split():
+    f = impl[:-len('__impl')]
+    if f in native: continue
+    out += ['.globl %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f,
+            '  push %ebx', '  push %esi', '  push %edi', '  mov 16(%esp), %ebx', '  sub \$64, %esp',
+            '  lea 80(%esp), %esi', '  mov %esp, %edi', '  mov \$16, %ecx', '  cld', '  rep movsl',
+            '  call %s' % impl, '  add \$64, %esp', '  mov %ebx, %eax', '  pop %edi', '  pop %esi',
+            '  pop %ebx', '  ret']
+print('\\n'.join(out))
+print('.section .note.GNU-stack,\\\"\\\",@progbits')" > $B/thunks.s
+clang --target=i686-linux-gnu -c $B/thunks.s -o $B/native/thunks.o
+NATIVE+=($B/native/thunks.o)
 python3 tools/gen_stubs.py $B/albw_game.o "${NATIVE[@]}" > $B/stubs.c
 clang "${CFLAGS[@]}" -w -c $B/stubs.c -o $B/native/stubs.o
 clang -m32 -no-pie -o $B/albw "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -rdynamic

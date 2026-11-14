@@ -298,9 +298,21 @@ def build_one(job):
         # exports are weak: a native SDK replacement defining the same func_<ADDR> wins at link time
         for a, (sec, val) in sinit.items():
             args += ["--add-symbol", "func_%s=%s:%d,weak,function" % (a.upper(), sec, val)]
+        # matched sources of functions that return their first argument on ARM (returns_this.json)
+        # but are void in C: export them as func_<ADDR>__impl; link.sh adds a thunk func_<ADDR>
+        # that calls the impl and returns the first argument (exact ARM r0 semantics)
+        matched_src = not path.startswith("ghidra_fallback/") and "/nonmatching/" not in path
         for a, p in prim.items():
             want = "func_" + a.upper()
             if a in sinit:
+                continue
+            if matched_src and a.upper() in RETURNS_THIS:
+                impl = want + "__impl"
+                if p != want:
+                    args += ["--add-symbol", "%s=%s:0,weak,function" % (impl, ".text." + p), "--localize-symbol=" + p]
+                else:
+                    args += ["--redefine-sym", "%s=%s" % (want, impl), "--weaken-symbol=" + want,
+                             "--weaken-symbol=" + impl]
                 continue
             if p != want:
                 sec = ".text." + p
@@ -358,13 +370,21 @@ def main():
     # Ghidra with full auto-analysis (real parameter counts) is preferred over the earlier
     # no-analysis dumps (decomp's src/nonmatching and build/ghidra_all)
     analyzed_dir = next((d for d in (os.path.join(ROOT, "build", "ghidra_analyzed2"), os.path.join(ROOT, "build", "ghidra_analyzed")) if os.path.isdir(d)), "")
+    # tools/systemic_rebuild.sh: another dump (default off). Its converted sources go to
+    # ghidra_fallback/<dump name>/..., so the default build's files are never overwritten.
+    alt_dir = os.environ.get("ALBW_GHIDRA_DIR")
+    fb_sub = os.environ.get("ALBW_FALLBACK_SUBDIR") or (os.path.basename(os.path.normpath(alt_dir)) if alt_dir else "")
+    if alt_dir:
+        analyzed_dir = os.path.abspath(alt_dir)
+        print("Ghidra dump: %s -> ghidra_fallback/%s (ALBW_CONVERT_V2=%s)"
+              % (analyzed_dir, fb_sub, os.environ.get("ALBW_CONVERT_V2", "")))
     fallback_dir = analyzed_dir if os.path.isdir(analyzed_dir) else os.path.join(ROOT, "build", "ghidra_all")
 
     eu2usa = {v["eu"].lower(): k for k, v in json.load(open(os.path.join(decomp, "shared", "eu_usa_map.json"))).items()}
-    extra_path = os.path.join(ROOT, "native", "extra_functions.json")
+    extra_path = os.environ.get("ALBW_EXTRA_FUNCTIONS") or os.path.join(ROOT, "native", "extra_functions.json")
     extra = json.load(open(extra_path)) if os.path.exists(extra_path) else {}  # USA -> EU
     eu2usa.update({eu.lower(): usa for usa, eu in extra.items()})
-    extra_dir = os.path.join(ROOT, "build", "ghidra_extra")
+    extra_dir = os.environ.get("ALBW_GHIDRA_EXTRA_DIR") or os.path.join(ROOT, "build", "ghidra_extra")
 
     def eu_fun_to_usa(text):
         """Ghidra's own FUN_<EU address> names -> func_<USA address> (unknown starts stay FUN_)."""
@@ -389,7 +409,7 @@ def main():
             return ghidra[addr]["path"]
         if not os.path.exists(raw):
             return None
-        rel = os.path.join("ghidra_fallback", addr[:3], "func_%s.c" % addr)
+        rel = os.path.join("ghidra_fallback", fb_sub, addr[:3], "func_%s.c" % addr)
         dst = os.path.join(OUT, rel)
         if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
