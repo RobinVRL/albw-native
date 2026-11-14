@@ -172,9 +172,14 @@ def run(insns, proven):
                         else:
                             regs[r] = s + k
             elif base in ("ldm", "ldmia", "ldmib", "ldmda", "ldmdb", "pop"):
-                for o in ops:
+                # ldm: operand 0 is the base register (changed only with writeback); pop: all
+                # operands are loaded
+                loaded = ops if base == "pop" else ops[1:]
+                for o in loaded:
                     if o.type == A.ARM_OP_REG and o.reg in REGN:
                         regs[REGN[o.reg]] = UNK
+                if base != "pop" and ins.writeback and ops and ops[0].reg in REGN:
+                    regs[REGN[ops[0].reg]] = UNK
             elif base in ("stm", "stmia", "stmib", "stmda", "stmdb", "push", "cmp", "cmn", "tst", "teq", "nop",
                           "vstr", "vldr", "vpush", "vpop", "vstmia", "vldmia", "vcmp", "vmrs", "vcvt", "vadd",
                           "vsub", "vmul", "vdiv", "vneg", "vabs", "vsqrt", "vmla", "vmls", "vnmul", "vfma",
