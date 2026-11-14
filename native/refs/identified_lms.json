@@ -1,0 +1,218 @@
+{
+ "0011E674": {
+  "confidence": "high",
+  "evidence": "free(blocks) if set, free(self); identical to redpepper LMS_CloseMessage; caller 00490988 (message)",
+  "name": "LMS_CloseMessage",
+  "source": "redpepper LMS"
+ },
+ "0011E694": {
+  "confidence": "medium",
+  "evidence": "project ATI2 (+0x1C) count, 0 when absent",
+  "name": "LMS_GetAttributeInfoNum",
+  "source": "redpepper LMS"
+ },
+ "0011E6B0": {
+  "confidence": "medium",
+  "evidence": "project ATI2 entry i u32 at +4, -1 invalid",
+  "name": "LMS_GetAttributeInfoOffset",
+  "source": "redpepper LMS"
+ },
+ "0011E6EC": {
+  "confidence": "medium",
+  "evidence": "project ATI2 entry i (8 bytes) u8 at +0, 0xFF invalid",
+  "name": "LMS_GetAttributeInfoType",
+  "source": "redpepper LMS"
+ },
+ "0011E728": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +0xC, -1 -> -11",
+  "name": "LMS_GetStyleBaseColorIndex",
+  "source": "redpepper LMS"
+ },
+ "0011E770": {
+  "confidence": "low",
+  "evidence": "FLW3 node i of type 2 -> branch table entry (body + 0x10 + numNodes*16 + u16(node+0xE)*2)",
+  "name": "LMS_GetFlowBranchTable",
+  "source": "redpepper LMS"
+ },
+ "0011E7CC": {
+  "confidence": "medium",
+  "evidence": "project CLR1 entry i (4 bytes RGBA) copied to out; 0 ok, -5 no CLR1, -1 out of range",
+  "name": "LMS_GetColor",
+  "source": "redpepper LMS"
+ },
+ "0011E824": {
+  "confidence": "medium",
+  "evidence": "project CLR1 (+0x14) count, 0 when absent; caller 00490724 (project init)",
+  "name": "LMS_GetColorNum",
+  "source": "redpepper LMS"
+ },
+ "0011E840": {
+  "confidence": "low",
+  "evidence": "CTI1 body + offset[i]; callers 0030BE08/0030CC80",
+  "name": "LMS_GetCTI1String",
+  "source": "redpepper LMS"
+ },
+ "0011E87C": {
+  "confidence": "low",
+  "evidence": "project CTI1 (+0x3C) count, -1 when absent",
+  "name": "LMS_GetCTI1Num",
+  "source": "redpepper LMS"
+ },
+ "0011E898": {
+  "confidence": "medium",
+  "evidence": "FEN1 (+0x14 in the flow binary) hash-label lookup, -10 when absent; caller 0030A0A4 (flow code)",
+  "name": "LMS_GetFlowEntryIndexByLabel",
+  "source": "redpepper LMS"
+ },
+ "0011E974": {
+  "confidence": "low",
+  "evidence": "blocks[+0x10].data + i bounded by block size; caller 0030A5B4 (flow code)",
+  "name": "LMS_GetFlowBlockByte (FLW3 raw)",
+  "source": "redpepper LMS"
+ },
+ "0011E9A4": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +8, -1 -> -11",
+  "name": "LMS_GetStyleFontIndex",
+  "source": "redpepper LMS"
+ },
+ "0011E9EC": {
+  "confidence": "medium",
+  "evidence": "walks LBL1 entries for value == index, copies name + NUL, returns 1/0",
+  "name": "LMS_GetLabelByIndex",
+  "source": "redpepper LMS"
+ },
+ "0011EA68": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +4",
+  "name": "LMS_GetStyleLineNum",
+  "source": "redpepper LMS"
+ },
+ "0011EAA4": {
+  "confidence": "medium",
+  "evidence": "FLW3 body + 0x10 + i*16",
+  "name": "LMS_GetFlowNode",
+  "source": "redpepper LMS"
+ },
+ "0011EACC": {
+  "confidence": "medium",
+  "evidence": "FLW3 (+0x10) == -1 ? -4 : u16 at body",
+  "name": "LMS_GetFlowNodeNum",
+  "source": "redpepper LMS"
+ },
+ "0011EAE8": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i (16 bytes) +0",
+  "name": "LMS_GetStyleRegionWidth",
+  "source": "redpepper LMS"
+ },
+ "0011EB24": {
+  "confidence": "medium",
+  "evidence": "project SYL3 (+0x34) count, 0 when absent",
+  "name": "LMS_GetStyleNum",
+  "source": "redpepper LMS"
+ },
+ "0011EB40": {
+  "confidence": "high",
+  "evidence": "TXT2 body + offset[i], 0 when absent/out of range (redpepper declares LMS_GetText)",
+  "name": "LMS_GetText",
+  "source": "redpepper LMS"
+ },
+ "0011EB7C": {
+  "confidence": "high",
+  "evidence": "game wrapper: label.assureTermination (vt+8), then falls through into LMS_GetTextIndexByLabel(holder->+8, label.cstr)",
+  "name": "MsgStdBn holder getTextIndexByLabel(const sead::SafeString&)",
+  "source": "ARM"
+ },
+ "0011EBA8": {
+  "confidence": "high",
+  "evidence": "LBL1 (+0x10) hash lookup, -2 when no LBL1, -1 not found (redpepper declares LMS_GetTextIndexByLabel)",
+  "name": "LMS_GetTextIndexByLabel",
+  "source": "redpepper LMS"
+ },
+ "0011EC80": {
+  "confidence": "high",
+  "evidence": "TXT2 (+0x14) == -1 ? -1 : u32 count; identical to redpepper LMS_GetTextNum",
+  "name": "LMS_GetTextNum",
+  "source": "redpepper LMS"
+ },
+ "0011EC9C": {
+  "confidence": "medium",
+  "evidence": "byte length of text i, skipping 0x0E/0x0F tags per encoding (+8: UTF-8/16/32)",
+  "name": "LMS_GetTextSize",
+  "source": "redpepper LMS"
+ },
+ "0011EDA4": {
+  "confidence": "high",
+  "evidence": "alloc 0x1C, Analyze('MsgFlwBn'), FLW3/FEN1/REF1 at +0x10/+0x14/+0x18 (InitMessage pattern)",
+  "name": "LMS_InitFlow",
+  "source": "redpepper LMS"
+ },
+ "0011EE2C": {
+  "confidence": "high",
+  "evidence": "alloc 0x20, Analyze('MsgStdBn'), LBL1/TXT2/ATR1/TSY1 at +0x10..+0x1C: identical to redpepper LMS_InitMessage",
+  "name": "LMS_InitMessage",
+  "source": "redpepper LMS"
+ },
+ "0011EED0": {
+  "confidence": "high",
+  "evidence": "alloc 0x40, Analyze('MsgPrjBn'), 12 blocks CLB1..CTI1 at +0x10..+0x3C",
+  "name": "LMS_InitProject",
+  "source": "redpepper LMS"
+ },
+ "0011F054": {
+  "confidence": "high",
+  "evidence": "strd r0,r1 -> data_007166D8 {alloc,free}; redpepper LMS_SetMemFuncs stores the same two hooks",
+  "name": "LMS_SetMemFuncs",
+  "source": "redpepper LMS"
+ },
+ "0011F064": {
+  "confidence": "high",
+  "evidence": "called by all three Init functions with the magic string; fills encoding (u8 file+0xC), numBlocks (u16 +0xE), blocks = Malloc(n*16), fileSize (+0x12), 16-byte block table from file+0x20, 16-byte aligned",
+  "name": "LMSi_AnalyzeMessageBinary",
+  "source": "redpepper LMS"
+ },
+ "0011F168": {
+  "confidence": "medium",
+  "evidence": "same body as LMS_CloseMessage (falls through into LMSi_Free); callers 00494104/00494194 own the flow binary",
+  "name": "LMS_CloseFlow",
+  "source": "redpepper LMS"
+ },
+ "0011F188": {
+  "confidence": "high",
+  "evidence": "tail jump through data_007166D8[1]; redpepper LMSi_Free",
+  "name": "LMSi_Free",
+  "source": "redpepper LMS"
+ },
+ "0011F198": {
+  "confidence": "medium",
+  "evidence": "h = h*0x492 + signed char, % numSlots (uidivmod remainder) = the MSBT label hash; name from later LMS builds, not in redpepper",
+  "name": "LMSi_GetHashTableIndex",
+  "source": "redpepper LMS"
+ },
+ "0011F1D8": {
+  "confidence": "high",
+  "evidence": "tail jump through data_007166D8[0]; redpepper LMSi_Malloc",
+  "name": "LMSi_Malloc",
+  "source": "redpepper LMS"
+ },
+ "0011F1E8": {
+  "confidence": "high",
+  "evidence": "signed byte compare of n bytes -> bool; redpepper declares LMSi_MemCmp(const void*, const void*, u32)",
+  "name": "LMSi_MemCmp",
+  "source": "redpepper LMS"
+ },
+ "0011F278": {
+  "confidence": "medium",
+  "evidence": "byte copy used by GetLabelByIndex; name not in redpepper (LMS internal)",
+  "name": "LMSi_MemCopy",
+  "source": "redpepper LMS"
+ },
+ "0011F2BC": {
+  "confidence": "high",
+  "evidence": "u16 counter, LMSi_MemCmp(type, name, 4), -1; same as redpepper incl. the nop before beq",
+  "name": "LMSi_SearchBlockByName",
+  "source": "redpepper LMS"
+ }
+}

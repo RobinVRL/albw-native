@@ -1,0 +1,28 @@
+factory   ctor      kind ctor_rthis  conv_ret    native
+00103C10  00105C7C  call True        -                  
+006881E4  0014B148  tail True        undefined4         
+0068821C  0014CEE4  tail True        undefined4         
+00688254  001E31E8  tail True        undefined4         
+0068828C  0048E140  call True        void        native 
+00688308  0025E6C0  tail False       undefined4         
+00688340  0029D43C  tail False       undefined4         
+00688378  0029DC7C  tail False       undefined4         
+006883B0  00323C94  tail True        undefined4         
+006883E8  0034B60C  tail True        undefined4         
+00688420  0037AD48  tail True        undefined4         
+00688458  0037B310  tail False       undefined4         
+00688490  003A0528  tail True        undefined4         
+006884C8  003AA5D0  tail False       undefined4         
+00688500  003AF0E4  tail True        undefined4         
+00688538  003BC2F0  call True        void        native 
+006885A0  003BC894  tail True        undefined4         
+006885D8  003BCA74  tail True        undefined4         
+00688610  003C209C  tail True        undefined4         
+00688648  003C21F4  tail True        undefined4         
+00688690  003C21F4  call True        void        native 
+00688700  003C49EC  tail True        undefined4         
+00688738  00429DF4  tail True        undefined4         
+00688770  00518CCC  tail True        undefined4         
+006887A8  0048D41C  tail True        undefined4         
+006887E0  004A08BC  tail True        undefined4         
+26 factories, 0 with a void converted return and no native override

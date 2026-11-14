@@ -150,3 +150,36 @@ attach the sp-relative stores (and the in_stack_ reads) to the slot. Highest-cal
   so there is no shared function; the changeState copies are robust's.
 - Tier 3: ActorMgr::find 0052FBA0 / 0052FBDC, getRandom 0058A7D4, getActorId 00588BE4 are matched
   sources (not checked in depth); 0010BEB4 (model anim by name, 374 callers) is gfx-middleware.
+
+## Task factories and the TaskClassID contract (stop 52; checked against the sead references)
+
+Layouts confirmed against 3DS sead (redpepper `framework/seadTaskID.h`, `seadTaskBase.h`,
+`seadHeapPolicies.h`) and NSMBU sead, and against the ARM uses in 0049D3D8 / 0049D4A8 / 0014A168:
+
+- `TaskClassID` = {u8 type, u32 value} (8 bytes). The reference declares `Type mType` as an enum;
+  armcc packs it into one byte (`ldrb`/`strb`). Types: 0 invalid, 1 int, 2 factory, 3 string.
+  `TaskClassID::create` = 0057D87C: type 2 calls `value(ca)`; 1 / 3 call the global hooks
+  data_00716650[0] / [1] as `hook(value, ca)`.
+- `TaskConstructArg` = {HeapArray *heap_array, TaskMgr *mgr, TaskParameter *param} (0xC).
+- `HeapArray` = {Heap *mHeaps[4]; bool mAdjusted[4]; s32 mPrimaryIndex} (0x18).
+- `HeapPolicy` = {parent, size, create_slack, adjust_slack, u8 adjust @0x10, u8 temporary,
+  u8 dont_create} (0x14); `HeapPolicies` = 4 policies + mPrimaryIndex (0x54).
+- `CreateArg`: +0x00 factory, +0x08 heap_policies, +0x5C parent, +0x60 parameter, +0x64 fader,
+  +0x68 src_task, +0x6C created_task (out), +0x70 create_callback, +0x74 user_id, u8 +0x78 tag,
+  +0x7C instance_cb. Every offset the ARM code uses matches.
+- `TaskBase`: INamable SafeString at +0x24 (name pointer +0x28; createTaskSync copies it into each
+  heap's name +0x14), HeapArray +0x44, TaskMgr* +0x5C, u8 state +0x60 (1 = cPrepare), u8 tag +0x61,
+  TaskClassID +0x64.
+- Factory = `TTaskFactory<T>`: `new (ca.heap_array->getPrimaryHeap(), 4) T(ca)` (0010CF28), NULL if
+  the allocation fails, else **the constructor's r0** (armcc constructors return `this`, mostly as
+  a tail call). createTask_ writes the class id into the result without a NULL test, also on ARM.
+
+`native/refs/tools/task_factories.py` lists all 26 factory instances (USA 00103C10, 006881E4 ..
+006887E0) with their constructors, the converted return type and native overrides
+(`native/refs/task_factories.txt`). TaskRender's 15 children come from the class-id table at EU
+data 0x796774, which the static initialiser 005A7CEC fills. Only 3 converted factories are
+`void` (0068828C, 00688538 = stop 52 "CapFader_UraOmote", 00688690), and native/game overrides
+all 3. Five constructors are not in returns_this.json (0025E6C0, 0029D43C, 0029DC7C, 0037B310,
+003AA5D0). Each returns `this` by subtracting a constant from a sub-object constructor's
+result, and the converted C does the same subtraction. That is correct as long as the callees
+0010DA24, 0010A794, 00491260, 003BC2F0, 001E3228 and 0010CE7C return `this`; all six are proven.

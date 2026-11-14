@@ -1,0 +1,47 @@
+{
+"0010B480": [
+"sead::SystemManagers",
+"sead::ResourceMgr",
+"sead::FileDeviceMgr"
+],
+"0010CDB8": [
+"sead::ThreadMgr"
+],
+"0010EFDC": [
+"sead::MainThread"
+],
+"002E2F78": [
+"nw::eft::System"
+],
+"00322CF4": [
+"sead::DefaultGfxMemoryMgrCtr"
+],
+"0048D41C": [
+"sead::ControllerMgr"
+],
+"0049546C": [
+"sead::RightRootDraw",
+"sead::RightSysDraw",
+"sead::RightAppDraw",
+"sead::RightAppDrawFinal"
+],
+"0049A188": [
+"sead::RootCalc",
+"sead::SysCalc",
+"sead::AppCalc",
+"sead::TopRootDraw",
+"sead::TopSysDraw",
+"sead::TopAppDraw",
+"sead::TopAppDrawFinal",
+"sead::BtmRootDraw",
+"sead::BtmSysDraw",
+"sead::BtmAppDraw",
+"sead::BtmAppDrawFinal"
+],
+"0049E510": [
+"sead::TaskMgr"
+],
+"004A12E0": [
+"sead::MethodTreeMgr"
+]
+}

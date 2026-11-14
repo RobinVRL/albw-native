@@ -1,0 +1,1772 @@
+{
+ "00100B88": {
+  "confidence": "high",
+  "evidence": "svc #0x3 wrapper, 8 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::ExitProcess",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00101DC4": {
+  "confidence": "high",
+  "evidence": "svc #0x1 wrapper, 36 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::ControlMemory",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00101DE8": {
+  "confidence": "high",
+  "evidence": "svc #0x21 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CreateAddressArbiter",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00103C68": {
+  "confidence": "high",
+  "evidence": "svc #0x17 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CreateEvent",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00103C80": {
+  "confidence": "high",
+  "evidence": "svc #0x8 wrapper, 36 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CreateThread",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00103CA4": {
+  "confidence": "high",
+  "evidence": "svc #0x38 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::GetResourceLimit",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00103CBC": {
+  "confidence": "high",
+  "evidence": "same size (96 bytes) as SM3DL armlib strlen; already labelled strlen",
+  "existing_label": "sdk_areas: strlen",
+  "name": "strlen",
+  "source": "Symbols/lib/armlib/c_4.l/strlen.sym"
+ },
+ "00105C7C": {
+  "confidence": "medium",
+  "evidence": "TaskBase ctor + vtable 006F7488 + two MethodTreeNodes; created by factory 00103C10 (root class id {2, 00103C10})",
+  "name": "TaskRootBase::TaskRootBase(const TaskConstructArg&) (sead-side base of TaskRoot)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "00106358": {
+  "confidence": "high",
+  "evidence": "svc #0x2D wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::ConnectToPort",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00106370": {
+  "confidence": "high",
+  "evidence": "svc #0x35 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::GetProcessId",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00106394": {
+  "confidence": "high",
+  "evidence": "svc #0xA wrapper, 8 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::SleepThread",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0010639C": {
+  "confidence": "high",
+  "evidence": "svc #0x25 wrapper, 36 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::WaitSynchronizationN",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00109630": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::pauseCalcRec",
+  "source": "vtable 006F52FC slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "001096AC": {
+  "confidence": "medium",
+  "evidence": "TTreeNode init + IDisposer + vtable 006F5930, Delegate vtable 006F7830; used twice by the root task ctor",
+  "name": "sead::MethodTreeNode::MethodTreeNode(...)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "00109868": {
+  "confidence": "high",
+  "evidence": "TTreeNode init 0010BA60, IDisposer ctor 0010CE7C, stores TaskBase vtable 006F78DC; base ctor called by CalculateTask 0048D088, FaderTaskBase 0048E140 and the root task 00105C7C (boot stop 15 crashed here via NullFaderTask)",
+  "existing_label": "sdk_areas: heap: create child heap object in memory block (Heap ctor + IDisposer)",
+  "name": "sead::TaskBase::TaskBase(const TaskConstructArg&, const char* name)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010998C": {
+  "confidence": "high",
+  "evidence": "body is `svc #0x9; bx lr`-style wrapper (8 bytes); no SM3DL symbol",
+  "name": "nn::svc::ExitThread",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0010B480": {
+  "confidence": "high",
+  "evidence": "calls Framework::initialize 0010CDB8 then ExpHeap::create 'sead::SystemManagers', 'sead::ResourceMgr' + ResourceMgr::createInstance 0010C894 under CurrentHeapSetter (0010983C), 'sead::FileDeviceMgr' + FileDeviceMgr::createInstance 0010C930 (NSMBU seadGameFramework.cpp order). Boot log stop 1 calls this 'HeapMgr::initialize 0010B47C'",
+  "name": "sead::GameFramework::initialize(const InitializeArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010B830": {
+  "confidence": "medium",
+  "evidence": "IDisposer-derived ctor with the lock word; used for TaskMgr's CS at +4",
+  "existing_label": "sdk_areas: IDisposer-derived ctor with light lock member",
+  "name": "sead::CriticalSection::CriticalSection()",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010B954": {
+  "confidence": "high",
+  "evidence": "called with the NSMBU literals 'sead::ThreadMgr', 'sead::SystemManagers', 'sead::ResourceMgr', 'sead::FileDeviceMgr', 'sead::MethodTreeMgr' exactly where seadFramework.cpp / seadGameFramework.cpp call ExpHeap::create; calls ExpHeap ctor 0010CD0C",
+  "existing_label": "sdk_areas: heap: create child heap (ExpHeap/FrameHeap create from parent: size 0=max free)",
+  "name": "sead::ExpHeap::create(size_t size, const SafeString& name, Heap* parent, HeapDirection, bool)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010BE9C": {
+  "confidence": "high",
+  "evidence": "svc #0x22 wrapper (24 bytes; SM3DL symbol 8 bytes: different stack-arg handling)",
+  "name": "nn::svc::ArbitrateAddress",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0010C180": {
+  "confidence": "medium",
+  "evidence": "svc #0x24 with r2:r3 = -1; skips when the object's +4 byte flag is set",
+  "name": "nn::os wait (WaitSynchronization1 with infinite timeout, svc 0x24) on a handle object",
+  "source": "svc scan"
+ },
+ "0010C894": {
+  "confidence": "medium",
+  "evidence": "GameFramework::initialize step after 'sead::ResourceMgr' heap; references the ResourceMgr vtable 006F5080",
+  "name": "sead::ResourceMgr::createInstance(Heap*)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010C930": {
+  "confidence": "medium",
+  "evidence": "GameFramework::initialize step after 'sead::FileDeviceMgr' heap",
+  "name": "sead::FileDeviceMgr::createInstance(Heap*)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010CC7C": {
+  "confidence": "medium",
+  "evidence": "creates 'RootHeap' for HeapMgr (0010D8FC/0010D978) from a raw block; calls ExpHeap ctor 0010CD0C",
+  "name": "sead::ExpHeap::create(void* address, size_t size, const SafeString& name, bool)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010CD0C": {
+  "confidence": "high",
+  "evidence": "calls Heap ctor 0010DF58 then stores ExpHeap vtable 006F7584",
+  "name": "sead::ExpHeap::ExpHeap(...)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010CDB8": {
+  "confidence": "high",
+  "evidence": "HeapMgr::initialize (0010D8FC/0010D978, 'RootHeap'), ExpHeap::create(0, 'sead::ThreadMgr', root), ThreadMgr::createInstance 0010DB24, ThreadMgr::initialize 0010E1C8 on 00715430, heap->adjust: NSMBU seadFramework.cpp Framework::initialize order",
+  "name": "sead::Framework::initialize(const InitializeArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010D0EC": {
+  "confidence": "high",
+  "evidence": "svc #0x3C wrapper, 8 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::Break",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0010D8FC": {
+  "confidence": "medium",
+  "evidence": "creates ExpHeap 'RootHeap' via 0010CC7C on HeapMgr 00715210; called first by Framework::initialize",
+  "name": "sead::HeapMgr::initialize (one of the arena/size overloads; creates 'RootHeap')",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010D978": {
+  "confidence": "medium",
+  "evidence": "same pattern under the HeapMgr CS 0079E064, called by Framework::initialize",
+  "name": "sead::HeapMgr::initialize / createRootHeap (other overload; 'RootHeap', locked)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010DB24": {
+  "confidence": "medium",
+  "evidence": "called right after ExpHeap::create('sead::ThreadMgr'); stores singleton-disposer vtable 006F7E10",
+  "name": "sead::ThreadMgr::createInstance(Heap*)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010DF58": {
+  "confidence": "high",
+  "evidence": "base ctor called by ExpHeap ctor 0010CD0C, FrameHeap::create 004A107C and UnitHeap::create 004A0038",
+  "existing_label": "sdk_areas: Heap base ctor (name, parent, start, size, direction, lock)",
+  "name": "sead::Heap::Heap(const SafeString& name, Heap* parent, void* address, size_t size, HeapDirection, bool)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010E1C8": {
+  "confidence": "medium",
+  "evidence": "this = ThreadMgr instance 00715430 (also used by Thread ctor 0049BEAC); new MainThread (0010CF28, ctor 0010EFDC, vtable 006F4EB8), GetThreadId 0010EAE8. Note: the map splits this function: 0010E1C8 is a 4-byte `mov r0, r0` that falls into 0010E1CC (same function; called at 0010E1C8)",
+  "name": "sead::ThreadMgr::initialize(Heap*)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010EAE8": {
+  "confidence": "high",
+  "evidence": "svc #0x37 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::GetThreadId",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0010EE50": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::attachDrawImpl",
+  "source": "vtable 006C7CA8 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0010EFDC": {
+  "confidence": "high",
+  "evidence": "name 'sead::MainThread', stores Thread vtable 006F751C, wraps the running thread: svc GetThreadPriority 0010F228; caller 0010E1C8 then stores the MainThread vtable 006F4EB8",
+  "name": "sead::Thread::Thread(Heap*, ...) main-thread variant (base part of MainThread ctor)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0010F228": {
+  "confidence": "high",
+  "evidence": "svc #0xB wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::GetThreadPriority",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00115ED4": {
+  "confidence": "high",
+  "evidence": "svc #0x23 wrapper, 8 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CloseHandle",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00115EDC": {
+  "confidence": "high",
+  "evidence": "svc #0x1E wrapper, 28 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CreateMemoryBlock",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00115EF8": {
+  "confidence": "high",
+  "evidence": "svc #0x13 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "name": "nn::svc::CreateMutex",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00115F10": {
+  "confidence": "high",
+  "evidence": "svc #0x27 wrapper, 24 bytes = size of the SM3DL symbol (redpepper Symbols/nn/svc/svc_Api.sym)",
+  "existing_label": "sdk_areas: DuplicateHandle (svc 0x27)",
+  "name": "nn::svc::DuplicateHandle",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "00115F28": {
+  "confidence": "high",
+  "evidence": "body is `svc #0x28; bx lr`-style wrapper (12 bytes); no SM3DL symbol",
+  "existing_label": "sdk_areas: GetSystemTick (svc 0x28)",
+  "name": "nn::svc::GetSystemTick",
+  "source": "Symbols/nn/svc + 3DS svc table"
+ },
+ "0011E674": {
+  "confidence": "high",
+  "evidence": "free(blocks) if set, free(self); identical to redpepper LMS_CloseMessage; caller 00490988 (message)",
+  "name": "LMS_CloseMessage",
+  "source": "redpepper LMS"
+ },
+ "0011E694": {
+  "confidence": "medium",
+  "evidence": "project ATI2 (+0x1C) count, 0 when absent",
+  "name": "LMS_GetAttributeInfoNum",
+  "source": "redpepper LMS"
+ },
+ "0011E6B0": {
+  "confidence": "medium",
+  "evidence": "project ATI2 entry i u32 at +4, -1 invalid",
+  "name": "LMS_GetAttributeInfoOffset",
+  "source": "redpepper LMS"
+ },
+ "0011E6EC": {
+  "confidence": "medium",
+  "evidence": "project ATI2 entry i (8 bytes) u8 at +0, 0xFF invalid",
+  "name": "LMS_GetAttributeInfoType",
+  "source": "redpepper LMS"
+ },
+ "0011E728": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +0xC, -1 -> -11",
+  "name": "LMS_GetStyleBaseColorIndex",
+  "source": "redpepper LMS"
+ },
+ "0011E770": {
+  "confidence": "low",
+  "evidence": "FLW3 node i of type 2 -> branch table entry (body + 0x10 + numNodes*16 + u16(node+0xE)*2)",
+  "name": "LMS_GetFlowBranchTable",
+  "source": "redpepper LMS"
+ },
+ "0011E7CC": {
+  "confidence": "medium",
+  "evidence": "project CLR1 entry i (4 bytes RGBA) copied to out; 0 ok, -5 no CLR1, -1 out of range",
+  "name": "LMS_GetColor",
+  "source": "redpepper LMS"
+ },
+ "0011E824": {
+  "confidence": "medium",
+  "evidence": "project CLR1 (+0x14) count, 0 when absent; caller 00490724 (project init)",
+  "name": "LMS_GetColorNum",
+  "source": "redpepper LMS"
+ },
+ "0011E840": {
+  "confidence": "low",
+  "evidence": "CTI1 body + offset[i]; callers 0030BE08/0030CC80",
+  "name": "LMS_GetCTI1String",
+  "source": "redpepper LMS"
+ },
+ "0011E87C": {
+  "confidence": "low",
+  "evidence": "project CTI1 (+0x3C) count, -1 when absent",
+  "name": "LMS_GetCTI1Num",
+  "source": "redpepper LMS"
+ },
+ "0011E898": {
+  "confidence": "medium",
+  "evidence": "FEN1 (+0x14 in the flow binary) hash-label lookup, -10 when absent; caller 0030A0A4 (flow code)",
+  "name": "LMS_GetFlowEntryIndexByLabel",
+  "source": "redpepper LMS"
+ },
+ "0011E974": {
+  "confidence": "low",
+  "evidence": "blocks[+0x10].data + i bounded by block size; caller 0030A5B4 (flow code)",
+  "name": "LMS_GetFlowBlockByte (FLW3 raw)",
+  "source": "redpepper LMS"
+ },
+ "0011E9A4": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +8, -1 -> -11",
+  "name": "LMS_GetStyleFontIndex",
+  "source": "redpepper LMS"
+ },
+ "0011E9EC": {
+  "confidence": "medium",
+  "evidence": "walks LBL1 entries for value == index, copies name + NUL, returns 1/0",
+  "name": "LMS_GetLabelByIndex",
+  "source": "redpepper LMS"
+ },
+ "0011EA68": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i +4",
+  "name": "LMS_GetStyleLineNum",
+  "source": "redpepper LMS"
+ },
+ "0011EAA4": {
+  "confidence": "medium",
+  "evidence": "FLW3 body + 0x10 + i*16",
+  "name": "LMS_GetFlowNode",
+  "source": "redpepper LMS"
+ },
+ "0011EACC": {
+  "confidence": "medium",
+  "evidence": "FLW3 (+0x10) == -1 ? -4 : u16 at body",
+  "name": "LMS_GetFlowNodeNum",
+  "source": "redpepper LMS"
+ },
+ "0011EAE8": {
+  "confidence": "medium",
+  "evidence": "SYL3 entry i (16 bytes) +0",
+  "name": "LMS_GetStyleRegionWidth",
+  "source": "redpepper LMS"
+ },
+ "0011EB24": {
+  "confidence": "medium",
+  "evidence": "project SYL3 (+0x34) count, 0 when absent",
+  "name": "LMS_GetStyleNum",
+  "source": "redpepper LMS"
+ },
+ "0011EB40": {
+  "confidence": "high",
+  "evidence": "TXT2 body + offset[i], 0 when absent/out of range (redpepper declares LMS_GetText)",
+  "name": "LMS_GetText",
+  "source": "redpepper LMS"
+ },
+ "0011EB7C": {
+  "confidence": "high",
+  "evidence": "game wrapper: label.assureTermination (vt+8), then falls through into LMS_GetTextIndexByLabel(holder->+8, label.cstr)",
+  "name": "MsgStdBn holder getTextIndexByLabel(const sead::SafeString&)",
+  "source": "ARM"
+ },
+ "0011EBA8": {
+  "confidence": "high",
+  "evidence": "LBL1 (+0x10) hash lookup, -2 when no LBL1, -1 not found (redpepper declares LMS_GetTextIndexByLabel)",
+  "name": "LMS_GetTextIndexByLabel",
+  "source": "redpepper LMS"
+ },
+ "0011EC80": {
+  "confidence": "high",
+  "evidence": "TXT2 (+0x14) == -1 ? -1 : u32 count; identical to redpepper LMS_GetTextNum",
+  "name": "LMS_GetTextNum",
+  "source": "redpepper LMS"
+ },
+ "0011EC9C": {
+  "confidence": "medium",
+  "evidence": "byte length of text i, skipping 0x0E/0x0F tags per encoding (+8: UTF-8/16/32)",
+  "name": "LMS_GetTextSize",
+  "source": "redpepper LMS"
+ },
+ "0011EDA4": {
+  "confidence": "high",
+  "evidence": "alloc 0x1C, Analyze('MsgFlwBn'), FLW3/FEN1/REF1 at +0x10/+0x14/+0x18 (InitMessage pattern)",
+  "name": "LMS_InitFlow",
+  "source": "redpepper LMS"
+ },
+ "0011EE2C": {
+  "confidence": "high",
+  "evidence": "alloc 0x20, Analyze('MsgStdBn'), LBL1/TXT2/ATR1/TSY1 at +0x10..+0x1C: identical to redpepper LMS_InitMessage",
+  "name": "LMS_InitMessage",
+  "source": "redpepper LMS"
+ },
+ "0011EED0": {
+  "confidence": "high",
+  "evidence": "alloc 0x40, Analyze('MsgPrjBn'), 12 blocks CLB1..CTI1 at +0x10..+0x3C",
+  "name": "LMS_InitProject",
+  "source": "redpepper LMS"
+ },
+ "0011F054": {
+  "confidence": "high",
+  "evidence": "strd r0,r1 -> data_007166D8 {alloc,free}; redpepper LMS_SetMemFuncs stores the same two hooks",
+  "name": "LMS_SetMemFuncs",
+  "source": "redpepper LMS"
+ },
+ "0011F064": {
+  "confidence": "high",
+  "evidence": "called by all three Init functions with the magic string; fills encoding (u8 file+0xC), numBlocks (u16 +0xE), blocks = Malloc(n*16), fileSize (+0x12), 16-byte block table from file+0x20, 16-byte aligned",
+  "name": "LMSi_AnalyzeMessageBinary",
+  "source": "redpepper LMS"
+ },
+ "0011F168": {
+  "confidence": "medium",
+  "evidence": "same body as LMS_CloseMessage (falls through into LMSi_Free); callers 00494104/00494194 own the flow binary",
+  "name": "LMS_CloseFlow",
+  "source": "redpepper LMS"
+ },
+ "0011F188": {
+  "confidence": "high",
+  "evidence": "tail jump through data_007166D8[1]; redpepper LMSi_Free",
+  "name": "LMSi_Free",
+  "source": "redpepper LMS"
+ },
+ "0011F198": {
+  "confidence": "medium",
+  "evidence": "h = h*0x492 + signed char, % numSlots (uidivmod remainder) = the MSBT label hash; name from later LMS builds, not in redpepper",
+  "name": "LMSi_GetHashTableIndex",
+  "source": "redpepper LMS"
+ },
+ "0011F1D8": {
+  "confidence": "high",
+  "evidence": "tail jump through data_007166D8[0]; redpepper LMSi_Malloc",
+  "name": "LMSi_Malloc",
+  "source": "redpepper LMS"
+ },
+ "0011F1E8": {
+  "confidence": "high",
+  "evidence": "signed byte compare of n bytes -> bool; redpepper declares LMSi_MemCmp(const void*, const void*, u32)",
+  "name": "LMSi_MemCmp",
+  "source": "redpepper LMS"
+ },
+ "0011F278": {
+  "confidence": "medium",
+  "evidence": "byte copy used by GetLabelByIndex; name not in redpepper (LMS internal)",
+  "name": "LMSi_MemCopy",
+  "source": "redpepper LMS"
+ },
+ "0011F2BC": {
+  "confidence": "high",
+  "evidence": "u16 counter, LMSi_MemCmp(type, name, 4), -1; same as redpepper incl. the nop before beq",
+  "name": "LMSi_SearchBlockByName",
+  "source": "redpepper LMS"
+ },
+ "0014B08C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014B148",
+  "name": "TaskCourse[vt 006C7C44]::exit",
+  "source": "vtable 006C7C44 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "0014B0C0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014B148",
+  "name": "TaskCourse[vt 006C7C44]::enter",
+  "source": "vtable 006C7C44 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "0014B0D0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014B148",
+  "name": "TaskCourse[vt 006C7C44]::prepare",
+  "source": "vtable 006C7C44 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0014B610": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::calc",
+  "source": "vtable 006C7CA8 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0014B768": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::enter",
+  "source": "vtable 006C7CA8 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "0014BDE0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::prepare",
+  "source": "vtable 006C7CA8 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0014CF70": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::~TaskRender",
+  "source": "vtable 006C7CA8 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "001E316C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 001E31E8 001E3228",
+  "name": "TaskMainGame[vt 006D1DB4]::prepare",
+  "source": "vtable 006D1DB4 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "001E326C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 001E31E8 001E3228",
+  "name": "TaskMainGame[vt 006D1DB4]::~TaskMainGame",
+  "source": "vtable 006D1DB4 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "00231E50": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC2F0",
+  "name": "Task[vt 006E0A24]::calc",
+  "source": "vtable 006E0A24 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0025D84C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::attachDrawImpl",
+  "source": "vtable slot 16 (+0x40), shared by 16 of 17 fader-family task vtables"
+ },
+ "0025D850": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::detachDrawImpl",
+  "source": "vtable slot 18 (+0x48), shared by 16 of 17 fader-family task vtables"
+ },
+ "0025D858": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::pauseDraw",
+  "source": "vtable slot 5 (+0x14), shared by 16 of 17 fader-family task vtables"
+ },
+ "0025D870": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0068828C",
+  "name": "FaderNone[vt 006D6AA0]::~FaderNone",
+  "source": "vtable 006D6AA0 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0025D920": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::calc",
+  "source": "vtable 006D6B1C slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0025D92C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::exit",
+  "source": "vtable 006D6B1C slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "0025D994": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::enter",
+  "source": "vtable 006D6B1C slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "0025D9A0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::prepare",
+  "source": "vtable 006D6B1C slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0025DA00": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::~GameTaskBase",
+  "source": "vtable 006D6B1C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0025ECE0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0025E6C0 0025ECE0",
+  "name": "TaskStaffroll[vt 006D6B90]::~TaskStaffroll",
+  "source": "vtable 006D6B90 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0029D990": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0029D43C 0029D990",
+  "name": "TaskFileSelect[vt 006DAA14]::~TaskFileSelect",
+  "source": "vtable 006DAA14 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0029E188": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0029DC7C",
+  "name": "TaskPlayRecord[vt 006DAA8C]::~TaskPlayRecord",
+  "source": "vtable 006DAA8C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "00323B2C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC2F0",
+  "name": "Task[vt 006E0A24]::~Task",
+  "source": "vtable 006E0A24 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "00323D3C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00323C94",
+  "name": "LoadingFader[vt 006E0AA8]::~LoadingFader",
+  "source": "vtable 006E0AA8 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0034B58C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0034B60C",
+  "name": "BootLoadFader[vt 006E3194]::calc",
+  "source": "vtable 006E3194 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0034B674": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0034B60C",
+  "name": "BootLoadFader[vt 006E3194]::~BootLoadFader",
+  "source": "vtable 006E3194 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0037ADA8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0037AD48",
+  "name": "TaskCircleWipe[vt 006E5AC4]::~TaskCircleWipe",
+  "source": "vtable 006E5AC4 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0037B814": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0037B310",
+  "name": "TaskFileFormatCheck[vt 006E5B40]::~TaskFileFormatCheck",
+  "source": "vtable 006E5B40 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003A05BC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003A0528",
+  "name": "LoadingFader[vt 006E80B0]::~LoadingFader",
+  "source": "vtable 006E80B0 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003AA984": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AA5D0",
+  "name": "LoadingFader[vt 006E8994]::~LoadingFader",
+  "source": "vtable 006E8994 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003AF0BC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AF0E4 003C209C 003C49EC 00429DF4",
+  "name": "MosaicFader[vt 006E904C]::calc",
+  "source": "vtable 006E904C slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "003AF0E0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AF0E4 003C209C 003C49EC 00429DF4",
+  "name": "MosaicFader[vt 006E904C]::pauseCalc",
+  "source": "vtable 006E904C slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "003AF184": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AF0E4 003C209C 003C49EC 00429DF4",
+  "name": "MosaicFader[vt 006E904C]::~MosaicFader",
+  "source": "vtable 006E904C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003BC2A8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AA5D0",
+  "name": "LoadingFader[vt 006E8994]::calc",
+  "source": "vtable 006E8994 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "003BC3C8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC2F0",
+  "name": "Task[vt 006E9E38]::~Task",
+  "source": "vtable 006E9E38 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003BC8F4": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC894",
+  "name": "LoadingFaderBattleOut[vt 006E9EC4]::~LoadingFaderBattleOut",
+  "source": "vtable 006E9EC4 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003BCB04": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BCA74",
+  "name": "TaskCircleWipe[vt 006E9F50]::~TaskCircleWipe",
+  "source": "vtable 006E9F50 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003C2148": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003C209C",
+  "name": "MosaicFader[vt 006EAA90]::~MosaicFader",
+  "source": "vtable 006EAA90 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003C2278": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003C21F4",
+  "name": "Task[vt 006EAB10]::~Task",
+  "source": "vtable 006EAB10 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003C2318": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00688690",
+  "name": "SimpleWhite[vt 006EAB8C]::~SimpleWhite",
+  "source": "vtable 006EAB8C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "003C4AA0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003C49EC",
+  "name": "MosaicFader[vt 006EAD94]::~MosaicFader",
+  "source": "vtable 006EAD94 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "00429EA8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00429DF4",
+  "name": "MosaicFader[vt 006EB0CC]::~MosaicFader",
+  "source": "vtable 006EB0CC slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048A290": {
+  "confidence": "medium",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); stored by ThreadMgr::initialize (0010E1C8/0010E1CC) right after the main-thread Thread ctor 0010EFDC; dtor 0048A2A0",
+  "name": "sead::MainThread::quitAndDestroySingleThread",
+  "source": "vtable 006F4EB8 slot 8 (+0x20); order: NSMBU sead header"
+ },
+ "0048A294": {
+  "confidence": "medium",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); stored by ThreadMgr::initialize (0010E1C8/0010E1CC) right after the main-thread Thread ctor 0010EFDC; dtor 0048A2A0",
+  "name": "sead::MainThread::quit",
+  "source": "vtable 006F4EB8 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0048A298": {
+  "confidence": "medium",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); stored by ThreadMgr::initialize (0010E1C8/0010E1CC) right after the main-thread Thread ctor 0010EFDC; dtor 0048A2A0",
+  "name": "sead::MainThread::calc_",
+  "source": "vtable 006F4EB8 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "0048A29C": {
+  "confidence": "medium",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); stored by ThreadMgr::initialize (0010E1C8/0010E1CC) right after the main-thread Thread ctor 0010EFDC; dtor 0048A2A0",
+  "name": "sead::MainThread::waitDone",
+  "source": "vtable 006F4EB8 slot 7 (+0x1C); order: NSMBU sead header"
+ },
+ "0048A2A0": {
+  "confidence": "medium",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); stored by ThreadMgr::initialize (0010E1C8/0010E1CC) right after the main-thread Thread ctor 0010EFDC; dtor 0048A2A0",
+  "name": "sead::MainThread::~MainThread",
+  "source": "vtable 006F4EB8 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048C0EC": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "name": "sead::Thread::sendMessage",
+  "source": "vtable 006F751C slot 3 (+0xC); order: NSMBU sead header"
+ },
+ "0048C18C": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::createProcessMeter",
+  "source": "vtable 006F6D28 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0048CF74": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::attachCalcImpl",
+  "source": "vtable 006F52FC slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "0048D000": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::attachDrawImpl",
+  "source": "vtable 006F52FC slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0048D004": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::detachDrawImpl",
+  "source": "vtable 006F52FC slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0048D008": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::getMethodTreeNode",
+  "source": "vtable 006F52FC slot 20 (+0x50); order: NSMBU sead header"
+ },
+ "0048D018": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::calc",
+  "source": "vtable 006F52FC slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0048D01C": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::pauseCalc",
+  "source": "vtable 006F52FC slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "0048D084": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::pauseDraw",
+  "source": "vtable 006F52FC slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0048D088": {
+  "confidence": "high",
+  "evidence": "calls TaskBase ctor 00109868, stores 006F52FC, builds the calc MethodTreeNode (001096AC-like, DelegateCalc vtable 006F7830); called by ControllerMgr 0048D41C and game TaskBase 0025D9E8",
+  "name": "sead::CalculateTask::CalculateTask(const TaskConstructArg&, const char* name)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0048D1AC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014B148",
+  "name": "TaskCourse[vt 006C7C44]::~TaskCourse",
+  "source": "vtable 006C7C44 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048D1B0": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::~CalculateTask",
+  "source": "vtable 006F52FC slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048D210": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D41C ('sead::ControllerMgr' name, as NSMBU seadControllerMgr.cpp)",
+  "name": "sead::ControllerMgr::calc",
+  "source": "vtable 006F5360 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0048D288": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D41C ('sead::ControllerMgr' name, as NSMBU seadControllerMgr.cpp)",
+  "name": "sead::ControllerMgr::prepare",
+  "source": "vtable 006F5360 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0048D41C": {
+  "confidence": "high",
+  "evidence": "CalculateTask(arg, 'sead::ControllerMgr') exactly as NSMBU seadControllerMgr.cpp; created by factory 006887A8 from createControllerMgr 0048E718",
+  "name": "sead::ControllerMgr::ControllerMgr(const TaskConstructArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0048D484": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D41C ('sead::ControllerMgr' name, as NSMBU seadControllerMgr.cpp)",
+  "name": "sead::ControllerMgr::~ControllerMgr",
+  "source": "vtable 006F5360 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048D8CC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::pauseCalcRec",
+  "source": "vtable slot 6 (+0x18), shared by 17 of 17 fader-family task vtables"
+ },
+ "0048D960": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::attachCalcImpl",
+  "source": "vtable slot 15 (+0x3C), shared by 17 of 17 fader-family task vtables"
+ },
+ "0048D9C8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::detachCalcImpl",
+  "source": "vtable slot 17 (+0x44), shared by 17 of 17 fader-family task vtables"
+ },
+ "0048DB9C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::getMethodTreeNode",
+  "source": "vtable slot 20 (+0x50), shared by 16 of 17 fader-family task vtables"
+ },
+ "0048DCD0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::enter",
+  "source": "vtable slot 12 (+0x30), shared by 17 of 17 fader-family task vtables"
+ },
+ "0048DD04": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::calc",
+  "source": "vtable slot 22 (+0x58), shared by 8 of 17 fader-family task vtables"
+ },
+ "0048E0AC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; family = vtables derived from FaderTaskBase ctor 0048E140",
+  "name": "sead::FaderTaskBase::pauseCalc",
+  "source": "vtable slot 4 (+0x10), shared by 12 of 17 fader-family task vtables"
+ },
+ "0048E0B0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048E140 (base of NullFaderTask and all TaskRender fader children; class name inferred, no header in the references)",
+  "name": "sead::FaderTaskBase::pauseCalc",
+  "source": "vtable 006F554C slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "0048E140": {
+  "confidence": "medium",
+  "evidence": "TaskBase ctor 00109868 + vtable 006F554C; base of NullFaderTask (0048E8DC) and the TaskRender fader children (CapFader, SimpleWhite, FaderNone, LoadingFader)",
+  "name": "sead::FaderTaskBase::FaderTaskBase(const TaskConstructArg&, ...)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0048E398": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048E140 (base of NullFaderTask and all TaskRender fader children; class name inferred, no header in the references)",
+  "name": "sead::FaderTaskBase::~FaderTaskBase",
+  "source": "vtable 006F554C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048E668": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::createHostIOMgr",
+  "source": "vtable 006F6D28 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "0048E66C": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::createSeadMenuMgr",
+  "source": "vtable 006F6D28 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "0048E670": {
+  "confidence": "high",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "existing_label": "framework/README: game framework vtable method (vt calls 0x38/0x40/0x44/0x3C/0x48)",
+  "name": "sead::GameFramework::createSystemTasks",
+  "source": "vtable 006F6D28 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0048E718": {
+  "confidence": "high",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "existing_label": "framework/README: prepare task creation (CreateArg {2, 006887A8}, createTaskSync, static guard)",
+  "name": "sead::GameFramework::createControllerMgr",
+  "source": "vtable 006F6D28 slot 14 (+0x38); order: NSMBU sead header"
+ },
+ "0048E7E0": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::createInfLoopChecker",
+  "source": "vtable 006F6D28 slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0048E7E4": {
+  "confidence": "high",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFramework::waitStartDisplayLoop_",
+  "source": "vtable 006F6D28 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0048E8C8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0048E8DC",
+  "name": "NullFaderTask[vt 006F5654]::attachDrawImpl",
+  "source": "vtable 006F5654 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0048E8CC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0048E8DC",
+  "name": "NullFaderTask[vt 006F5654]::detachDrawImpl",
+  "source": "vtable 006F5654 slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0048E8D0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0048E8DC",
+  "name": "NullFaderTask[vt 006F5654]::getMethodTreeNode",
+  "source": "vtable 006F5654 slot 20 (+0x50); order: NSMBU sead header"
+ },
+ "0048E8D8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0048E8DC",
+  "name": "NullFaderTask[vt 006F5654]::pauseDraw",
+  "source": "vtable 006F5654 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0048E918": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0048E8DC",
+  "name": "NullFaderTask[vt 006F5654]::~NullFaderTask",
+  "source": "vtable 006F5654 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0048FBE0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::pauseCalcRec",
+  "source": "vtable 006C7CA8 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0048FC48": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::attachCalcImpl",
+  "source": "vtable 006C7CA8 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "0048FCD4": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::attachDrawImpl",
+  "source": "vtable 006F5814 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0048FDA4": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::detachCalcImpl",
+  "source": "vtable 006C7CA8 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "0048FDAC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "existing_label": "symbol_aliases.txt: _ZN8S_49FDD41gEv",
+  "name": "Task[vt 006F5814]::detachDrawImpl",
+  "source": "vtable 006F5814 slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0048FDC8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::getMethodTreeNode",
+  "source": "vtable 006C7CA8 slot 20 (+0x50); order: NSMBU sead header"
+ },
+ "0048FE08": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::getMethodTreeNode",
+  "source": "vtable 006F5814 slot 20 (+0x50); order: NSMBU sead header"
+ },
+ "0048FF78": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::calc",
+  "source": "vtable 006F5814 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0048FF84": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::pauseCalc",
+  "source": "vtable 006C7CA8 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "0048FFEC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::pauseDraw",
+  "source": "vtable 006F5814 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "00490298": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::~Task",
+  "source": "vtable 006F5814 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "00490C30": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::detachCalcImpl",
+  "source": "vtable 006F52FC slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "0049546C": {
+  "confidence": "medium",
+  "evidence": "names 'sead::RightRootDraw', 'sead::RightSysDraw', 'sead::RightAppDraw', 'sead::RightAppDrawFinal'",
+  "name": "sead::MethodTreeMgr right-eye (stereo) node set-up",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "004960AC": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "existing_label": "framework/README: per-frame calc/draw dispatch",
+  "name": "sead::GameFrameworkCtr::procFrame_",
+  "source": "vtable 006F6D28 slot 25 (+0x64); order: NSMBU sead header"
+ },
+ "004964D4": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::createMethodTreeMgr_",
+  "source": "vtable 006F6D28 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "00496674": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::initRun_",
+  "source": "vtable 006F6D28 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "00496678": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::runImpl_",
+  "source": "vtable 006F6D28 slot 11 (+0x2C); order: NSMBU sead header"
+ },
+ "0049A188": {
+  "confidence": "medium",
+  "evidence": "names 'sead::RootCalc', 'sead::SysCalc', 'sead::AppCalc', 'sead::TopRootDraw'... 'sead::BtmAppDrawFinal' = CTR dual-screen method tree nodes (cf. NSMBU seadDualScreenMethodTreeMgr)",
+  "name": "sead::MethodTreeMgr (top/bottom screen) ctor / initialize",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0049B798": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::pauseCalcRec",
+  "source": "vtable 006F7488 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0049B800": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::attachCalcImpl",
+  "source": "vtable 006F7488 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "0049B88C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::attachDrawImpl",
+  "source": "vtable 006F7488 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0049B918": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::detachCalcImpl",
+  "source": "vtable 006F7488 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "0049B920": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::detachDrawImpl",
+  "source": "vtable 006F7488 slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0049B928": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::getMethodTreeNode",
+  "source": "vtable 006F7488 slot 20 (+0x50); order: NSMBU sead header"
+ },
+ "0049B960": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::calc",
+  "source": "vtable 006F7488 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "0049B968": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::pauseCalc",
+  "source": "vtable 006F7488 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "0049B9D0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::pauseDraw",
+  "source": "vtable 006F7488 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0049BA38": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00103C10",
+  "name": "TaskRoot[vt 006ED7DC]::~TaskRoot",
+  "source": "vtable 006ED7DC slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0049BA3C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::~TaskRootBase",
+  "source": "vtable 006F7488 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0049BC38": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "name": "sead::Thread::quitAndDestroySingleThread",
+  "source": "vtable 006F751C slot 8 (+0x20); order: NSMBU sead header"
+ },
+ "0049BC44": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "name": "sead::Thread::quitAndWaitDoneSingleThread",
+  "source": "vtable 006F751C slot 9 (+0x24); order: NSMBU sead header"
+ },
+ "0049BC70": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "name": "sead::Thread::quit",
+  "source": "vtable 006F751C slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0049BD4C": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "name": "sead::Thread::start",
+  "source": "vtable 006F751C slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0049BE50": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "existing_label": "sdk_areas: thread: wait/join",
+  "name": "sead::Thread::waitDone",
+  "source": "vtable 006F751C slot 7 (+0x1C); order: NSMBU sead header"
+ },
+ "0049BEAC": {
+  "confidence": "high",
+  "evidence": "IDisposer ctor, stores Thread vtable 006F751C, allocates the stack with operator new (0010CEE0/0010CF28), inserts into ThreadMgr 00715430 list",
+  "existing_label": "sdk_areas: heap create (ExpHeap/FrameHeap with name/parent)",
+  "name": "sead::Thread::Thread(const SafeString& name, Heap*, s32 priority, MessageQueue::BlockType, ...)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0049C008": {
+  "confidence": "high",
+  "evidence": "Thread slot order from NSMBU seadThread.h (no RTTI): start at +0x14 = 0049BD4C (boot stop 14 'sead::Thread::start'), waitDone +0x1C = 0049BE50 (svc 0x24 WaitSynchronization1); vtable stored by Thread ctor 0049BEAC and dtor 0049C008, used by MainThread ctor 0010EFDC",
+  "existing_label": "symbols.jsonl: Base48A::~Base48A() D1, threadlike state78 and secondary18",
+  "name": "sead::Thread::~Thread",
+  "source": "vtable 006F751C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0049C208": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "existing_label": "native/game: sead::ExpHeap::resizeBack(void *ptr, u32 newSize) (the parent side of child-heap",
+  "name": "sead::ExpHeap::resizeBack",
+  "source": "vtable 006F7584 slot 9 (+0x24); order: NSMBU sead header"
+ },
+ "0049C334": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "existing_label": "native/game: sead::ExpHeap::resizeFront(void *ptr, u32 newSize) (the parent side of child-heap",
+  "name": "sead::ExpHeap::resizeFront",
+  "source": "vtable 006F7584 slot 8 (+0x20); order: NSMBU sead header"
+ },
+ "0049C840": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::free",
+  "source": "vtable 006F7584 slot 7 (+0x1C); order: NSMBU sead header"
+ },
+ "0049C924": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::adjust",
+  "source": "vtable 006F7584 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0049CAF8": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::destroy",
+  "source": "vtable 006F7584 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "0049CB68": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::freeAll",
+  "source": "vtable 006F7584 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0049CBE4": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::tryAlloc",
+  "source": "vtable 006F7584 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0049CE64": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::~ExpHeap",
+  "source": "vtable 006F7584 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0049CE98": {
+  "confidence": "medium",
+  "evidence": "called by Framework::run 004A12E0 after createMethodTreeMgr_ (NSMBU order); allocates the 0x180-byte TaskMgr",
+  "existing_label": "sdk_areas: create object (new 0x180)",
+  "name": "sead::TaskMgr::initialize(const InitializeArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0049E510": {
+  "confidence": "medium",
+  "evidence": "uses name 'sead::TaskMgr', CriticalSection ctor 0010B830 (TaskMgr CS at +4, locked by createTask_ 0049D3D8), vtable 006F7610",
+  "name": "sead::TaskMgr::TaskMgr(const InitializeArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "0049F7D4": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable of CalculateTask ctor 0048D088, slots it does not override",
+  "name": "sead::TaskBase::enterCommon",
+  "source": "vtable 006F52FC slot 11 (+0x2C); order: NSMBU sead header"
+ },
+ "0049FA68": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable of CalculateTask ctor 0048D088, slots it does not override",
+  "name": "sead::TaskBase::exit",
+  "source": "vtable 006F52FC slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "0049FA6C": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable of CalculateTask ctor 0048D088, slots it does not override",
+  "name": "sead::TaskBase::enter",
+  "source": "vtable 006F52FC slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "0049FA70": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable of CalculateTask ctor 0048D088, slots it does not override",
+  "name": "sead::TaskBase::onEvent",
+  "source": "vtable 006F52FC slot 14 (+0x38); order: NSMBU sead header"
+ },
+ "0049FA74": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable of CalculateTask ctor 0048D088, slots it does not override",
+  "name": "sead::TaskBase::prepare",
+  "source": "vtable 006F52FC slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "0049FAD8": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable stored by TaskBase ctor 00109868",
+  "name": "sead::TaskBase::~TaskBase",
+  "source": "vtable 006F78DC slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0049FD40": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0049FE74 0049FF98",
+  "name": "Task[vt 006F793C]::attachDrawImpl",
+  "source": "vtable 006F793C slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "0049FDD4": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::detachDrawImpl",
+  "source": "vtable 006C7CA8 slot 18 (+0x48); order: NSMBU sead header"
+ },
+ "0049FE00": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::pauseDraw",
+  "source": "vtable 006C7CA8 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "0049FF98": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0049FE74 0049FF98",
+  "name": "Task[vt 006F793C]::~Task",
+  "source": "vtable 006F793C slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "004A0028": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::resizeBack",
+  "source": "vtable 006F79B0 slot 9 (+0x24); order: NSMBU sead header"
+ },
+ "004A0030": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::resizeFront",
+  "source": "vtable 006F79B0 slot 8 (+0x20); order: NSMBU sead header"
+ },
+ "004A0038": {
+  "confidence": "medium",
+  "evidence": "calls Heap ctor 0010DF58, stores UnitHeap vtable 006F79B0",
+  "name": "sead::UnitHeap::create(...)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "004A0188": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::free",
+  "source": "vtable 006F79B0 slot 7 (+0x1C); order: NSMBU sead header"
+ },
+ "004A0214": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::adjust",
+  "source": "vtable 006F79B0 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "004A021C": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::destroy",
+  "source": "vtable 006F79B0 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "004A028C": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::freeAll",
+  "source": "vtable 006F79B0 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "004A0454": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::tryAlloc",
+  "source": "vtable 006F79B0 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "004A0570": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::~UnitHeap",
+  "source": "vtable 006F79B0 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "004A07E0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::calc",
+  "source": "vtable 006F7A30 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "004A07FC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::exit",
+  "source": "vtable 006F7A30 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "004A0818": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::enter",
+  "source": "vtable 006F7A30 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "004A081C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::prepare",
+  "source": "vtable 006F7A30 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "004A08BC": {
+  "confidence": "medium",
+  "evidence": "name 'AudioTask'; CalculateTask-derived (vtable 006F7A30); factory 006887E0 (boot stop 19)",
+  "name": "AudioTask::AudioTask(const TaskConstructArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "004A0928": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::~AudioTask",
+  "source": "vtable 006F7A30 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "004A0C28": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::resizeBack",
+  "source": "vtable 006F7D40 slot 9 (+0x24); order: NSMBU sead header"
+ },
+ "004A0C30": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::resizeFront",
+  "source": "vtable 006F7D40 slot 8 (+0x20); order: NSMBU sead header"
+ },
+ "004A0C38": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::free",
+  "source": "vtable 006F7D40 slot 7 (+0x1C); order: NSMBU sead header"
+ },
+ "004A0C3C": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::adjust",
+  "source": "vtable 006F7D40 slot 5 (+0x14); order: NSMBU sead header"
+ },
+ "004A0D58": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::destroy",
+  "source": "vtable 006F7D40 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "004A0DC8": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::freeAll",
+  "source": "vtable 006F7D40 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "004A0E58": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::tryAlloc",
+  "source": "vtable 006F7D40 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "004A1240": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::~FrameHeap",
+  "source": "vtable 006F7D40 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "004A1270": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::procReset_",
+  "source": "vtable 006F6D28 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "004A12E0": {
+  "confidence": "high",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::Framework::run",
+  "source": "vtable 006F6D28 slot 4 (+0x10); order: NSMBU sead header"
+ },
+ "004EC9F8": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00103C10",
+  "name": "TaskRoot[vt 006ED7DC]::calc",
+  "source": "vtable 006ED7DC slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "004ECA20": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00103C10",
+  "name": "TaskRoot[vt 006ED7DC]::enter",
+  "source": "vtable 006ED7DC slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "004ECA48": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00103C10",
+  "existing_label": "framework/README: root task set-up",
+  "name": "TaskRoot[vt 006ED7DC]::prepare",
+  "source": "vtable 006ED7DC slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "00518BBC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00518CCC",
+  "name": "TaskStage[vt 006EF524]::calc",
+  "source": "vtable 006EF524 slot 22 (+0x58); order: NSMBU sead header"
+ },
+ "00518BCC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00518CCC",
+  "name": "TaskStage[vt 006EF524]::exit",
+  "source": "vtable 006EF524 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "00518C2C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00518CCC",
+  "name": "TaskStage[vt 006EF524]::enter",
+  "source": "vtable 006EF524 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "00518C54": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00518CCC",
+  "name": "TaskStage[vt 006EF524]::prepare",
+  "source": "vtable 006EF524 slot 10 (+0x28); order: NSMBU sead header"
+ },
+ "00518CCC": {
+  "confidence": "medium",
+  "evidence": "name 'TaskStage'; factory 00688770",
+  "name": "TaskStage::TaskStage(const TaskConstructArg&)",
+  "source": "string/call-structure anchor (NSMBU sead source)"
+ },
+ "00518D04": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00518CCC",
+  "name": "TaskStage[vt 006EF524]::~TaskStage",
+  "source": "vtable 006EF524 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "0052F500": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 001E31E8 001E3228",
+  "name": "TaskMainGame[vt 006D1DB4]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006D1DB4 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005394DC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00323C94",
+  "name": "LoadingFader[vt 006E0AA8]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006E0AA8 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00539590": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0068828C",
+  "name": "FaderNone[vt 006D6AA0]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006D6AA0 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00539694": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; the game's CalculateTask-derived task base",
+  "name": "GameTaskBase(ctor 0025D9E8)::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006D6B1C slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00539798": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0025E6C0 0025ECE0",
+  "name": "TaskStaffroll[vt 006D6B90]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006D6B90 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005412FC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0029D43C 0029D990",
+  "name": "TaskFileSelect[vt 006DAA14]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006DAA14 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005414A0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0029DC7C",
+  "name": "TaskPlayRecord[vt 006DAA8C]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006DAA8C slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0054D654": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC2F0",
+  "name": "Task[vt 006E0A24]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006E0A24 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00559754": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0037B310",
+  "name": "TaskFileFormatCheck[vt 006E5B40]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006E5B40 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0055F1BC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003AF0E4 003C209C 003C49EC 00429DF4",
+  "name": "MosaicFader[vt 006E904C]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006E904C slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00560068": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003BC894",
+  "name": "LoadingFaderBattleOut[vt 006E9EC4]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006E9EC4 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0056075C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003C209C",
+  "name": "MosaicFader[vt 006EAA90]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006EAA90 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00560914": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 003C49EC",
+  "name": "MosaicFader[vt 006EAD94]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006EAD94 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0057050C": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 00429DF4",
+  "name": "MosaicFader[vt 006EB0CC]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006EB0CC slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0057E0C4": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; stored by ctor 0048D088 (calls TaskBase ctor 00109868, sets up MethodTreeNode with Delegate vtable 006F7830)",
+  "name": "sead::CalculateTask::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006F52FC slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0057E7BC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 004900D0 00490298 0049FF98",
+  "name": "Task[vt 006F5814]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006F5814 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "0057F3D0": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::getMethodFrameBuffer",
+  "source": "vtable 006F6D28 slot 6 (+0x18); order: NSMBU sead header"
+ },
+ "0057F508": {
+  "confidence": "medium",
+  "evidence": "Framework/GameFramework order from NSMBU headers; confirmed: +0x14 0048E670 calls vt+0x38/+0x3C/+0x40/+0x44/+0x48 (createSystemTasks -> createControllerMgr..createInfLoopChecker), +0x38 0048E718 creates the ControllerMgr task (factory 006887A8 -> ctor 0048D41C 'sead::ControllerMgr'), +0x10 004A12E0 creates ExpHeap 'sead::MethodTreeMgr' then calls TaskMgr::initialize (= Framework::run in NSMBU seadFramework.cpp), +0x58 0048E7E4 polls until the prepare task finishes; vtable stored by framework ctor 0010B880",
+  "name": "sead::GameFrameworkCtr::~GameFrameworkCtr",
+  "source": "vtable 006F6D28 slot 0 (+0x0); order: NSMBU sead header"
+ },
+ "005800AC": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; base of TaskRoot (vtable 006ED7DC); factory 00103C10 calls ctor 00105C7C then stores TaskRoot's vtable",
+  "name": "TaskRootBase(ctor 00105C7C)::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006F7488 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005801FC": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::isFreeable",
+  "source": "vtable 006F7584 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "00580270": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::getFreeSize",
+  "source": "vtable 006F7584 slot 14 (+0x38); order: NSMBU sead header"
+ },
+ "00580354": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::getStartAddress",
+  "source": "vtable 006F7584 slot 11 (+0x2C); order: NSMBU sead header"
+ },
+ "0058035C": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::getMaxAllocatableSize",
+  "source": "vtable 006F7584 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "00580734": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::getSize",
+  "source": "vtable 006F7584 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "0058073C": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 0049CE64 and ctor 0010CD0C; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70",
+  "name": "sead::ExpHeap::isInclude",
+  "source": "vtable 006F7584 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "00580860": {
+  "confidence": "high",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; vtable stored by TaskBase ctor 00109868",
+  "name": "sead::TaskBase::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006F78DC slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005808E0": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; class vtable referenced by 0014CEE4 0014CF70",
+  "name": "TaskRender[vt 006C7CA8]::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006C7CA8 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "005809E4": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::isFreeable",
+  "source": "vtable 006F79B0 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "005809EC": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::getFreeSize",
+  "source": "vtable 006F79B0 slot 14 (+0x38); order: NSMBU sead header"
+ },
+ "005809F4": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::getStartAddress",
+  "source": "vtable 006F79B0 slot 11 (+0x2C); order: NSMBU sead header"
+ },
+ "005809FC": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::getMaxAllocatableSize",
+  "source": "vtable 006F79B0 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "00580A10": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::getSize",
+  "source": "vtable 006F79B0 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "00580A18": {
+  "confidence": "medium",
+  "evidence": "vtable stored by dtor 004A0570 and create 004A0038; slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; tryAlloc fails when size > unit size at +0x74 (UnitHeap semantics)",
+  "name": "sead::UnitHeap::isInclude",
+  "source": "vtable 006F79B0 slot 16 (+0x40); order: NSMBU sead header"
+ },
+ "00580D58": {
+  "confidence": "medium",
+  "evidence": "TaskBase slot order from NSMBU seadTaskBase.h; confirmed: createTaskSync 0049D4A8 calls vt+0x28 as prepare; enterCommon 0049F7D4 calls vt+0x3C/+0x40 (attachCalcImpl/attachDrawImpl); 0049F7D4/0049FA70 shared by all 33 task vtables; ctor 004A08BC names it 'AudioTask' (factory 006887E0)",
+  "name": "AudioTask::checkDerivedRuntimeTypeInfo",
+  "source": "vtable 006F7A30 slot 2 (+0x8); order: NSMBU sead header"
+ },
+ "00580E5C": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::isFreeable",
+  "source": "vtable 006F7D40 slot 17 (+0x44); order: NSMBU sead header"
+ },
+ "00580E64": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::getFreeSize",
+  "source": "vtable 006F7D40 slot 14 (+0x38); order: NSMBU sead header"
+ },
+ "00580EAC": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::getEndAddress",
+  "source": "vtable 006F7D40 slot 12 (+0x30); order: NSMBU sead header"
+ },
+ "00580EBC": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::getStartAddress",
+  "source": "vtable 006F7D40 slot 11 (+0x2C); order: NSMBU sead header"
+ },
+ "00580EC4": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::getMaxAllocatableSize",
+  "source": "vtable 006F7D40 slot 15 (+0x3C); order: NSMBU sead header"
+ },
+ "00580F44": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::getSize",
+  "source": "vtable 006F7D40 slot 13 (+0x34); order: NSMBU sead header"
+ },
+ "00580F4C": {
+  "confidence": "high",
+  "evidence": "vtable stored by dtor 004A1240 (FrameHeap::create 004A107C inlines the ctor); slots consistent: resizeFront/resizeBack at +0x20/+0x24 (boot stop 1), isInclude +0x40 (range check on [+0x1C,+0x1C+0x20)), destroy calls parent vt+0x44/+0x1C; Heap fields: mStart +0x1C, mSize +0x20, mParent +0x24, direction s8 +0x50, CS +0x54, flags +0x70; free = bx lr, resizeFront/Back return 0, isFreeable returns 0 (FrameHeap semantics)",
+  "name": "sead::FrameHeap::isInclude",
+  "source": "vtable 006F7D40 slot 16 (+0x40); order: NSMBU sead header"
+ }
+}
