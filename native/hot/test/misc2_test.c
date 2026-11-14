@@ -13,6 +13,8 @@ int func_004356B4(uint32_t self);
 int func_0054DDF4(uint32_t self, uint32_t i);
 int func_00521078(uint32_t self);
 int func_004C07D8(uint32_t self);
+int func_0034C8F0(uint32_t self, uint32_t model, uint32_t hit);
+int func_004C0350(uint32_t self);
 
 static int n_cc8; static uint32_t cc8_v, cc8_arg;
 int func_004A1CC8(int h, uint32_t v, int arg) { (void)h; n_cc8++; cc8_v = v; cc8_arg = (uint32_t)arg; return 0; }
@@ -107,8 +109,27 @@ static void t_misc(void)
     char *c = obj(0x920); func_004C07D8(w(c)); CHECK_U(FLD(c, 0x90E, uint16_t), 0xFFFF);
 }
 
+static void t_damage_merge(void)
+{
+    char *d = obj(0x48), *hit = obj(0x48), *a = obj(0x18), *model = obj(0x40);
+    W(hit, 0x2C) = w(a); FLD(d, 0x21, int8_t) = 0x7F;
+    FLD(a, 1, uint8_t) = 0xFF; FLD(a, 0x10, uint16_t) = 9;      /* type -1: immune, shift 255 */
+    CHECK(func_0034C8F0(w(d), w(model), w(hit)) == 1, "merged");
+    CHECK_U(W(d, 0), 0);                     /* ARM: 1 << 255 = 0 (x86 C would set bit 31) */
+    CHECK_U(FLD(d, 0x21, uint8_t), 0xFF); CHECK_U(FLD(d, 0x30, uint16_t), 0);
+    FLD(a, 1, uint8_t) = 3; FLD(model, 0xE + 6, uint16_t) = 0; FLD(d, 0x21, int8_t) = 0x7F;
+    CHECK(func_0034C8F0(w(d), w(model), w(hit)) == 0, "resisted");
+    FLD(model, 0xE + 6, uint16_t) = 2;
+    CHECK(func_0034C8F0(w(d), w(model), w(hit)) == 1, "type 3");
+    CHECK_U(W(d, 0), 8); CHECK_U(FLD(d, 0x30, uint16_t), 9);
+    char *s = obj(0x900); F(s, 0x8B4) = 1.005f; F(s, 0x834) = 0.0f; FLD(s, 0x85C, int8_t) = 1;
+    func_004C0350(w(s)); CHECK_F(F(s, 0x834), (1.005f - 0.005f) * 0.05f);
+    F(s, 0x834) = gp_u2f(0x7FC00000u); func_004C0350(w(s)); CHECK_F(F(s, 0x834), 1.005f);
+}
+
 int main(void)
 {
+    t_damage_merge();
     t_effect();
     run_low(t_anim);
     t_look();

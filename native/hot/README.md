@@ -27,7 +27,7 @@ for `-m32` and `-m64 -fms-extensions`.
 - `tools/sigcheck_hot.py [--all] [--native]`: (1) our definitions vs the converted callers,
   (2) our callee declarations vs the winning definitions, (3) other native code declaring our
   functions. Current result: (1) all OK, (2) all OK, (3) see link notes.
-- `test/run_tests.sh`: anim_test (92 checks), actor_test (93) and misc2_test (47), each built
+- `test/run_tests.sh`: anim_test (92 checks), actor_test (93) and misc2_test (57), each built
   and run for -m32 and -m64 with the build's float flags; all pass. Expected values come from the
   ARM semantics, including the NaN / saturation cases where the Ghidra C differs.
 - Independent re-check (separate reviewer, from the disassembly only): 004F5588, 0016898C,
@@ -120,6 +120,26 @@ in_s0/erase class), 004FC6FC, 004A2F38 (stack-object class).
 - HOT_TOP150 lists 004FABDC, 004356B4, 004FC07C as "native": no definition exists anywhere
   under native/ (now here).
 
+## Functions, pass 3 (8)
+
+Band 57-50 caller files. Triage: mostly correct Ghidra C; written where cheap, one real bug.
+
+| USA | EU | identity | callers | bug fixed vs round-2 conversion | conf. |
+|---|---|---|---|---|---|
+| 001E6B34 | 001E6B34 | isKindOf over four lazily-initialised static type records | 56 | none | high / medium |
+| 004EA104 | 004EA0DC | Obj::playSE(name, arg) -> 00150A84 on self[0x58] | 55 | none | high |
+| 004C0350 | 004C0328 | Actor::chaseMoveSpeed() | 55 | none | high |
+| 004C1300 | 004C12D8 | Actor::emitNearPlayer() (bit-pattern distance test) | 55 | none | high / low |
+| 004BFE7C | 004BFE54 | Actor::moveOnPath(...) + anim rate clamp | 54 | none | high / medium |
+| 004BFF60 | 004BFF38 | Actor::setPath(...) | 53 | none | high / medium |
+| 0034C8F0 | 0034C8CC | DamageInfo::merge(model, hit) (record read by 004F70A8) | 53 | `1 << type` with the unsigned type byte: C/x86 masks the count (type 0xFF sets bit 31); ARM register shift gives 0 for 32..255 | high / medium |
+| 004A9120 | 004A90F8 | ColMgr::unregister(c) (two list unlinks) | 50 | none (erase in_s0 only) | high |
+
+Triaged, not written (correct, or only round-3 classes): 004FBA18 (stack-argument
+pass-through wrapper of 002B06B8: stack copy class), 003842C0 (correct now that 002C11E8
+returns this), 004C1D28 (dtor chain; correct with the hot 0035D6D0/00503368 returning this),
+004C18E0 (217-line ctor), 0014E138 (erase in_s0 only).
+
 ## Link notes (pass 1)
 
 - Duplicates: none. No address here is defined by another native directory; the only other
@@ -162,5 +182,5 @@ in_s0/erase class), 004FC6FC, 004A2F38 (stack-object class).
 |---|---|---|
 | 004C43E0 | 68 | ActorMgr::requestCreate (0x2C4-byte ring copy) - framework scope |
 | 004994B0 | 66 | sead FixedSafeString::format (vsnprintf) - core scope |
-| 004FBA18, 001E6B34, 004EA104, 004C1300, 004C0350, 004BFE7C, 004BFF60, 0034C8F0, 003842C0, 004C1D28, 004C18E0 (217 lines), 0014E138, 004A9120 | 57-50 | not yet triaged |
+| 004C4AF4, 0052107C, 0014E904, 0048C378, 002AF5FC, 00556EAC, 00231340 (in_r3), 004D7EB0, 0034CAA0, 0057F260, 0056D40C, 00412BB4, 0033A07C, 00339CC4 (192 lines) | 49-40 | not yet triaged |
 | 004C1418, 004FAD90, 004A8030, 004A7F00, 004FC6FC, 004A2F38 | 64-58 | triaged correct (only round-3 classes): low priority |
