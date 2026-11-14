@@ -1,0 +1,6445 @@
+{
+ "00101434": {
+  "area": "hid",
+  "role": "hid: Initialize (srv GetServiceHandle \"hid:USER\", hid GetIPCHandles, map shared mem)",
+  "confidence": "high",
+  "evidence": "calls 001025B0 -> srv init 00104800, GetServiceHandle 00104868, hid cmd 0x000A0000 (00104710)",
+  "reaches_svc_ipc": [
+   "ipc hid:0xa0000",
+   "ipc srv:0x10002",
+   "ipc srv:0x50100",
+   "svc ConnectToPort",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "0010144C": {
+  "area": "hid",
+  "role": "hid: Finalize (close hid handles / unmap shared memory)",
+  "confidence": "medium",
+  "evidence": "calls 001026D8: svc 0x23 CloseHandle x N on hid handle block, UnmapMemoryBlock reachable",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc mem:UnmapMemoryBlock",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "001014EC": {
+  "area": "os-threads/sync",
+  "role": "os: close a global kernel handle (svc CloseHandle) and reset",
+  "confidence": "low",
+  "evidence": "svc 0x23 on global",
+  "reaches_svc_ipc": [
+   "svc CloseHandle"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "0010173C": {
+  "area": "apt",
+  "role": "apt: set sleep/home-button policy flag, then apply",
+  "confidence": "low",
+  "evidence": "writes applet flag, calls 00104A90/0010587C; reaches APT ReplySleepQuery 0x003E0080",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x3e0080",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 3
+ },
+ "00101A70": {
+  "area": "apt",
+  "role": "apt: applet transition loop (lock APT, CloseApplication 0x00220040, wait)",
+  "confidence": "low",
+  "evidence": "calls 001030B4 (APT cmd 0x00220040) inside APT lock 00108DF8/00108F4C",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x220040",
+   "ipc apt:0x3b0040",
+   "ipc apt:0x430040",
+   "ipc apt:0x4b00c2",
+   "ipc apt:0x90040",
+   "ipc dsp:0x1100c2",
+   "ipc dsp:0x120000",
+   "ipc gsp:0x160042",
+   "ipc gsp:0x170000",
+   "ipc gsp:0x1a0000",
+   "ipc srv:0x50100",
+   "ipc svcG716780:0x130040",
+   "ipc svcG716780:0x3b0000",
+   "ipc svcG716780:0x3c0000",
+   "ipc svcG716780:0x3d0040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "00101BC8": {
+  "area": "fs",
+  "role": "fs: unmount archive held by object (via 00102130)",
+  "confidence": "low",
+  "evidence": "calls 00102130 (unmount by name)",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "00101BE8": {
+  "area": "apt",
+  "role": "apt/system: process-wide finalize (gsp/dsp/apt teardown sequence)",
+  "confidence": "low",
+  "evidence": "calls many finalize helpers; reaches gsp 0x00140000 UnregisterInterruptRelayQueue, UnmapMemoryBlock, SignalEvent",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc gsp:0x140000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc mem:UnmapMemoryBlock",
+   "svc sync:ArbitrateAddress",
+   "svc sync:SignalEvent",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "00102130": {
+  "area": "fs",
+  "role": "fs: Unmount(archive name) - parses name up to ':' (max 7 chars) and removes mount",
+  "confidence": "medium",
+  "evidence": "parses \"xxx:\" prefix; called from 003DADBC with \"ngword:\"",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "001022F4": {
+  "area": "other/unknown",
+  "role": "getter: returns global+4 (likely applet/system state)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 8
+ },
+ "001024E0": {
+  "area": "os-threads/sync",
+  "role": "service client Finalize (refcount--, close handle when 0); used by cfg init path",
+  "confidence": "low",
+  "evidence": "refcount decrement on global; called from cfg init 003E22CC",
+  "reaches_svc_ipc": [
+   "svc CloseHandle"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "00102A2C": {
+  "area": "apt",
+  "role": "apt: set applet flag (enable/disable home/sleep), optional notify",
+  "confidence": "low",
+  "evidence": "writes global flag; reach APT 0x004B00C2 AppletUtility",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x4b00c2",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 4
+ },
+ "00102E08": {
+  "area": "apt",
+  "role": "apt: SetApplicationCpuTimeLimit",
+  "confidence": "high",
+  "evidence": "APT lock + cmd 0x004F0080 (00105960)",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x4f0080",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "001031B4": {
+  "area": "framework",
+  "role": "struct copy + array-of-0x14 ctor (engine object init)",
+  "confidence": "low",
+  "evidence": "uses FUN_00100118 (__cxa_vec_ctor-like)",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 4
+ },
+ "00103CBC": {
+  "area": "crt/libc",
+  "role": "strlen",
+  "confidence": "high",
+  "evidence": "word-aligned NUL scan, returns length",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 21
+ },
+ "00104164": {
+  "area": "os-threads/sync",
+  "role": "os: light event/semaphore Initialize (atomic set -1/-2)",
+  "confidence": "low",
+  "evidence": "exclusive-access atomic stores",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 3
+ },
+ "00104914": {
+  "area": "gsp/graphics",
+  "role": "gsp: SetLcdForceBlack(false) if initialized",
+  "confidence": "medium",
+  "evidence": "calls 00108AA4 = gsp::Gpu cmd 0x000B0040 SetLcdForceBlack",
+  "reaches_svc_ipc": [
+   "ipc ?:0xb0040"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "00104A2C": {
+  "area": "apt",
+  "role": "apt: set sleep/home mode (0..3) and apply",
+  "confidence": "low",
+  "evidence": "maps param 0/1/2 to state, calls 00104A90/0010587C",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x3e0080",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "00104A80": {
+  "area": "apt",
+  "role": "apt: get applet state byte",
+  "confidence": "low",
+  "evidence": "returns global+9",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 3
+ },
+ "00104F68": {
+  "area": "apt",
+  "role": "apt: query state ==1 (e.g. IsHomeButton/ sleep pending)",
+  "confidence": "low",
+  "evidence": "returns 00108B50()==1",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "001053A8": {
+  "area": "apt",
+  "role": "apt: prepare/start library applet or jump (saves gsp/dsp state)",
+  "confidence": "medium",
+  "evidence": "reaches APT 0x0043/0x004B, gsp AcquireRight/ReleaseRight, dsp Load/UnloadComponent",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x430040",
+   "ipc apt:0x4b00c2",
+   "ipc dsp:0x1100c2",
+   "ipc dsp:0x120000",
+   "ipc gsp:0x160042",
+   "ipc gsp:0x170000",
+   "ipc gsp:0x1a0000",
+   "ipc srv:0x50100",
+   "ipc svcG716780:0x130040",
+   "ipc svcG716780:0x3b0000",
+   "ipc svcG716780:0x3c0000",
+   "ipc svcG716780:0x3d0040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 2
+ },
+ "00105804": {
+  "area": "apt",
+  "role": "apt: notification helper (APT state transition)",
+  "confidence": "low",
+  "evidence": "calls 00108B08/001057A0/00108CDC",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc apt:0x4b00c2",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "0010585C": {
+  "area": "apt",
+  "role": "apt: get applet flag byte",
+  "confidence": "low",
+  "evidence": "returns global+6",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 3
+ },
+ "00106030": {
+  "area": "other/unknown",
+  "role": "lookup in a linked table by id (callback registry)",
+  "confidence": "low",
+  "evidence": "iterates 0x10-byte entries",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "00106108": {
+  "area": "apt",
+  "role": "apt: applet/system callback dispatcher (param id 0x...0000/0x10000/0x20000)",
+  "confidence": "low",
+  "evidence": "calls registered function pointer",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "00106388": {
+  "area": "os-threads/sync",
+  "role": "os: SleepThread / yield (svc 0x0A)",
+  "confidence": "high",
+  "evidence": "svc 0x0A",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "001080CC": {
+  "area": "os-threads/sync",
+  "role": "os: light mutex/event signal (object+4)",
+  "confidence": "medium",
+  "evidence": "atomic exchange then ArbitrateAddress signal (0010BE9C)",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 4
+ },
+ "001080D4": {
+  "area": "os-threads/sync",
+  "role": "os: light mutex/event signal",
+  "confidence": "medium",
+  "evidence": "atomic exchange then ArbitrateAddress signal",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 9
+ },
+ "0010961C": {
+  "area": "os-memory/heap",
+  "role": "heap: lock heap's critical section (if enabled)",
+  "confidence": "medium",
+  "evidence": "locks CriticalSection at heap+0x3c",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 11
+ },
+ "00109698": {
+  "area": "os-memory/heap",
+  "role": "heap: unlock heap's critical section",
+  "confidence": "medium",
+  "evidence": "unlocks CriticalSection at heap+0x3c",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 5
+ },
+ "0010983C": {
+  "area": "os-memory/heap",
+  "role": "heap: setCurrentHeap (swap thread-local heap, return previous)",
+  "confidence": "high",
+  "evidence": "TLS slot +0x68 swap (0010E294)",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 152
+ },
+ "00109868": {
+  "area": "os-memory/heap",
+  "role": "heap: create child heap object in memory block (Heap ctor + IDisposer)",
+  "confidence": "low",
+  "evidence": "IDisposer ctor 0010CE7C, vtable install",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "00109D6C": {
+  "area": "framework",
+  "role": "set flag (obj+0x48=1)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "00109DE4": {
+  "area": "framework",
+  "role": "reset object/state fields",
+  "confidence": "low",
+  "evidence": "field init, calls 0010CF7C",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 8
+ },
+ "0010A464": {
+  "area": "framework",
+  "role": "IDisposer-derived object ctor (many fields -1/0)",
+  "confidence": "low",
+  "evidence": "calls 0010DA7C(IDisposer ctor)",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 66
+ },
+ "0010A794": {
+  "area": "framework",
+  "role": "state machine ctor (state=-1, prev=-1)",
+  "confidence": "medium",
+  "evidence": "fields 0xff at +4/+5; matches state-machine 0010BC94 layout",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 375
+ },
+ "0010A7BC": {
+  "area": "os-threads/sync",
+  "role": "os: light lock acquire (atomic, waits via ArbitrateAddress)",
+  "confidence": "medium",
+  "evidence": "exclusive loop + 0010BE9C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 5
+ },
+ "0010A884": {
+  "area": "os-threads/sync",
+  "role": "os: light try-lock / one-time-init check",
+  "confidence": "low",
+  "evidence": "exclusive loop",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 6
+ },
+ "0010A8D4": {
+  "area": "os-threads/sync",
+  "role": "os: light lock acquire w/ owner",
+  "confidence": "low",
+  "evidence": "exclusive loop + 0010BFD4",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 3
+ },
+ "0010A98C": {
+  "area": "os-threads/sync",
+  "role": "os/err: check nn::Result and panic on failure",
+  "confidence": "medium",
+  "evidence": "decodes result level (>>27), calls panic 0010C1B8",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 2
+ },
+ "0010AC24": {
+  "area": "other/unknown",
+  "role": "err: ThrowFatalErr (err:f) with result + PC",
+  "confidence": "high",
+  "evidence": "00104560 connects \"err:f\" port (svc 0x2D) and sends cmd 0x00010800",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "investigate",
+  "game_call_sites": 11
+ },
+ "0010AC54": {
+  "area": "framework",
+  "role": "ring/queue push with params",
+  "confidence": "low",
+  "evidence": "calls 0010C238..0010C3C8",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0010AEF8": {
+  "area": "gsp/graphics",
+  "role": "gsp: has GPU right / initialized flag",
+  "confidence": "low",
+  "evidence": "returns global byte; used by gsp paths",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "0010B380": {
+  "area": "framework",
+  "role": "PtrArray/Buffer allocBuffer(n, heap, align)",
+  "confidence": "medium",
+  "evidence": "new[](n*4, heap, align) via 0010CEE0",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 25
+ },
+ "0010B3C0": {
+  "area": "framework",
+  "role": "buffer/array range check & reserve",
+  "confidence": "low",
+  "evidence": "bounds arithmetic",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0010B3EC": {
+  "area": "framework",
+  "role": "PtrArray setBuffer(capacity, ptr)",
+  "confidence": "medium",
+  "evidence": "{size=0,cap,ptr}",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 74
+ },
+ "0010B830": {
+  "area": "framework",
+  "role": "IDisposer-derived ctor with light lock member",
+  "confidence": "low",
+  "evidence": "0010CE7C + 0010DEB0",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 8
+ },
+ "0010B954": {
+  "area": "os-memory/heap",
+  "role": "heap: create child heap (ExpHeap/FrameHeap create from parent: size 0=max free)",
+  "confidence": "medium",
+  "evidence": "parent->getMaxAllocatableSize (vtbl+0x3c), parent->alloc (vtbl+0x18)",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 25
+ },
+ "0010BA60": {
+  "area": "framework",
+  "role": "list/array header init (zero 4 words)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "0010BA78": {
+  "area": "os-memory/heap",
+  "role": "operator new[](size) via current heap (align 4)",
+  "confidence": "high",
+  "evidence": "getCurrentHeap()->alloc(size,4)",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 379
+ },
+ "0010BAB4": {
+  "area": "os-memory/heap",
+  "role": "operator new(size) via current heap (align 4)",
+  "confidence": "high",
+  "evidence": "getCurrentHeap() (TLS+0x68) then vtbl+0x18 alloc(size,4)",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 1072
+ },
+ "0010BB00": {
+  "area": "framework",
+  "role": "copy 8-byte handle/SafeString",
+  "confidence": "low",
+  "evidence": "2-word copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "0010BB14": {
+  "area": "gsp/graphics",
+  "role": "gsp: VRAM bank base address for mem type 0x20000(VRAMA)/0x30000(VRAMB)",
+  "confidence": "medium",
+  "evidence": "switch on NN_GX_MEM_VRAMA/B constants",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 6
+ },
+ "0010BB50": {
+  "area": "framework",
+  "role": "state machine: change state (exit/enter callbacks, ptr-to-member)",
+  "confidence": "medium",
+  "evidence": "jump table of {fn,adj} pairs at obj[8]",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0010BC94": {
+  "area": "framework",
+  "role": "state machine: change state (+ play state's animation by name)",
+  "confidence": "medium",
+  "evidence": "same as 0010BB50 plus 0010BEB4",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 6
+ },
+ "0010BEB4": {
+  "area": "gfx-middleware",
+  "role": "model: play/bind animation by name (skeletal + material anim)",
+  "confidence": "medium",
+  "evidence": "calls 0010DBBC -> 0010F958/0010F9AC anim binders on model+0x20/+0x24",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 370
+ },
+ "0010BEC4": {
+  "area": "framework",
+  "role": "copy string into fixed-size string table entry (FixedSafeString assign)",
+  "confidence": "medium",
+  "evidence": "strlen cap 0x40000, memcpy 0010E3C4, NUL terminate",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 222
+ },
+ "0010BF5C": {
+  "area": "gsp/graphics",
+  "role": "screen/render-target descriptor ctor (240x400) + lock",
+  "confidence": "low",
+  "evidence": "stores 0xF0 and 400",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "0010C0B8": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::lock (recursive, owner=TLS)",
+  "confidence": "high",
+  "evidence": "compares owner with TLS ptr, atomic lock 0010BFD4, count++",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 59
+ },
+ "0010C0C0": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::lock (recursive) - variant",
+  "confidence": "high",
+  "evidence": "same as 0010C0B8",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 30
+ },
+ "0010C160": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::unlock (recursive)",
+  "confidence": "high",
+  "evidence": "count--, release 0010A938 when 0",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 20
+ },
+ "0010C1B8": {
+  "area": "os-threads/sync",
+  "role": "panic/assert: call registered fatal handler then svc Break",
+  "confidence": "medium",
+  "evidence": "calls handler ptr, then 0010D0EC; Break reachable",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 9
+ },
+ "0010C4E4": {
+  "area": "other/unknown",
+  "role": "init 5-word constant struct",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "0010C58C": {
+  "area": "gfx-middleware",
+  "role": "set 6-word parameter block on object+0x10 (+0x48..)",
+  "confidence": "low",
+  "evidence": "trivial store",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "0010C7F8": {
+  "area": "gfx-middleware",
+  "role": "animation frame control: set frame/rate",
+  "confidence": "low",
+  "evidence": "float compare on obj+4",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 16
+ },
+ "0010C864": {
+  "area": "gfx-middleware",
+  "role": "anim frame controller ctor",
+  "confidence": "low",
+  "evidence": "float init",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "0010CE7C": {
+  "area": "framework",
+  "role": "IDisposer ctor (registers object with containing heap)",
+  "confidence": "high",
+  "evidence": "finds containing heap 0010E2A4 then heap->appendDisposer 0010DEF0",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 33
+ },
+ "0010CEE0": {
+  "area": "os-memory/heap",
+  "role": "operator new(size, heap, align)",
+  "confidence": "high",
+  "evidence": "heap==NULL -> current heap; vtbl+0x18 alloc",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 499
+ },
+ "0010CF28": {
+  "area": "os-memory/heap",
+  "role": "operator new[](size, heap, align)",
+  "confidence": "high",
+  "evidence": "same as 0010CEE0",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 89
+ },
+ "0010CF7C": {
+  "area": "framework",
+  "role": "state machine: change state",
+  "confidence": "medium",
+  "evidence": "same pattern as 0010BC94",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 6
+ },
+ "0010DA24": {
+  "area": "time",
+  "role": "Tick capture (svc GetSystemTick into object)",
+  "confidence": "high",
+  "evidence": "svc 0x28",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 2
+ },
+ "0010DA7C": {
+  "area": "framework",
+  "role": "IDisposer ctor (with heap / HeapNullOption)",
+  "confidence": "high",
+  "evidence": "0010E2A4 findContainHeap",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 92
+ },
+ "0010DB90": {
+  "area": "os-memory/heap",
+  "role": "getCurrentHeap (TLS thread->+0x68)",
+  "confidence": "high",
+  "evidence": "TLS slot read",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 32
+ },
+ "0010DBB4": {
+  "area": "gfx-middleware",
+  "role": "model: bind animation (variant)",
+  "confidence": "medium",
+  "evidence": "0010F958/0010F9AC",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "0010DBBC": {
+  "area": "gfx-middleware",
+  "role": "model: bind animation by name",
+  "confidence": "medium",
+  "evidence": "0010F958/0010F9AC",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "0010DEB0": {
+  "area": "os-threads/sync",
+  "role": "light mutex init (atomic=1) + 2 fields",
+  "confidence": "medium",
+  "evidence": "0010818C atomic init",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 12
+ },
+ "0010DECC": {
+  "area": "framework",
+  "role": "object ctor (vtable + 0x20a byte flags)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0010DF58": {
+  "area": "os-memory/heap",
+  "role": "Heap base ctor (name, parent, start, size, direction, lock)",
+  "confidence": "medium",
+  "evidence": "IDisposer + list insert into parent children",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "0010E0E0": {
+  "area": "os-memory/heap",
+  "role": "heap: lock (recursive, per-thread)",
+  "confidence": "medium",
+  "evidence": "TLS compare, CriticalSection, vtbl+0x44",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 13
+ },
+ "0010E15C": {
+  "area": "os-memory/heap",
+  "role": "heap: unlock",
+  "confidence": "medium",
+  "evidence": "vtbl+0x48",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 13
+ },
+ "0010E294": {
+  "area": "os-threads/sync",
+  "role": "thread-local slot get (TLS[idx])",
+  "confidence": "high",
+  "evidence": "reads TLS via CP15",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "0010E2A4": {
+  "area": "os-memory/heap",
+  "role": "HeapMgr::findContainHeap(ptr)",
+  "confidence": "high",
+  "evidence": "walks root heaps under lock",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "0010E3B0": {
+  "area": "crt/libc",
+  "role": "memcpy of fixed 0x60 bytes into obj+0x10 (struct copy)",
+  "confidence": "low",
+  "evidence": "unrolled copy",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 1
+ },
+ "0010E3C4": {
+  "area": "crt/libc",
+  "role": "memcpy",
+  "confidence": "high",
+  "evidence": "alignment-handling bulk copy",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 334
+ },
+ "0010E74C": {
+  "area": "crt/libc",
+  "role": "memmove",
+  "confidence": "high",
+  "evidence": "overlap check then forward/backward copy",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 10
+ },
+ "0010EE40": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::unlock (wrapper, obj+0x10)",
+  "confidence": "medium",
+  "evidence": "calls 0010C160",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 8
+ },
+ "0010EEE0": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::unlock (wrapper, obj+0x10)",
+  "confidence": "high",
+  "evidence": "calls 0010C160",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 29
+ },
+ "0010F1DC": {
+  "area": "framework",
+  "role": "intrusive doubly-linked list: insert",
+  "confidence": "high",
+  "evidence": "pointer splicing",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 97
+ },
+ "0010F1F8": {
+  "area": "framework",
+  "role": "intrusive doubly-linked list: erase",
+  "confidence": "high",
+  "evidence": "pointer unlinking",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 140
+ },
+ "0010FBAC": {
+  "area": "crt/libc",
+  "role": "strcmp",
+  "confidence": "high",
+  "evidence": "byte compare loop, word fast path",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 15
+ },
+ "0010FC88": {
+  "area": "framework",
+  "role": "grid/block layout init (round-up division)",
+  "confidence": "low",
+  "evidence": "uses __aeabi_uidiv",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0010FD28": {
+  "area": "math",
+  "role": "Random: init seeded from system tick (MT-style init 0x6C078965)",
+  "confidence": "medium",
+  "evidence": "Tick 0010DA24 + seed scramble",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 4
+ },
+ "00110080": {
+  "area": "gfx-middleware",
+  "role": "anim binding helper",
+  "confidence": "low",
+  "evidence": "model/anim region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "001100CC": {
+  "area": "gfx-middleware",
+  "role": "anim binding helper",
+  "confidence": "low",
+  "evidence": "model/anim region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00110118": {
+  "area": "gfx-middleware",
+  "role": "anim binding helper",
+  "confidence": "low",
+  "evidence": "model/anim region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "001101DC": {
+  "area": "gfx-middleware",
+  "role": "anim binding by name (binary search)",
+  "confidence": "low",
+  "evidence": "00110B44 binary search",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00110244": {
+  "area": "gfx-middleware",
+  "role": "anim binding by name (binary search)",
+  "confidence": "low",
+  "evidence": "00110B44",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "0011038C": {
+  "area": "gfx-middleware",
+  "role": "anim/model object ctor (with light lock)",
+  "confidence": "low",
+  "evidence": "0010DEB0",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "001103B0": {
+  "area": "gfx-middleware",
+  "role": "anim/model object ctor (with light lock)",
+  "confidence": "low",
+  "evidence": "0010DEB0",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00110490": {
+  "area": "crt/libc",
+  "role": "memclr / bzero (word aligned, __aeabi_memclr4)",
+  "confidence": "high",
+  "evidence": "zero-fill 32 bytes per loop",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 56
+ },
+ "001104E4": {
+  "area": "crt/libc",
+  "role": "signed integer divide+mod (__aeabi_idivmod)",
+  "confidence": "high",
+  "evidence": "sign handling + 00110710",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 30
+ },
+ "00110710": {
+  "area": "crt/libc",
+  "role": "unsigned integer divide+mod (__aeabi_uidivmod)",
+  "confidence": "high",
+  "evidence": "shift-subtract division",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 39
+ },
+ "001107D8": {
+  "area": "gfx-middleware",
+  "role": "anim binding helper",
+  "confidence": "low",
+  "evidence": "calls 00110DF0/00111008",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00110848": {
+  "area": "gfx-middleware",
+  "role": "model/anim: mark dirty (flags: set 8, clear 4)",
+  "confidence": "low",
+  "evidence": "bitflag update",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 98
+ },
+ "00110988": {
+  "area": "gfx-middleware",
+  "role": "anim binding helper",
+  "confidence": "low",
+  "evidence": "model/anim region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00110AEC": {
+  "area": "gfx-middleware",
+  "role": "anim binding init",
+  "confidence": "low",
+  "evidence": "model/anim region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "00110B44": {
+  "area": "gfx-middleware",
+  "role": "resource dictionary binary search by name",
+  "confidence": "low",
+  "evidence": "binary search w/ strcmp",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "00110D44": {
+  "area": "crt/libc",
+  "role": "memcpy (word-aligned fast path, __aeabi_memcpy4)",
+  "confidence": "high",
+  "evidence": "32-byte block copy w/ preload",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 94
+ },
+ "00110DB8": {
+  "area": "gfx-middleware",
+  "role": "anim: reset/stop",
+  "confidence": "low",
+  "evidence": "calls 001110BC",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 12
+ },
+ "00110DDC": {
+  "area": "gfx-middleware",
+  "role": "anim: update/apply",
+  "confidence": "low",
+  "evidence": "calls 001110BC",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 8
+ },
+ "00110DF0": {
+  "area": "gfx-middleware",
+  "role": "anim: bind (string \"set System::constructor's arg\")",
+  "confidence": "low",
+  "evidence": "string evidence",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00111008": {
+  "area": "gfx-middleware",
+  "role": "resource dictionary lookup (binary search, strcmp)",
+  "confidence": "low",
+  "evidence": "0010FBAC strcmp",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "001110BC": {
+  "area": "gfx-middleware",
+  "role": "anim frame evaluate",
+  "confidence": "low",
+  "evidence": "frame ctl",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "0011130C": {
+  "area": "gfx-middleware",
+  "role": "anim helper with formatted name buffer",
+  "confidence": "low",
+  "evidence": "vsnprintf 00111A20",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "001113A0": {
+  "area": "gfx-middleware",
+  "role": "anim curve evaluation",
+  "confidence": "low",
+  "evidence": "indexing 0x68 records",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00111610": {
+  "area": "gfx-middleware",
+  "role": "anim frame controller: random/start frame",
+  "confidence": "low",
+  "evidence": "uses Random 00111A64",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00111764": {
+  "area": "gfx-middleware",
+  "role": "anim frame controller: random/start frame",
+  "confidence": "low",
+  "evidence": "uses Random 00111A64",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "001118B8": {
+  "area": "gfx-middleware",
+  "role": "anim: is-loop / is-playing query",
+  "confidence": "low",
+  "evidence": "flag read",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "001119F4": {
+  "area": "math",
+  "role": "Matrix34 copy (operator=, self-check)",
+  "confidence": "high",
+  "evidence": "12-word copy guard p1!=p2",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 89
+ },
+ "00111A14": {
+  "area": "other/unknown",
+  "role": "stub/getter",
+  "confidence": "low",
+  "evidence": "1-line",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "00111A20": {
+  "area": "crt/libc",
+  "role": "vsnprintf into fixed buffer (BufferedSafeString::formatV)",
+  "confidence": "medium",
+  "evidence": "FUN_0010013c(buf,size,fmt,va), clamps/terminates",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 20
+ },
+ "00111A64": {
+  "area": "math",
+  "role": "Random::getU32 (xorshift128)",
+  "confidence": "high",
+  "evidence": "x^=x<<11; t^t>>8 ^ w ^ w>>19",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 505
+ },
+ "00111AA0": {
+  "area": "gfx-middleware",
+  "role": "skeleton/matrix palette update",
+  "confidence": "low",
+  "evidence": "matrix copies",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00111EA8": {
+  "area": "gfx-middleware",
+  "role": "anim frame -> float ratio",
+  "confidence": "low",
+  "evidence": "int->float",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00111EE4": {
+  "area": "framework",
+  "role": "intrusive list erase (count at +0x1dc)",
+  "confidence": "medium",
+  "evidence": "unlink",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 7
+ },
+ "00111EF0": {
+  "area": "framework",
+  "role": "intrusive list erase (count--)",
+  "confidence": "high",
+  "evidence": "unlink + count--",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 25
+ },
+ "0011224C": {
+  "area": "gfx-middleware",
+  "role": "render queue/list update",
+  "confidence": "low",
+  "evidence": "list ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00112274": {
+  "area": "gfx-middleware",
+  "role": "render queue/list update",
+  "confidence": "low",
+  "evidence": "list ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00112354": {
+  "area": "framework",
+  "role": "intrusive list push_back",
+  "confidence": "medium",
+  "evidence": "link",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00112364": {
+  "area": "framework",
+  "role": "intrusive list insert before (count++)",
+  "confidence": "high",
+  "evidence": "link + count++",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 31
+ },
+ "00112388": {
+  "area": "other/unknown",
+  "role": "stub",
+  "confidence": "low",
+  "evidence": "1-line",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "00112D70": {
+  "area": "gsp/graphics",
+  "role": "GPU state: set texture/combiner unit params",
+  "confidence": "low",
+  "evidence": "per-unit arrays, 001138EC",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 3
+ },
+ "00112EA0": {
+  "area": "gsp/graphics",
+  "role": "GPU state: set texture unit",
+  "confidence": "low",
+  "evidence": "per-unit arrays",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 3
+ },
+ "001132E8": {
+  "area": "gsp/graphics",
+  "role": "GPU command: build register write block",
+  "confidence": "low",
+  "evidence": "header constants",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "00113388": {
+  "area": "gsp/graphics",
+  "role": "GPU command: build large register block (PICA)",
+  "confidence": "low",
+  "evidence": "constant command words",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "001139F8": {
+  "area": "gsp/graphics",
+  "role": "GPU: virtual->physical address (FCRAM 0x14000000->0x20000000, VRAM 0x1F000000->0x18000000)",
+  "confidence": "high",
+  "evidence": "address range arithmetic",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 21
+ },
+ "0011410C": {
+  "area": "gsp/graphics",
+  "role": "camera/projection default setup",
+  "confidence": "low",
+  "evidence": "float constants",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "00114608": {
+  "area": "crt/libc",
+  "role": "float -> int64 conversion (__aeabi_f2lz)",
+  "confidence": "medium",
+  "evidence": "exponent decode, 64-bit result",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 182
+ },
+ "001146F8": {
+  "area": "crt/libc",
+  "role": "soft-float double op (dmul/ddiv helper)",
+  "confidence": "low",
+  "evidence": "16-bit limb multiply",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 1
+ },
+ "00114B1C": {
+  "area": "crt/libc",
+  "role": "soft-float double op (__aeabi_dmul/ddiv)",
+  "confidence": "low",
+  "evidence": "limb arithmetic",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 1
+ },
+ "00114D80": {
+  "area": "crt/libc",
+  "role": "float compare helper (__aeabi_cfcmp*/NaN handling)",
+  "confidence": "medium",
+  "evidence": "0xff000000 NaN checks",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 2
+ },
+ "00114E74": {
+  "area": "math",
+  "role": "Matrix34 multiply",
+  "confidence": "high",
+  "evidence": "float mtx ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 16
+ },
+ "00114F58": {
+  "area": "math",
+  "role": "Matrix34 inverse (returns ok)",
+  "confidence": "medium",
+  "evidence": "float mtx ops w/ result",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "00115074": {
+  "area": "math",
+  "role": "Matrix34 * Vec3 (with translation)",
+  "confidence": "medium",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 7
+ },
+ "001150B0": {
+  "area": "math",
+  "role": "Matrix copy (member, self-check)",
+  "confidence": "medium",
+  "evidence": "copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "001150B8": {
+  "area": "math",
+  "role": "Matrix copy",
+  "confidence": "medium",
+  "evidence": "copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "001150CC": {
+  "area": "math",
+  "role": "Matrix34 build from rows/params",
+  "confidence": "low",
+  "evidence": "copy w/ param",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 11
+ },
+ "00115108": {
+  "area": "math",
+  "role": "Matrix34 build",
+  "confidence": "low",
+  "evidence": "copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "00115154": {
+  "area": "math",
+  "role": "sinCos by 32-bit angle index (table lookup)",
+  "confidence": "high",
+  "evidence": "table at DAT, idx>>24",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 96
+ },
+ "00115194": {
+  "area": "math",
+  "role": "angle index -> float",
+  "confidence": "low",
+  "evidence": "uint->float",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "001151CC": {
+  "area": "math",
+  "role": "Matrix33 copy",
+  "confidence": "high",
+  "evidence": "9-word copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 40
+ },
+ "001151D8": {
+  "area": "math",
+  "role": "Matrix44->Matrix34 copy / transpose copy",
+  "confidence": "medium",
+  "evidence": "copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 11
+ },
+ "001151EC": {
+  "area": "math",
+  "role": "Matrix34 copy",
+  "confidence": "high",
+  "evidence": "12-word copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 123
+ },
+ "001151F8": {
+  "area": "math",
+  "role": "Matrix34 set from rotation + translation",
+  "confidence": "medium",
+  "evidence": "copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 28
+ },
+ "00115224": {
+  "area": "math",
+  "role": "Matrix44 copy",
+  "confidence": "medium",
+  "evidence": "16-word copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 9
+ },
+ "0011529C": {
+  "area": "math",
+  "role": "Matrix34 inverse/transpose",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 9
+ },
+ "001153A0": {
+  "area": "math",
+  "role": "Matrix34 inverse/transpose",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "0011549C": {
+  "area": "math",
+  "role": "Matrix33/34 multiply",
+  "confidence": "medium",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 23
+ },
+ "0011558C": {
+  "area": "math",
+  "role": "Matrix44 inverse",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 8
+ },
+ "001157FC": {
+  "area": "math",
+  "role": "Matrix34 multiply",
+  "confidence": "high",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 64
+ },
+ "0011593C": {
+  "area": "math",
+  "role": "Matrix34 identity",
+  "confidence": "high",
+  "evidence": "1.0 diagonal",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 12
+ },
+ "00115B68": {
+  "area": "math",
+  "role": "Vec3 compare / angle",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "00115C14": {
+  "area": "math",
+  "role": "Vec2 normalize",
+  "confidence": "high",
+  "evidence": "sqrt and scale",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "00115C54": {
+  "area": "math",
+  "role": "Vec3 add",
+  "confidence": "high",
+  "evidence": "a+b",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 720
+ },
+ "00115C70": {
+  "area": "math",
+  "role": "Vec3 sub",
+  "confidence": "high",
+  "evidence": "a-b",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 844
+ },
+ "00115C8C": {
+  "area": "math",
+  "role": "Vec3 component multiply",
+  "confidence": "high",
+  "evidence": "a*b",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "00115CA8": {
+  "area": "math",
+  "role": "Matrix34 * Vec3",
+  "confidence": "high",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 28
+ },
+ "00115CE4": {
+  "area": "math",
+  "role": "Matrix33 * Vec3",
+  "confidence": "high",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 43
+ },
+ "00115D18": {
+  "area": "math",
+  "role": "Matrix34 rotate Vec3 (no translation)",
+  "confidence": "medium",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 13
+ },
+ "00115D70": {
+  "area": "math",
+  "role": "Vec3 scale (by s0)",
+  "confidence": "high",
+  "evidence": "v*s",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 356
+ },
+ "00115D88": {
+  "area": "math",
+  "role": "Vec3 divide by scalar",
+  "confidence": "high",
+  "evidence": "v*(1/s)",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 32
+ },
+ "00115DAC": {
+  "area": "math",
+  "role": "Vec3 multiply-add (a*s + b)",
+  "confidence": "high",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 51
+ },
+ "00115DC8": {
+  "area": "math",
+  "role": "Vec3 normalize",
+  "confidence": "high",
+  "evidence": "sqrt and scale",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 238
+ },
+ "00115E10": {
+  "area": "math",
+  "role": "Vec3 cross",
+  "confidence": "high",
+  "evidence": "cross product",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 45
+ },
+ "00115F10": {
+  "area": "os-threads/sync",
+  "role": "DuplicateHandle (svc 0x27)",
+  "confidence": "high",
+  "evidence": "svc 0x27",
+  "reaches_svc_ipc": [
+   "svc DuplicateHandle"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "00115F28": {
+  "area": "time",
+  "role": "GetSystemTick (svc 0x28)",
+  "confidence": "high",
+  "evidence": "svc 0x28",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 2
+ },
+ "00115F34": {
+  "area": "crt/libc",
+  "role": "unsigned 64-bit divide (__aeabi_uldivmod)",
+  "confidence": "high",
+  "evidence": "LZCOUNT based 64/64",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 2
+ },
+ "00116224": {
+  "area": "crt/libc",
+  "role": "64-bit arithmetic shift right (__aeabi_lasr)",
+  "confidence": "high",
+  "evidence": "CONCAT44 shifts",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 1
+ },
+ "0011624C": {
+  "area": "crt/libc",
+  "role": "signed 64-bit divide (__aeabi_ldivmod)",
+  "confidence": "high",
+  "evidence": "sign fixup + 00115F34",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 6
+ },
+ "0011629C": {
+  "area": "crt/libc",
+  "role": "memcmp (word fast path)",
+  "confidence": "medium",
+  "evidence": "compare returns diff",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 5
+ },
+ "001163A0": {
+  "area": "crt/libc",
+  "role": "memcpy variant (__aeabi_memcpy, unaligned dst)",
+  "confidence": "medium",
+  "evidence": "byte/word copy",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 18
+ },
+ "00116428": {
+  "area": "crt/libc",
+  "role": "memmove (__aeabi_memmove)",
+  "confidence": "high",
+  "evidence": "overlap check",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 1
+ },
+ "001164A8": {
+  "area": "crt/libc",
+  "role": "memset(dst, c, n)",
+  "confidence": "high",
+  "evidence": "replicate byte, call __aeabi_memset core",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 4
+ },
+ "001164C4": {
+  "area": "crt/libc",
+  "role": "__aeabi_memset(dst, n, c)",
+  "confidence": "high",
+  "evidence": "replicate byte",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 4
+ },
+ "001164F4": {
+  "area": "crt/libc",
+  "role": "__aeabi_memclr(dst, n)",
+  "confidence": "high",
+  "evidence": "zero fill",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 18
+ },
+ "0011E4B4": {
+  "area": "framework",
+  "role": "resource file: lookup entry by index/name",
+  "confidence": "low",
+  "evidence": "resource table region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0011E55C": {
+  "area": "framework",
+  "role": "resource file: find by name (hash)",
+  "confidence": "low",
+  "evidence": "strlen + hash 005FEE34",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E5E0": {
+  "area": "framework",
+  "role": "resource file: lookup",
+  "confidence": "low",
+  "evidence": "resource table region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E668": {
+  "area": "framework",
+  "role": "resource file: get id/count",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E770": {
+  "area": "framework",
+  "role": "resource file: get typed entry",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E840": {
+  "area": "framework",
+  "role": "resource file: get entry pointer",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0011E898": {
+  "area": "framework",
+  "role": "resource file: find by name",
+  "confidence": "low",
+  "evidence": "string compare",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E974": {
+  "area": "framework",
+  "role": "resource file: get data pointer",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011E9EC": {
+  "area": "framework",
+  "role": "resource file: iterate entries",
+  "confidence": "low",
+  "evidence": "loop",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011EAA4": {
+  "area": "framework",
+  "role": "resource file: get entry",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "0011EB7C": {
+  "area": "framework",
+  "role": "resource file: find by SafeString name",
+  "confidence": "low",
+  "evidence": "string compare",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011F468": {
+  "area": "framework",
+  "role": "random selection weighted by count",
+  "confidence": "low",
+  "evidence": "Random 00111A64",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "0011F6B4": {
+  "area": "framework",
+  "role": "index chain walk",
+  "confidence": "low",
+  "evidence": "loop",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011F714": {
+  "area": "framework",
+  "role": "spatial/collision query helper",
+  "confidence": "low",
+  "evidence": "vec ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011F890": {
+  "area": "framework",
+  "role": "iterate table entries",
+  "confidence": "low",
+  "evidence": "loop",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0011FE98": {
+  "area": "math",
+  "role": "Vec3/plane init",
+  "confidence": "low",
+  "evidence": "float copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "0019AF4C": {
+  "area": "game",
+  "role": "game object ctor (seeds Random with tick) - NOT SDK (outside sdk blocks)",
+  "confidence": "medium",
+  "evidence": "game code, inline Tick",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C02E0": {
+  "area": "game",
+  "role": "game code (ShadowLink enemy region, \"%s%02d\") - inside sdk block but game",
+  "confidence": "medium",
+  "evidence": "game strings",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C0408": {
+  "area": "game",
+  "role": "game code (enemy region)",
+  "confidence": "low",
+  "evidence": "neighbour of game code",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C04F8": {
+  "area": "game",
+  "role": "game code (enemy region)",
+  "confidence": "low",
+  "evidence": "neighbour of game code",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C065C": {
+  "area": "game",
+  "role": "game code (enemy state thunk)",
+  "confidence": "low",
+  "evidence": "neighbour of game code",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C0B38": {
+  "area": "game",
+  "role": "game code: enemy state (SE_PL_FireRod_SET)",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C0C14": {
+  "area": "game",
+  "role": "game code: EnemyShadowLinkStateFireRod",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C11E0": {
+  "area": "game",
+  "role": "game code (enemy state thunk)",
+  "confidence": "low",
+  "evidence": "neighbour of game code",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C15FC": {
+  "area": "game",
+  "role": "game code: enemy state (SE_PL_SandRod_SET)",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C16D8": {
+  "area": "game",
+  "role": "game code: EnemyShadowLinkStateSandRod",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C1C74": {
+  "area": "game",
+  "role": "game code (calls gsp FlushDataCache wrapper)",
+  "confidence": "low",
+  "evidence": "neighbour of game code",
+  "reaches_svc_ipc": [
+   "ipc gsp:0x80082"
+  ],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C2154": {
+  "area": "game",
+  "role": "game/engine code (camera-like controller)",
+  "confidence": "low",
+  "evidence": "region 003C2xxx",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 3
+ },
+ "003C2160": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region 003C2xxx",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 3
+ },
+ "003C21F4": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C2464": {
+  "area": "game",
+  "role": "game/engine code: controller set target",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C2630": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C2680": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 2
+ },
+ "003C26B8": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C2808": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C29D8": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C2D00": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C30DC": {
+  "area": "game",
+  "role": "game/engine code (ctor)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C3230": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 2
+ },
+ "003C33B0": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C33F0": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 3
+ },
+ "003C3428": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 2
+ },
+ "003C34C8": {
+  "area": "game",
+  "role": "game/engine code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 2
+ },
+ "003C3BC0": {
+  "area": "game",
+  "role": "game code (enemy state thunk)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C42E4": {
+  "area": "game",
+  "role": "game code (enemy state)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C43A8": {
+  "area": "game",
+  "role": "game code: EnemyShadowLinkStateHookShot",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C4AAC": {
+  "area": "game",
+  "role": "game code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 2
+ },
+ "003C4CF0": {
+  "area": "game",
+  "role": "game code (enemy state thunk)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C506C": {
+  "area": "game",
+  "role": "game code",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C50D0": {
+  "area": "game",
+  "role": "game code: EnemyShadowLinkStateBoomerang",
+  "confidence": "high",
+  "evidence": "string",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "003C5604": {
+  "area": "game",
+  "role": "game/engine code (large static table init)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 5
+ },
+ "003C79C0": {
+  "area": "fs",
+  "role": "fs: archive/handle table index lookup",
+  "confidence": "low",
+  "evidence": "nn::fs region (003C7-003C9)",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C7A20": {
+  "area": "framework",
+  "role": "BYML iterator init (magic 0x4259 'BY')",
+  "confidence": "high",
+  "evidence": "checks 0x4259 and version 1 via 0032465C",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 17
+ },
+ "003C7A70": {
+  "area": "framework",
+  "role": "BYML iterator / handle clear (2 words =0)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 25
+ },
+ "003C7B94": {
+  "area": "fs",
+  "role": "fs: is-initialized check",
+  "confidence": "low",
+  "evidence": "global !=0",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C7BAC": {
+  "area": "fs",
+  "role": "fs: open archive and query (OpenArchive 0x080C00C2 / CloseArchive)",
+  "confidence": "medium",
+  "evidence": "reaches fs 0x080C00C2/0x080E0080",
+  "reaches_svc_ipc": [
+   "ipc fs:0x80c00c2",
+   "ipc fs:0x80e0080",
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C7C28": {
+  "area": "fs",
+  "role": "fs: ControlArchive (commit save data) 0x080D0144",
+  "confidence": "medium",
+  "evidence": "003C98E4 cmd 0x080D0144",
+  "reaches_svc_ipc": [
+   "ipc fs:0x80d0144"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C7C84": {
+  "area": "fs",
+  "role": "fs: FormatSaveData 0x084C0242",
+  "confidence": "medium",
+  "evidence": "003C9950 cmd 0x084C0242",
+  "reaches_svc_ipc": [
+   "ipc fs:0x84c0242"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C7D28": {
+  "area": "fs",
+  "role": "fs: build UTF-16 path and open/create",
+  "confidence": "low",
+  "evidence": "003C8874 path conversion",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 4
+ },
+ "003C7DEC": {
+  "area": "fs",
+  "role": "fs: archive op 0x084500C2 (e.g. GetFormatInfo/ check save data)",
+  "confidence": "low",
+  "evidence": "003C97F4 cmd 0x084500C2",
+  "reaches_svc_ipc": [
+   "ipc fs:0x84500c2"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C7EEC": {
+  "area": "fs",
+  "role": "fs: mount save data (OpenArchive, OpenFile 0x080201C2, close)",
+  "confidence": "medium",
+  "evidence": "reaches 0x080C00C2,0x080201C2,0x080E0080",
+  "reaches_svc_ipc": [
+   "ipc fs:0x80201c2",
+   "ipc fs:0x80c00c2",
+   "ipc fs:0x80e0080",
+   "svc CloseHandle",
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C8184": {
+  "area": "fs",
+  "role": "fs: read via cached buffer",
+  "confidence": "low",
+  "evidence": "memcpy 001163A0, fs region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 3
+ },
+ "003C8874": {
+  "area": "fs",
+  "role": "fs: path from wide string (archive lookup)",
+  "confidence": "low",
+  "evidence": "006761A0 + loop over UTF-16",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C89CC": {
+  "area": "fs",
+  "role": "fs: path/archive helper (wide string)",
+  "confidence": "low",
+  "evidence": "006761A0",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C8A48": {
+  "area": "fs",
+  "role": "fs: path/archive helper (wide string)",
+  "confidence": "low",
+  "evidence": "006761A0",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C8AB4": {
+  "area": "fs",
+  "role": "fs: release object (vcall +4)",
+  "confidence": "low",
+  "evidence": "virtual call",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C8ACC": {
+  "area": "fs",
+  "role": "fs: attach file object (vcall +0xc)",
+  "confidence": "low",
+  "evidence": "virtual call",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C8B84": {
+  "area": "fs",
+  "role": "fs: close via vcall +0x18",
+  "confidence": "low",
+  "evidence": "virtual call",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C8BA4": {
+  "area": "fs",
+  "role": "fs: file handle Close (clear owner bit, vcall +0x14)",
+  "confidence": "low",
+  "evidence": "virtual call",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C8BD8": {
+  "area": "fs",
+  "role": "fs: file/dir object Close/Finalize (vcall +0x30)",
+  "confidence": "low",
+  "evidence": "virtual call",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 9
+ },
+ "003C9B68": {
+  "area": "fs",
+  "role": "fs: File GetSize (0x08040000)",
+  "confidence": "high",
+  "evidence": "IPC header 0x08040000",
+  "reaches_svc_ipc": [
+   "ipc fs:0x8040000"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003C9BCC": {
+  "area": "fs",
+  "role": "fs: assert initialized (panic otherwise)",
+  "confidence": "low",
+  "evidence": "global check + panic",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C9C94": {
+  "area": "fs",
+  "role": "fs: file read loop (retry/sleep)",
+  "confidence": "medium",
+  "evidence": "reaches SleepThread, file object read",
+  "reaches_svc_ipc": [
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C9D1C": {
+  "area": "fs",
+  "role": "fs: file Seek / set position (whence 0/1/2)",
+  "confidence": "medium",
+  "evidence": "switch on param_5 0/1/2",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003C9DCC": {
+  "area": "fs",
+  "role": "fs: file write loop (retry/sleep)",
+  "confidence": "medium",
+  "evidence": "reaches SleepThread",
+  "reaches_svc_ipc": [
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 4
+ },
+ "003CA380": {
+  "area": "gsp/graphics",
+  "role": "GPU command list: shader/program setup",
+  "confidence": "low",
+  "evidence": "GPU cmd builder region 003CA-003CD",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CB2E0": {
+  "area": "gsp/graphics",
+  "role": "GPU command list: texture/state block init (0x300 header)",
+  "confidence": "low",
+  "evidence": "cmd words",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CB2EC": {
+  "area": "gsp/graphics",
+  "role": "GPU command list: state block init",
+  "confidence": "low",
+  "evidence": "cmd words",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CB558": {
+  "area": "gsp/graphics",
+  "role": "GPU state object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CBA0C": {
+  "area": "gsp/graphics",
+  "role": "GPU command block ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CBAE4": {
+  "area": "gsp/graphics",
+  "role": "GPU command block ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CBB00": {
+  "area": "gsp/graphics",
+  "role": "GPU render state defaults (blend/depth enums 6/7)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 6
+ },
+ "003CBC1C": {
+  "area": "gsp/graphics",
+  "role": "GPU command: write register block",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 4
+ },
+ "003CBCDC": {
+  "area": "gsp/graphics",
+  "role": "GPU state object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CBDDC": {
+  "area": "gsp/graphics",
+  "role": "stub",
+  "confidence": "low",
+  "evidence": "1-line",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CBE20": {
+  "area": "gsp/graphics",
+  "role": "stub",
+  "confidence": "low",
+  "evidence": "1-line",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CBE84": {
+  "area": "gsp/graphics",
+  "role": "GPU command: register write with mask header (0x80000000 + reg)",
+  "confidence": "medium",
+  "evidence": "PICA header layout",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CBF44": {
+  "area": "gsp/graphics",
+  "role": "GPU command list build (texture/shader)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CC030": {
+  "area": "gsp/graphics",
+  "role": "GPU command: PICA reg 0x23C write (command list header)",
+  "confidence": "medium",
+  "evidence": "0x23c | 0xF0000 mask header",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 13
+ },
+ "003CC054": {
+  "area": "gsp/graphics",
+  "role": "GPU command buffer: set current pointer / close jump size",
+  "confidence": "medium",
+  "evidence": "(ptr-base)>>3 size write",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 10
+ },
+ "003CC090": {
+  "area": "gsp/graphics",
+  "role": "GPU command buffer: add command-list jump/call (addr via phys)",
+  "confidence": "medium",
+  "evidence": "calls 001139F8 phys addr",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 10
+ },
+ "003CC124": {
+  "area": "gsp/graphics",
+  "role": "GPU command buffer init (base/current)",
+  "confidence": "medium",
+  "evidence": "ptr init",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 8
+ },
+ "003CC140": {
+  "area": "gsp/graphics",
+  "role": "float -> GPU fixed-point/float24 conversion",
+  "confidence": "low",
+  "evidence": "float encode",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CC1E4": {
+  "area": "gsp/graphics",
+  "role": "GPU command buffer: pad to 16-byte alignment",
+  "confidence": "medium",
+  "evidence": "zero-fill to 0x10",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 18
+ },
+ "003CC230": {
+  "area": "gsp/graphics",
+  "role": "GPU command buffer: write split command-list jump",
+  "confidence": "medium",
+  "evidence": "uses physical address 001139F8",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 18
+ },
+ "003CC288": {
+  "area": "gsp/graphics",
+  "role": "GPU lighting/fog setup",
+  "confidence": "low",
+  "evidence": "float constants",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CC530": {
+  "area": "gsp/graphics",
+  "role": "GPU command list for texture set",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CCFF4": {
+  "area": "gsp/graphics",
+  "role": "GPU state block init (0x300)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CD000": {
+  "area": "gsp/graphics",
+  "role": "GPU state block init",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CD2EC": {
+  "area": "gsp/graphics",
+  "role": "GPU state object reset (array)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 4
+ },
+ "003CD350": {
+  "area": "gsp/graphics",
+  "role": "GPU command block write",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CD3DC": {
+  "area": "gsp/graphics",
+  "role": "GPU state object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 4
+ },
+ "003CD4B4": {
+  "area": "gsp/graphics",
+  "role": "GPU state default init",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003CD588": {
+  "area": "gsp/graphics",
+  "role": "GPU state object ctor (array ctor)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003CD794": {
+  "area": "os-threads/sync",
+  "role": "thread/event finalize (unlink from global list)",
+  "confidence": "low",
+  "evidence": "0010C0F8",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "003CD7B4": {
+  "area": "os-threads/sync",
+  "role": "light semaphore acquire (atomic, ArbitrateAddress wait)",
+  "confidence": "medium",
+  "evidence": "exclusive loop + 0010BE9C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 3
+ },
+ "003CD868": {
+  "area": "os-threads/sync",
+  "role": "light semaphore try-acquire N (atomic)",
+  "confidence": "medium",
+  "evidence": "exclusive loop",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 6
+ },
+ "003CD8E0": {
+  "area": "os-threads/sync",
+  "role": "CriticalSection::tryLock (recursive)",
+  "confidence": "medium",
+  "evidence": "TLS owner compare + try",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "003CD95C": {
+  "area": "other/unknown",
+  "role": "release bit in 16-entry bitmask allocator",
+  "confidence": "low",
+  "evidence": "bit clear",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003CDC80": {
+  "area": "system-other",
+  "role": "ptm: pedometer step count/history (GetStepHistory 0x000B00C2)",
+  "confidence": "medium",
+  "evidence": "reaches ptm 0x000B00C2/0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0xb00c2",
+   "ipc ptm:0xc0000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CDDA0": {
+  "area": "system-other",
+  "role": "ptm: Finalize",
+  "confidence": "low",
+  "evidence": "clears init flag",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CDDC8": {
+  "area": "system-other",
+  "role": "ptm: GetTotalStepCount (0x000C0000)",
+  "confidence": "medium",
+  "evidence": "reaches ptm cmds",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0xb00c2",
+   "ipc ptm:0xc0000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CDEA4": {
+  "area": "system-other",
+  "role": "ptm/system init helper",
+  "confidence": "low",
+  "evidence": "reaches ptm + fs",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0xb00c2",
+   "ipc fs:0x80c00c2",
+   "ipc fs:0x80e0080",
+   "ipc ptm:0xc0000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CE8AC": {
+  "area": "system-other",
+  "role": "cecd (StreetPass): Initialize (cecd:u + ndm)",
+  "confidence": "medium",
+  "evidence": "003D127C references \"cecd:u\"",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc srv:0x10002",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CE91C": {
+  "area": "system-other",
+  "role": "cecd (StreetPass): state query/start (GetCecdState 0x000E0000)",
+  "confidence": "medium",
+  "evidence": "reaches cecd 0x000E0000, ndm 0x00060040",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc cecd:0x100000",
+   "ipc cecd:0xc0040",
+   "ipc cecd:0xe0000",
+   "ipc ndm:0x60040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 6
+ },
+ "003CEBD8": {
+  "area": "system-other",
+  "role": "cecd: make message id (bitfield pack)",
+  "confidence": "low",
+  "evidence": "bit pack",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 3
+ },
+ "003CF1AC": {
+  "area": "system-other",
+  "role": "cecd: open message box",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CF2D4": {
+  "area": "system-other",
+  "role": "cecd: write message",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CF8C4": {
+  "area": "system-other",
+  "role": "cecd: message box op",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 2
+ },
+ "003CF8CC": {
+  "area": "system-other",
+  "role": "cecd: message box op",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003CFBC0": {
+  "area": "system-other",
+  "role": "cecd: create message box (Start/ndm suspend)",
+  "confidence": "low",
+  "evidence": "reaches cecd 0x000B0040, ndm",
+  "reaches_svc_ipc": [
+   "ipc cecd:0xb0040",
+   "ipc ndm:0x60040",
+   "ipc ndm:0x70040",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D029C": {
+  "area": "system-other",
+  "role": "cecd: write message box contents",
+  "confidence": "low",
+  "evidence": "reaches cecd/ndm",
+  "reaches_svc_ipc": [
+   "ipc cecd:0xb0040",
+   "ipc ndm:0x60040",
+   "ipc ndm:0x70040",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D0710": {
+  "area": "system-other",
+  "role": "cecd: finalize box",
+  "confidence": "low",
+  "evidence": "cecd/ndm",
+  "reaches_svc_ipc": [
+   "ipc cecd:0xb0040",
+   "ipc ndm:0x70040",
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D0ECC": {
+  "area": "system-other",
+  "role": "cecd: object ctor",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D0FA4": {
+  "area": "system-other",
+  "role": "cecd: object dtor",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [
+   "ipc cecd:0xb0040",
+   "ipc ndm:0x70040",
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D1168": {
+  "area": "system-other",
+  "role": "cecd: OpenAndRead (0x00120104)",
+  "confidence": "medium",
+  "evidence": "cecd cmd 0x00120104",
+  "reaches_svc_ipc": [
+   "ipc ?:0x120104"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D11D0": {
+  "area": "system-other",
+  "role": "cecd: OpenAndWrite (0x00110104)",
+  "confidence": "medium",
+  "evidence": "cecd cmd 0x00110104",
+  "reaches_svc_ipc": [
+   "ipc ?:0x110104"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D175C": {
+  "area": "system-other",
+  "role": "cecd: OpenRawFile (0x000100C2)",
+  "confidence": "medium",
+  "evidence": "cecd cmd",
+  "reaches_svc_ipc": [
+   "ipc cecd:0x100c2"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D1C98": {
+  "area": "system-other",
+  "role": "cecd: ReadData (0x000A00C4) on cecd:u/cecd:s",
+  "confidence": "medium",
+  "evidence": "cecd cmd",
+  "reaches_svc_ipc": [
+   "ipc ?:0xa00c4"
+  ],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D1CE4": {
+  "area": "system-other",
+  "role": "cecd: message header helper",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D1D58": {
+  "area": "system-other",
+  "role": "cecd: message helper",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D1FB4": {
+  "area": "system-other",
+  "role": "cecd: message helper (size check <=0x19000)",
+  "confidence": "low",
+  "evidence": "cecd region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 1
+ },
+ "003D213C": {
+  "area": "system-other",
+  "role": "cecd: get size fields",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 2
+ },
+ "003D2210": {
+  "area": "system-other",
+  "role": "cecd/ngword object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (ptm pedometer, cecd StreetPass, ndm)",
+  "game_call_sites": 5
+ },
+ "003D225C": {
+  "area": "other/unknown",
+  "role": "callback via global object vtable +4",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003D2288": {
+  "area": "other/unknown",
+  "role": "SafeString copy helper",
+  "confidence": "low",
+  "evidence": "0010BB00",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 3
+ },
+ "003D22CC": {
+  "area": "other/unknown",
+  "role": "SafeString copy-or-default",
+  "confidence": "low",
+  "evidence": "0010BB00/0058FB28",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 3
+ },
+ "003D22F4": {
+  "area": "other/unknown",
+  "role": "SafeString copy-or-default",
+  "confidence": "low",
+  "evidence": "0010BB00/0058FB28",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003D231C": {
+  "area": "other/unknown",
+  "role": "SafeString default ctor",
+  "confidence": "low",
+  "evidence": "0058FB28",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 4
+ },
+ "003D2330": {
+  "area": "other/unknown",
+  "role": "callback via global object vtable",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003D2360": {
+  "area": "cfg",
+  "role": "cfg: GetConfigInfoBlk2 block 0xB0000 (country/region info)",
+  "confidence": "high",
+  "evidence": "00108630(buf,4,0xB0000) cfg:u cmd 0x00010082",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D239C": {
+  "area": "cfg",
+  "role": "cfg: GetConfigInfoBlk2 1-byte block (e.g. language 0xA0002)",
+  "confidence": "high",
+  "evidence": "00108630(buf,1,blk)",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D2410": {
+  "area": "cfg",
+  "role": "cfg: GetConfigInfoBlk2 block 0xD0000 + save-data related",
+  "confidence": "medium",
+  "evidence": "00108630(...,0xD0000)",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc fs:0x80201c2",
+   "ipc fs:0x80c00c2",
+   "ipc fs:0x80e0080",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D2490": {
+  "area": "cfg",
+  "role": "cfg: GetConfigInfoBlk2 block 0xB0000 into caller buffer",
+  "confidence": "high",
+  "evidence": "00108630(param,4,0xB0000)",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D252C": {
+  "area": "cfg",
+  "role": "cfg: parental controls flag (block 0xC0000 bit 5)",
+  "confidence": "high",
+  "evidence": "00108630(buf,0xC0,0xC0000)",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D25A0": {
+  "area": "cfg",
+  "role": "cfg: get region (SecureInfoGetRegion 0x00020000)",
+  "confidence": "medium",
+  "evidence": "003D2564 cmd 0x00020000 on cfg handle",
+  "reaches_svc_ipc": [
+   "ipc svcG716798:0x20000"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003D25C8": {
+  "area": "fs",
+  "role": "fs: path normalization (skip leading '/')",
+  "confidence": "low",
+  "evidence": "UTF-16 '/' handling",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003D2634": {
+  "area": "fs",
+  "role": "fs: path split helper",
+  "confidence": "low",
+  "evidence": "path region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003D26EC": {
+  "area": "fs",
+  "role": "fs: path object init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003D2704": {
+  "area": "fs",
+  "role": "fs: path parse (UTF-16)",
+  "confidence": "low",
+  "evidence": "path region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 2
+ },
+ "003D2908": {
+  "area": "snd/dsp",
+  "role": "dsp: FlushDataCache (0x00130082)",
+  "confidence": "high",
+  "evidence": "dsp::DSP cmd 0x00130082",
+  "reaches_svc_ipc": [
+   "ipc dsp:0x130082"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 3
+ },
+ "003D306C": {
+  "area": "snd/dsp",
+  "role": "snd: voice/channel release",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003D308C": {
+  "area": "snd/dsp",
+  "role": "snd: buffer free",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003D33C4": {
+  "area": "time",
+  "role": "date: days-since-2000 to y/m/d (calendar conversion)",
+  "confidence": "medium",
+  "evidence": "division by 365/... constants, -0x3c offset",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 1
+ },
+ "003D3554": {
+  "area": "time",
+  "role": "date: build DateTime from parts",
+  "confidence": "low",
+  "evidence": "calls 003D3588",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 1
+ },
+ "003D37F4": {
+  "area": "hid",
+  "role": "hid: stub/getter",
+  "confidence": "low",
+  "evidence": "hid region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D3800": {
+  "area": "hid",
+  "role": "hid: Pad reader / read latest",
+  "confidence": "low",
+  "evidence": "hid region (003D3-003D5)",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D3904": {
+  "area": "hid",
+  "role": "hid: read shared-memory ring (with tick)",
+  "confidence": "low",
+  "evidence": "GetSystemTick reachable",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D48E8": {
+  "area": "hid",
+  "role": "hid: stub",
+  "confidence": "low",
+  "evidence": "hid region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D48F4": {
+  "area": "hid",
+  "role": "hid: TouchPanel reader read latest",
+  "confidence": "low",
+  "evidence": "003E6100 ring read",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D4D38": {
+  "area": "hid",
+  "role": "hid: Accelerometer reader read latest",
+  "confidence": "low",
+  "evidence": "003E63E8 ring read",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D4DFC": {
+  "area": "hid",
+  "role": "hid: accelerometer/gyro value convert",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D52C4": {
+  "area": "hid",
+  "role": "hid: Accelerometer reader ctor (EnableAccelerometer 0x00110000)",
+  "confidence": "high",
+  "evidence": "003D5608 cmd 0x00110000",
+  "reaches_svc_ipc": [
+   "ipc hid:0x110000"
+  ],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D55A8": {
+  "area": "hid",
+  "role": "hid: stub",
+  "confidence": "low",
+  "evidence": "hid region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D566C": {
+  "area": "hid",
+  "role": "hid: accel calibration/convert",
+  "confidence": "low",
+  "evidence": "hid region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003D5684": {
+  "area": "hid",
+  "role": "hid: Pad/Touch reader ctor",
+  "confidence": "low",
+  "evidence": "hid region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (SDL input -> pad/touch/accel structs)",
+  "game_call_sites": 1
+ },
+ "003DA464": {
+  "area": "other/unknown",
+  "role": "ngword: table helper",
+  "confidence": "low",
+  "evidence": "ngword region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 2
+ },
+ "003DA498": {
+  "area": "other/unknown",
+  "role": "ngword: UTF-16 string filter",
+  "confidence": "low",
+  "evidence": "ngword region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 2
+ },
+ "003DA5EC": {
+  "area": "other/unknown",
+  "role": "ngword: UTF-16 string check",
+  "confidence": "low",
+  "evidence": "ngword region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003DA8D8": {
+  "area": "other/unknown",
+  "role": "ngword: open (fs OpenFileDirectly 0x08030204)",
+  "confidence": "low",
+  "evidence": "reaches fs 0x08030204",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc fs:0x8030204",
+   "ipc fs:0x8630000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003DA934": {
+  "area": "other/unknown",
+  "role": "ngword: initialize (mount \"ngword:\", region via cfg)",
+  "confidence": "medium",
+  "evidence": "reaches cfg region; mounts ngword archive",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc svcG716798:0x20000",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003DADBC": {
+  "area": "fs",
+  "role": "ngword: finalize (Unmount \"ngword:\")",
+  "confidence": "high",
+  "evidence": "string \"ngword:\" passed to 00102130",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003DAE18": {
+  "area": "other/unknown",
+  "role": "ngword object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003DB6DC": {
+  "area": "snd/dsp",
+  "role": "snd: sound player command",
+  "confidence": "low",
+  "evidence": "snd region 003DB-003E1",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DB770": {
+  "area": "snd/dsp",
+  "role": "snd: voice availability check",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DB804": {
+  "area": "snd/dsp",
+  "role": "snd: allocate voice",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DB894": {
+  "area": "snd/dsp",
+  "role": "snd: voice get state",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DB920": {
+  "area": "snd/dsp",
+  "role": "snd: voice stop",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DB9EC": {
+  "area": "snd/dsp",
+  "role": "snd: voice start (flush data cache to DSP)",
+  "confidence": "medium",
+  "evidence": "reaches dsp 0x00130082",
+  "reaches_svc_ipc": [
+   "ipc dsp:0x130082"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBC38": {
+  "area": "snd/dsp",
+  "role": "snd: sound player command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBCC4": {
+  "area": "snd/dsp",
+  "role": "snd: voice availability check",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBD8C": {
+  "area": "snd/dsp",
+  "role": "snd: allocate voice",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBDE4": {
+  "area": "snd/dsp",
+  "role": "snd: voice get state",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBE70": {
+  "area": "snd/dsp",
+  "role": "snd: voice stop",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DBF3C": {
+  "area": "snd/dsp",
+  "role": "snd: voice start (flush data cache to DSP)",
+  "confidence": "medium",
+  "evidence": "reaches dsp 0x00130082",
+  "reaches_svc_ipc": [
+   "ipc dsp:0x130082"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DC398": {
+  "area": "snd/dsp",
+  "role": "snd: getter",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD060": {
+  "area": "snd/dsp",
+  "role": "snd: lock/update",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD088": {
+  "area": "snd/dsp",
+  "role": "snd: lock/update",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003DD410": {
+  "area": "snd/dsp",
+  "role": "snd: lock/update",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD48C": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD64C": {
+  "area": "snd/dsp",
+  "role": "snd: ADPCM/PCM decode or mix",
+  "confidence": "low",
+  "evidence": "byte/ushort processing",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD770": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DD77C": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DDB5C": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DDB68": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DE120": {
+  "area": "snd/dsp",
+  "role": "snd: query",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003DE188": {
+  "area": "snd/dsp",
+  "role": "snd: command (1 arg)",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 6
+ },
+ "003DE198": {
+  "area": "snd/dsp",
+  "role": "snd: command (3 args)",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 3
+ },
+ "003DE244": {
+  "area": "snd/dsp",
+  "role": "snd: object init",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 3
+ },
+ "003DE2D0": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DE404": {
+  "area": "snd/dsp",
+  "role": "snd: set clamped param",
+  "confidence": "low",
+  "evidence": "clamp",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003DE438": {
+  "area": "snd/dsp",
+  "role": "snd: set flag",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DE458": {
+  "area": "snd/dsp",
+  "role": "snd: set pitch/rate (clamp 16000)",
+  "confidence": "low",
+  "evidence": "float scale",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003DE4E4": {
+  "area": "snd/dsp",
+  "role": "snd: set volume (clamped float)",
+  "confidence": "low",
+  "evidence": "float clamp",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003DE504": {
+  "area": "snd/dsp",
+  "role": "snd: object ctor",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E0AF0": {
+  "area": "snd/dsp",
+  "role": "snd: command",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 4
+ },
+ "003E0C30": {
+  "area": "snd/dsp",
+  "role": "snd: copy params block",
+  "confidence": "low",
+  "evidence": "snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E11F0": {
+  "area": "snd/dsp",
+  "role": "snd: voice set flag bit0",
+  "confidence": "low",
+  "evidence": "voice bitfield",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E1224": {
+  "area": "snd/dsp",
+  "role": "snd: voice set clamped value",
+  "confidence": "low",
+  "evidence": "voice field",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E145C": {
+  "area": "snd/dsp",
+  "role": "snd: voice set 2-bit field (+0x1e)",
+  "confidence": "low",
+  "evidence": "voice bitfield",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E147C": {
+  "area": "snd/dsp",
+  "role": "snd: voice set 2-bit field",
+  "confidence": "low",
+  "evidence": "voice bitfield",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E14A0": {
+  "area": "snd/dsp",
+  "role": "snd: voice append wave buffer (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E15B0": {
+  "area": "snd/dsp",
+  "role": "snd: voice set bit field",
+  "confidence": "low",
+  "evidence": "voice bitfield",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E15CC": {
+  "area": "snd/dsp",
+  "role": "snd: voice set priority/byte",
+  "confidence": "low",
+  "evidence": "voice field",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003E1600": {
+  "area": "snd/dsp",
+  "role": "snd: voice set bit field",
+  "confidence": "low",
+  "evidence": "voice bitfield",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E1634": {
+  "area": "snd/dsp",
+  "role": "snd: voice set ADPCM params",
+  "confidence": "low",
+  "evidence": "voice field",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E16D4": {
+  "area": "snd/dsp",
+  "role": "snd: voice set state (play/stop/pause)",
+  "confidence": "low",
+  "evidence": "calls snd internals",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 3
+ },
+ "003E176C": {
+  "area": "snd/dsp",
+  "role": "snd: voice set volume/pitch float",
+  "confidence": "low",
+  "evidence": "voice field",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 2
+ },
+ "003E178C": {
+  "area": "snd/dsp",
+  "role": "snd: voice object ctor",
+  "confidence": "low",
+  "evidence": "light lock init",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "003E183C": {
+  "area": "math",
+  "role": "sin/cos of float radians (table)",
+  "confidence": "medium",
+  "evidence": "table lookup with range reduction",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 8
+ },
+ "003E18CC": {
+  "area": "math",
+  "role": "camera/frustum or matrix helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "003E1980": {
+  "area": "math",
+  "role": "Vec3/matrix helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "003E19E8": {
+  "area": "other/unknown",
+  "role": "empty function (no-op)",
+  "confidence": "high",
+  "evidence": "empty body",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 15
+ },
+ "003E1A24": {
+  "area": "other/unknown",
+  "role": "empty function (no-op)",
+  "confidence": "high",
+  "evidence": "empty body",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 6
+ },
+ "003E1A70": {
+  "area": "math",
+  "role": "matrix/vector transform helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "003E1C24": {
+  "area": "math",
+  "role": "matrix decomposition helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "003E1DC8": {
+  "area": "math",
+  "role": "quaternion/vector helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "003E1F40": {
+  "area": "math",
+  "role": "rotation helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "003E2134": {
+  "area": "math",
+  "role": "static identity matrix getter (function-local static)",
+  "confidence": "medium",
+  "evidence": "guard + constant fill",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 8
+ },
+ "003E2298": {
+  "area": "math",
+  "role": "Vec3 op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 4
+ },
+ "003E22CC": {
+  "area": "cfg",
+  "role": "cfg: Initialize / read config (GetConfigInfoBlk2)",
+  "confidence": "medium",
+  "evidence": "calls 00108630, 001024E0",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc srv:0x10002",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003E22D4": {
+  "area": "cfg",
+  "role": "cfg: Initialize / read config variant",
+  "confidence": "medium",
+  "evidence": "calls 00108630",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc srv:0x10002",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "stub natively (return fixed region/language/country)",
+  "game_call_sites": 1
+ },
+ "003E23A4": {
+  "area": "gfx-middleware",
+  "role": "camera/view helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E23F4": {
+  "area": "gfx-middleware",
+  "role": "projection/look-at matrix build",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E27CC": {
+  "area": "gfx-middleware",
+  "role": "projection matrix build",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E2B04": {
+  "area": "gfx-middleware",
+  "role": "projection matrix build",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E2E68": {
+  "area": "gfx-middleware",
+  "role": "getter (obj+0x270)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E2E74": {
+  "area": "gfx-middleware",
+  "role": "init 2 fields",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E300C": {
+  "area": "other/unknown",
+  "role": "checksum/CRC-like bit loop",
+  "confidence": "low",
+  "evidence": "bit loop over bytes",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 4
+ },
+ "003E31E4": {
+  "area": "gsp/graphics",
+  "role": "gsp: Initialize (AcquireRight 0x00160042, RegisterInterruptRelayQueue 0x00130042)",
+  "confidence": "high",
+  "evidence": "reaches gsp 0x00130042/0x00160042, CreateEvent",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc gsp:0x130042",
+   "ipc gsp:0x160042",
+   "ipc srv:0x10002",
+   "ipc srv:0x50100",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:CreateEvent",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E32EC": {
+  "area": "gsp/graphics",
+  "role": "gsp: submit GX command (TriggerCmdReqQueue 0x000C0000) - e.g. memory fill",
+  "confidence": "medium",
+  "evidence": "reaches gsp 0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc gsp:0xc0000"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E336C": {
+  "area": "gsp/graphics",
+  "role": "gsp: wait / sync helper",
+  "confidence": "low",
+  "evidence": "gsp region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 3
+ },
+ "003E34D8": {
+  "area": "gsp/graphics",
+  "role": "gsp: GX command queue push",
+  "confidence": "low",
+  "evidence": "gsp region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E356C": {
+  "area": "gsp/graphics",
+  "role": "gsp: GX command (display transfer) + trigger",
+  "confidence": "medium",
+  "evidence": "gsp 0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc gsp:0xc0000"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E35DC": {
+  "area": "gsp/graphics",
+  "role": "gsp: FlushDataCache(addr,size) (0x00080082)",
+  "confidence": "high",
+  "evidence": "003E3D74 cmd 0x00080082",
+  "reaches_svc_ipc": [
+   "ipc gsp:0x80082"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 13
+ },
+ "003E3610": {
+  "area": "gsp/graphics",
+  "role": "gsp: GX command (process command list) + trigger",
+  "confidence": "medium",
+  "evidence": "gsp 0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc gsp:0xc0000"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E36E0": {
+  "area": "gsp/graphics",
+  "role": "gsp: GX command (texture copy) + trigger",
+  "confidence": "medium",
+  "evidence": "gsp 0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc gsp:0xc0000"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3AFC": {
+  "area": "gsp/graphics",
+  "role": "gsp: GX command + trigger",
+  "confidence": "medium",
+  "evidence": "gsp 0x000C0000",
+  "reaches_svc_ipc": [
+   "ipc gsp:0xc0000"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3B68": {
+  "area": "gsp/graphics",
+  "role": "gsp: WriteHWRegsWithMask (0x00020084)",
+  "confidence": "high",
+  "evidence": "003E3E00 cmd 0x00020084",
+  "reaches_svc_ipc": [
+   "ipc gsp:0x20084"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3B9C": {
+  "area": "gsp/graphics",
+  "role": "gsp: get shared-state byte",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3C28": {
+  "area": "gsp/graphics",
+  "role": "gsp: query per-screen/queue state (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3C74": {
+  "area": "gsp/graphics",
+  "role": "gsp: getter",
+  "confidence": "low",
+  "evidence": "getter",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E3F00": {
+  "area": "gsp/graphics",
+  "role": "gsp: lock GX critical section",
+  "confidence": "medium",
+  "evidence": "CriticalSection lock on gsp global",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 17
+ },
+ "003E3F10": {
+  "area": "gsp/graphics",
+  "role": "gsp: unlock GX critical section",
+  "confidence": "medium",
+  "evidence": "CriticalSection unlock",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 2
+ },
+ "003E40F4": {
+  "area": "gsp/graphics",
+  "role": "gsp/gx: framebuffer/display state init",
+  "confidence": "low",
+  "evidence": "memclr",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E41D0": {
+  "area": "gsp/graphics",
+  "role": "gsp/gx: format bytes-per-pixel helper",
+  "confidence": "low",
+  "evidence": "switch",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "003E426C": {
+  "area": "apt",
+  "role": "apt: start library applet (PrepareToStartLibraryApplet 0x00180040 / StartLibraryApplet 0x001E0084)",
+  "confidence": "medium",
+  "evidence": "reaches APT 0x0018/0x001E",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0x400042",
+   "ipc apt:0x180040",
+   "ipc apt:0x1e0084",
+   "ipc apt:0x3e0080",
+   "ipc apt:0x430040",
+   "ipc apt:0x4b00c2",
+   "ipc apt:0x90040",
+   "ipc dsp:0x1100c2",
+   "ipc dsp:0x120000",
+   "ipc gsp:&DAT_00190000",
+   "ipc gsp:0x160042",
+   "ipc gsp:0x170000",
+   "ipc gsp:0x180000",
+   "ipc gsp:0x1a0000",
+   "ipc srv:0x50100",
+   "ipc svcG716780:0x130040",
+   "ipc svcG716780:0x3b0000",
+   "ipc svcG716780:0x3c0000",
+   "ipc svcG716780:0x3d0040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc mem:CreateMemoryBlock",
+   "svc mem:MapMemoryBlock",
+   "svc mem:UnmapMemoryBlock",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "003E4488": {
+  "area": "apt",
+  "role": "apt: start system applet (0x00190040/0x001F0084)",
+  "confidence": "medium",
+  "evidence": "reaches APT 0x0019/0x001F",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0x2c0044",
+   "ipc ?:0x400042",
+   "ipc apt:0x190040",
+   "ipc apt:0x1f0084",
+   "ipc apt:0x2b0000",
+   "ipc apt:0x3b0040",
+   "ipc apt:0x3e0080",
+   "ipc apt:0x430040",
+   "ipc apt:0x4b00c2",
+   "ipc apt:0x50040",
+   "ipc apt:0x90040",
+   "ipc dsp:0x1100c2",
+   "ipc dsp:0x120000",
+   "ipc gsp:&DAT_00190000",
+   "ipc gsp:0x160042",
+   "ipc gsp:0x170000",
+   "ipc gsp:0x180000",
+   "ipc gsp:0x1a0000",
+   "ipc srv:0x50100",
+   "ipc svcG716780:0x130040",
+   "ipc svcG716780:0x3b0000",
+   "ipc svcG716780:0x3c0000",
+   "ipc svcG716780:0x3d0040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "003E46A4": {
+  "area": "apt",
+  "role": "apt: should-close / home-requested query",
+  "confidence": "low",
+  "evidence": "003E4540, 00108AF8",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "003E4D3C": {
+  "area": "apt",
+  "role": "apt: process applet/home event",
+  "confidence": "low",
+  "evidence": "reaches APT",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "ipc ?:0x2c0044",
+   "ipc ?:0x400042",
+   "ipc apt:0x2b0000",
+   "ipc apt:0x3b0040",
+   "ipc apt:0x430040",
+   "ipc apt:0x4b00c2",
+   "ipc apt:0x50040",
+   "ipc apt:0x90040",
+   "ipc dsp:0x1100c2",
+   "ipc dsp:0x120000",
+   "ipc gsp:&DAT_00190000",
+   "ipc gsp:0x160042",
+   "ipc gsp:0x170000",
+   "ipc gsp:0x180000",
+   "ipc gsp:0x1a0000",
+   "ipc srv:0x50100",
+   "ipc svcG716780:0x130040",
+   "ipc svcG716780:0x3b0000",
+   "ipc svcG716780:0x3c0000",
+   "ipc svcG716780:0x3d0040",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:ReleaseMutex",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread",
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "003E5120": {
+  "area": "apt",
+  "role": "apt: getter",
+  "confidence": "low",
+  "evidence": "global byte",
+  "reaches_svc_ipc": [],
+  "native_action": "stub natively (single app; no home menu/applets)",
+  "game_call_sites": 1
+ },
+ "003E655C": {
+  "area": "os-memory/heap",
+  "role": "frame/unit heap: alloc mode helper",
+  "confidence": "low",
+  "evidence": "heap region 003E6",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "003E65BC": {
+  "area": "os-memory/heap",
+  "role": "heap: range check",
+  "confidence": "low",
+  "evidence": "heap region",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 1
+ },
+ "003E6600": {
+  "area": "os-memory/heap",
+  "role": "expanded heap: validate block (magic 0xFEFF)",
+  "confidence": "medium",
+  "evidence": "magic -0x101 check",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 4
+ },
+ "003E6680": {
+  "area": "os-memory/heap",
+  "role": "expanded heap: block query",
+  "confidence": "low",
+  "evidence": "magic 0xFEFF",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 1
+ },
+ "003E6760": {
+  "area": "os-memory/heap",
+  "role": "handle/heap object reset (-1)",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 5
+ },
+ "003E67D8": {
+  "area": "os-memory/heap",
+  "role": "frame heap: free (head/tail by mode bits)",
+  "confidence": "medium",
+  "evidence": "bit 1/2 reset pointers",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 5
+ },
+ "003E696C": {
+  "area": "framework",
+  "role": "intrusive list clear",
+  "confidence": "medium",
+  "evidence": "unlink all",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 9
+ },
+ "003E69B8": {
+  "area": "framework",
+  "role": "intrusive list erase range",
+  "confidence": "medium",
+  "evidence": "unlink range",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 4
+ },
+ "003E6A04": {
+  "area": "framework",
+  "role": "byte stream writer: write bytes",
+  "confidence": "medium",
+  "evidence": "memcpy + advance",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "003E6A30": {
+  "area": "framework",
+  "role": "byte stream writer init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "003E6A5C": {
+  "area": "framework",
+  "role": "byte stream writer: align (zero pad)",
+  "confidence": "medium",
+  "evidence": "memclr pad",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "003E6A90": {
+  "area": "framework",
+  "role": "object init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "003E6AA8": {
+  "area": "crt/libc",
+  "role": "vsnprintf wrapper (bounded)",
+  "confidence": "medium",
+  "evidence": "FUN_0010013c",
+  "reaches_svc_ipc": [],
+  "native_action": "map to host libc / compiler runtime (memcpy, strlen, __aeabi_*)",
+  "game_call_sites": 4
+ },
+ "003E6B78": {
+  "area": "os-memory/heap",
+  "role": "frame heap alloc from head",
+  "confidence": "medium",
+  "evidence": "align 4 bump",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "003E6C04": {
+  "area": "os-memory/heap",
+  "role": "frame heap alloc",
+  "confidence": "medium",
+  "evidence": "align 4 bump",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 2
+ },
+ "003E6CBC": {
+  "area": "os-memory/heap",
+  "role": "expanded heap create (min size 0x34)",
+  "confidence": "medium",
+  "evidence": "0x33 size check",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 1
+ },
+ "003E6D50": {
+  "area": "os-memory/heap",
+  "role": "heap destroy",
+  "confidence": "low",
+  "evidence": "003E6930",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 3
+ },
+ "003E6D64": {
+  "area": "os-memory/heap",
+  "role": "heap: total free size",
+  "confidence": "low",
+  "evidence": "loop",
+  "reaches_svc_ipc": [],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 1
+ },
+ "003E6DD4": {
+  "area": "gfx-middleware",
+  "role": "anim/matrix compute",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 7
+ },
+ "003E6F60": {
+  "area": "gfx-middleware",
+  "role": "skeleton update loop",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003E70C8": {
+  "area": "gfx-middleware",
+  "role": "anim helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EA524": {
+  "area": "gfx-middleware",
+  "role": "anim/particle update",
+  "confidence": "low",
+  "evidence": "region 003EA-003EF",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003EA528": {
+  "area": "gfx-middleware",
+  "role": "anim/particle update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 6
+ },
+ "003EAA08": {
+  "area": "gfx-middleware",
+  "role": "curve sample",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EB564": {
+  "area": "gfx-middleware",
+  "role": "curve sample",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EBB60": {
+  "area": "gfx-middleware",
+  "role": "anim key evaluation",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EBD0C": {
+  "area": "gfx-middleware",
+  "role": "anim key evaluation",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EBDB4": {
+  "area": "gfx-middleware",
+  "role": "anim key evaluation",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EC100": {
+  "area": "gfx-middleware",
+  "role": "anim key evaluation",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003ECB98": {
+  "area": "gfx-middleware",
+  "role": "anim table build",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003ECC68": {
+  "area": "gfx-middleware",
+  "role": "anim key evaluation",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003ED284": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003ED794": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003EDB8C": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003EDE3C": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003EEF24": {
+  "area": "fs",
+  "role": "fs: read/write wrapper with arg checks",
+  "confidence": "low",
+  "evidence": "003C9E8C fs region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (RomFS -> host directory, save data -> host files)",
+  "game_call_sites": 1
+ },
+ "003EEF68": {
+  "area": "other/unknown",
+  "role": "map code 1->0x65",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "003EEF88": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter getter",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EF0F8": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter init",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "003EF244": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter setup",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EF31C": {
+  "area": "gfx-middleware",
+  "role": "anim/emitter update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "003EF924": {
+  "area": "gsp/graphics",
+  "role": "GPU command emission (PICA headers)",
+  "confidence": "low",
+  "evidence": "cmd header construction",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (GPU command lists -> host renderer); command-buffer builders may stay C",
+  "game_call_sites": 1
+ },
+ "0040EA34": {
+  "area": "os-threads/sync",
+  "role": "thread join/finalize (inline WaitSynchronization1 + CloseHandle) - game-side thread wrapper",
+  "confidence": "medium",
+  "evidence": "svc 0x24, svc 0x23",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 2
+ },
+ "00490304": {
+  "area": "framework",
+  "role": "object ctor with memcpy",
+  "confidence": "low",
+  "evidence": "0049 framework region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004904CC": {
+  "area": "math",
+  "role": "atan2 -> angle index (0x40000000 = 90deg)",
+  "confidence": "high",
+  "evidence": "quadrant logic + table 004905E0",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 183
+ },
+ "004905E0": {
+  "area": "math",
+  "role": "atan table lookup",
+  "confidence": "high",
+  "evidence": "table interp",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 75
+ },
+ "00490628": {
+  "area": "math",
+  "role": "float -> short angle",
+  "confidence": "low",
+  "evidence": "scale to short",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "004906A8": {
+  "area": "math",
+  "role": "log2/exp approximation",
+  "confidence": "low",
+  "evidence": "exponent extraction",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "00490724": {
+  "area": "framework",
+  "role": "resource/archive loader",
+  "confidence": "low",
+  "evidence": "calls 0011E... resource accessors",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490988": {
+  "area": "framework",
+  "role": "resource/archive loader helper",
+  "confidence": "low",
+  "evidence": "0011E/0011F",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490A18": {
+  "area": "framework",
+  "role": "resource manager: unload (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection + list",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "00490AB8": {
+  "area": "framework",
+  "role": "resource manager: unload (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490B58": {
+  "area": "framework",
+  "role": "resource manager op (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490C38": {
+  "area": "framework",
+  "role": "resource/handle release (locked)",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 14
+ },
+ "00490CD0": {
+  "area": "framework",
+  "role": "text/file parser: next line/token",
+  "confidence": "low",
+  "evidence": "tokenizer",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490EB0": {
+  "area": "framework",
+  "role": "parser init",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490F34": {
+  "area": "framework",
+  "role": "parser loop",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00490F84": {
+  "area": "framework",
+  "role": "parser open from string",
+  "confidence": "low",
+  "evidence": "strlen",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049116C": {
+  "area": "gfx-middleware",
+  "role": "camera/scene object dtor (base dtor 004A14F8)",
+  "confidence": "low",
+  "evidence": "vtable reset",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 11
+ },
+ "00491260": {
+  "area": "gfx-middleware",
+  "role": "render state object ctor",
+  "confidence": "low",
+  "evidence": "calls 003CBB00",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 6
+ },
+ "00491338": {
+  "area": "math",
+  "role": "Matrix33 from Euler angles (idx)",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 8
+ },
+ "00491404": {
+  "area": "math",
+  "role": "Matrix33 from quaternion",
+  "confidence": "medium",
+  "evidence": "2*q products",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 15
+ },
+ "004914B4": {
+  "area": "math",
+  "role": "quaternion from matrix",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "00491624": {
+  "area": "math",
+  "role": "Matrix33 from Euler XYZ (idx)",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 62
+ },
+ "004916EC": {
+  "area": "math",
+  "role": "matrix helper",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "004917C0": {
+  "area": "math",
+  "role": "Matrix34 from Euler + translation",
+  "confidence": "medium",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "004918CC": {
+  "area": "math",
+  "role": "Matrix34 scale columns",
+  "confidence": "high",
+  "evidence": "multiply by s0,s1,s2",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 5
+ },
+ "00491938": {
+  "area": "math",
+  "role": "Matrix34 from Euler (idx)",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 15
+ },
+ "00491A18": {
+  "area": "math",
+  "role": "Matrix34 from Euler vector + translation",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "00491AFC": {
+  "area": "math",
+  "role": "Matrix scale",
+  "confidence": "medium",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "00491B3C": {
+  "area": "math",
+  "role": "Matrix34 from quaternion",
+  "confidence": "medium",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 17
+ },
+ "00491C08": {
+  "area": "math",
+  "role": "Matrix34 inverse",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 6
+ },
+ "00491D78": {
+  "area": "math",
+  "role": "Matrix34 look-at / from vectors",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 7
+ },
+ "00491E80": {
+  "area": "math",
+  "role": "Matrix34 from Euler XYZ (idx), zero translation",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 78
+ },
+ "00491F5C": {
+  "area": "math",
+  "role": "matrix op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "00492078": {
+  "area": "math",
+  "role": "matrix op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 5
+ },
+ "0049216C": {
+  "area": "math",
+  "role": "Matrix34 from Euler + translation",
+  "confidence": "high",
+  "evidence": "3x sinCosIdx",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 24
+ },
+ "00492298": {
+  "area": "math",
+  "role": "matrix decomposition",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "00492604": {
+  "area": "math",
+  "role": "matrix op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "004927C8": {
+  "area": "gfx-middleware",
+  "role": "light/camera object ctor",
+  "confidence": "low",
+  "evidence": "vtable + flags",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00492888": {
+  "area": "gfx-middleware",
+  "role": "light/camera object ctor",
+  "confidence": "low",
+  "evidence": "vtable",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004928E8": {
+  "area": "gfx-middleware",
+  "role": "light/camera object ctor",
+  "confidence": "low",
+  "evidence": "vtable",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "004929B8": {
+  "area": "gfx-middleware",
+  "role": "scene object dtor (unregister from manager)",
+  "confidence": "low",
+  "evidence": "vtable reset",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 12
+ },
+ "004929F0": {
+  "area": "framework",
+  "role": "text/font glyph processing",
+  "confidence": "low",
+  "evidence": "byte loop",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00492D20": {
+  "area": "framework",
+  "role": "init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00492D50": {
+  "area": "framework",
+  "role": "dispatch via table",
+  "confidence": "low",
+  "evidence": "indirect",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00492D74": {
+  "area": "framework",
+  "role": "dispatch via table",
+  "confidence": "low",
+  "evidence": "indirect",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00493250": {
+  "area": "gfx-middleware",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004937B0": {
+  "area": "gfx-middleware",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00493800": {
+  "area": "snd/dsp",
+  "role": "sound/effect command dispatch (calls snd 003DBB54/003DFF78)",
+  "confidence": "low",
+  "evidence": "calls snd region",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (host audio mixer replacing DSP)",
+  "game_call_sites": 1
+ },
+ "00493EE0": {
+  "area": "gfx-middleware",
+  "role": "camera update",
+  "confidence": "low",
+  "evidence": "matrix copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00494058": {
+  "area": "gfx-middleware",
+  "role": "camera ctor",
+  "confidence": "low",
+  "evidence": "matrix copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004940D0": {
+  "area": "other/unknown",
+  "role": "stub",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "investigate",
+  "game_call_sites": 1
+ },
+ "00494104": {
+  "area": "framework",
+  "role": "resource/archive helper",
+  "confidence": "low",
+  "evidence": "0011E/0011F",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "00494194": {
+  "area": "framework",
+  "role": "resource/archive release",
+  "confidence": "low",
+  "evidence": "0011F",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "004941D0": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "memcpy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004945FC": {
+  "area": "framework",
+  "role": "copy data block",
+  "confidence": "low",
+  "evidence": "memcpy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049481C": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "memcpy",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "00494CF8": {
+  "area": "framework",
+  "role": "IDisposer-derived ctor",
+  "confidence": "low",
+  "evidence": "0010CE7C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00494EAC": {
+  "area": "gfx-middleware",
+  "role": "set Vec3 field",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00494EC0": {
+  "area": "gfx-middleware",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "vtable",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00494F50": {
+  "area": "gfx-middleware",
+  "role": "virtual call wrapper",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00494F60": {
+  "area": "framework",
+  "role": "singleton create (new on heap)",
+  "confidence": "low",
+  "evidence": "0010CEE0 + IDisposer",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00494FFC": {
+  "area": "gfx-middleware",
+  "role": "virtual call wrapper",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00495028": {
+  "area": "gfx-middleware",
+  "role": "set Matrix34 (obj+0x24)",
+  "confidence": "medium",
+  "evidence": "001151EC copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 5
+ },
+ "00495080": {
+  "area": "gfx-middleware",
+  "role": "virtual call wrapper",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 5
+ },
+ "00495090": {
+  "area": "gfx-middleware",
+  "role": "virtual call wrapper",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 5
+ },
+ "004950C4": {
+  "area": "gfx-middleware",
+  "role": "set view params",
+  "confidence": "low",
+  "evidence": "field copy",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 5
+ },
+ "004950E8": {
+  "area": "gfx-middleware",
+  "role": "create object on heap",
+  "confidence": "low",
+  "evidence": "new[]",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00495130": {
+  "area": "gfx-middleware",
+  "role": "camera: compute view matrix",
+  "confidence": "low",
+  "evidence": "matrix ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "004951F0": {
+  "area": "gfx-middleware",
+  "role": "camera: compute view matrix",
+  "confidence": "low",
+  "evidence": "matrix ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004952C0": {
+  "area": "gfx-middleware",
+  "role": "virtual call wrapper",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 4
+ },
+ "00495670": {
+  "area": "gfx-middleware",
+  "role": "projection/view compute",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004956A8": {
+  "area": "gfx-middleware",
+  "role": "projection/view compute",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004956E0": {
+  "area": "gfx-middleware",
+  "role": "camera object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "004957A8": {
+  "area": "gfx-middleware",
+  "role": "set field / callback",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00495BD0": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "00496204": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004963EC": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004964F8": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004966A4": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00496734": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00498130": {
+  "area": "framework",
+  "role": "init",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049816C": {
+  "area": "framework",
+  "role": "list erase",
+  "confidence": "low",
+  "evidence": "0010F1F8",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "004981A4": {
+  "area": "framework",
+  "role": "list move",
+  "confidence": "low",
+  "evidence": "0010F1DC/0010F1F8",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 3
+ },
+ "00498290": {
+  "area": "framework",
+  "role": "object dtor",
+  "confidence": "low",
+  "evidence": "vtable",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004983C0": {
+  "area": "framework",
+  "role": "init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049840C": {
+  "area": "gfx-middleware",
+  "role": "object update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "00498470": {
+  "area": "gfx-middleware",
+  "role": "object update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 1
+ },
+ "00498514": {
+  "area": "gfx-middleware",
+  "role": "object update",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 2
+ },
+ "00498564": {
+  "area": "gfx-middleware",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 3
+ },
+ "00498624": {
+  "area": "gfx-middleware",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C; depends on GPU backend only indirectly",
+  "game_call_sites": 5
+ },
+ "0049940C": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "00499738": {
+  "area": "framework",
+  "role": "helper",
+  "confidence": "low",
+  "evidence": "calls 0010BB14",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004997A0": {
+  "area": "math",
+  "role": "vector op",
+  "confidence": "low",
+  "evidence": "vec ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "00499AF0": {
+  "area": "framework",
+  "role": "formatted string helper",
+  "confidence": "low",
+  "evidence": "buffer 0x100",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049A018": {
+  "area": "framework",
+  "role": "wrapper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049A020": {
+  "area": "framework",
+  "role": "wrapper",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049AD40": {
+  "area": "time",
+  "role": "Tick capture into object (svc GetSystemTick)",
+  "confidence": "high",
+  "evidence": "svc 0x28",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 1
+ },
+ "0049AFD0": {
+  "area": "framework",
+  "role": "getter",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049AFE4": {
+  "area": "framework",
+  "role": "locked list op",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049B044": {
+  "area": "framework",
+  "role": "buffer reset",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049B0E4": {
+  "area": "framework",
+  "role": "locked list op",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049B1BC": {
+  "area": "framework",
+  "role": "stream/file read",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049B2D0": {
+  "area": "framework",
+  "role": "stream/file read",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049B570": {
+  "area": "framework",
+  "role": "stream/file read",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049BA90": {
+  "area": "framework",
+  "role": "init",
+  "confidence": "low",
+  "evidence": "trivial",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049BAA8": {
+  "area": "os-threads/sync",
+  "role": "thread/mutex object ctor (CreateMutex reachable)",
+  "confidence": "low",
+  "evidence": "00115EF8 + IDisposer",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:CreateMutex",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 1
+ },
+ "0049BB30": {
+  "area": "math",
+  "role": "Random::init(seed) (MT-style 0x6C078965)",
+  "confidence": "medium",
+  "evidence": "seed scramble constants",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 3
+ },
+ "0049BCF4": {
+  "area": "os-threads/sync",
+  "role": "sleep for duration (ticks/ms -> ns, SleepThread)",
+  "confidence": "medium",
+  "evidence": "64-bit arithmetic then 00104338",
+  "reaches_svc_ipc": [
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 2
+ },
+ "0049BE50": {
+  "area": "os-threads/sync",
+  "role": "thread: wait/join",
+  "confidence": "low",
+  "evidence": "reaches WaitSync1",
+  "reaches_svc_ipc": [
+   "ipc ?:0x10800",
+   "svc CloseHandle",
+   "svc ConnectToPort",
+   "svc GetProcessId",
+   "svc sync:ArbitrateAddress",
+   "svc sync:WaitSync1",
+   "svc thread:SleepThread"
+  ],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 2
+ },
+ "0049BE9C": {
+  "area": "os-threads/sync",
+  "role": "thread: set priority/param before start",
+  "confidence": "low",
+  "evidence": "state check",
+  "reaches_svc_ipc": [],
+  "native_action": "reimplement natively (pthread/std::mutex/condvar; TLS via thread_local)",
+  "game_call_sites": 3
+ },
+ "0049BEAC": {
+  "area": "os-memory/heap",
+  "role": "heap create (ExpHeap/FrameHeap with name/parent)",
+  "confidence": "low",
+  "evidence": "IDisposer + new",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "native shim: back heaps with host malloc/arena; current-heap TLS -> thread_local",
+  "game_call_sites": 4
+ },
+ "0049C154": {
+  "area": "math",
+  "role": "Vec4 lerp (clamped t)",
+  "confidence": "high",
+  "evidence": "a+(b-a)*t clamp",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 9
+ },
+ "0049CE98": {
+  "area": "framework",
+  "role": "create object (new 0x180)",
+  "confidence": "low",
+  "evidence": "new",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049D1E8": {
+  "area": "framework",
+  "role": "resource manager update (locked)",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049D4A0": {
+  "area": "framework",
+  "role": "resource manager load (locked, setCurrentHeap)",
+  "confidence": "low",
+  "evidence": "0010983C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049D4A8": {
+  "area": "framework",
+  "role": "resource manager load (locked, setCurrentHeap)",
+  "confidence": "low",
+  "evidence": "0010983C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 4
+ },
+ "0049D774": {
+  "area": "framework",
+  "role": "resource manager unload recursive",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049D884": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049D8E0": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049DA04": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049DBDC": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049DC40": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049DE34": {
+  "area": "framework",
+  "role": "resource manager op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049E254": {
+  "area": "framework",
+  "role": "resource lookup by name",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049E74C": {
+  "area": "framework",
+  "role": "singleton create",
+  "confidence": "low",
+  "evidence": "new + IDisposer",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049E800": {
+  "area": "framework",
+  "role": "singleton reset",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049E89C": {
+  "area": "framework",
+  "role": "object finalize",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049ED20": {
+  "area": "math",
+  "role": "color/value interpolation",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 2
+ },
+ "0049EE1C": {
+  "area": "math",
+  "role": "vector op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "0049EE84": {
+  "area": "math",
+  "role": "segment op",
+  "confidence": "low",
+  "evidence": "vec sub",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "0049EEDC": {
+  "area": "math",
+  "role": "vector op",
+  "confidence": "low",
+  "evidence": "float ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 1
+ },
+ "0049EF80": {
+  "area": "math",
+  "role": "closest point on segment",
+  "confidence": "medium",
+  "evidence": "projection onto segment",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (pure float math) or swap for host math; no OS dependency",
+  "game_call_sites": 7
+ },
+ "0049F2C4": {
+  "area": "framework",
+  "role": "lock/unlock helper",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F3DC": {
+  "area": "framework",
+  "role": "IDisposer ctor wrapper",
+  "confidence": "low",
+  "evidence": "0010CE7C",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F434": {
+  "area": "framework",
+  "role": "list sort",
+  "confidence": "low",
+  "evidence": "list ops",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 4
+ },
+ "0049F5A8": {
+  "area": "framework",
+  "role": "list iterate",
+  "confidence": "low",
+  "evidence": "list",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F5FC": {
+  "area": "framework",
+  "role": "list clear",
+  "confidence": "high",
+  "evidence": "unlink all, size=0",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 18
+ },
+ "0049F634": {
+  "area": "framework",
+  "role": "list pop front",
+  "confidence": "medium",
+  "evidence": "list",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049F688": {
+  "area": "framework",
+  "role": "list pop front",
+  "confidence": "medium",
+  "evidence": "list",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 8
+ },
+ "0049F6DC": {
+  "area": "framework",
+  "role": "list insert",
+  "confidence": "medium",
+  "evidence": "list",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F6F4": {
+  "area": "framework",
+  "role": "object dtor/unregister",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F79C": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "001031B4",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F7B8": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "001031B4",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049F838": {
+  "area": "framework",
+  "role": "locked op",
+  "confidence": "low",
+  "evidence": "CriticalSection",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049F8C4": {
+  "area": "framework",
+  "role": "virtual call pair",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049F8F0": {
+  "area": "framework",
+  "role": "load by name (copy name 0x80)",
+  "confidence": "low",
+  "evidence": "memcpy",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049F920": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "001031B4",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049F9B0": {
+  "area": "framework",
+  "role": "virtual call",
+  "confidence": "low",
+  "evidence": "vcall",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 4
+ },
+ "0049FA78": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "array ctor",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 2
+ },
+ "0049FBC4": {
+  "area": "framework",
+  "role": "tree/list insert",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049FC64": {
+  "area": "framework",
+  "role": "tree/list op",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "0049FE74": {
+  "area": "framework",
+  "role": "object ctor",
+  "confidence": "low",
+  "evidence": "region",
+  "reaches_svc_ipc": [
+   "svc sync:ArbitrateAddress"
+  ],
+  "native_action": "keep decompiled C (engine/containers); audit 32-bit pointer assumptions",
+  "game_call_sites": 1
+ },
+ "004C4268": {
+  "area": "game",
+  "role": "game object ctor (reads tick) - NOT SDK",
+  "confidence": "medium",
+  "evidence": "game code with inline svc 0x28",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "not SDK - game code inside an SDK block; compile as game code",
+  "game_call_sites": 1
+ },
+ "005808BC": {
+  "area": "time",
+  "role": "elapsed ticks since start (inline GetSystemTick) - game-side helper",
+  "confidence": "medium",
+  "evidence": "svc 0x28",
+  "reaches_svc_ipc": [
+   "svc time:GetSystemTick"
+  ],
+  "native_action": "reimplement natively (clock_gettime -> 3DS tick rate 268111856 Hz)",
+  "game_call_sites": 1
+ }
+}

@@ -1,0 +1,1028 @@
+{
+ "0010AE3C": {
+  "confidence": "medium",
+  "evidence": "header 0x00160042; caller 003E31E4 (GSP init)",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "gsp::Gpu AcquireRight IPC stub (probable)"
+ },
+ "0010AE80": {
+  "confidence": "medium",
+  "evidence": "header 0x00170000",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "gsp::Gpu ReleaseRight IPC stub (probable)"
+ },
+ "0010AEA8": {
+  "confidence": "medium",
+  "evidence": "header 0x001A0000",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "gsp::Gpu RestoreVramSysArea IPC stub (probable)"
+ },
+ "0010AED0": {
+  "confidence": "medium",
+  "evidence": "header 0x00140000",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "gsp::Gpu UnregisterInterruptRelayQueue IPC stub (probable)"
+ },
+ "001139F8": {
+  "confidence": "high",
+  "evidence": "body; 27 callers; command words carry PHYSICAL addresses",
+  "layer": "L2 util",
+  "role": "GetPhysicalAddr(virt): FCRAM 0x14000000->+0x0C000000, VRAM 0x1F000000->-0x07000000"
+ },
+ "0012D9A8": {
+  "confidence": "medium",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012DB6C": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012DCF4": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012E048": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012E484": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012EA48": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0012EC04": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "00130C1C": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "001321B8": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "001326D8": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "00132784": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0013B020": {
+  "confidence": "medium",
+  "evidence": "string ref",
+  "layer": "L4d resource/VRAM producers",
+  "role": "font load (MessageFont.bffnt)"
+ },
+ "0014A40C": {
+  "confidence": "low",
+  "evidence": "callers are 0014B788/0014C108/0014C804",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "render: scene-environment pass (calls 0012D9A8/0012DCF4)"
+ },
+ "0014B788": {
+  "confidence": "medium",
+  "evidence": "calls passes 0012EA48,001321B8,00132784,002E39E8 + nngxAddB2LTransfer/BlockImageCopy",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "render manager per-frame draw (variant A): runs passes then B2L/BlockImageCopy to display"
+ },
+ "0014BDE0": {
+  "confidence": "medium",
+  "evidence": "calls 002C2574, 00505094, 00503A8C, 004C870C, 002E2F78; no direct callers (virtual)",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "render manager init (loads gr_default_shader, nwh3d default shader+LUT, nwfont RectDrawer, layouts, effects)"
+ },
+ "0014C108": {
+  "confidence": "medium",
+  "evidence": "as 0014B788 plus 0012E048,0013066C,002C30E8...",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "render manager per-frame draw (variant B, most passes)"
+ },
+ "0014C804": {
+  "confidence": "medium",
+  "evidence": "as 0014B788",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "render manager per-frame draw (variant C)"
+ },
+ "00231C00": {
+  "confidence": "low",
+  "evidence": "Run(obj)/WaitDone/Stop/Clear",
+  "layer": "L4d resource/VRAM producers",
+  "role": "run prebuilt cmdlist synchronously (+L2B transfer)"
+ },
+ "00231EE4": {
+  "confidence": "low",
+  "evidence": "005FF938/006005B0",
+  "layer": "L4d resource/VRAM producers",
+  "role": "external cmdlist object setup (prebuilt command lists)"
+ },
+ "0023387C": {
+  "confidence": "low",
+  "evidence": "nngxAddVramDmaCommand + nngxGetVramStart",
+  "layer": "L4d resource/VRAM producers",
+  "role": "VRAM upload via DMA (resource -> VRAM)"
+ },
+ "00233F4C": {
+  "confidence": "low",
+  "evidence": "same",
+  "layer": "L4d resource/VRAM producers",
+  "role": "VRAM upload via DMA (variant)"
+ },
+ "002C0E38": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "002C2610": {
+  "confidence": "high",
+  "evidence": "string ref; calls 00562B24/00562DFC/00504ED0",
+  "layer": "L4d resource/VRAM producers",
+  "role": "load Shader/gr_default_shader.shbin, build gr ShaderProgram, run setup cmdlist"
+ },
+ "002C30E8": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "002E39E8": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "002FE7B4": {
+  "confidence": "low",
+  "evidence": "nngx calls",
+  "layer": "L4d resource/VRAM producers",
+  "role": "sub-cmdlist pool: create (Gen/Bind/Storage)"
+ },
+ "002FE86C": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "002FE918": {
+  "confidence": "low",
+  "evidence": "005FF104/005FEF5C",
+  "layer": "L4d resource/VRAM producers",
+  "role": "sub-cmdlist: append to main list as jump/3D command"
+ },
+ "002FE9CC": {
+  "confidence": "low",
+  "evidence": "nngx",
+  "layer": "L4d resource/VRAM producers",
+  "role": "sub-cmdlist: bind+clear"
+ },
+ "002FEA3C": {
+  "confidence": "low",
+  "evidence": "nngx",
+  "layer": "L4d resource/VRAM producers",
+  "role": "sub-cmdlist: bind+split"
+ },
+ "002FEAFC": {
+  "confidence": "low",
+  "evidence": "nngxDeleteCmdlists",
+  "layer": "L4d resource/VRAM producers",
+  "role": "sub-cmdlist pool destroy"
+ },
+ "00322460": {
+  "confidence": "low",
+  "evidence": "FlushDataCache/Bind/Run",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game: run cmdlist after cache flush"
+ },
+ "0032259C": {
+  "confidence": "medium",
+  "evidence": "nngx call sequence",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game frame end/present: wait GPU, rotate 3 display buffers (0x400,0x410,0x401), nngxSwapBuffers, kick next frame (00322944/0032274C), HOME-menu/applet check"
+ },
+ "0032274C": {
+  "confidence": "low",
+  "evidence": "same nngx sequence",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game: build+run frame command list (second path)"
+ },
+ "00322880": {
+  "confidence": "low",
+  "evidence": "CheckVSync",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game: vsync counter"
+ },
+ "00322944": {
+  "confidence": "low",
+  "evidence": "Bind/Clear/Flush/Run/WaitDone; calls 0012E448, 0051E4EC",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game: build+run frame command list (top screen path), flush caches"
+ },
+ "00322BF0": {
+  "confidence": "low",
+  "evidence": "nngx sequence incl. SwapBuffers",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game: synchronous present helper (wait, swap, run)"
+ },
+ "00322CF4": {
+  "confidence": "medium",
+  "evidence": "GenDisplaybuffers/DisplaybufferStorage/ActiveDisplay/BindDisplaybuffer + 004966A4 + 00499738; string sead::DefaultGfxMemoryMgrCtr nearby",
+  "layer": "L4 game framework / render manager (Zelda-specific)",
+  "role": "game GameFramework graphics init: nngxInitialize, display buffers (triple, incl right eye), cmdlists, VRAM mgr"
+ },
+ "003BB8EC": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "003C1C74": {
+  "confidence": "low",
+  "evidence": "nngx",
+  "layer": "L4d resource/VRAM producers",
+  "role": "copy/upload helper (FlushDataCache + DMA + BlockImageCopy)"
+ },
+ "003CB588": {
+  "confidence": "medium",
+  "evidence": "nngxAddMemoryFillCommand",
+  "layer": "L4d resource/VRAM producers",
+  "role": "clear render buffers via MemoryFill"
+ },
+ "003CB5F0": {
+  "confidence": "medium",
+  "evidence": "nngxAddMemoryFillCommand",
+  "layer": "L4d resource/VRAM producers",
+  "role": "clear render buffers via MemoryFill (variant)"
+ },
+ "003CC054": {
+  "confidence": "medium",
+  "evidence": "writes (cur-start)>>3 into pending jump size slot; used by all render passes",
+  "layer": "L2b engine command-buffer helpers",
+  "role": "command-buffer cursor reset (closes pending subroutine size)"
+ },
+ "003CC090": {
+  "confidence": "medium",
+  "evidence": "pads to 16 bytes then 003CC230",
+  "layer": "L2b engine command-buffer helpers",
+  "role": "emit PICA command-buffer CALL (subroutine) to a prebuilt block"
+ },
+ "003CC124": {
+  "confidence": "medium",
+  "evidence": "sets 5 fields to buffer ptr",
+  "layer": "L2b engine command-buffer helpers",
+  "role": "command-buffer cursor init"
+ },
+ "003CC1E4": {
+  "confidence": "high",
+  "evidence": "writes zeros",
+  "layer": "L2b engine command-buffer helpers",
+  "role": "pad command buffer to 16-byte boundary"
+ },
+ "003CC230": {
+  "confidence": "medium",
+  "evidence": "uses 001139F8 >>3; literal header",
+  "layer": "L2b engine command-buffer helpers",
+  "role": "write CMDBUF size/addr/jump regs (phys addr>>3)"
+ },
+ "003E31E4": {
+  "confidence": "medium",
+  "evidence": "calls 0010AE3C and 003E376C; called only from nngxInitialize 006006B0",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GSP client init (AcquireRight + RegisterInterruptRelayQueue, maps shared memory)"
+ },
+ "003E32EC": {
+  "confidence": "high",
+  "evidence": "cmd byte 0, enqueues via 003E33E0; VRAM range check 0x1F000000",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX cmd 0 RequestDma"
+ },
+ "003E336C": {
+  "confidence": "medium",
+  "evidence": "calls 003E3AB4; used by nngxWaitCmdlistDone/nngxWaitVSync",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "Wait on GSP interrupt event (WaitSynchronization wrapper)"
+ },
+ "003E33E0": {
+  "confidence": "high",
+  "evidence": "ring index math mod 15, ldrex/strex, calls 003E3DD8",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX command queue enqueue (8-word cmd into shared-mem ring of 15, TriggerCmdReqQueue when queue was empty)"
+ },
+ "003E34D8": {
+  "confidence": "high",
+  "evidence": "param_1<2 screen index, writes 0x1C-byte entry, ldrex/strex flag; called from nngxSwapBuffers via 00601934",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "Write framebuffer info to GSP shared memory (per screen, double-indexed, sets update flag 0x100) = how buffer swap reaches the LCD (no SetBufferSwap IPC)"
+ },
+ "003E356C": {
+  "confidence": "high",
+  "evidence": "cmd byte 2",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX cmd 2 MemoryFill"
+ },
+ "003E35DC": {
+  "confidence": "high",
+  "evidence": "calls 003E3D74; ~17 callers incl. texture/vertex producers",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "FlushDataCache wrapper (cpu->gpu coherence) used directly by game code"
+ },
+ "003E3610": {
+  "confidence": "high",
+  "evidence": "cmd bytes 5 then 1, enqueues via 003E33E0; called by nngx dispatcher 0060226C",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX cmd 5 FlushCacheRegions + cmd 1 ProcessCommandList (submit PICA command list)"
+ },
+ "003E36E0": {
+  "confidence": "high",
+  "evidence": "cmd byte 4, packs width|gap<<16",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX cmd 4 TextureCopy"
+ },
+ "003E376C": {
+  "confidence": "medium",
+  "evidence": "calls 003E3EB0",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GSP RegisterInterruptRelayQueue wrapper / shared-mem setup"
+ },
+ "003E3AFC": {
+  "confidence": "high",
+  "evidence": "cmd byte 3, packs w|h<<16 dims",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GX cmd 3 DisplayTransfer"
+ },
+ "003E3CB0": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00040080 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu ReadHWRegs"
+ },
+ "003E3D2C": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00010082 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu WriteHWRegs"
+ },
+ "003E3D74": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00080082 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu FlushDataCache"
+ },
+ "003E3DB0": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00190000 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu SaveVramSysArea"
+ },
+ "003E3DD8": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x000C0000 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu TriggerCmdReqQueue"
+ },
+ "003E3E00": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00020084 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu WriteHWRegsWithMask"
+ },
+ "003E3E60": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00180000 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu ImportDisplayCaptureInfo"
+ },
+ "003E3EB0": {
+  "confidence": "high",
+  "evidence": "svc 0x32 with IPC header 0x00130042 read from literal pool of EU twin",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "IPC stub: gsp::Gpu RegisterInterruptRelayQueue"
+ },
+ "003E3F00": {
+  "confidence": "medium",
+  "evidence": "paired with 003E3F10 around every nngx request append",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GSP/nngx critical section enter"
+ },
+ "003E3F10": {
+  "confidence": "medium",
+  "evidence": "see 003E3F00",
+  "layer": "L0 GSP service (gsp::Gpu IPC + GX shared-memory queue)",
+  "role": "GSP/nngx critical section leave"
+ },
+ "003F3668": {
+  "confidence": "low",
+  "evidence": "FlushDataCache + AddVramDma",
+  "layer": "L4d resource/VRAM producers",
+  "role": "resource VRAM DMA upload (likely nw::h3d texture/vertex relocation to VRAM)"
+ },
+ "003F3854": {
+  "confidence": "low",
+  "evidence": "PICA headers + nngxGetVramStart",
+  "layer": "L4d resource/VRAM producers",
+  "role": "model/shape command setup (draw regs 0x228,0x232,0x25E) incl. VRAM placement"
+ },
+ "003F8674": {
+  "confidence": "low",
+  "evidence": "FlushDataCache",
+  "layer": "L4d resource/VRAM producers",
+  "role": "resource setup with FlushDataCache (large; likely h3d resource relocation)"
+ },
+ "003F9AA4": {
+  "confidence": "low",
+  "evidence": "same",
+  "layer": "L4d resource/VRAM producers",
+  "role": "resource VRAM DMA upload (variant)"
+ },
+ "0041E948": {
+  "confidence": "low",
+  "evidence": "PICA headers",
+  "layer": "L4d resource/VRAM producers",
+  "role": "texture setup (tex-unit regs 0x80-0x8E) + FlushDataCache"
+ },
+ "0048AD08": {
+  "confidence": "medium",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "set Scissor: gr 00563170 into current cmd buffer"
+ },
+ "0048AD94": {
+  "confidence": "medium",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "set Viewport: gr 00563A5C into current cmd buffer"
+ },
+ "0048ADE4": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter (gr MakeCommand into current buffer)"
+ },
+ "0048AE64": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "wait vsync (nngxWaitVSync)"
+ },
+ "0048AE70": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "set small raster state via gr 00561EB4"
+ },
+ "0048AEB8": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter (gr MakeCommand into current buffer)"
+ },
+ "0048AF10": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter"
+ },
+ "0048AF54": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter"
+ },
+ "0048AFA8": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter"
+ },
+ "0048AFEC": {
+  "confidence": "low",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "state setter"
+ },
+ "0049546C": {
+  "confidence": "high",
+  "evidence": "string ref sead::RightRootDraw",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead framework: build Right(eye) method tree (RightRootDraw...)"
+ },
+ "004960AC": {
+  "confidence": "medium",
+  "evidence": "nngxRunCmdlist then vtable 0x68/0x6c/0x34/0x78/0x7c; svc 0x28 GetSystemTick",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead framework procFrame: run cmdlist, call draw/calc virtuals"
+ },
+ "00496160": {
+  "confidence": "medium",
+  "evidence": "ActiveDisplay/BindDisplaybuffer + 004964F8 with 0x500",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead: clear/copy display buffer via B2L transfer"
+ },
+ "004961C4": {
+  "confidence": "medium",
+  "evidence": "Run->Get(0x201)->WaitDone->Stop->Clear, toggles +0x124",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead: end of GPU frame (wait done, stop, clear, flip cmdlist index)"
+ },
+ "00496204": {
+  "confidence": "medium",
+  "evidence": "GenCmdlists/BindCmdlist/CmdlistStorage",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead: create + bind + storage a cmdlist"
+ },
+ "00496238": {
+  "confidence": "medium",
+  "evidence": "loops nngxCheckVSync, sleeps, then nngxSwapBuffers(both)",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead waitForVBlank + nngxSwapBuffers (vsync interval at +0x70)"
+ },
+ "004964F8": {
+  "confidence": "medium",
+  "evidence": "calls nngxAddB2LTransferCommand, GetDisplaybufferParameteri",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead DisplayBuffer copy: render target -> display buffer (B2L transfer)"
+ },
+ "004966A4": {
+  "confidence": "high",
+  "evidence": "only caller of nngxInitialize",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead framework: initialize nngx"
+ },
+ "004966D4": {
+  "confidence": "low",
+  "evidence": "nngxCheckVSync",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead vsync counter read"
+ },
+ "004970E8": {
+  "confidence": "medium",
+  "evidence": "string dmp_Line.width; gr ShaderProgram symbol lookup",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead PrimitiveRenderer (CTR) init: shader + dmp_Line.width uniform"
+ },
+ "00497DBC": {
+  "confidence": "low",
+  "evidence": "PICA headers + GetCmdlistParameteri",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead PrimitiveRenderer draw (writes 0x201/0x232 attrib regs)"
+ },
+ "00499738": {
+  "confidence": "low",
+  "evidence": "nngxGetVramStart; called from 00322CF4",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead GfxMemory/VRAM allocator init"
+ },
+ "0049A188": {
+  "confidence": "high",
+  "evidence": "string refs sead::TopRootDraw etc",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead framework: build Top/Btm method tree (TopRootDraw..BtmAppDrawFinal)"
+ },
+ "0049A944": {
+  "confidence": "low",
+  "evidence": "Bind+Run",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead (stereo/second framework) run cmdlist"
+ },
+ "0049AB00": {
+  "confidence": "low",
+  "evidence": "nngx sequence like 004961C4",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead (stereo framework) end frame: wait/stop/clear + bind display buffers"
+ },
+ "0049ABAC": {
+  "confidence": "low",
+  "evidence": "CheckVSync + SwapBuffers",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead (stereo framework) vsync wait + swap"
+ },
+ "0049AD58": {
+  "confidence": "low",
+  "evidence": "CheckVSync",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead vsync counter read"
+ },
+ "0049AD90": {
+  "confidence": "low",
+  "evidence": "nngx sequence like 0049AB00",
+  "layer": "L3 sead graphics framework (sead::GameFrameworkCtr / DisplayBuffer / MethodTree)",
+  "role": "sead (stereo framework) end frame variant"
+ },
+ "004C870C": {
+  "confidence": "medium",
+  "evidence": "string LayoutTop",
+  "layer": "L4d resource/VRAM producers",
+  "role": "layout (nw::lyt) init for LayoutTop/LayoutBtm"
+ },
+ "00503A8C": {
+  "confidence": "high",
+  "evidence": "string ref",
+  "layer": "L4d resource/VRAM producers",
+  "role": "load Shader/nwfont2_RectDrawerShader.shbin (nw::font RectDrawer)"
+ },
+ "00504ED0": {
+  "confidence": "medium",
+  "evidence": "nngx Run(obj)/IsRunning/Stop/ClearCmdlist(obj)",
+  "layer": "L4d resource/VRAM producers",
+  "role": "run a prebuilt/setup command list synchronously (DMA + run + wait)"
+ },
+ "00505094": {
+  "confidence": "high",
+  "evidence": "string refs",
+  "layer": "L4d resource/VRAM producers",
+  "role": "load Shader/nwh3d_DefaultShader.bch + LUT/common_lut.bch"
+ },
+ "0050547C": {
+  "confidence": "low",
+  "evidence": "005FF938",
+  "layer": "L4d resource/VRAM producers",
+  "role": "external cmdlist object setup"
+ },
+ "005613D4": {
+  "confidence": "medium",
+  "evidence": "PICA headers",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr ShaderProgram MakeCommand (VS/GS setup regs 0x280-0x2CB, 0x229,0x253)"
+ },
+ "00561B30": {
+  "confidence": "medium",
+  "evidence": "PICA headers in literal pool; uses phys-addr 001139F8",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr RenderTarget/FrameBuffer MakeCommand (color/depth buffer addr, regs 0x111,0x116,0x117,0x11C-0x11E)"
+ },
+ "00561C34": {
+  "confidence": "medium",
+  "evidence": "PICA headers 0x100-0x107, 0x40; called via 0057EAC0",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr FragmentOperation MakeCommand (blend/depth/stencil, regs 0x100-0x107)"
+ },
+ "00561EB4": {
+  "confidence": "low",
+  "evidence": "called via 0048AE70 with 1-byte state",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr small state MakeCommand (likely culling/depth test)"
+ },
+ "00562B24": {
+  "confidence": "medium",
+  "evidence": "same register set as 005613D4",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr ShaderProgram MakeCommand variant"
+ },
+ "00562DFC": {
+  "confidence": "medium",
+  "evidence": "called with \"dmp_Line.width\" from 004970E8",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr ShaderProgram symbol (uniform) lookup by name"
+ },
+ "00563170": {
+  "confidence": "medium",
+  "evidence": "clamps x/y to width/height, enable flag 3; via 0048AD08",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr Scissor MakeCommand (clamp to buffer dims)"
+ },
+ "005632B0": {
+  "confidence": "medium",
+  "evidence": "PICA headers 0x81..0x8E",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr Texture MakeCommand (tex unit regs 0x81-0x8E)"
+ },
+ "00563A5C": {
+  "confidence": "medium",
+  "evidence": "float->float24 packing; via 0048AD94",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr Viewport MakeCommand (float24 conversion)"
+ },
+ "005647D4": {
+  "confidence": "medium",
+  "evidence": "PICA headers 0xC3..0xFB",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr Combiner (TexEnv) MakeCommand (regs 0xC0-0xFF)"
+ },
+ "00565204": {
+  "confidence": "low",
+  "evidence": "PICA headers 0xC3..0xFB,0x1C0,0x2C0",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "gr combiner/lookup-table + uniform MakeCommand"
+ },
+ "00568224": {
+  "confidence": "low",
+  "evidence": "0x30-byte matrices copied after 0x2C0 header; may be nw::h3d rather than gr",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "shape/skinning draw command builder (bone matrices -> VS float uniforms 0x2C0, draw regs 0x228,0x231,0x245,0x25E)"
+ },
+ "00568798": {
+  "confidence": "low",
+  "evidence": "see 00568224",
+  "layer": "L2 nn::gr::CTR command builders (~0x560000-0x569000)",
+  "role": "shape draw command builder (regs 0x228,0x231,0x245,0x25E,0x25F)"
+ },
+ "0057E870": {
+  "confidence": "low",
+  "evidence": "uses nngxGetCmdlistParameteri(0x208)+nngxMoveCommandbufferPointer and/or nngxSplitDrawCmdlist (see GRAPHICS_STACK.md)",
+  "layer": "L4b render passes writing PICA words into the nngx buffer (CURRENT_BUFADDR + MoveCommandbufferPointer idiom)",
+  "role": "render pass: SplitDrawCmdlist, memcpy prebuilt env block, then per-object virtual draw (vtbl+0x10) writing raw PICA"
+ },
+ "0057EAC0": {
+  "confidence": "medium",
+  "evidence": "GetCmdlistParameteri(0x208) -> gr MakeCommand -> MoveCommandbufferPointer",
+  "layer": "L4c engine render-state wrapper (virtual methods, likely engine GraphicsContext)",
+  "role": "set FragmentOperation via gr 00561C34"
+ },
+ "00591B0C": {
+  "confidence": "medium",
+  "evidence": "references uniform descriptor table 0x6B2DD4 ({GL type, \"dmp_...\" name}); called from nngxInitialize",
+  "layer": "L1b nngx GL-state backend (libgles-like, internal)",
+  "role": "GL context state init (default render state, uniform table dmp_*)"
+ },
+ "00592354": {
+  "confidence": "low",
+  "evidence": "bit-mask init; caller of 00592430",
+  "layer": "L1b nngx GL-state backend (libgles-like, internal)",
+  "role": "GL state default flags init"
+ },
+ "00592430": {
+  "confidence": "medium",
+  "evidence": "contains ~41 PICA register headers across all register groups",
+  "layer": "L1b nngx GL-state backend (libgles-like, internal)",
+  "role": "GL state -> PICA command validation (glValidate-like)"
+ },
+ "005FEF2C": {
+  "confidence": "medium",
+  "evidence": "display ids 0x400 top(left), 0x401 bottom, 0x410 top right-eye; stores +0x124",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxActiveDisplay(display)"
+ },
+ "005FEF5C": {
+  "confidence": "low",
+  "evidence": "appends request type 1 with (addr,size)",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAdd3DCommand(addr,size)? (append external command buffer as request type 1)"
+ },
+ "005FF018": {
+  "confidence": "medium",
+  "evidence": "11 args, -> 00601AF0 -> request type 3",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddB2LTransferCommand(11 args) (block->linear DisplayTransfer: render target -> display buffer)"
+ },
+ "005FF064": {
+  "confidence": "medium",
+  "evidence": "request type 4, widths >>4",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddBlockImageCopyCommand(src,srcunit,srcinterval,dst,dstunit,dstinterval,size)"
+ },
+ "005FF104": {
+  "confidence": "low",
+  "evidence": "writes command-buffer jump words (size>>3) into current list",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddJumpCommand/nngxAddSubroutineCommand?"
+ },
+ "005FF2A8": {
+  "confidence": "low",
+  "evidence": "7 args -> 00601D98, format switch 0x8051/0x8056",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddL2BTransferCommand? (linear->block)"
+ },
+ "005FF2C8": {
+  "confidence": "medium",
+  "evidence": "8 args -> 00601F38 -> request type 2",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddMemoryFillCommand(8 args: two buffers)"
+ },
+ "005FF314": {
+  "confidence": "medium",
+  "evidence": "request type 0 with 3 args",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddVramDmaCommand(src,dst,size)"
+ },
+ "005FF398": {
+  "confidence": "medium",
+  "evidence": "request type 0 on given list",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxAddVramDmaCommand on explicit object"
+ },
+ "005FF418": {
+  "confidence": "medium",
+  "evidence": "lookup/create 0x44-byte cmdlist object by id (GL-style bind), ~17 callers",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxBindCmdlist(id)"
+ },
+ "005FF5DC": {
+  "confidence": "medium",
+  "evidence": "lookup/create display buffer object",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxBindDisplaybuffer(id)"
+ },
+ "005FF6E4": {
+  "confidence": "medium",
+  "evidence": "reads per-LCD vblank counters +0x154/+0x158",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxCheckVSync(display) (vblank counter)"
+ },
+ "005FF760": {
+  "confidence": "high",
+  "evidence": "resets used size/request count of bound cmdlist, resets write pointer globals",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxClearCmdlist()"
+ },
+ "005FF7F0": {
+  "confidence": "medium",
+  "evidence": "same as 005FF760 with object param",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxClearCmdlist on explicit object"
+ },
+ "005FF850": {
+  "confidence": "medium",
+  "evidence": "allocates buffer + reqcount*0x1C request array for current cmdlist",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxCmdlistStorage(bufsize, reqcount)"
+ },
+ "005FF938": {
+  "confidence": "low",
+  "evidence": "zeroes 0x44 object, stores buffer/size/request array",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "cmdlist object init with user buffers (internal/ext storage)"
+ },
+ "005FF9AC": {
+  "confidence": "medium",
+  "evidence": "unlinks objects, clears current binding",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxDeleteCmdlists(n, ids)"
+ },
+ "005FFAF0": {
+  "confidence": "medium",
+  "evidence": "format switch GL_RGB8 0x8051, GL_RGBA4 0x8056 etc",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxDisplaybufferStorage(format,width,height,area)"
+ },
+ "005FFBDC": {
+  "confidence": "low",
+  "evidence": "sets interrupt flag on request entry or whole list",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxEnableCmdlistCallback(reqindex|-1)?"
+ },
+ "005FFC18": {
+  "confidence": "low",
+  "evidence": "same body shape as 005FFDC0",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxFlush3DCommand()? (split variant)"
+ },
+ "005FFDC0": {
+  "confidence": "medium",
+  "evidence": "closes current 3D chunk (writes PICA 0x110/0x111 flush + 0x25E), appends type-1 request; 15 callers",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxSplitDrawCmdlist()"
+ },
+ "005FFF7C": {
+  "confidence": "low",
+  "evidence": "same body shape as 005FFDC0 with one arg; same callers",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxFlush3DCommandPartially(size)? (split variant with arg)"
+ },
+ "00600148": {
+  "confidence": "medium",
+  "evidence": "allocates n 0x44-byte cmdlist objects into hash buckets",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGenCmdlists(n, ids)"
+ },
+ "0060027C": {
+  "confidence": "medium",
+  "evidence": "allocates 0x1C-byte display buffer objects",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGenDisplaybuffers(n, ids)"
+ },
+ "006003B4": {
+  "confidence": "low",
+  "evidence": "returns two globals",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "display/LCD info getter (2 outs)"
+ },
+ "006003D8": {
+  "confidence": "high",
+  "evidence": "switch on 0x200..0x20F (NN_GX_CMDLIST_* params); 0x208 = CURRENT_BUFADDR used by 40 game sites",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGetCmdlistParameteri(pname, *out)"
+ },
+ "006005B0": {
+  "confidence": "high",
+  "evidence": "returns param*0x1c",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "request-array size helper (n*0x1C)"
+ },
+ "006005BC": {
+  "confidence": "medium",
+  "evidence": "returns addr/width/height/format of active display buffer",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGetDisplaybufferParameteri(0x600..0x603)"
+ },
+ "00600624": {
+  "confidence": "low",
+  "evidence": "returns state byte +0x11",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGetIsRunning()?"
+ },
+ "00600634": {
+  "confidence": "medium",
+  "evidence": "compares running list",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "is given cmdlist running"
+ },
+ "00600660": {
+  "confidence": "medium",
+  "evidence": "returns 0x1F000000-based addresses; used by VRAM allocators",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxGetVramStartAddr/EndAddr (area 0x20000=VRAM-A, 0x30000=VRAM-B)"
+ },
+ "006006B0": {
+  "confidence": "high",
+  "evidence": "2 args, calls GSP init 003E31E4, GL state init 00591B0C, nngxBindCmdlist; sole caller sead 004966A4",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxInitialize(allocator, deallocator)"
+ },
+ "00601378": {
+  "confidence": "high",
+  "evidence": "adds param to global write pointer; 25 callers, always after writing raw PICA words at CURRENT_BUFADDR",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxMoveCommandbufferPointer(bytes)"
+ },
+ "00601390": {
+  "confidence": "high",
+  "evidence": "marks bound list running, calls dispatcher 0060226C",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxRunCmdlist()"
+ },
+ "006013F0": {
+  "confidence": "medium",
+  "evidence": "same as 00601390 with object param",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxRunCmdlist on explicit object (internal)"
+ },
+ "00601450": {
+  "confidence": "low",
+  "evidence": "stores param at bound list +0x38",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxSetCmdlistParameteri / callback setter (field +0x38)"
+ },
+ "00601468": {
+  "confidence": "medium",
+  "evidence": "writes 0x111/0x110 terminator words then pads",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "internal 3D-chunk terminator / flush helper"
+ },
+ "00601600": {
+  "confidence": "medium",
+  "evidence": "sets stop flag on running list",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxStopCmdlist()"
+ },
+ "00601658": {
+  "confidence": "high",
+  "evidence": "per-display format->GSP framebuffer info, calls 00601934->003E34D8; 0x402 = both",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxSwapBuffers(display)"
+ },
+ "006017F0": {
+  "confidence": "high",
+  "evidence": "loop waiting on GSP event with timeout callback",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxWaitCmdlistDone()"
+ },
+ "0060188C": {
+  "confidence": "medium",
+  "evidence": "waits for counter change via 003E336C",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngxWaitVSync(display)"
+ },
+ "0060226C": {
+  "confidence": "high",
+  "evidence": "switch over request type calling 00601920/003E3610/00601974/00601954/00601994",
+  "layer": "L1 nngx (Nintendo SDK libnngx, statically linked at ~0x5FE800-0x602A00; NOT in sdk_map sdk_blocks)",
+  "role": "nngx request dispatcher: pops next request and issues GX command 0..4"
+ }
+}
