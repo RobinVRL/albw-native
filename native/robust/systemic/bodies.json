@@ -1,0 +1,2776 @@
+{
+ "00100C90": {
+  "bytes": 4,
+  "empty_body": false,
+  "eu": "00100C90",
+  "ghidra": "void",
+  "params": [
+   "r0"
+  ],
+  "ret": "int",
+  "verdict": "signature",
+  "why": "mov r0,r0 then falls through into 00100C94: same parameters as it"
+ },
+ "00100C94": {
+  "bytes": 240,
+  "empty_body": false,
+  "eu": "00100C94",
+  "ghidra": "void",
+  "verdict": "ok",
+  "why": "real function; 00100C90 (mov r0,r0) falls through into it"
+ },
+ "00114D80": {
+  "bytes": 160,
+  "empty_body": false,
+  "eu": "00114D80",
+  "ghidra": "uint",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00114DE4 pop {r4, lr}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "00126EEC": {
+  "bytes": 124,
+  "empty_body": false,
+  "eu": "00126EEC",
+  "ghidra": "void",
+  "owner": "00126EE4",
+  "owner_livein": [
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00126F34 pop {r4, r5, r6, pc}), reached by a branch"
+ },
+ "0013D80C": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "0013D80C",
+  "ghidra": "void",
+  "owner": "0013D7E4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0013D810 pop {r4, lr}), reached by fall-through"
+ },
+ "0013D85C": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "0013D85C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "0013F530": {
+  "bytes": 28,
+  "empty_body": false,
+  "eu": "0013F530",
+  "ghidra": "void",
+  "owner": "0013F4F4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0013F540 pop {r4, r5, r6, lr}), reached by fall-through"
+ },
+ "00140A60": {
+  "bytes": 64,
+  "empty_body": false,
+  "eu": "00140A60",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00140A98 vpop {d8}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+ },
+ "001434BC": {
+  "bytes": 248,
+  "empty_body": false,
+  "eu": "001434BC",
+  "ghidra": "void",
+  "owner": "00143460",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00143598 vpop {d8, d9}), reached by fall-through"
+ },
+ "0014A124": {
+  "bytes": 68,
+  "empty_body": true,
+  "eu": "0014A124",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0']"
+ },
+ "00151138": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "00151138",
+  "ghidra": "void",
+  "owner": "00151120",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0015113C pop {r4, lr}), reached by fall-through"
+ },
+ "0015375C": {
+  "bytes": 64,
+  "empty_body": true,
+  "eu": "00153760",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "00164284": {
+  "bytes": 2132,
+  "empty_body": false,
+  "eu": "00164288",
+  "ghidra": "undefined4 *",
+  "verdict": "ok",
+  "why": "start verified (prologue at the EU address)"
+ },
+ "00188F2C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "00188F2C",
+  "ghidra": "void",
+  "owner": "00188F14",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00188F30 pop {r4, lr}), reached by fall-through"
+ },
+ "0019628C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "0019628C",
+  "ghidra": "void",
+  "owner": "00196264",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00196290 pop {r4, lr}), reached by fall-through"
+ },
+ "001A053C": {
+  "bytes": 40,
+  "empty_body": true,
+  "eu": "001A053C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1']"
+ },
+ "001A3F04": {
+  "bytes": 736,
+  "empty_body": false,
+  "eu": "001A3F04",
+  "ghidra": "void",
+  "owner": "001A37A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 001A4130 vpop {d8}), reached by fall-through"
+ },
+ "001AD404": {
+  "bytes": 340,
+  "empty_body": false,
+  "eu": "001AD404",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 001AD520 vpop {d8}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "001B3778": {
+  "bytes": 504,
+  "empty_body": false,
+  "eu": "001B3754",
+  "ghidra": "void",
+  "owner": "001B369C",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 001B3770 vpop {d8}), reached by fall-through"
+ },
+ "001B4598": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "001B4574",
+  "ghidra": "void",
+  "owner": "001B4580",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 001B4578 vpop {d8}), reached by fall-through"
+ },
+ "00205E20": {
+  "bytes": 24,
+  "empty_body": false,
+  "eu": "00205E20",
+  "ghidra": "void",
+  "owner": "00205DFC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00205E24 pop {r4, lr}), reached by fall-through"
+ },
+ "002063A4": {
+  "bytes": 52,
+  "empty_body": true,
+  "eu": "002063A4",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00208534": {
+  "bytes": 1396,
+  "empty_body": false,
+  "eu": "00208534",
+  "ghidra": "void",
+  "owner": "002084C4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00208A0C vpop {d8}), reached by fall-through"
+ },
+ "002133E8": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "002133E8",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0021551C": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "0021551C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0022F32C": {
+  "bytes": 1744,
+  "empty_body": false,
+  "eu": "0022F32C",
+  "ghidra": "void",
+  "owner": "0022F198",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0022F974 vpop {d8}), reached by fall-through"
+ },
+ "0023E464": {
+  "bytes": 268,
+  "empty_body": false,
+  "eu": "0023E464",
+  "ghidra": "void",
+  "owner": "0023E424",
+  "owner_livein": [
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0023E558 vpop {d8, d9}), reached by a branch"
+ },
+ "00245484": {
+  "bytes": 136,
+  "empty_body": true,
+  "eu": "00245484",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0",
+   "s1",
+   "s2"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0', 's1', 's2']"
+ },
+ "0024AC7C": {
+  "bytes": 28,
+  "empty_body": false,
+  "eu": "0024AC7C",
+  "ghidra": "void",
+  "owner": "0024AC3C",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0024AC80 pop {r4, lr}), reached by fall-through"
+ },
+ "00252114": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "0025213C",
+  "ghidra": "void",
+  "owner": "002520FC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00252140 pop {r4, lr}), reached by fall-through"
+ },
+ "0025214C": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "00252174",
+  "ghidra": "void",
+  "owner": "00252124",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00252178 pop {r4, lr}), reached by fall-through"
+ },
+ "00255BE0": {
+  "bytes": 108,
+  "empty_body": false,
+  "eu": "00255B44",
+  "ghidra": "undefined4",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00255BA0 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "00255E6C": {
+  "bytes": 84,
+  "empty_body": false,
+  "eu": "00255E40",
+  "ghidra": "void",
+  "owner": "00255D9C",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00255E88 pop {r4, r5}), reached by fall-through"
+ },
+ "0025B79C": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "0025B79C",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0025B7A4 pop {r4, lr}), reached by fall-through; kept: table start (sure=True, decomp status honest)"
+ },
+ "0025B894": {
+  "bytes": 116,
+  "empty_body": false,
+  "eu": "0025B894",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0025B8A8 pop {r4, lr}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0028F1FC": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "0028F224",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0"
+  ],
+  "ret": "int",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in r0; live-in ['s0']"
+ },
+ "0028F2B8": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "0028F2E0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0"
+  ],
+  "ret": "int",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in r0; live-in ['s0']"
+ },
+ "00297E28": {
+  "bytes": 816,
+  "empty_body": false,
+  "eu": "00297ED0",
+  "ghidra": "void",
+  "owner": "00297D5C",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002981D0 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through"
+ },
+ "00298394": {
+  "bytes": 2044,
+  "empty_body": false,
+  "eu": "00298438",
+  "ghidra": "void",
+  "owner": "002982F4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00298B18 pop {r4, r5, r6, r7, r8, sb, sl, fp, lr}), reached by fall-through"
+ },
+ "00298B90": {
+  "bytes": 24,
+  "empty_body": true,
+  "eu": "00298C34",
+  "ghidra": "void",
+  "owner": "002982F4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00298C38 pop {r4, r6, pc}), reached by fall-through"
+ },
+ "00298C74": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "00298D18",
+  "ghidra": "void",
+  "owner": "00298C70",
+  "owner_livein": [
+   "r0",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00298D1C pop {r4, r5, r6, lr}), reached by fall-through"
+ },
+ "00298E64": {
+  "bytes": 232,
+  "empty_body": false,
+  "eu": "00298F08",
+  "ghidra": "void",
+  "owner": "00298DF8",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r2"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00298FAC pop {r4, r5, r6, pc}), reached by fall-through"
+ },
+ "002990A4": {
+  "bytes": 572,
+  "empty_body": false,
+  "eu": "00299148",
+  "ghidra": "void",
+  "owner": "00299014",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002992A4 pop {r4, r5, r6, r7, r8, sb, sl, pc}), reached by fall-through"
+ },
+ "002992E0": {
+  "bytes": 132,
+  "empty_body": false,
+  "eu": "00299384",
+  "ghidra": "void",
+  "owner": "00299014",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002993E8 pop {r4, r5, r7, pc}), reached by fall-through"
+ },
+ "00299458": {
+  "bytes": 120,
+  "empty_body": false,
+  "eu": "002994FC",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00299530 pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "00299574": {
+  "bytes": 768,
+  "empty_body": false,
+  "eu": "00299618",
+  "ghidra": "void",
+  "owner": "002994D0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002998E0 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through"
+ },
+ "002999EC": {
+  "bytes": 336,
+  "empty_body": false,
+  "eu": "00299A90",
+  "ghidra": "void",
+  "owner": "002999E8",
+  "owner_livein": [
+   "r2"
+  ],
+  "owner_livein_before": [
+   "r2"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00299AE4 vpop {d8}), reached by fall-through"
+ },
+ "002A01D4": {
+  "bytes": 736,
+  "empty_body": false,
+  "eu": "002A01B0",
+  "ghidra": "void",
+  "owner": "002A018C",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002A0478 vpop {d8, d9, d10, d11, d12}), reached by fall-through"
+ },
+ "002A87FC": {
+  "bytes": 928,
+  "empty_body": false,
+  "eu": "002A87D8",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 002A8B30 vpop {d8}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+ },
+ "002B04E8": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "002B04C4",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "002B7DEC": {
+  "bytes": 48,
+  "empty_body": true,
+  "eu": "002B7DC8",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "002BB8F4": {
+  "bytes": 52,
+  "empty_body": true,
+  "eu": "002BB8D0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "002CD780": {
+  "bytes": 24,
+  "empty_body": false,
+  "eu": "002CD75C",
+  "ghidra": "void",
+  "owner": "002CD4E0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 002CD760 pop {r4, r5, r6, lr}), reached by fall-through"
+ },
+ "002CEFDC": {
+  "bytes": 136,
+  "empty_body": true,
+  "eu": "002CEFB8",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0",
+   "s1",
+   "s2"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0', 's1', 's2']"
+ },
+ "002E0458": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "002E0434",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "002FBFC4": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "002FBFA0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0030AC74": {
+  "bytes": 1156,
+  "empty_body": false,
+  "eu": "0030AC50",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0030B0CC pop {r4, r5, r6, pc}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "00315710": {
+  "bytes": 80,
+  "empty_body": false,
+  "eu": "003156EC",
+  "ghidra": "void",
+  "owner": "003156A4",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003156F0 pop {r4, lr}), reached by fall-through"
+ },
+ "00315868": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "00315844",
+  "ghidra": "void",
+  "owner": "00315848",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00315848 pop {r4, lr}), reached by fall-through"
+ },
+ "00316F98": {
+  "bytes": 936,
+  "empty_body": false,
+  "eu": "00316F74",
+  "ghidra": "void",
+  "owner": "00316CD0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00317304 vpop {d8, d9}), reached by fall-through"
+ },
+ "0032A440": {
+  "bytes": 88,
+  "empty_body": true,
+  "eu": "0032A41C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "003345D8": {
+  "bytes": 380,
+  "empty_body": false,
+  "eu": "003345B4",
+  "ghidra": "void",
+  "owner": "0033456C",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003345E8 vpop {d8}), reached by fall-through"
+ },
+ "0035008C": {
+  "bytes": 5736,
+  "empty_body": false,
+  "eu": "00350068",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 003516A4 vpop {d8, d9, d10, d11}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "00359D8C": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "00359D68",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "00361708": {
+  "bytes": 36,
+  "empty_body": false,
+  "eu": "0036167C",
+  "ghidra": "undefined4",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0036169C pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "00361774": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003616D8",
+  "ghidra": "undefined4",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 003616E0 pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "00361784": {
+  "bytes": 64,
+  "empty_body": false,
+  "eu": "003616E8",
+  "eu_should_be": "003616E4",
+  "ghidra": "void",
+  "verdict": "map_shift",
+  "why": "pop-before-push (EU 0036171C pop {r4, r5, r6, lr}), reached by fall-through; prologue at EU 003616E4 has no function: EU map entry off by 4"
+ },
+ "0036EAF8": {
+  "bytes": 48,
+  "empty_body": true,
+  "eu": "0036EAD4",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1']"
+ },
+ "00375FAC": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "00375F88",
+  "ghidra": "void",
+  "owner": "00375F88",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00375F8C pop {r4, lr}), reached by fall-through"
+ },
+ "0037C5FC": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "0037C5D8",
+  "ghidra": "void",
+  "owner": "0037C5CC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0037C5DC pop {r4, lr}), reached by fall-through"
+ },
+ "0037CD90": {
+  "bytes": 24,
+  "empty_body": false,
+  "eu": "0037CD6C",
+  "ghidra": "void",
+  "owner": "0037CD38",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0037CD70 pop {r4, lr}), reached by fall-through"
+ },
+ "0037D290": {
+  "bytes": 36,
+  "empty_body": false,
+  "eu": "0037D26C",
+  "ghidra": "void",
+  "owner": "0037D1DC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0037D270 pop {r4, lr}), reached by fall-through"
+ },
+ "00391CAC": {
+  "bytes": 60,
+  "empty_body": false,
+  "eu": "00391C8C",
+  "ghidra": "void",
+  "owner": "00391CA8",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00391CBC pop {r4, lr}), reached by fall-through; start right after the prologue of func_00391CA8"
+ },
+ "00391CEC": {
+  "bytes": 672,
+  "empty_body": false,
+  "eu": "00391CCC",
+  "ghidra": "void",
+  "owner": "00391CE8",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00391F48 pop {r4, r5, r6, r7, r8, sb, sl, fp, ip, lr}), reached by fall-through; start right after the prologue of func_00391CE8"
+ },
+ "00391F94": {
+  "bytes": 660,
+  "empty_body": false,
+  "eu": "00391F74",
+  "ghidra": "void",
+  "owner": "00391F90",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0039219C pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_00391F90"
+ },
+ "003975E4": {
+  "bytes": 132,
+  "empty_body": false,
+  "eu": "003975C0",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0039763C vpop {d8}), reached by fall-through"
+ },
+ "00397668": {
+  "bytes": 132,
+  "empty_body": false,
+  "eu": "00397644",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003976C0 vpop {d8}), reached by a branch"
+ },
+ "003976EC": {
+  "bytes": 120,
+  "empty_body": false,
+  "eu": "003976C8",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00397738 vpop {d8}), reached by a branch"
+ },
+ "00397764": {
+  "bytes": 120,
+  "empty_body": false,
+  "eu": "00397740",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003977B0 vpop {d8}), reached by a branch"
+ },
+ "003977DC": {
+  "bytes": 124,
+  "empty_body": false,
+  "eu": "003977B8",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003977FC vpop {d8}), reached by a branch"
+ },
+ "00397858": {
+  "bytes": 72,
+  "empty_body": false,
+  "eu": "00397834",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00397874 vpop {d8}), reached by fall-through"
+ },
+ "003978A0": {
+  "bytes": 96,
+  "empty_body": false,
+  "eu": "0039787C",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003978D4 vpop {d8}), reached by a branch"
+ },
+ "00397900": {
+  "bytes": 92,
+  "empty_body": false,
+  "eu": "003978DC",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00397930 vpop {d8}), reached by a branch"
+ },
+ "0039795C": {
+  "bytes": 128,
+  "empty_body": false,
+  "eu": "00397938",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003979B0 vpop {d8}), reached by a branch"
+ },
+ "003979DC": {
+  "bytes": 128,
+  "empty_body": false,
+  "eu": "003979B8",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00397A30 vpop {d8}), reached by a branch"
+ },
+ "00397A5C": {
+  "bytes": 144,
+  "empty_body": false,
+  "eu": "00397A38",
+  "ghidra": "void",
+  "owner": "003974A0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00397AB0 vpop {d8}), reached by a branch"
+ },
+ "0039E3B8": {
+  "bytes": 1388,
+  "empty_body": false,
+  "eu": "0039E394",
+  "ghidra": "void",
+  "owner": "0039E3A8",
+  "owner_livein": [],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0039E8DC vpop {d8, d9}), reached by a branch"
+ },
+ "003A365C": {
+  "bytes": 132,
+  "empty_body": true,
+  "eu": "003A3638",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A3638 pop {r4, r5, r6, r7, r8, sb, sl, pc}), reached by fall-through"
+ },
+ "003A36E0": {
+  "bytes": 28,
+  "empty_body": false,
+  "eu": "003A36BC",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A36CC pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by fall-through"
+ },
+ "003A36FC": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A36D8",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A36DC pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A370C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A36E8",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A36EC pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A371C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A36F8",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A36FC pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A372C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3708",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A370C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A373C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3718",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A371C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A374C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3728",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A372C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A375C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3738",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A373C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A376C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3748",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A374C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A377C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A3758",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A375C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A378C": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "003A3768",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A376C pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A37A0": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A377C",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A3780 pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A37B0": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "003A378C",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A3790 pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003A37C4": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "003A37A0",
+  "ghidra": "void",
+  "owner": "003A3584",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003A37A4 pop {r4, r5, r6, r7, r8, sb, sl, lr}), reached by a branch"
+ },
+ "003E19E8": {
+  "bytes": 60,
+  "empty_body": true,
+  "eu": "003E19C8",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0",
+   "s1",
+   "s2",
+   "s3",
+   "s4"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0', 's1', 's2', 's3', 's4']"
+ },
+ "003E1A24": {
+  "bytes": 76,
+  "empty_body": true,
+  "eu": "003E1A04",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0",
+   "s1",
+   "s2",
+   "s3",
+   "s4",
+   "s5"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0', 's1', 's2', 's3', 's4', 's5']"
+ },
+ "003E5520": {
+  "bytes": 300,
+  "empty_body": false,
+  "eu": "003E5500",
+  "ghidra": "void switchD_003e54d4::",
+  "owner": "003E5518",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 003E5620 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by a branch"
+ },
+ "003F0010": {
+  "bytes": 112,
+  "empty_body": false,
+  "eu": "003EFFF0",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 003F0058 vpop {d8, d9, d10}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+ },
+ "004008C8": {
+  "bytes": 380,
+  "empty_body": false,
+  "eu": "004008C8",
+  "ghidra": "uint *",
+  "owner": "00400748",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00400A40 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through"
+ },
+ "0040F5CC": {
+  "bytes": 4,
+  "empty_body": false,
+  "eu": "0040F5A8",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0040F5A8 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0040F698": {
+  "bytes": 4,
+  "empty_body": false,
+  "eu": "0040F674",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0040F674 pop {r3, r4, r5, r6, r7, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "004100E4": {
+  "bytes": 340,
+  "empty_body": false,
+  "eu": "004100C4",
+  "ghidra": "uint",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00410210 pop {r4, r5, pc}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "004136EC": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "004136CC",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0']"
+ },
+ "00413ADC": {
+  "bytes": 88,
+  "empty_body": true,
+  "eu": "00413ABC",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0']"
+ },
+ "00413BA4": {
+  "bytes": 136,
+  "empty_body": true,
+  "eu": "00413B84",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 's0']"
+ },
+ "004451A8": {
+  "bytes": 92,
+  "empty_body": false,
+  "eu": "00445188",
+  "ghidra": "void",
+  "owner": "004451A4",
+  "owner_livein": [
+   "r0",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004451DC pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_004451A0"
+ },
+ "0044520C": {
+  "bytes": 60,
+  "empty_body": false,
+  "eu": "004451EC",
+  "ghidra": "void",
+  "owner": "00445204",
+  "owner_livein": [
+   "r0",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00445220 pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_00445204"
+ },
+ "00457904": {
+  "bytes": 36,
+  "empty_body": true,
+  "eu": "004578E0",
+  "ghidra": "void",
+  "owner": "004576CC",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004578E0 vpop {d8}), reached by fall-through"
+ },
+ "0045792C": {
+  "bytes": 68,
+  "empty_body": false,
+  "eu": "00457908",
+  "ghidra": "void",
+  "owner": "00457928",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00457948 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00457928"
+ },
+ "00457974": {
+  "bytes": 536,
+  "empty_body": false,
+  "eu": "00457950",
+  "ghidra": "void",
+  "owner": "00457970",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00457B5C pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_00457970"
+ },
+ "00457B90": {
+  "bytes": 1012,
+  "empty_body": false,
+  "eu": "00457B6C",
+  "ghidra": "void",
+  "owner": "00457B8C",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00457DBC pop {r4, r5, r6, r7, r8, sb, pc}), reached by fall-through; start right after the prologue of func_00457B8C"
+ },
+ "00457F88": {
+  "bytes": 52,
+  "empty_body": false,
+  "eu": "00457F64",
+  "ghidra": "void",
+  "owner": "00457F84",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00457F90 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00457F84"
+ },
+ "00457FC0": {
+  "bytes": 312,
+  "empty_body": false,
+  "eu": "00457F9C",
+  "ghidra": "void",
+  "owner": "00457FBC",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458060 pop {r4, r5, lr}), reached by fall-through; start right after the prologue of func_00457FBC"
+ },
+ "00458438": {
+  "bytes": 36,
+  "empty_body": false,
+  "eu": "00458414",
+  "ghidra": "void",
+  "owner": "00458434",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458434 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458434"
+ },
+ "00458460": {
+  "bytes": 560,
+  "empty_body": false,
+  "eu": "0045843C",
+  "ghidra": "void",
+  "owner": "0045845C",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458488 pop {r4, r5, r6, r7, lr}), reached by fall-through; start right after the prologue of func_0045845C"
+ },
+ "00458694": {
+  "bytes": 932,
+  "empty_body": false,
+  "eu": "00458670",
+  "ghidra": "void",
+  "owner": "00458690",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004586BC pop {r4, r5, r6, r7, r8, lr}), reached by fall-through; start right after the prologue of func_00458690"
+ },
+ "00458A3C": {
+  "bytes": 148,
+  "empty_body": false,
+  "eu": "00458A18",
+  "ghidra": "void",
+  "owner": "00458A38",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458A90 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458A38"
+ },
+ "00458AD4": {
+  "bytes": 36,
+  "empty_body": false,
+  "eu": "00458AB0",
+  "ghidra": "void",
+  "owner": "00458AD0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458AD0 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458AD0"
+ },
+ "00458E18": {
+  "bytes": 880,
+  "empty_body": false,
+  "eu": "00458DF4",
+  "ghidra": "void",
+  "owner": "00458E14",
+  "owner_livein": [
+   "r0",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00458E40 pop {r4, r5, r6, r7, r8, sb, sl, fp, lr}), reached by fall-through; start right after the prologue of func_00458E14"
+ },
+ "0046B6E0": {
+  "bytes": 340,
+  "empty_body": false,
+  "eu": "0046B6E0",
+  "ghidra": "void",
+  "owner": "0046B6B8",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0046B810 vpop {d8}), reached by fall-through"
+ },
+ "0046B85C": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046B85C",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046B8B4 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046B8E8": {
+  "bytes": 184,
+  "empty_body": false,
+  "eu": "0046B8E8",
+  "ghidra": "void",
+  "owner": "0046B8C0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0046B93C pop {r4, r5, r6, pc}), reached by fall-through"
+ },
+ "0046B9C8": {
+  "bytes": 244,
+  "empty_body": false,
+  "eu": "0046B9C8",
+  "ghidra": "void",
+  "owner": "0046B9A0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0046BA44 pop {r4, pc}), reached by fall-through"
+ },
+ "0046BAE4": {
+  "bytes": 188,
+  "empty_body": false,
+  "eu": "0046BAE4",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BB84 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BBDC": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046BBDC",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BC34 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BC68": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046BC68",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BCC0 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BCF4": {
+  "bytes": 268,
+  "empty_body": false,
+  "eu": "0046BCF4",
+  "ghidra": "void",
+  "owner": "0046BCCC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0046BD70 pop {r4, r5, pc}), reached by fall-through"
+ },
+ "0046BE28": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046BE28",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BE80 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BEB4": {
+  "bytes": 20,
+  "empty_body": false,
+  "eu": "0046BEB4",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BEB4 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BEFC": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046BEFC",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BF54 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046BF88": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0046BF88",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046BFE0 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046C018": {
+  "bytes": 136,
+  "empty_body": false,
+  "eu": "0046C018",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046C098 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0046C0C8": {
+  "bytes": 12,
+  "empty_body": false,
+  "eu": "0046C0C8",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0046C0CC pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status hack)"
+ },
+ "004BC7EC": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "004BC7C4",
+  "ghidra": "void",
+  "owner": "004BC7BC",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004BC820 pop {r4, r5, r6, pc}), reached by fall-through"
+ },
+ "004BCB10": {
+  "bytes": 80,
+  "empty_body": false,
+  "eu": "004BCAE8",
+  "ghidra": "void",
+  "owner": "004BCAE0",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004BCB34 pop {r4, r5, r6, pc}), reached by fall-through"
+ },
+ "004BDFFC": {
+  "bytes": 280,
+  "empty_body": true,
+  "eu": "004BDFD4",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "s0",
+   "s1",
+   "s2",
+   "s3",
+   "s4"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['s0', 's1', 's2', 's3', 's4']"
+ },
+ "004C2B24": {
+  "bytes": 880,
+  "empty_body": false,
+  "eu": "004C2B00",
+  "ghidra": "void",
+  "owner": "004C2650",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004C2E68 vpop {d8, d9}), reached by fall-through"
+ },
+ "004C2E98": {
+  "bytes": 88,
+  "empty_body": false,
+  "eu": "004C2E74",
+  "ghidra": "undefined4",
+  "owner": "004C2E94",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004C2EC8 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_004C2E94"
+ },
+ "004C3250": {
+  "bytes": 108,
+  "empty_body": false,
+  "eu": "004C322C",
+  "ghidra": "undefined1",
+  "owner": "004C324C",
+  "owner_livein": [
+   "r0",
+   "r2"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004C3288 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_004C324C"
+ },
+ "004C32C0": {
+  "bytes": 220,
+  "empty_body": false,
+  "eu": "004C329C",
+  "ghidra": "undefined4",
+  "owner": "004C32BC",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004C3358 pop {r4, pc}), reached by fall-through; start right after the prologue of func_004C32BC"
+ },
+ "004C33A0": {
+  "bytes": 40,
+  "empty_body": false,
+  "eu": "004C337C",
+  "ghidra": "bool",
+  "owner": "004C339C",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004C339C pop {r4, pc}), reached by fall-through; start right after the prologue of func_004C339C"
+ },
+ "004C33C8": {
+  "bytes": 716,
+  "empty_body": false,
+  "eu": "004C33A4",
+  "eu_should_be": "004C33A0",
+  "ghidra": "void",
+  "verdict": "map_shift",
+  "why": "pop-before-push (EU 004C362C pop {r4, r5, r6, r7, pc}), reached by fall-through; prologue at EU 004C33A0 has no function: EU map entry off by 4"
+ },
+ "004E4F7C": {
+  "bytes": 40,
+  "empty_body": true,
+  "eu": "004E4F54",
+  "ghidra": "void",
+  "owner": "004E4E80",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004E4F54 vpop {d8}), reached by fall-through"
+ },
+ "004E50D4": {
+  "bytes": 84,
+  "empty_body": false,
+  "eu": "004E50AC",
+  "ghidra": "void",
+  "owner": "004E5050",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [
+   "r0"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 004E50DC pop {r4, pc}), reached by fall-through"
+ },
+ "004F898C": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "004F8964",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "004F944C": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "004F9424",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "004F9594": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "004F956C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "004FA420": {
+  "bytes": 500,
+  "empty_body": false,
+  "eu": "004FA3F8",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 004FA4F4 vpop {d8}), reached by a branch; kept: table start (sure=True, decomp status None)"
+ },
+ "004FB1F8": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "004FB1D0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "004FBF4C": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "004FBF24",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "004FDE50": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "004FDE28",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1']"
+ },
+ "00500E60": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "00500E38",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0050A750": {
+  "bytes": 520,
+  "empty_body": false,
+  "eu": "0050A72C",
+  "ghidra": "void",
+  "owner": "0050A74C",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050A8EC pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; start right after the prologue of func_0050A74C"
+ },
+ "0050A95C": {
+  "bytes": 480,
+  "empty_body": false,
+  "eu": "0050A938",
+  "ghidra": "void",
+  "owner": "0050A958",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050AA50 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_0050A958"
+ },
+ "0050AB40": {
+  "bytes": 248,
+  "empty_body": false,
+  "eu": "0050AB1C",
+  "ghidra": "void",
+  "owner": "0050AB3C",
+  "owner_livein": [
+   "r0",
+   "r1",
+   "r3"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050ABC8 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_0050AB3C"
+ },
+ "0050B6E4": {
+  "bytes": 160,
+  "empty_body": false,
+  "eu": "0050B6C0",
+  "ghidra": "void",
+  "owner": "0050B6E0",
+  "owner_livein": [
+   "r0"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050B750 pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_0050B6E0"
+ },
+ "0050B788": {
+  "bytes": 4,
+  "empty_body": false,
+  "eu": "0050B764",
+  "ghidra": "int",
+  "verdict": "ok",
+  "why": "start verified (prologue at the EU address)"
+ },
+ "0050B78C": {
+  "bytes": 1252,
+  "empty_body": false,
+  "eu": "0050B768",
+  "ghidra": "int",
+  "owner": "0050B788",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050BC18 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_0050B788"
+ },
+ "0050BCA0": {
+  "bytes": 412,
+  "empty_body": false,
+  "eu": "0050BC7C",
+  "ghidra": "undefined4",
+  "owner": "0050BC9C",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0050BD2C pop {r4, r5, pc}), reached by fall-through; start right after the prologue of func_0050BC9C"
+ },
+ "0051E8AC": {
+  "bytes": 108,
+  "empty_body": true,
+  "eu": "0051E884",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1",
+   "s0",
+   "s1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1', 's0', 's1']"
+ },
+ "00520024": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "0051FFFC",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "00521238": {
+  "bytes": 60,
+  "empty_body": true,
+  "eu": "00521210",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00521298": {
+  "bytes": 52,
+  "empty_body": true,
+  "eu": "00521270",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00525A70": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "00525A48",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "00528734": {
+  "bytes": 192,
+  "empty_body": true,
+  "eu": "0052870C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1",
+   "r2"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1', 'r2']"
+ },
+ "0052E860": {
+  "bytes": 64,
+  "empty_body": true,
+  "eu": "0052E838",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00531470": {
+  "bytes": 32,
+  "empty_body": true,
+  "eu": "00531448",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "00531490": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "00531468",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00531968": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "00531940",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0053E668": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "0053E640",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "0053EDC8": {
+  "bytes": 16,
+  "empty_body": true,
+  "eu": "0053ED84",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00540A64": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "00540A3C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "00542330": {
+  "bytes": 32,
+  "empty_body": true,
+  "eu": "00542308",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1']"
+ },
+ "00542350": {
+  "bytes": 24,
+  "empty_body": true,
+  "eu": "00542328",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1']"
+ },
+ "005445F8": {
+  "bytes": 68,
+  "empty_body": true,
+  "eu": "005445D0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00546258": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "00546230",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00546264": {
+  "bytes": 72,
+  "empty_body": true,
+  "eu": "0054623C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 's0']"
+ },
+ "0054DE3C": {
+  "bytes": 24,
+  "empty_body": true,
+  "eu": "0054DE14",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1",
+   "r2"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1', 'r2']"
+ },
+ "0054DE54": {
+  "bytes": 192,
+  "empty_body": true,
+  "eu": "0054DE2C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1', 'r2', 'r3', 's0']"
+ },
+ "005500C0": {
+  "bytes": 60,
+  "empty_body": true,
+  "eu": "00550098",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "00552C88": {
+  "bytes": 44,
+  "empty_body": true,
+  "eu": "00552C60",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "int",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in r0; live-in ['r0']"
+ },
+ "00553058": {
+  "bytes": 60,
+  "empty_body": true,
+  "eu": "00553030",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00554E74": {
+  "bytes": 24,
+  "empty_body": true,
+  "eu": "00554E4C",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00556990": {
+  "bytes": 36,
+  "empty_body": false,
+  "eu": "00556920",
+  "ghidra": "void",
+  "owner": "00556984",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 00556940 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00556984"
+ },
+ "00556C7C": {
+  "bytes": 64,
+  "empty_body": false,
+  "eu": "00556BE0",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 00556C0C vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "00556CE4": {
+  "bytes": 16,
+  "empty_body": true,
+  "eu": "00556C80",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00564688": {
+  "bytes": 68,
+  "empty_body": true,
+  "eu": "00564660",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0056A148": {
+  "bytes": 56,
+  "empty_body": true,
+  "eu": "0056A120",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "0056B010": {
+  "bytes": 64,
+  "empty_body": false,
+  "eu": "0056AFE8",
+  "ghidra": "undefined4 switchD_0056afc4::",
+  "owner": "0056AF9C",
+  "owner_livein": [
+   "r0",
+   "r1"
+  ],
+  "owner_livein_before": [
+   "r0",
+   "r1"
+  ],
+  "verdict": "not_a_function",
+  "why": "pop-before-push (EU 0056B01C pop {r4}), reached by a branch"
+ },
+ "0056B51C": {
+  "bytes": 16,
+  "empty_body": false,
+  "eu": "0056B4BC",
+  "ghidra": "uint",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0056B4C8 pop {r3, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "0056B62C": {
+  "bytes": 100,
+  "empty_body": false,
+  "eu": "0056B5CC",
+  "ghidra": "undefined4",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 0056B600 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+ },
+ "005720B8": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "00572090",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "005720D0": {
+  "bytes": 12,
+  "empty_body": true,
+  "eu": "005720A8",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in []"
+ },
+ "00581F68": {
+  "bytes": 76,
+  "empty_body": true,
+  "eu": "00581F40",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00582C90": {
+  "bytes": 40,
+  "empty_body": true,
+  "eu": "00582C68",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "00584808": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "005847E0",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00588004": {
+  "bytes": 80,
+  "empty_body": true,
+  "eu": "00587FDC",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r1",
+   "s1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r1', 's1']"
+ },
+ "0058A77C": {
+  "bytes": 88,
+  "empty_body": true,
+  "eu": "0058A754",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0",
+   "r1"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0', 'r1']"
+ },
+ "0058AF2C": {
+  "bytes": 28,
+  "empty_body": true,
+  "eu": "0058AF04",
+  "ghidra": "void",
+  "needs_disassembly": false,
+  "params": [
+   "r0"
+  ],
+  "ret": "float",
+  "verdict": "signature",
+  "why": "Ghidra type void; result in s0; live-in ['r0']"
+ },
+ "00591550": {
+  "bytes": 236,
+  "empty_body": false,
+  "eu": "00591528",
+  "ghidra": "uint",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 005915A0 vpop {d8, d9, d10}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+ },
+ "005AD49C": {
+  "bytes": 440,
+  "empty_body": true,
+  "eu": "005AD474",
+  "ghidra": "void",
+  "verdict": "manual",
+  "why": "pop-before-push (EU 005AD478 pop {r4, pc}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+ }
+}

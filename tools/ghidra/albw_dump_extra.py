@@ -56,11 +56,20 @@ ifc = DecompInterface()
 ifc.openProgram(currentProgram)
 mon = ConsoleTaskMonitor()
 mp = {}
+# V2 (ALBW_DUMP_V2=1): mark float<->int bit reinterpretations like ghidra_dump.py does
+fcast = None
+if os.environ.get("ALBW_DUMP_V2") == "1":
+    import albw_fcast as fcast
 for f, eu, usa in extra:
     res = ifc.decompileFunction(f, 30, mon)
     if not res.decompileCompleted():
         continue
     src = res.getDecompiledFunction().getC()
+    if fcast is not None:
+        try:
+            src = fcast.annotate(res)[0]
+        except Exception as ex:
+            print("albw_dump_extra: float-cast marking failed in func_%08X: %s" % (usa, ex))
     hf = res.getHighFunction()
     gl = []
     if hf is not None:

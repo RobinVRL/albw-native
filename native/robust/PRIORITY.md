@@ -31,7 +31,7 @@ Counts (Ghidra-sourced functions that are compiled into the game and have no nat
 | **real defects after filtering** | **1727** (A: 1030, B: 697) |
 | of which reachable from the boot entry points by direct calls | 369 |
 | filtered out as harmless (bottom table) | 692 |
-| rewritten in native/robust | 104 files |
+| rewritten in native/robust | 704 files |
 
 Flagged registers (functions per kind): extraout_r1 822, in_s0 427, unaff_rN 363, in_sN 132, in_r12 103, in_rN 64, in_r1 37, in_dN 36, in_lr 6.
 
@@ -212,156 +212,156 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 106 | 00668934 | 0066890C | B | 3 | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 107 | 003525AC | 00352588 | A | 3 | 8 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 108 | 004C081C | 004C07F4 | A | 3 | 8 |  |  | unaff_r9: callee-saved register read unset |
-| 109 | 0060F278 | 0060F250 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 110 | 0061202C | 00612004 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 111 | 00612EC0 | 00612E98 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 112 | 00614BFC | 00614BD4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 113 | 00615A90 | 00615A68 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 114 | 00618654 | 0061862C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 115 | 006194E8 | 006194C0 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 116 | 0061A37C | 0061A354 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 117 | 0061B210 | 0061B1E8 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 118 | 0061ED30 | 0061ED08 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 119 | 0061FBC4 | 0061FB9C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 120 | 00620A58 | 00620A30 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 121 | 006218EC | 006218C4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 122 | 0062440C | 006243E4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 123 | 00628EF0 | 00628EC8 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 124 | 0062AE54 | 0062AE2C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 125 | 0062BEDC | 0062BEB4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 126 | 0062DDF8 | 0062DDD0 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 127 | 0062EC8C | 0062EC64 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 128 | 0062FB20 | 0062FAF8 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 129 | 00630BA8 | 00630B80 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 130 | 00631C30 | 00631C08 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 131 | 00632AC4 | 00632A9C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 132 | 006339A0 | 00633978 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 133 | 006383A4 | 0063837C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 134 | 00639238 | 00639210 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 135 | 0063A0CC | 0063A0A4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 136 | 00656B60 | 00656B38 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 137 | 00657580 | 00657558 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 138 | 00657BD4 | 00657BAC | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 139 | 00658748 | 00658720 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 140 | 0065A6FC | 0065A6D4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 141 | 0065DFCC | 0065DFA4 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 142 | 0066133C | 00661314 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 143 | 00663954 | 0066392C | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 144 | 006644B8 | 00664490 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 145 | 006658F8 | 006658D0 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 146 | 00665E08 | 00665DE0 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 147 | 0066A650 | 0066A628 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 148 | 0066B43C | 0066B414 | B | 3 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 109 | 0060F278 | 0060F250 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 110 | 0061202C | 00612004 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 111 | 00612EC0 | 00612E98 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 112 | 00614BFC | 00614BD4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 113 | 00615A90 | 00615A68 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 114 | 00618654 | 0061862C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 115 | 006194E8 | 006194C0 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 116 | 0061A37C | 0061A354 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 117 | 0061B210 | 0061B1E8 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 118 | 0061ED30 | 0061ED08 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 119 | 0061FBC4 | 0061FB9C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 120 | 00620A58 | 00620A30 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 121 | 006218EC | 006218C4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 122 | 0062440C | 006243E4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 123 | 00628EF0 | 00628EC8 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 124 | 0062AE54 | 0062AE2C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 125 | 0062BEDC | 0062BEB4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 126 | 0062DDF8 | 0062DDD0 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 127 | 0062EC8C | 0062EC64 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 128 | 0062FB20 | 0062FAF8 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 129 | 00630BA8 | 00630B80 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 130 | 00631C30 | 00631C08 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 131 | 00632AC4 | 00632A9C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 132 | 006339A0 | 00633978 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 133 | 006383A4 | 0063837C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 134 | 00639238 | 00639210 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 135 | 0063A0CC | 0063A0A4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 136 | 00656B60 | 00656B38 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 137 | 00657580 | 00657558 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 138 | 00657BD4 | 00657BAC | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 139 | 00658748 | 00658720 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 140 | 0065A6FC | 0065A6D4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 141 | 0065DFCC | 0065DFA4 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 142 | 0066133C | 00661314 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 143 | 00663954 | 0066392C | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 144 | 006644B8 | 00664490 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 145 | 006658F8 | 006658D0 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 146 | 00665E08 | 00665DE0 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 147 | 0066A650 | 0066A628 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 148 | 0066B43C | 0066B414 | B | 3 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 149 | 004BFF4C | 004BFF24 | A | 3 | 7 |  |  | in_s0: live-in at entry -> missing parameter |
-| 150 | 0060E480 | 0060E458 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 151 | 00656A1C | 006569F4 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 152 | 006576C4 | 0065769C | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 153 | 00657E5C | 00657E34 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 154 | 0065B668 | 0065B640 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 155 | 0065C088 | 0065C060 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 156 | 0065F2D8 | 0065F2B0 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 157 | 0065F7E8 | 0065F7C0 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 158 | 006605D4 | 006605AC | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 159 | 00660F70 | 00660F48 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 160 | 00661480 | 00661458 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 161 | 006615C4 | 0066159C | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 162 | 00664884 | 0066485C | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 163 | 00665160 | 00665138 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 164 | 0066697C | 00666954 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 165 | 0066AA1C | 0066A9F4 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 166 | 0066AB60 | 0066AB38 | B | 3 | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 150 | 0060E480 | 0060E458 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 151 | 00656A1C | 006569F4 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 152 | 006576C4 | 0065769C | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 153 | 00657E5C | 00657E34 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 154 | 0065B668 | 0065B640 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 155 | 0065C088 | 0065C060 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 156 | 0065F2D8 | 0065F2B0 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 157 | 0065F7E8 | 0065F7C0 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 158 | 006605D4 | 006605AC | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 159 | 00660F70 | 00660F48 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 160 | 00661480 | 00661458 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 161 | 006615C4 | 0066159C | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 162 | 00664884 | 0066485C | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 163 | 00665160 | 00665138 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 164 | 0066697C | 00666954 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 165 | 0066AA1C | 0066A9F4 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 166 | 0066AB60 | 0066AB38 | B | 3 | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 167 | 001E410C | 001E410C | A | 3 | 6 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 168 | 006580E4 | 006580BC | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 169 | 0065AD50 | 0065AD28 | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 170 | 0065C310 | 0065C2E8 | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 171 | 0065E110 | 0065E0E8 | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 172 | 0065E630 | 0065E608 | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 173 | 0065FBB4 | 0065FB8C | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 174 | 00666D48 | 00666D20 | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 175 | 0066A794 | 0066A76C | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 176 | 0066B6C4 | 0066B69C | B | 3 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 168 | 006580E4 | 006580BC | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 169 | 0065AD50 | 0065AD28 | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 170 | 0065C310 | 0065C2E8 | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 171 | 0065E110 | 0065E0E8 | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 172 | 0065E630 | 0065E608 | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 173 | 0065FBB4 | 0065FB8C | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 174 | 00666D48 | 00666D20 | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 175 | 0066A794 | 0066A76C | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 176 | 0066B6C4 | 0066B69C | B | 3 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 177 | 001C52B0 | 001C52B0 | A | 3 | 5 |  |  | unaff_r8: callee-saved register read unset |
-| 178 | 00656650 | 00656628 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 179 | 00656794 | 0065676C | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 180 | 00657070 | 00657048 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 181 | 006589D0 | 006589A8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 182 | 00658C58 | 00658C30 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 183 | 00659024 | 00658FFC | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 184 | 00659B98 | 00659B70 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 185 | 00659F64 | 00659F3C | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 186 | 0065B3E0 | 0065B3B8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 187 | 0065BB78 | 0065BB50 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 188 | 0065C1CC | 0065C1A4 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 189 | 0065CE98 | 0065CE70 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 190 | 0065CFDC | 0065CFB4 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 191 | 0065DC84 | 0065DC5C | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 192 | 0065F194 | 0065F16C | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 193 | 006623B0 | 00662388 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 194 | 006628D0 | 006628A8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 195 | 00662F24 | 00662EFC | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 196 | 006632F0 | 006632C8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 197 | 00663810 | 006637E8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 198 | 00663A98 | 00663A70 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 199 | 00667258 | 00667230 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 200 | 00667DD0 | 00667DA8 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 201 | 0066A50C | 0066A4E4 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 202 | 0066B070 | 0066B048 | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 203 | 0066B1B4 | 0066B18C | B | 3 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 178 | 00656650 | 00656628 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 179 | 00656794 | 0065676C | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 180 | 00657070 | 00657048 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 181 | 006589D0 | 006589A8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 182 | 00658C58 | 00658C30 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 183 | 00659024 | 00658FFC | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 184 | 00659B98 | 00659B70 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 185 | 00659F64 | 00659F3C | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 186 | 0065B3E0 | 0065B3B8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 187 | 0065BB78 | 0065BB50 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 188 | 0065C1CC | 0065C1A4 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 189 | 0065CE98 | 0065CE70 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 190 | 0065CFDC | 0065CFB4 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 191 | 0065DC84 | 0065DC5C | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 192 | 0065F194 | 0065F16C | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 193 | 006623B0 | 00662388 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 194 | 006628D0 | 006628A8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 195 | 00662F24 | 00662EFC | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 196 | 006632F0 | 006632C8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 197 | 00663810 | 006637E8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 198 | 00663A98 | 00663A70 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 199 | 00667258 | 00667230 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 200 | 00667DD0 | 00667DA8 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 201 | 0066A50C | 0066A4E4 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 202 | 0066B070 | 0066B048 | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 203 | 0066B1B4 | 0066B18C | B | 3 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 204 | 006916F0 | 006916C8 | A | 3 | 5 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check); unaff_r7: callee-saved register read unset |
 | 205 | 001340A4 | 001340A4 | A | 3 | 4 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 206 | 002500F4 | 002500F4 | A | 3 | 4 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 207 | 00656F2C | 00656F04 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 208 | 00657A90 | 00657A68 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 209 | 00658D9C | 00658D74 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 210 | 00659CDC | 00659CB4 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 211 | 0065B7AC | 0065B784 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 212 | 0065BA34 | 0065BA0C | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 213 | 0065BCBC | 0065BC94 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 214 | 0065BE00 | 0065BDD8 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 215 | 0065BF44 | 0065BF1C | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 216 | 0065FA70 | 0065FA48 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 217 | 006631AC | 00663184 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 218 | 00663434 | 0066340C | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 219 | 00663578 | 00663550 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 220 | 00664374 | 0066434C | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 221 | 00664740 | 00664718 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 222 | 00664B0C | 00664AE4 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 223 | 006652A4 | 0066527C | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 224 | 0066BA90 | 0066BA68 | B | 3 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 207 | 00656F2C | 00656F04 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 208 | 00657A90 | 00657A68 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 209 | 00658D9C | 00658D74 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 210 | 00659CDC | 00659CB4 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 211 | 0065B7AC | 0065B784 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 212 | 0065BA34 | 0065BA0C | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 213 | 0065BCBC | 0065BC94 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 214 | 0065BE00 | 0065BDD8 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 215 | 0065BF44 | 0065BF1C | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 216 | 0065FA70 | 0065FA48 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 217 | 006631AC | 00663184 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 218 | 00663434 | 0066340C | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 219 | 00663578 | 00663550 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 220 | 00664374 | 0066434C | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 221 | 00664740 | 00664718 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 222 | 00664B0C | 00664AE4 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 223 | 006652A4 | 0066527C | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 224 | 0066BA90 | 0066BA68 | B | 3 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 225 | 001C51C8 | 001C51C8 | A | 3 | 3 |  |  | unaff_r8: callee-saved register read unset |
 | 226 | 00567588 | 00567560 | A | 3 | 3 |  |  | in_s1: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 227 | 005919C4 | 0059199C | A | 3 | 3 |  | yes | unaff_r4: callee-saved register read unset |
-| 228 | 006563C8 | 006563A0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 229 | 00656DE8 | 00656DC0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 230 | 006571B4 | 0065718C | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 231 | 006572F8 | 006572D0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 232 | 0065794C | 00657924 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 233 | 00658EE0 | 00658EB8 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 234 | 00659168 | 00659140 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 235 | 0065C454 | 0065C42C | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 236 | 0065CC10 | 0065CBE8 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 237 | 0065DDC8 | 0065DDA0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 238 | 0065F41C | 0065F3F4 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 239 | 0066085C | 00660834 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 240 | 006609A0 | 00660978 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 241 | 006611F8 | 006611D0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 242 | 00662DE0 | 00662DB8 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 243 | 00663068 | 00663040 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 244 | 006645FC | 006645D4 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 245 | 00664ED8 | 00664EB0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 246 | 0066501C | 00664FF4 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 247 | 00665A3C | 00665A14 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 248 | 00665B80 | 00665B58 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 249 | 00665CC4 | 00665C9C | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 250 | 006661D4 | 006661AC | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 251 | 006665A0 | 00666578 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 252 | 00666838 | 00666810 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 253 | 00666C04 | 00666BDC | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 254 | 006674F4 | 006674CC | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 255 | 00667F14 | 00667EEC | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 256 | 006690CC | 006690A4 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 257 | 0066ADE8 | 0066ADC0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 258 | 0066B2F8 | 0066B2D0 | B | 3 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 228 | 006563C8 | 006563A0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 229 | 00656DE8 | 00656DC0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 230 | 006571B4 | 0065718C | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 231 | 006572F8 | 006572D0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 232 | 0065794C | 00657924 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 233 | 00658EE0 | 00658EB8 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 234 | 00659168 | 00659140 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 235 | 0065C454 | 0065C42C | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 236 | 0065CC10 | 0065CBE8 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 237 | 0065DDC8 | 0065DDA0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 238 | 0065F41C | 0065F3F4 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 239 | 0066085C | 00660834 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 240 | 006609A0 | 00660978 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 241 | 006611F8 | 006611D0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 242 | 00662DE0 | 00662DB8 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 243 | 00663068 | 00663040 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 244 | 006645FC | 006645D4 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 245 | 00664ED8 | 00664EB0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 246 | 0066501C | 00664FF4 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 247 | 00665A3C | 00665A14 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 248 | 00665B80 | 00665B58 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 249 | 00665CC4 | 00665C9C | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 250 | 006661D4 | 006661AC | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 251 | 006665A0 | 00666578 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 252 | 00666838 | 00666810 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 253 | 00666C04 | 00666BDC | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 254 | 006674F4 | 006674CC | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 255 | 00667F14 | 00667EEC | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 256 | 006690CC | 006690A4 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 257 | 0066ADE8 | 0066ADC0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 258 | 0066B2F8 | 0066B2D0 | B | 3 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 259 | 001C2080 | 001C2080 | A | 3 | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 260 | 0024100C | 0024100C | A | 3 | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 261 | 0027F56C | 0027F594 | A | 3 | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
@@ -372,22 +372,22 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 266 | 0037FC58 | 0037FC34 | A | 3 | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 267 | 003AC86C | 003AC848 | A | 3 | 2 |  |  | in_s0: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 268 | 00435610 | 004355F0 | A | 3 | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 269 | 00657808 | 006577E0 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 270 | 00659910 | 006598E8 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 271 | 0065A0A8 | 0065A080 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 272 | 0065DB40 | 0065DB18 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 273 | 0065F6A4 | 0065F67C | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 274 | 00661AD4 | 00661AAC | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 275 | 00661EA0 | 00661E78 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 276 | 0066226C | 00662244 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 277 | 00663D20 | 00663CF8 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 278 | 00665F4C | 00665F24 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 279 | 00666090 | 00666068 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 280 | 00667114 | 006670EC | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 281 | 006687F0 | 006687C8 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 282 | 0066A3C8 | 0066A3A0 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 283 | 0066B808 | 0066B7E0 | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 284 | 0066BBD4 | 0066BBAC | B | 3 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 269 | 00657808 | 006577E0 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 270 | 00659910 | 006598E8 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 271 | 0065A0A8 | 0065A080 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 272 | 0065DB40 | 0065DB18 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 273 | 0065F6A4 | 0065F67C | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 274 | 00661AD4 | 00661AAC | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 275 | 00661EA0 | 00661E78 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 276 | 0066226C | 00662244 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 277 | 00663D20 | 00663CF8 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 278 | 00665F4C | 00665F24 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 279 | 00666090 | 00666068 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 280 | 00667114 | 006670EC | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 281 | 006687F0 | 006687C8 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 282 | 0066A3C8 | 0066A3A0 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 283 | 0066B808 | 0066B7E0 | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 284 | 0066BBD4 | 0066BBAC | B | 3 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 285 | 001364F0 | 001364F0 | A | 3 | 1 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 286 | 0019EF74 | 0019EF74 | A | 3 | 1 |  |  | unaff_r10: callee-saved register read unset; unaff_r9: callee-saved register read unset |
 | 287 | 001B975C | 001B975C | A | 3 | 1 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
@@ -408,29 +408,29 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 302 | 004D6E6C | 004D6E44 | A | 3 | 1 |  |  | in_s0: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 303 | 004F9A2C | 004F9A04 | A | 3 | 1 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 304 | 00506B68 | 00506B40 | A | 3 | 1 |  |  | in_s0: not live-in -> a callee's result (callee typed void) or clobbered value |
-| 305 | 0065B8F0 | 0065B8C8 | B | 3 | 1 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 306 | 00669210 | 006691E8 | B | 3 | 1 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 305 | 0065B8F0 | 0065B8C8 | B | 3 | 1 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 306 | 00669210 | 006691E8 | B | 3 | 1 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 307 | 001B6B38 | 001B6B38 | A | 4 | 43 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 308 | 00662128 | 00662100 | B | 4 | 25 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 308 | 00662128 | 00662100 | B | 4 | 25 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 309 | 001B6A48 | 001B6A48 | A | 4 | 13 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 310 | 0065C988 | 0065C960 | B | 4 | 13 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 311 | 006624F4 | 006624CC | B | 4 | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 310 | 0065C988 | 0065C960 | B | 4 | 13 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 311 | 006624F4 | 006624CC | B | 4 | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 312 | 001696F8 | 001696F8 | A | 4 | 10 |  |  | unaff_r9: callee-saved register read unset |
-| 313 | 0010BC94 | 0010BC94 | B | 4 | 8 | SDK(framework) |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 314 | 0062CF64 | 0062CF3C | B | 4 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 315 | 00660BA4 | 00660B7C | B | 4 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 313 | 0010BC94 | 0010BC94 | B | 4 | 8 | SDK(framework) | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 314 | 0062CF64 | 0062CF3C | B | 4 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 315 | 00660BA4 | 00660B7C | B | 4 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 316 | 00110DF0 | 00110DF0 | A | 4 | 6 | SDK(gfx-middleware) |  | unaff_r6: callee-saved register read unset |
 | 317 | 001B9D54 | 001B9D54 | A | 4 | 6 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 318 | 0065EDC8 | 0065EDA0 | B | 4 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 318 | 0065EDC8 | 0065EDA0 | B | 4 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 319 | 004BF418 | 004BF3F0 | A | 4 | 4 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 320 | 00660E2C | 00660E04 | B | 4 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 321 | 0010BB50 | 0010BB50 | B | 4 | 3 | SDK(framework) |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 320 | 00660E2C | 00660E04 | B | 4 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 321 | 0010BB50 | 0010BB50 | B | 4 | 3 | SDK(framework) | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 322 | 002228F8 | 002228F8 | A | 4 | 3 |  |  | in_s0: live-in at entry -> missing parameter |
 | 323 | 00522BE4 | 00522BBC | A | 4 | 3 |  |  | unaff_r4: callee-saved register read unset |
 | 324 | 001699A0 | 001699A0 | A | 4 | 2 |  |  | in_s0: live-in at entry -> missing parameter |
 | 325 | 004BE2E8 | 004BE2C0 | A | 4 | 2 |  |  | unaff_r11: callee-saved register read unset |
-| 326 | 0065EC84 | 0065EC5C | B | 4 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 327 | 00668D00 | 00668CD8 | B | 4 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 326 | 0065EC84 | 0065EC5C | B | 4 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 327 | 00668D00 | 00668CD8 | B | 4 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 328 | 0010B880 | 0010B880 | A | 4 | 1 | SDK-os(nn) |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 329 | 0010DDF0 | 0010DDF0 | A | 4 | 1 | SDK-os(nn) |  | unaff_r5: callee-saved register read unset |
 | 330 | 001E804C | 001E804C | A | 4 | 1 |  |  | in_s0: live-in at entry -> missing parameter; in_s1: only fills an argument the callee never reads (benign) |
@@ -445,27 +445,27 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 339 | 00392E48 | 00392E24 | A | 5 | 33 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 340 | 00258038 | 00258060 | A | 5 | 11 |  |  | in_s0: live-in at entry -> missing parameter |
 | 341 | 0010CF7C | 0010CF7C | B | 5 | 9 | SDK(framework) |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 342 | 0065EB40 | 0065EB18 | B | 5 | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 343 | 00669498 | 00669470 | B | 5 | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 342 | 0065EB40 | 0065EB18 | B | 5 | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 343 | 00669498 | 00669470 | B | 5 | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 344 | 003EA524 | 003EA504 | A | 5 | 5 | SDK(gfx-middleware) |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
-| 345 | 00667A04 | 006679DC | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 346 | 006682E0 | 006682B8 | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 347 | 00668424 | 006683FC | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 348 | 00668568 | 00668540 | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 349 | 00668A78 | 00668A50 | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 350 | 00668BBC | 00668B94 | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 351 | 00669354 | 0066932C | B | 5 | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 352 | 00668F88 | 00668F60 | B | 5 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 353 | 00669864 | 0066983C | B | 5 | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 345 | 00667A04 | 006679DC | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 346 | 006682E0 | 006682B8 | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 347 | 00668424 | 006683FC | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 348 | 00668568 | 00668540 | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 349 | 00668A78 | 00668A50 | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 350 | 00668BBC | 00668B94 | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 351 | 00669354 | 0066932C | B | 5 | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 352 | 00668F88 | 00668F60 | B | 5 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 353 | 00669864 | 0066983C | B | 5 | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 354 | 004C0DE8 | 004C0DC0 | A | 5 | 3 |  |  | extraout_r1: only fills an argument the callee never reads (benign); in_r1: live-in at entry -> missing parameter |
-| 355 | 00667C8C | 00667C64 | B | 5 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 356 | 0066819C | 00668174 | B | 5 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 357 | 006686AC | 00668684 | B | 5 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 358 | 006699A8 | 00669980 | B | 5 | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 355 | 00667C8C | 00667C64 | B | 5 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 356 | 0066819C | 00668174 | B | 5 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 357 | 006686AC | 00668684 | B | 5 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 358 | 006699A8 | 00669980 | B | 5 | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 359 | 001113A0 | 001113A0 | A | 5 | 2 | SDK(gfx-middleware) |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 360 | 003E5130 | 003E5110 | A | 5 | 2 | SDK-os(nn) |  | unaff_r10: callee-saved register read unset |
 | 361 | 00566A28 | 00566A00 | A | 5 | 2 |  |  | unaff_r11: callee-saved register read unset; unaff_r5: callee-saved register read unset |
-| 362 | 00667B48 | 00667B20 | B | 5 | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 362 | 00667B48 | 00667B20 | B | 5 | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 363 | 00110DB8 | 00110DB8 | A | 6 | 17 | SDK(gfx-middleware) |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value; in_s0: only fills an argument the callee never reads (benign) |
 | 364 | 00409BC8 | 00409BA8 | A | 6 | 11 |  |  | unaff_r5: callee-saved register read unset |
 | 365 | 00504ED0 | 00504EA8 | A | 6 | 3 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
@@ -476,94 +476,94 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 370 | 0066D544 | 0066D51C | B | - | 61 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 371 | 004C1418 | 004C13F0 | A | - | 59 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 372 | 002E1B70 | 002E1B4C | A | - | 55 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
-| 373 | 0065D630 | 0065D608 | B | - | 48 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 374 | 006640EC | 006640C4 | B | - | 41 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 373 | 0065D630 | 0065D608 | B | - | 48 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 374 | 006640EC | 006640C4 | B | - | 41 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 375 | 002917A4 | 002917CC | A | - | 39 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value; in_r2: not live-in -> a callee's result (callee typed void) or clobbered value; in_s0: only fills an argument the callee never reads (benign) |
 | 376 | 0066E7A0 | 0066E778 | B | - | 34 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 377 | 0066C424 | 0066C3FC | B | - | 29 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 377 | 0066C424 | 0066C3FC | B | - | 29 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 378 | 0066BFFC | 0066BFD4 | B | - | 28 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 379 | 002316CC | 002316CC | A | - | 25 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 380 | 00291A38 | 00291A60 | A | - | 24 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value; in_s0: only fills an argument the callee never reads (benign) |
 | 381 | 00166620 | 00166624 | A | - | 23 |  |  | unaff_r4: callee-saved register read unset |
-| 382 | 0066A284 | 0066A25C | B | - | 23 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 382 | 0066A284 | 0066A25C | B | - | 23 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 383 | 0066E58C | 0066E564 | B | - | 23 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 384 | 0065E8B8 | 0065E890 | B | - | 22 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 385 | 00660718 | 006606F0 | B | - | 22 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 384 | 0065E8B8 | 0065E890 | B | - | 22 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 385 | 00660718 | 006606F0 | B | - | 22 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 386 | 00291FE0 | 00292008 | A | - | 21 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value; in_s0: only fills an argument the callee never reads (benign) |
-| 387 | 0066B94C | 0066B924 | B | - | 20 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 388 | 0066DF38 | 0066DF10 | B | - | 20 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 389 | 0066CC58 | 0066CC30 | B | - | 19 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 387 | 0066B94C | 0066B924 | B | - | 20 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 388 | 0066DF38 | 0066DF10 | B | - | 20 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 389 | 0066CC58 | 0066CC30 | B | - | 19 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 390 | 0016656C | 00166570 | A | - | 17 |  |  | unaff_r4: callee-saved register read unset |
 | 391 | 00255B48 | 00255ADC | A | - | 16 |  |  | in_r2: not live-in -> a callee's result (callee typed void) or clobbered value |
-| 392 | 0065D9FC | 0065D9D4 | B | - | 16 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 393 | 0066CD9C | 0066CD74 | B | - | 16 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 394 | 0065D774 | 0065D74C | B | - | 15 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 392 | 0065D9FC | 0065D9D4 | B | - | 16 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 393 | 0066CD9C | 0066CD74 | B | - | 16 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 394 | 0065D774 | 0065D74C | B | - | 15 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 395 | 004FC244 | 004FC21C | A | - | 14 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 396 | 00659544 | 0065951C | B | - | 14 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 396 | 00659544 | 0065951C | B | - | 14 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 397 | 002B0D7C | 002B0D58 | A | - | 13 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 398 | 0066C0CC | 0066C0A4 | B | - | 13 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 399 | 00659400 | 006593D8 | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 400 | 0065D120 | 0065D0F8 | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 401 | 00660490 | 00660468 | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 402 | 00662A14 | 006629EC | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 399 | 00659400 | 006593D8 | B | - | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 400 | 0065D120 | 0065D0F8 | B | - | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 401 | 00660490 | 00660468 | B | - | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 402 | 00662A14 | 006629EC | B | - | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 403 | 0066BF2C | 0066BF04 | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 404 | 0066D78C | 0066D764 | B | - | 12 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 404 | 0066D78C | 0066D764 | B | - | 12 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 405 | 0024ADF4 | 0024ADF4 | A | - | 11 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 406 | 002B705C | 002B7038 | A | - | 11 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 407 | 00447E28 | 00447E00 | A | - | 11 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check); unaff_r9: callee-saved register read unset |
-| 408 | 00657FA0 | 00657F78 | B | - | 11 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 409 | 0065E9FC | 0065E9D4 | B | - | 11 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 410 | 0066D2AC | 0066D284 | B | - | 11 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 408 | 00657FA0 | 00657F78 | B | - | 11 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 409 | 0065E9FC | 0065E9D4 | B | - | 11 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 410 | 0066D2AC | 0066D284 | B | - | 11 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 411 | 00196330 | 00196330 | A | - | 10 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
-| 412 | 00626FA4 | 00626F7C | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 413 | 006356F4 | 006356CC | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 414 | 0065650C | 006564E4 | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 415 | 0065C598 | 0065C570 | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 416 | 00663E64 | 00663E3C | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 417 | 00663FA8 | 00663F80 | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 418 | 0066ACA4 | 0066AC7C | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 412 | 00626FA4 | 00626F7C | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 413 | 006356F4 | 006356CC | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 414 | 0065650C | 006564E4 | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 415 | 0065C598 | 0065C570 | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 416 | 00663E64 | 00663E3C | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 417 | 00663FA8 | 00663F80 | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 418 | 0066ACA4 | 0066AC7C | B | - | 10 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 419 | 0066BE5C | 0066BE34 | B | - | 10 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 420 | 0014FB58 | 0014FB58 | A | - | 9 |  |  | in_s0: live-in at entry -> missing parameter |
 | 421 | 006017F0 | 006017C8 | A | - | 9 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover; indirect tail call (PMF / state-machine dispatch) with arguments (probably fine natively) |
-| 422 | 00627E58 | 00627E30 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 423 | 00656CA4 | 00656C7C | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 424 | 0065743C | 00657414 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 425 | 00662B58 | 00662B30 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 426 | 0066777C | 00667754 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 427 | 0066BD18 | 0066BCF0 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 428 | 0066C19C | 0066C174 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 429 | 0066C748 | 0066C720 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 430 | 0066C88C | 0066C864 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 431 | 0066CB14 | 0066CAEC | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 432 | 0066E65C | 0066E634 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 433 | 0066F90C | 0066F8E4 | B | - | 9 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 422 | 00627E58 | 00627E30 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 423 | 00656CA4 | 00656C7C | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 424 | 0065743C | 00657414 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 425 | 00662B58 | 00662B30 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 426 | 0066777C | 00667754 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 427 | 0066BD18 | 0066BCF0 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 428 | 0066C19C | 0066C174 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 429 | 0066C748 | 0066C720 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 430 | 0066C88C | 0066C864 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 431 | 0066CB14 | 0066CAEC | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 432 | 0066E65C | 0066E634 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 433 | 0066F90C | 0066F8E4 | B | - | 9 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 434 | 0014FDC4 | 0014FDC4 | A | - | 8 |  |  | in_s1: live-in at entry -> missing parameter |
 | 435 | 002AD0E4 | 002AD0C0 | A | - | 8 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 436 | 002B193C | 002B1918 | A | - | 8 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 437 | 002B7508 | 002B74E4 | A | - | 8 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 438 | 002DF504 | 002DF4E0 | A | - | 8 |  |  | unaff_r4: callee-saved register read unset |
-| 439 | 0061D008 | 0061CFE0 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 440 | 0061DE9C | 0061DE74 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 441 | 0065A474 | 0065A44C | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 442 | 0065FF80 | 0065FF58 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 443 | 00661990 | 00661968 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 444 | 006653E8 | 006653C0 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 445 | 00667638 | 00667610 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 446 | 006695DC | 006695B4 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 447 | 0066D024 | 0066CFFC | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 448 | 0066DB6C | 0066DB44 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 449 | 0066DDF4 | 0066DDCC | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 450 | 0066F3FC | 0066F3D4 | B | - | 8 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 439 | 0061D008 | 0061CFE0 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 440 | 0061DE9C | 0061DE74 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 441 | 0065A474 | 0065A44C | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 442 | 0065FF80 | 0065FF58 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 443 | 00661990 | 00661968 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 444 | 006653E8 | 006653C0 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 445 | 00667638 | 00667610 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 446 | 006695DC | 006695B4 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 447 | 0066D024 | 0066CFFC | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 448 | 0066DB6C | 0066DB44 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 449 | 0066DDF4 | 0066DDCC | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 450 | 0066F3FC | 0066F3D4 | B | - | 8 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 451 | 006919D8 | 006919B0 | A | - | 8 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check); unaff_r7: callee-saved register read unset |
 | 452 | 00297448 | 00297470 | A | - | 7 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 453 | 00412404 | 004123E4 | A | - | 7 |  |  | unaff_r4: callee-saved register read unset |
 | 454 | 00591804 | 005917DC | A | - | 7 |  |  | in_lr: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
-| 455 | 00623578 | 00623550 | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 456 | 0065E254 | 0065E22C | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 457 | 00662C9C | 00662C74 | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 458 | 0066A8D8 | 0066A8B0 | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 459 | 0066AF2C | 0066AF04 | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 460 | 0066E304 | 0066E2DC | B | - | 7 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 455 | 00623578 | 00623550 | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 456 | 0065E254 | 0065E22C | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 457 | 00662C9C | 00662C74 | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 458 | 0066A8D8 | 0066A8B0 | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 459 | 0066AF2C | 0066AF04 | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 460 | 0066E304 | 0066E2DC | B | - | 7 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 461 | 001A1040 | 001A1040 | A | - | 6 |  |  | unaff_r5: callee-saved register read unset; unaff_r6: callee-saved register read unset; unaff_r8: callee-saved register read unset |
 | 462 | 001E337C | 001E337C | A | - | 6 |  |  | unaff_r5: callee-saved register read unset |
 | 463 | 0030A200 | 0030A1DC | A | - | 6 |  |  | unaff_r7: callee-saved register read unset |
@@ -571,17 +571,17 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 465 | 0036BA20 | 0036B9FC | A | - | 6 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 466 | 003EA528 | 003EA508 | A | - | 6 | SDK(gfx-middleware) |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 467 | 0052E454 | 0052E42C | A | - | 6 |  |  | unaff_r5: callee-saved register read unset |
-| 468 | 006597CC | 006597A4 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 469 | 00659E20 | 00659DF8 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 470 | 0065CD54 | 0065CD2C | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 471 | 0065F560 | 0065F538 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 472 | 0065FCF8 | 0065FCD0 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 473 | 00668E44 | 00668E1C | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 474 | 0066CEE0 | 0066CEB8 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 475 | 0066DA28 | 0066DA00 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 476 | 0066E07C | 0066E054 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 477 | 0066E448 | 0066E420 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 478 | 0066F7C8 | 0066F7A0 | B | - | 6 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 468 | 006597CC | 006597A4 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 469 | 00659E20 | 00659DF8 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 470 | 0065CD54 | 0065CD2C | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 471 | 0065F560 | 0065F538 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 472 | 0065FCF8 | 0065FCD0 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 473 | 00668E44 | 00668E1C | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 474 | 0066CEE0 | 0066CEB8 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 475 | 0066DA28 | 0066DA00 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 476 | 0066E07C | 0066E054 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 477 | 0066E448 | 0066E420 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 478 | 0066F7C8 | 0066F7A0 | B | - | 6 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 479 | 001D0150 | 001D0150 | A | - | 5 |  |  | in_s0: live-in at entry -> missing parameter; in_s1: live-in at entry -> missing parameter |
 | 480 | 00294F4C | 00294F74 | A | - | 5 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 481 | 00297474 | 0029749C | A | - | 5 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value |
@@ -590,19 +590,19 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 484 | 0044AEC8 | 0044AEA0 | A | - | 5 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 485 | 0047D480 | 0047D458 | A | - | 5 |  |  | in_d9: callee-saved VFP register read unset (value preserved from the caller / across a call) |
 | 486 | 00490AB8 | 00490A90 | A | - | 5 | SDK(framework) |  | unaff_r6: callee-saved register read unset |
-| 487 | 0065D264 | 0065D23C | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 488 | 0065F050 | 0065F028 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 489 | 0065FE3C | 0065FE14 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 490 | 00661C18 | 00661BF0 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 491 | 00664230 | 00664208 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 492 | 006649C8 | 006649A0 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 493 | 0066645C | 00666434 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 494 | 00666E8C | 00666E64 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 495 | 0066C2E0 | 0066C2B8 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 496 | 0066D168 | 0066D140 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 497 | 0066EEEC | 0066EEC4 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 498 | 0066F2B8 | 0066F290 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 499 | 0066F540 | 0066F518 | B | - | 5 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 487 | 0065D264 | 0065D23C | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 488 | 0065F050 | 0065F028 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 489 | 0065FE3C | 0065FE14 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 490 | 00661C18 | 00661BF0 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 491 | 00664230 | 00664208 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 492 | 006649C8 | 006649A0 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 493 | 0066645C | 00666434 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 494 | 00666E8C | 00666E64 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 495 | 0066C2E0 | 0066C2B8 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 496 | 0066D168 | 0066D140 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 497 | 0066EEEC | 0066EEC4 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 498 | 0066F2B8 | 0066F290 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 499 | 0066F540 | 0066F518 | B | - | 5 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 500 | 00122688 | 00122688 | A | - | 4 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 501 | 00122C78 | 00122C78 | A | - | 4 |  |  | unaff_r6: callee-saved register read unset |
 | 502 | 001D4AE8 | 001D4AE8 | A | - | 4 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
@@ -615,16 +615,16 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 509 | 0056CAD4 | 0056CAAC | A | - | 4 |  |  | in_r1: not live-in -> a callee's result (callee typed void) or clobbered value; in_r2: only fills an argument the callee never reads (benign); in_r3: only fills an argument the callee never reads (benign) |
 | 510 | 00588EEC | 00588EC4 | A | - | 4 |  |  | in_s0: live-in at entry -> missing parameter |
 | 511 | 00602148 | 00602120 | A | - | 4 |  |  | unaff_r7: callee-saved register read unset; indirect tail call (PMF / state-machine dispatch) with arguments (probably fine natively) |
-| 512 | 0065888C | 00658864 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 513 | 006600C4 | 0066009C | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 514 | 0066034C | 00660324 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 515 | 00661D5C | 00661D34 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 516 | 00664C50 | 00664C28 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 517 | 00664D94 | 00664D6C | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 518 | 00666FD0 | 00666FA8 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 519 | 0066DCB0 | 0066DC88 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 520 | 0066EDA8 | 0066ED80 | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 521 | 0066F684 | 0066F65C | B | - | 4 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 512 | 0065888C | 00658864 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 513 | 006600C4 | 0066009C | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 514 | 0066034C | 00660324 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 515 | 00661D5C | 00661D34 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 516 | 00664C50 | 00664C28 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 517 | 00664D94 | 00664D6C | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 518 | 00666FD0 | 00666FA8 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 519 | 0066DCB0 | 0066DC88 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 520 | 0066EDA8 | 0066ED80 | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 521 | 0066F684 | 0066F65C | B | - | 4 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 522 | 001321B8 | 001321B8 | A | - | 3 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 523 | 001339A4 | 001339A4 | A | - | 3 |  |  | unaff_r10: callee-saved register read unset; unaff_r8: callee-saved register read unset |
 | 524 | 00133D34 | 00133D34 | A | - | 3 |  |  | in_d8: callee-saved VFP register read unset (value preserved from the caller / across a call) |
@@ -644,16 +644,16 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 538 | 00468030 | 00468008 | A | - | 3 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover; unaff_r11: callee-saved register read unset |
 | 539 | 004BCBE0 | 004BCBB8 | A | - | 3 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 540 | 0054E4C4 | 0054E49C | A | - | 3 |  |  | in_s19: not live-in -> a callee's result (callee typed void) or clobbered value |
-| 541 | 00658B14 | 00658AEC | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 542 | 00660208 | 006601E0 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 543 | 006610B4 | 0066108C | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 544 | 0066552C | 00665504 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 545 | 0066C9D0 | 0066C9A8 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 546 | 0066E1C0 | 0066E198 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 547 | 0066E9DC | 0066E9B4 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 548 | 0066EB20 | 0066EAF8 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 549 | 0066F030 | 0066F008 | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 550 | 0066F174 | 0066F14C | B | - | 3 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 541 | 00658B14 | 00658AEC | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 542 | 00660208 | 006601E0 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 543 | 006610B4 | 0066108C | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 544 | 0066552C | 00665504 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 545 | 0066C9D0 | 0066C9A8 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 546 | 0066E1C0 | 0066E198 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 547 | 0066E9DC | 0066E9B4 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 548 | 0066EB20 | 0066EAF8 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 549 | 0066F030 | 0066F008 | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 550 | 0066F174 | 0066F14C | B | - | 3 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 551 | 0066FA50 | 0066FA28 | A | - | 3 |  |  | in_s1: not live-in -> a callee's result (callee typed void) or clobbered value; unaff_r10: callee-saved register read unset; unaff_r11: callee-saved register read unset |
 | 552 | 00114A40 | 00114A40 | A | - | 2 |  |  | unaff_r11: callee-saved register read unset; unaff_r6: callee-saved register read unset |
 | 553 | 0011E4B4 | 0011E4B4 | A | - | 2 | SDK(framework) |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
@@ -737,20 +737,20 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 631 | 005683D0 | 005683A8 | A | - | 2 |  |  | unaff_r11: callee-saved register read unset |
 | 632 | 005FF850 | 005FF828 | A | - | 2 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 633 | 006522F4 | 006522CC | A | - | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
-| 634 | 0065B524 | 0065B4FC | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 635 | 0065CACC | 0065CAA4 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 636 | 0065EF0C | 0065EEE4 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 637 | 0065F92C | 0065F904 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 638 | 00663BDC | 00663BB4 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 639 | 00666AC0 | 00666A98 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 640 | 00669720 | 006696F8 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 641 | 00669AEC | 00669AC4 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 642 | 00669C30 | 00669C08 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 643 | 00669D74 | 00669D4C | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 644 | 00669EB8 | 00669E90 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 645 | 00669FFC | 00669FD4 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 646 | 0066A140 | 0066A118 | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 647 | 0066EC64 | 0066EC3C | B | - | 2 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 634 | 0065B524 | 0065B4FC | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 635 | 0065CACC | 0065CAA4 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 636 | 0065EF0C | 0065EEE4 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 637 | 0065F92C | 0065F904 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 638 | 00663BDC | 00663BB4 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 639 | 00666AC0 | 00666A98 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 640 | 00669720 | 006696F8 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 641 | 00669AEC | 00669AC4 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 642 | 00669C30 | 00669C08 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 643 | 00669D74 | 00669D4C | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 644 | 00669EB8 | 00669E90 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 645 | 00669FFC | 00669FD4 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 646 | 0066A140 | 0066A118 | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 647 | 0066EC64 | 0066EC3C | B | - | 2 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 648 | 0068F1B8 | 0068F190 | A | - | 2 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 649 | 001146F8 | 001146F8 | A | - | 1 | SDK(crt/libc) |  | unaff_r4: callee-saved register read unset; unaff_r5: callee-saved register read unset |
 | 650 | 00114B1C | 00114B1C | A | - | 1 | SDK(crt/libc) |  | unaff_r4: callee-saved register read unset; unaff_r5: callee-saved register read unset |
@@ -940,7 +940,7 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 834 | 00589170 | 00589148 | A | - | 1 |  |  | in_s1: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 835 | 005896AC | 00589684 | A | - | 1 |  |  | unaff_r10: callee-saved register read unset |
 | 836 | 005FFAF0 | 005FFAC8 | A | - | 1 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
-| 837 | 0065C844 | 0065C81C | B | - | 1 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 837 | 0065C844 | 0065C81C | B | - | 1 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 838 | 006800B0 | 00680088 | A | - | 1 |  |  | in_s0: not live-in -> a callee's result (callee typed void) or clobbered value |
 | 839 | 0069190C | 006918E4 | A | - | 1 |  |  | in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check) |
 | 840 | 00691F88 | 00691F60 | A | - | 1 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover; in_r2: live-in at entry -> missing parameter; indirect tail call (PMF / state-machine dispatch) with arguments (probably fine natively) |
@@ -1527,309 +1527,309 @@ python3 mkprio.py && python3 mkprio_md.py         # PRIORITY.md
 | 1421 | 0067A868 | 0067A840 | A | - | 0 |  |  | in_s0: live-in at entry -> missing parameter |
 | 1422 | 00682734 | 0068270C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 1423 | 00682790 | 00682768 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1424 | 006827EC | 006827C4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1425 | 00682848 | 00682820 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1426 | 006828A4 | 0068287C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1427 | 00682900 | 006828D8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1428 | 0068295C | 00682934 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1429 | 006829B8 | 00682990 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1430 | 00682A14 | 006829EC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1431 | 00682A70 | 00682A48 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1432 | 00682ACC | 00682AA4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1433 | 00682B28 | 00682B00 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1434 | 00682B84 | 00682B5C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1435 | 00682BE0 | 00682BB8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1436 | 00682C3C | 00682C14 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1437 | 00682C98 | 00682C70 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1438 | 00682CF4 | 00682CCC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1439 | 00682D50 | 00682D28 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1440 | 00682DAC | 00682D84 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1441 | 00682E08 | 00682DE0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1442 | 00682E64 | 00682E3C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1443 | 00682EC0 | 00682E98 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1444 | 00682F1C | 00682EF4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1445 | 00682F78 | 00682F50 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1446 | 00682FD4 | 00682FAC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1447 | 00683030 | 00683008 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1448 | 0068308C | 00683064 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1449 | 006830E8 | 006830C0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1450 | 00683144 | 0068311C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1451 | 006831A0 | 00683178 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1452 | 006831FC | 006831D4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1453 | 00683258 | 00683230 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1454 | 006832B4 | 0068328C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1455 | 00683310 | 006832E8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1456 | 0068336C | 00683344 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1457 | 006833C8 | 006833A0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1458 | 00683424 | 006833FC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1459 | 00683480 | 00683458 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1460 | 006834DC | 006834B4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1461 | 00683538 | 00683510 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1462 | 00683594 | 0068356C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1463 | 006835F0 | 006835C8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1464 | 0068364C | 00683624 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1465 | 006836A8 | 00683680 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1466 | 00683704 | 006836DC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1467 | 00683760 | 00683738 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1468 | 006837BC | 00683794 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1469 | 00683818 | 006837F0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1470 | 00683874 | 0068384C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1471 | 006838D0 | 006838A8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1472 | 0068392C | 00683904 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1473 | 00683988 | 00683960 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1474 | 006839E4 | 006839BC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1475 | 00683A40 | 00683A18 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1476 | 00683A9C | 00683A74 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1477 | 00683AF8 | 00683AD0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1478 | 00683B54 | 00683B2C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1479 | 00683BB0 | 00683B88 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1480 | 00683C0C | 00683BE4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1481 | 00683C68 | 00683C40 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1482 | 00683CC4 | 00683C9C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1483 | 00683D20 | 00683CF8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1484 | 00683D7C | 00683D54 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1485 | 00683DD8 | 00683DB0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1486 | 00683E34 | 00683E0C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1487 | 00683E90 | 00683E68 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1488 | 00683EEC | 00683EC4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1489 | 00683F48 | 00683F20 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1490 | 00683FA4 | 00683F7C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1491 | 00684000 | 00683FD8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1492 | 0068405C | 00684034 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1493 | 006840B8 | 00684090 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1494 | 00684114 | 006840EC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1495 | 00684170 | 00684148 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1496 | 006841CC | 006841A4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1497 | 00684228 | 00684200 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1498 | 00684284 | 0068425C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1499 | 006842E0 | 006842B8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1500 | 0068433C | 00684314 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1501 | 00684398 | 00684370 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1502 | 006843F4 | 006843CC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1503 | 00684450 | 00684428 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1504 | 006844AC | 00684484 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1505 | 00684508 | 006844E0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1506 | 00684564 | 0068453C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1507 | 006845C0 | 00684598 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1508 | 0068461C | 006845F4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1509 | 00684678 | 00684650 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1510 | 006846D4 | 006846AC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1511 | 00684730 | 00684708 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1512 | 0068478C | 00684764 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1513 | 006847E8 | 006847C0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1514 | 00684844 | 0068481C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1515 | 006848A0 | 00684878 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1516 | 006848FC | 006848D4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1517 | 00684958 | 00684930 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1518 | 006849B4 | 0068498C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1519 | 00684A10 | 006849E8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1520 | 00684A6C | 00684A44 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1521 | 00684AC8 | 00684AA0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1522 | 00684B24 | 00684AFC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1523 | 00684B80 | 00684B58 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1524 | 00684BDC | 00684BB4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1525 | 00684C38 | 00684C10 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1526 | 00684C94 | 00684C6C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1527 | 00684CF0 | 00684CC8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1528 | 00684D4C | 00684D24 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1529 | 00684DA8 | 00684D80 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1530 | 00684E04 | 00684DDC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1531 | 00684E60 | 00684E38 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1532 | 00684EBC | 00684E94 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1533 | 00684F18 | 00684EF0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1534 | 00684F74 | 00684F4C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1535 | 00684FD0 | 00684FA8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1536 | 0068502C | 00685004 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1537 | 00685088 | 00685060 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1538 | 006850E4 | 006850BC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1539 | 00685140 | 00685118 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1540 | 0068519C | 00685174 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1541 | 006851F8 | 006851D0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1542 | 00685254 | 0068522C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1543 | 006852B0 | 00685288 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1544 | 0068530C | 006852E4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1545 | 00685368 | 00685340 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1546 | 006853C4 | 0068539C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1547 | 00685420 | 006853F8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1548 | 0068547C | 00685454 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1549 | 006854D8 | 006854B0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1550 | 00685534 | 0068550C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1551 | 00685590 | 00685568 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1552 | 006855EC | 006855C4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1553 | 00685648 | 00685620 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1554 | 006856A4 | 0068567C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1555 | 00685700 | 006856D8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1556 | 0068575C | 00685734 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1557 | 006857B8 | 00685790 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1558 | 00685814 | 006857EC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1559 | 00685870 | 00685848 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1560 | 006858CC | 006858A4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1561 | 00685928 | 00685900 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1562 | 00685984 | 0068595C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1563 | 006859E0 | 006859B8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1564 | 00685A3C | 00685A14 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1565 | 00685A98 | 00685A70 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1566 | 00685AF4 | 00685ACC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1567 | 00685B50 | 00685B28 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1568 | 00685BAC | 00685B84 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1569 | 00685C08 | 00685BE0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1570 | 00685C64 | 00685C3C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1571 | 00685CC0 | 00685C98 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1572 | 00685D1C | 00685CF4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1573 | 00685D78 | 00685D50 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1574 | 00685DD4 | 00685DAC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1575 | 00685E30 | 00685E08 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1576 | 00685E8C | 00685E64 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1577 | 00685EE8 | 00685EC0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1578 | 00685F44 | 00685F1C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1579 | 00685FA0 | 00685F78 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1580 | 00685FFC | 00685FD4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1581 | 00686058 | 00686030 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1582 | 006860B4 | 0068608C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1583 | 00686110 | 006860E8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1584 | 0068616C | 00686144 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1585 | 006861C8 | 006861A0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1586 | 00686224 | 006861FC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1587 | 00686280 | 00686258 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1588 | 006862DC | 006862B4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1589 | 00686338 | 00686310 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1590 | 00686394 | 0068636C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1591 | 006863F0 | 006863C8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1592 | 0068644C | 00686424 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1593 | 006864A8 | 00686480 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1594 | 00686504 | 006864DC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1595 | 00686560 | 00686538 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1596 | 006865BC | 00686594 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1597 | 00686618 | 006865F0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1598 | 00686674 | 0068664C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1599 | 006866D0 | 006866A8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1600 | 0068672C | 00686704 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1601 | 00686788 | 00686760 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1602 | 006867E4 | 006867BC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1603 | 00686840 | 00686818 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1604 | 0068689C | 00686874 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1605 | 006868F8 | 006868D0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1606 | 00686954 | 0068692C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1607 | 006869B0 | 00686988 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1608 | 00686A0C | 006869E4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1609 | 00686A68 | 00686A40 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1610 | 00686AC4 | 00686A9C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1611 | 00686B20 | 00686AF8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1612 | 00686B7C | 00686B54 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1613 | 00686BD8 | 00686BB0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1614 | 00686C34 | 00686C0C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1615 | 00686C90 | 00686C68 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1616 | 00686CEC | 00686CC4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1617 | 00686D48 | 00686D20 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1618 | 00686DA4 | 00686D7C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1619 | 00686E00 | 00686DD8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1620 | 00686E5C | 00686E34 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1621 | 00686EB8 | 00686E90 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1622 | 00686F14 | 00686EEC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1623 | 00686F70 | 00686F48 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1624 | 00686FCC | 00686FA4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1625 | 00687028 | 00687000 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1626 | 00687084 | 0068705C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1627 | 006870E0 | 006870B8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1628 | 0068713C | 00687114 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1629 | 00687198 | 00687170 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1630 | 006871F4 | 006871CC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1631 | 00687250 | 00687228 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1632 | 006872AC | 00687284 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1633 | 00687308 | 006872E0 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1634 | 00687364 | 0068733C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1635 | 006873C0 | 00687398 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1636 | 0068741C | 006873F4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1637 | 00687478 | 00687450 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1424 | 006827EC | 006827C4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1425 | 00682848 | 00682820 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1426 | 006828A4 | 0068287C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1427 | 00682900 | 006828D8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1428 | 0068295C | 00682934 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1429 | 006829B8 | 00682990 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1430 | 00682A14 | 006829EC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1431 | 00682A70 | 00682A48 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1432 | 00682ACC | 00682AA4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1433 | 00682B28 | 00682B00 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1434 | 00682B84 | 00682B5C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1435 | 00682BE0 | 00682BB8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1436 | 00682C3C | 00682C14 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1437 | 00682C98 | 00682C70 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1438 | 00682CF4 | 00682CCC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1439 | 00682D50 | 00682D28 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1440 | 00682DAC | 00682D84 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1441 | 00682E08 | 00682DE0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1442 | 00682E64 | 00682E3C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1443 | 00682EC0 | 00682E98 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1444 | 00682F1C | 00682EF4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1445 | 00682F78 | 00682F50 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1446 | 00682FD4 | 00682FAC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1447 | 00683030 | 00683008 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1448 | 0068308C | 00683064 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1449 | 006830E8 | 006830C0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1450 | 00683144 | 0068311C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1451 | 006831A0 | 00683178 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1452 | 006831FC | 006831D4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1453 | 00683258 | 00683230 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1454 | 006832B4 | 0068328C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1455 | 00683310 | 006832E8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1456 | 0068336C | 00683344 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1457 | 006833C8 | 006833A0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1458 | 00683424 | 006833FC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1459 | 00683480 | 00683458 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1460 | 006834DC | 006834B4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1461 | 00683538 | 00683510 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1462 | 00683594 | 0068356C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1463 | 006835F0 | 006835C8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1464 | 0068364C | 00683624 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1465 | 006836A8 | 00683680 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1466 | 00683704 | 006836DC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1467 | 00683760 | 00683738 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1468 | 006837BC | 00683794 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1469 | 00683818 | 006837F0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1470 | 00683874 | 0068384C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1471 | 006838D0 | 006838A8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1472 | 0068392C | 00683904 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1473 | 00683988 | 00683960 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1474 | 006839E4 | 006839BC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1475 | 00683A40 | 00683A18 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1476 | 00683A9C | 00683A74 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1477 | 00683AF8 | 00683AD0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1478 | 00683B54 | 00683B2C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1479 | 00683BB0 | 00683B88 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1480 | 00683C0C | 00683BE4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1481 | 00683C68 | 00683C40 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1482 | 00683CC4 | 00683C9C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1483 | 00683D20 | 00683CF8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1484 | 00683D7C | 00683D54 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1485 | 00683DD8 | 00683DB0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1486 | 00683E34 | 00683E0C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1487 | 00683E90 | 00683E68 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1488 | 00683EEC | 00683EC4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1489 | 00683F48 | 00683F20 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1490 | 00683FA4 | 00683F7C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1491 | 00684000 | 00683FD8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1492 | 0068405C | 00684034 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1493 | 006840B8 | 00684090 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1494 | 00684114 | 006840EC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1495 | 00684170 | 00684148 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1496 | 006841CC | 006841A4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1497 | 00684228 | 00684200 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1498 | 00684284 | 0068425C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1499 | 006842E0 | 006842B8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1500 | 0068433C | 00684314 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1501 | 00684398 | 00684370 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1502 | 006843F4 | 006843CC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1503 | 00684450 | 00684428 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1504 | 006844AC | 00684484 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1505 | 00684508 | 006844E0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1506 | 00684564 | 0068453C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1507 | 006845C0 | 00684598 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1508 | 0068461C | 006845F4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1509 | 00684678 | 00684650 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1510 | 006846D4 | 006846AC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1511 | 00684730 | 00684708 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1512 | 0068478C | 00684764 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1513 | 006847E8 | 006847C0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1514 | 00684844 | 0068481C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1515 | 006848A0 | 00684878 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1516 | 006848FC | 006848D4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1517 | 00684958 | 00684930 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1518 | 006849B4 | 0068498C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1519 | 00684A10 | 006849E8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1520 | 00684A6C | 00684A44 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1521 | 00684AC8 | 00684AA0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1522 | 00684B24 | 00684AFC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1523 | 00684B80 | 00684B58 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1524 | 00684BDC | 00684BB4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1525 | 00684C38 | 00684C10 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1526 | 00684C94 | 00684C6C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1527 | 00684CF0 | 00684CC8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1528 | 00684D4C | 00684D24 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1529 | 00684DA8 | 00684D80 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1530 | 00684E04 | 00684DDC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1531 | 00684E60 | 00684E38 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1532 | 00684EBC | 00684E94 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1533 | 00684F18 | 00684EF0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1534 | 00684F74 | 00684F4C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1535 | 00684FD0 | 00684FA8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1536 | 0068502C | 00685004 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1537 | 00685088 | 00685060 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1538 | 006850E4 | 006850BC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1539 | 00685140 | 00685118 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1540 | 0068519C | 00685174 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1541 | 006851F8 | 006851D0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1542 | 00685254 | 0068522C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1543 | 006852B0 | 00685288 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1544 | 0068530C | 006852E4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1545 | 00685368 | 00685340 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1546 | 006853C4 | 0068539C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1547 | 00685420 | 006853F8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1548 | 0068547C | 00685454 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1549 | 006854D8 | 006854B0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1550 | 00685534 | 0068550C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1551 | 00685590 | 00685568 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1552 | 006855EC | 006855C4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1553 | 00685648 | 00685620 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1554 | 006856A4 | 0068567C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1555 | 00685700 | 006856D8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1556 | 0068575C | 00685734 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1557 | 006857B8 | 00685790 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1558 | 00685814 | 006857EC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1559 | 00685870 | 00685848 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1560 | 006858CC | 006858A4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1561 | 00685928 | 00685900 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1562 | 00685984 | 0068595C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1563 | 006859E0 | 006859B8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1564 | 00685A3C | 00685A14 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1565 | 00685A98 | 00685A70 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1566 | 00685AF4 | 00685ACC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1567 | 00685B50 | 00685B28 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1568 | 00685BAC | 00685B84 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1569 | 00685C08 | 00685BE0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1570 | 00685C64 | 00685C3C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1571 | 00685CC0 | 00685C98 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1572 | 00685D1C | 00685CF4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1573 | 00685D78 | 00685D50 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1574 | 00685DD4 | 00685DAC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1575 | 00685E30 | 00685E08 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1576 | 00685E8C | 00685E64 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1577 | 00685EE8 | 00685EC0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1578 | 00685F44 | 00685F1C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1579 | 00685FA0 | 00685F78 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1580 | 00685FFC | 00685FD4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1581 | 00686058 | 00686030 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1582 | 006860B4 | 0068608C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1583 | 00686110 | 006860E8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1584 | 0068616C | 00686144 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1585 | 006861C8 | 006861A0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1586 | 00686224 | 006861FC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1587 | 00686280 | 00686258 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1588 | 006862DC | 006862B4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1589 | 00686338 | 00686310 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1590 | 00686394 | 0068636C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1591 | 006863F0 | 006863C8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1592 | 0068644C | 00686424 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1593 | 006864A8 | 00686480 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1594 | 00686504 | 006864DC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1595 | 00686560 | 00686538 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1596 | 006865BC | 00686594 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1597 | 00686618 | 006865F0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1598 | 00686674 | 0068664C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1599 | 006866D0 | 006866A8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1600 | 0068672C | 00686704 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1601 | 00686788 | 00686760 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1602 | 006867E4 | 006867BC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1603 | 00686840 | 00686818 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1604 | 0068689C | 00686874 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1605 | 006868F8 | 006868D0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1606 | 00686954 | 0068692C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1607 | 006869B0 | 00686988 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1608 | 00686A0C | 006869E4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1609 | 00686A68 | 00686A40 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1610 | 00686AC4 | 00686A9C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1611 | 00686B20 | 00686AF8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1612 | 00686B7C | 00686B54 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1613 | 00686BD8 | 00686BB0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1614 | 00686C34 | 00686C0C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1615 | 00686C90 | 00686C68 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1616 | 00686CEC | 00686CC4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1617 | 00686D48 | 00686D20 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1618 | 00686DA4 | 00686D7C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1619 | 00686E00 | 00686DD8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1620 | 00686E5C | 00686E34 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1621 | 00686EB8 | 00686E90 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1622 | 00686F14 | 00686EEC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1623 | 00686F70 | 00686F48 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1624 | 00686FCC | 00686FA4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1625 | 00687028 | 00687000 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1626 | 00687084 | 0068705C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1627 | 006870E0 | 006870B8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1628 | 0068713C | 00687114 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1629 | 00687198 | 00687170 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1630 | 006871F4 | 006871CC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1631 | 00687250 | 00687228 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1632 | 006872AC | 00687284 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1633 | 00687308 | 006872E0 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1634 | 00687364 | 0068733C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1635 | 006873C0 | 00687398 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1636 | 0068741C | 006873F4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1637 | 00687478 | 00687450 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 1638 | 00689BD8 | 00689BB0 | A | - | 0 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover |
 | 1639 | 0068A050 | 0068A028 | A | - | 0 |  |  | in_r1: live-in at entry -> missing parameter |
 | 1640 | 0068A374 | 0068A34C | A | - | 0 |  |  | in_r1: live-in at entry -> missing parameter |
 | 1641 | 0068A3A0 | 0068A378 | A | - | 0 |  |  | in_r1: live-in at entry -> missing parameter |
 | 1642 | 0068A5A4 | 0068A57C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 1643 | 0068A5F4 | 0068A5CC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1644 | 0068A644 | 0068A61C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1645 | 0068A6C0 | 0068A698 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1646 | 0068A710 | 0068A6E8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1647 | 0068A760 | 0068A738 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1648 | 0068A7B0 | 0068A788 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1649 | 0068A800 | 0068A7D8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1650 | 0068A850 | 0068A828 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1651 | 0068A8A0 | 0068A878 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1652 | 0068A8F0 | 0068A8C8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1653 | 0068A940 | 0068A918 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1654 | 0068A990 | 0068A968 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1655 | 0068A9E0 | 0068A9B8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1656 | 0068AA30 | 0068AA08 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1657 | 0068AA80 | 0068AA58 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1658 | 0068AAD0 | 0068AAA8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1659 | 0068AB20 | 0068AAF8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1660 | 0068AB70 | 0068AB48 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1661 | 0068ABC0 | 0068AB98 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1662 | 0068AC10 | 0068ABE8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1663 | 0068AC60 | 0068AC38 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1664 | 0068ACB0 | 0068AC88 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1665 | 0068AD00 | 0068ACD8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1666 | 0068AD50 | 0068AD28 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1667 | 0068ADA0 | 0068AD78 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1668 | 0068ADF0 | 0068ADC8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1669 | 0068AE40 | 0068AE18 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1670 | 0068AE90 | 0068AE68 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1671 | 0068AEE0 | 0068AEB8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1672 | 0068AF30 | 0068AF08 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1673 | 0068AF80 | 0068AF58 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1674 | 0068AFD0 | 0068AFA8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1675 | 0068B020 | 0068AFF8 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1676 | 0068B328 | 0068B300 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1677 | 0068B380 | 0068B358 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1678 | 0068B45C | 0068B434 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1679 | 0068B4AC | 0068B484 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1680 | 0068B504 | 0068B4DC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1681 | 0068B55C | 0068B534 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1682 | 0068B5B4 | 0068B58C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1683 | 0068B60C | 0068B5E4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1684 | 0068B664 | 0068B63C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1685 | 0068B6BC | 0068B694 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1686 | 0068B714 | 0068B6EC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1687 | 0068B76C | 0068B744 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1688 | 0068B7C4 | 0068B79C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1689 | 0068B81C | 0068B7F4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1690 | 0068B874 | 0068B84C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1691 | 0068B8CC | 0068B8A4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1692 | 0068B924 | 0068B8FC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1693 | 0068B97C | 0068B954 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1694 | 0068B9D4 | 0068B9AC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1695 | 0068BA2C | 0068BA04 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1696 | 0068BA84 | 0068BA5C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1697 | 0068BAD4 | 0068BAAC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1698 | 0068BB24 | 0068BAFC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1699 | 0068BB74 | 0068BB4C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1700 | 0068BBCC | 0068BBA4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1701 | 0068BC24 | 0068BBFC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1702 | 0068BC7C | 0068BC54 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1703 | 0068BCD4 | 0068BCAC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1704 | 0068BD2C | 0068BD04 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1705 | 0068BD84 | 0068BD5C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1706 | 0068BDDC | 0068BDB4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1707 | 0068BE34 | 0068BE0C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1708 | 0068BE8C | 0068BE64 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1709 | 0068BEE4 | 0068BEBC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1710 | 0068BF3C | 0068BF14 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1711 | 0068BF94 | 0068BF6C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1712 | 0068BFEC | 0068BFC4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1713 | 0068C044 | 0068C01C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1714 | 0068C09C | 0068C074 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1715 | 0068C0F4 | 0068C0CC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1716 | 0068C14C | 0068C124 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1717 | 0068C1A4 | 0068C17C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1718 | 0068C1FC | 0068C1D4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1719 | 0068C254 | 0068C22C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1720 | 0068C2AC | 0068C284 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1721 | 0068C304 | 0068C2DC | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1722 | 0068C35C | 0068C334 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1723 | 0068C3B4 | 0068C38C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1724 | 0068C40C | 0068C3E4 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1725 | 0068C464 | 0068C43C | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
-| 1726 | 0068C4BC | 0068C494 | B | - | 0 |  |  | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1644 | 0068A644 | 0068A61C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1645 | 0068A6C0 | 0068A698 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1646 | 0068A710 | 0068A6E8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1647 | 0068A760 | 0068A738 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1648 | 0068A7B0 | 0068A788 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1649 | 0068A800 | 0068A7D8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1650 | 0068A850 | 0068A828 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1651 | 0068A8A0 | 0068A878 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1652 | 0068A8F0 | 0068A8C8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1653 | 0068A940 | 0068A918 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1654 | 0068A990 | 0068A968 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1655 | 0068A9E0 | 0068A9B8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1656 | 0068AA30 | 0068AA08 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1657 | 0068AA80 | 0068AA58 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1658 | 0068AAD0 | 0068AAA8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1659 | 0068AB20 | 0068AAF8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1660 | 0068AB70 | 0068AB48 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1661 | 0068ABC0 | 0068AB98 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1662 | 0068AC10 | 0068ABE8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1663 | 0068AC60 | 0068AC38 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1664 | 0068ACB0 | 0068AC88 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1665 | 0068AD00 | 0068ACD8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1666 | 0068AD50 | 0068AD28 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1667 | 0068ADA0 | 0068AD78 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1668 | 0068ADF0 | 0068ADC8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1669 | 0068AE40 | 0068AE18 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1670 | 0068AE90 | 0068AE68 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1671 | 0068AEE0 | 0068AEB8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1672 | 0068AF30 | 0068AF08 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1673 | 0068AF80 | 0068AF58 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1674 | 0068AFD0 | 0068AFA8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1675 | 0068B020 | 0068AFF8 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1676 | 0068B328 | 0068B300 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1677 | 0068B380 | 0068B358 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1678 | 0068B45C | 0068B434 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1679 | 0068B4AC | 0068B484 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1680 | 0068B504 | 0068B4DC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1681 | 0068B55C | 0068B534 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1682 | 0068B5B4 | 0068B58C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1683 | 0068B60C | 0068B5E4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1684 | 0068B664 | 0068B63C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1685 | 0068B6BC | 0068B694 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1686 | 0068B714 | 0068B6EC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1687 | 0068B76C | 0068B744 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1688 | 0068B7C4 | 0068B79C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1689 | 0068B81C | 0068B7F4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1690 | 0068B874 | 0068B84C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1691 | 0068B8CC | 0068B8A4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1692 | 0068B924 | 0068B8FC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1693 | 0068B97C | 0068B954 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1694 | 0068B9D4 | 0068B9AC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1695 | 0068BA2C | 0068BA04 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1696 | 0068BA84 | 0068BA5C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1697 | 0068BAD4 | 0068BAAC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1698 | 0068BB24 | 0068BAFC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1699 | 0068BB74 | 0068BB4C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1700 | 0068BBCC | 0068BBA4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1701 | 0068BC24 | 0068BBFC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1702 | 0068BC7C | 0068BC54 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1703 | 0068BCD4 | 0068BCAC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1704 | 0068BD2C | 0068BD04 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1705 | 0068BD84 | 0068BD5C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1706 | 0068BDDC | 0068BDB4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1707 | 0068BE34 | 0068BE0C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1708 | 0068BE8C | 0068BE64 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1709 | 0068BEE4 | 0068BEBC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1710 | 0068BF3C | 0068BF14 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1711 | 0068BF94 | 0068BF6C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1712 | 0068BFEC | 0068BFC4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1713 | 0068C044 | 0068C01C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1714 | 0068C09C | 0068C074 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1715 | 0068C0F4 | 0068C0CC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1716 | 0068C14C | 0068C124 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1717 | 0068C1A4 | 0068C17C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1718 | 0068C1FC | 0068C1D4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1719 | 0068C254 | 0068C22C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1720 | 0068C2AC | 0068C284 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1721 | 0068C304 | 0068C2DC | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1722 | 0068C35C | 0068C334 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1723 | 0068C3B4 | 0068C38C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1724 | 0068C40C | 0068C3E4 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1725 | 0068C464 | 0068C43C | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
+| 1726 | 0068C4BC | 0068C494 | B | - | 0 |  | yes | indirect tail call (PMF / state-machine dispatch) called with NO arguments |
 | 1727 | 00692084 | 0069205C | A | - | 0 |  |  | extraout_r1: read after a call -> callee's 2nd/float return, or a dead leftover; in_r12: scratch/link register read (veneer, conditional-def or tail-call artefact; check); indirect tail call (PMF / state-machine dispatch) with arguments (probably fine natively) |
 
 ## Flagged but probably harmless natively (692)
@@ -2612,10 +2612,12 @@ Not class A/B by name, but just as wrong (example: 0036EAF8 returns a float comp
 | 0058AF2C | 28 | - |
 | 005AD49C | 440 | - |
 
-## Rewritten in native/robust (104 files)
+## Rewritten in native/robust (704 files)
 
 | USA | what (first header line) |
 |---|---|
+| 0010BB50 | USA 0010BB50 <- EU 0010BB50: state machine changeState(sm, newState), class-B template T1 |
+| 0010BC94 | USA 0010BC94 <- EU 0010BC94: state machine changeState(sm, newState), class-B template T1 |
 | 00144F4C | USA 00144F4C <- EU 00144F4C: actor constructor with a 4-state StateMachine at +0x790 |
 | 0014E428 | USA 0014E428 <- EU 0014E428: actor "create effect/handle" wrapper: |
 | 00168E9C | USA 00168E9C <- EU 00168E9C: animation-blend update of a model's animation-slot set |
@@ -2667,58 +2669,656 @@ Not class A/B by name, but just as wrong (example: 0036EAF8 returns a float comp
 | 0060B6E8 | USA 0060B6E8 <- EU 0060B6C0: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 0060C57C | USA 0060C57C <- EU 0060C554: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 0060D3F8 | USA 0060D3F8 <- EU 0060D3D0: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0060E480 | USA 0060E480 <- EU 0060E458: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0060F278 | USA 0060F278 <- EU 0060F250: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 0061010C | USA 0061010C <- EU 006100E4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00611198 | USA 00611198 <- EU 00611170: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061202C | USA 0061202C <- EU 00612004: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00612EC0 | USA 00612EC0 <- EU 00612E98: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00613D54 | USA 00613D54 <- EU 00613D2C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00614BFC | USA 00614BFC <- EU 00614BD4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00615A90 | USA 00615A90 <- EU 00615A68: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00616924 | USA 00616924 <- EU 006168FC: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 006177C0 | USA 006177C0 <- EU 00617798: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00618654 | USA 00618654 <- EU 0061862C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006194E8 | USA 006194E8 <- EU 006194C0: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061A37C | USA 0061A37C <- EU 0061A354: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061B210 | USA 0061B210 <- EU 0061B1E8: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 0061C0A4 | USA 0061C0A4 <- EU 0061C07C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061D008 | USA 0061D008 <- EU 0061CFE0: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061DE9C | USA 0061DE9C <- EU 0061DE74: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061ED30 | USA 0061ED30 <- EU 0061ED08: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0061FBC4 | USA 0061FBC4 <- EU 0061FB9C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00620A58 | USA 00620A58 <- EU 00620A30: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006218EC | USA 006218EC <- EU 006218C4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00622780 | USA 00622780 <- EU 00622758: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00623578 | USA 00623578 <- EU 00623550: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062440C | USA 0062440C <- EU 006243E4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00625250 | USA 00625250 <- EU 00625228: class-B template T4 (51 instances, tools/b_templates.json). |
 | 006260FC | USA 006260FC <- EU 006260D4: class-B template T4 (51 instances, tools/b_templates.json). |
+| 00626FA4 | USA 00626FA4 <- EU 00626F7C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00627E58 | USA 00627E58 <- EU 00627E30: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00628EF0 | USA 00628EF0 <- EU 00628EC8: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00629D84 | USA 00629D84 <- EU 00629D5C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062AE54 | USA 0062AE54 <- EU 0062AE2C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062BEDC | USA 0062BEDC <- EU 0062BEB4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062CF64 | USA 0062CF64 <- EU 0062CF3C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062DDF8 | USA 0062DDF8 <- EU 0062DDD0: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062EC8C | USA 0062EC8C <- EU 0062EC64: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0062FB20 | USA 0062FB20 <- EU 0062FAF8: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00630BA8 | USA 00630BA8 <- EU 00630B80: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00631C30 | USA 00631C30 <- EU 00631C08: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00632AC4 | USA 00632AC4 <- EU 00632A9C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006339A0 | USA 006339A0 <- EU 00633978: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00634834 | USA 00634834 <- EU 0063480C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006356F4 | USA 006356F4 <- EU 006356CC: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 00636588 | USA 00636588 <- EU 00636560: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
 | 0063741C | USA 0063741C <- EU 006373F4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006383A4 | USA 006383A4 <- EU 0063837C: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 00639238 | USA 00639238 <- EU 00639210: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 0063A0CC | USA 0063A0CC <- EU 0063A0A4: owner->changeStateIfDifferent(newState, flag), class-B template T4 |
+| 006563C8 | USA 006563C8 <- EU 006563A0: state machine changeState(sm, newState), class-B template T1 |
+| 0065650C | USA 0065650C <- EU 006564E4: state machine changeState(sm, newState), class-B template T1 |
+| 00656650 | USA 00656650 <- EU 00656628: state machine changeState(sm, newState), class-B template T1 |
+| 00656794 | USA 00656794 <- EU 0065676C: state machine changeState(sm, newState), class-B template T1 |
 | 006568D8 | USA 006568D8 <- EU 006568B0: state machine changeState(sm, newState), class-B template T1 |
+| 00656A1C | USA 00656A1C <- EU 006569F4: state machine changeState(sm, newState), class-B template T1 |
+| 00656B60 | USA 00656B60 <- EU 00656B38: state machine changeState(sm, newState), class-B template T1 |
+| 00656CA4 | USA 00656CA4 <- EU 00656C7C: state machine changeState(sm, newState), class-B template T1 |
+| 00656DE8 | USA 00656DE8 <- EU 00656DC0: state machine changeState(sm, newState), class-B template T1 |
+| 00656F2C | USA 00656F2C <- EU 00656F04: state machine changeState(sm, newState), class-B template T1 |
+| 00657070 | USA 00657070 <- EU 00657048: state machine changeState(sm, newState), class-B template T1 |
+| 006571B4 | USA 006571B4 <- EU 0065718C: state machine changeState(sm, newState), class-B template T1 |
+| 006572F8 | USA 006572F8 <- EU 006572D0: state machine changeState(sm, newState), class-B template T1 |
+| 0065743C | USA 0065743C <- EU 00657414: state machine changeState(sm, newState), class-B template T1 |
+| 00657580 | USA 00657580 <- EU 00657558: state machine changeState(sm, newState), class-B template T1 |
+| 006576C4 | USA 006576C4 <- EU 0065769C: state machine changeState(sm, newState), class-B template T1 |
+| 00657808 | USA 00657808 <- EU 006577E0: state machine changeState(sm, newState), class-B template T1 |
+| 0065794C | USA 0065794C <- EU 00657924: state machine changeState(sm, newState), class-B template T1 |
+| 00657A90 | USA 00657A90 <- EU 00657A68: state machine changeState(sm, newState), class-B template T1 |
+| 00657BD4 | USA 00657BD4 <- EU 00657BAC: state machine changeState(sm, newState), class-B template T1 |
 | 00657D18 | USA 00657D18 <- EU 00657CF0: state machine changeState(sm, newState), class-B template T1 |
+| 00657E5C | USA 00657E5C <- EU 00657E34: state machine changeState(sm, newState), class-B template T1 |
+| 00657FA0 | USA 00657FA0 <- EU 00657F78: state machine changeState(sm, newState), class-B template T1 |
+| 006580E4 | USA 006580E4 <- EU 006580BC: state machine changeState(sm, newState), class-B template T1 |
 | 00658228 | USA 00658228 <- EU 00658200: state machine changeState(sm, newState), class-B template T1 |
 | 0065836C | USA 0065836C <- EU 00658344: state machine changeState(sm, newState), class-B template T1 |
 | 00658604 | USA 00658604 <- EU 006585DC: state machine changeState(sm, newState), class-B template T1 |
+| 00658748 | USA 00658748 <- EU 00658720: state machine changeState(sm, newState), class-B template T1 |
+| 0065888C | USA 0065888C <- EU 00658864: state machine changeState(sm, newState), class-B template T1 |
+| 006589D0 | USA 006589D0 <- EU 006589A8: state machine changeState(sm, newState), class-B template T1 |
+| 00658B14 | USA 00658B14 <- EU 00658AEC: state machine changeState(sm, newState), class-B template T1 |
+| 00658C58 | USA 00658C58 <- EU 00658C30: state machine changeState(sm, newState), class-B template T1 |
+| 00658D9C | USA 00658D9C <- EU 00658D74: state machine changeState(sm, newState), class-B template T1 |
+| 00658EE0 | USA 00658EE0 <- EU 00658EB8: state machine changeState(sm, newState), class-B template T1 |
+| 00659024 | USA 00659024 <- EU 00658FFC: state machine changeState(sm, newState), class-B template T1 |
+| 00659168 | USA 00659168 <- EU 00659140: state machine changeState(sm, newState), class-B template T1 |
+| 00659400 | USA 00659400 <- EU 006593D8: state machine changeState(sm, newState), class-B template T1 |
+| 00659544 | USA 00659544 <- EU 0065951C: state machine changeState(sm, newState), class-B template T1 |
 | 00659688 | USA 00659688 <- EU 00659660: state machine changeState(sm, newState), class-B template T1 |
+| 006597CC | USA 006597CC <- EU 006597A4: state machine changeState(sm, newState), class-B template T1 |
+| 00659910 | USA 00659910 <- EU 006598E8: state machine changeState(sm, newState), class-B template T1 |
 | 00659A54 | USA 00659A54 <- EU 00659A2C: state machine changeState(sm, newState), class-B template T1 |
+| 00659B98 | USA 00659B98 <- EU 00659B70: state machine changeState(sm, newState), class-B template T1 |
+| 00659CDC | USA 00659CDC <- EU 00659CB4: state machine changeState(sm, newState), class-B template T1 |
+| 00659E20 | USA 00659E20 <- EU 00659DF8: state machine changeState(sm, newState), class-B template T1 |
+| 00659F64 | USA 00659F64 <- EU 00659F3C: state machine changeState(sm, newState), class-B template T1 |
+| 0065A0A8 | USA 0065A0A8 <- EU 0065A080: state machine changeState(sm, newState), class-B template T1 |
 | 0065A1EC | USA 0065A1EC <- EU 0065A1C4: state machine changeState(sm, newState), class-B template T1 |
 | 0065A330 | USA 0065A330 <- EU 0065A308: state machine changeState(sm, newState), class-B template T1 |
+| 0065A474 | USA 0065A474 <- EU 0065A44C: state machine changeState(sm, newState), class-B template T1 |
 | 0065A5B8 | USA 0065A5B8 <- EU 0065A590: state machine changeState(sm, newState), class-B template T1 |
+| 0065A6FC | USA 0065A6FC <- EU 0065A6D4: state machine changeState(sm, newState), class-B template T1 |
 | 0065A840 | USA 0065A840 <- EU 0065A818: state machine changeState(sm, newState), class-B template T1 |
 | 0065A984 | USA 0065A984 <- EU 0065A95C: state machine changeState(sm, newState), class-B template T1 |
 | 0065AAC8 | USA 0065AAC8 <- EU 0065AAA0: state machine changeState(sm, newState), class-B template T1 |
 | 0065AC0C | USA 0065AC0C <- EU 0065ABE4: state machine changeState(sm, newState), class-B template T1 |
+| 0065AD50 | USA 0065AD50 <- EU 0065AD28: state machine changeState(sm, newState), class-B template T1 |
 | 0065AF54 | USA 0065AF54 <- EU 0065AF2C: state machine changeState(sm, newState), class-B template T1 |
 | 0065B158 | USA 0065B158 <- EU 0065B130: state machine changeState(sm, newState) (the state-machine |
 | 0065B29C | USA 0065B29C <- EU 0065B274: state machine changeState(sm, newState), class-B template T1 |
+| 0065B3E0 | USA 0065B3E0 <- EU 0065B3B8: state machine changeState(sm, newState), class-B template T1 |
+| 0065B524 | USA 0065B524 <- EU 0065B4FC: state machine changeState(sm, newState), class-B template T1 |
+| 0065B668 | USA 0065B668 <- EU 0065B640: state machine changeState(sm, newState), class-B template T1 |
+| 0065B7AC | USA 0065B7AC <- EU 0065B784: state machine changeState(sm, newState), class-B template T1 |
+| 0065B8F0 | USA 0065B8F0 <- EU 0065B8C8: state machine changeState(sm, newState), class-B template T1 |
+| 0065BA34 | USA 0065BA34 <- EU 0065BA0C: state machine changeState(sm, newState), class-B template T1 |
+| 0065BB78 | USA 0065BB78 <- EU 0065BB50: state machine changeState(sm, newState), class-B template T1 |
+| 0065BCBC | USA 0065BCBC <- EU 0065BC94: state machine changeState(sm, newState), class-B template T1 |
+| 0065BE00 | USA 0065BE00 <- EU 0065BDD8: state machine changeState(sm, newState), class-B template T1 |
+| 0065BF44 | USA 0065BF44 <- EU 0065BF1C: state machine changeState(sm, newState), class-B template T1 |
+| 0065C088 | USA 0065C088 <- EU 0065C060: state machine changeState(sm, newState), class-B template T1 |
+| 0065C1CC | USA 0065C1CC <- EU 0065C1A4: state machine changeState(sm, newState), class-B template T1 |
+| 0065C310 | USA 0065C310 <- EU 0065C2E8: state machine changeState(sm, newState), class-B template T1 |
+| 0065C454 | USA 0065C454 <- EU 0065C42C: state machine changeState(sm, newState), class-B template T1 |
+| 0065C598 | USA 0065C598 <- EU 0065C570: state machine changeState(sm, newState), class-B template T1 |
+| 0065C844 | USA 0065C844 <- EU 0065C81C: state machine changeState(sm, newState), class-B template T1 |
+| 0065C988 | USA 0065C988 <- EU 0065C960: state machine changeState(sm, newState), class-B template T1 |
+| 0065CACC | USA 0065CACC <- EU 0065CAA4: state machine changeState(sm, newState), class-B template T1 |
+| 0065CC10 | USA 0065CC10 <- EU 0065CBE8: state machine changeState(sm, newState), class-B template T1 |
+| 0065CD54 | USA 0065CD54 <- EU 0065CD2C: state machine changeState(sm, newState), class-B template T1 |
+| 0065CE98 | USA 0065CE98 <- EU 0065CE70: state machine changeState(sm, newState), class-B template T1 |
+| 0065CFDC | USA 0065CFDC <- EU 0065CFB4: state machine changeState(sm, newState), class-B template T1 |
+| 0065D120 | USA 0065D120 <- EU 0065D0F8: state machine changeState(sm, newState), class-B template T1 |
+| 0065D264 | USA 0065D264 <- EU 0065D23C: state machine changeState(sm, newState), class-B template T1 |
 | 0065D3A8 | USA 0065D3A8 <- EU 0065D380: state machine changeState(sm, newState), class-B template T1 |
 | 0065D4EC | USA 0065D4EC <- EU 0065D4C4: state machine changeState(sm, newState), class-B template T1 |
+| 0065D630 | USA 0065D630 <- EU 0065D608: state machine changeState(sm, newState), class-B template T1 |
+| 0065D774 | USA 0065D774 <- EU 0065D74C: state machine changeState(sm, newState), class-B template T1 |
 | 0065D8B8 | USA 0065D8B8 <- EU 0065D890: state machine changeState(sm, newState), class-B template T1 |
+| 0065D9FC | USA 0065D9FC <- EU 0065D9D4: state machine changeState(sm, newState), class-B template T1 |
+| 0065DB40 | USA 0065DB40 <- EU 0065DB18: state machine changeState(sm, newState), class-B template T1 |
+| 0065DC84 | USA 0065DC84 <- EU 0065DC5C: state machine changeState(sm, newState), class-B template T1 |
+| 0065DDC8 | USA 0065DDC8 <- EU 0065DDA0: state machine changeState(sm, newState), class-B template T1 |
+| 0065DFCC | USA 0065DFCC <- EU 0065DFA4: state machine changeState(sm, newState), class-B template T1 |
+| 0065E110 | USA 0065E110 <- EU 0065E0E8: state machine changeState(sm, newState), class-B template T1 |
+| 0065E254 | USA 0065E254 <- EU 0065E22C: state machine changeState(sm, newState), class-B template T1 |
 | 0065E398 | USA 0065E398 <- EU 0065E370: state machine changeState(sm, newState), class-B template T1 |
+| 0065E630 | USA 0065E630 <- EU 0065E608: state machine changeState(sm, newState), class-B template T1 |
 | 0065E774 | USA 0065E774 <- EU 0065E74C: state machine changeState(sm, newState), class-B template T1 |
+| 0065E8B8 | USA 0065E8B8 <- EU 0065E890: state machine changeState(sm, newState), class-B template T1 |
+| 0065E9FC | USA 0065E9FC <- EU 0065E9D4: state machine changeState(sm, newState), class-B template T1 |
+| 0065EB40 | USA 0065EB40 <- EU 0065EB18: state machine changeState(sm, newState), class-B template T1 |
+| 0065EC84 | USA 0065EC84 <- EU 0065EC5C: state machine changeState(sm, newState), class-B template T1 |
+| 0065EDC8 | USA 0065EDC8 <- EU 0065EDA0: state machine changeState(sm, newState), class-B template T1 |
+| 0065EF0C | USA 0065EF0C <- EU 0065EEE4: state machine changeState(sm, newState), class-B template T1 |
+| 0065F050 | USA 0065F050 <- EU 0065F028: state machine changeState(sm, newState), class-B template T1 |
+| 0065F194 | USA 0065F194 <- EU 0065F16C: state machine changeState(sm, newState), class-B template T1 |
+| 0065F2D8 | USA 0065F2D8 <- EU 0065F2B0: state machine changeState(sm, newState), class-B template T1 |
+| 0065F41C | USA 0065F41C <- EU 0065F3F4: state machine changeState(sm, newState), class-B template T1 |
+| 0065F560 | USA 0065F560 <- EU 0065F538: state machine changeState(sm, newState), class-B template T1 |
+| 0065F6A4 | USA 0065F6A4 <- EU 0065F67C: state machine changeState(sm, newState), class-B template T1 |
+| 0065F7E8 | USA 0065F7E8 <- EU 0065F7C0: state machine changeState(sm, newState), class-B template T1 |
+| 0065F92C | USA 0065F92C <- EU 0065F904: state machine changeState(sm, newState), class-B template T1 |
+| 0065FA70 | USA 0065FA70 <- EU 0065FA48: state machine changeState(sm, newState), class-B template T1 |
+| 0065FBB4 | USA 0065FBB4 <- EU 0065FB8C: state machine changeState(sm, newState), class-B template T1 |
+| 0065FCF8 | USA 0065FCF8 <- EU 0065FCD0: state machine changeState(sm, newState), class-B template T1 |
+| 0065FE3C | USA 0065FE3C <- EU 0065FE14: state machine changeState(sm, newState), class-B template T1 |
+| 0065FF80 | USA 0065FF80 <- EU 0065FF58: state machine changeState(sm, newState), class-B template T1 |
+| 006600C4 | USA 006600C4 <- EU 0066009C: state machine changeState(sm, newState), class-B template T1 |
+| 00660208 | USA 00660208 <- EU 006601E0: state machine changeState(sm, newState), class-B template T1 |
+| 0066034C | USA 0066034C <- EU 00660324: state machine changeState(sm, newState), class-B template T1 |
+| 00660490 | USA 00660490 <- EU 00660468: state machine changeState(sm, newState), class-B template T1 |
+| 006605D4 | USA 006605D4 <- EU 006605AC: state machine changeState(sm, newState), class-B template T1 |
+| 00660718 | USA 00660718 <- EU 006606F0: state machine changeState(sm, newState), class-B template T1 |
+| 0066085C | USA 0066085C <- EU 00660834: state machine changeState(sm, newState), class-B template T1 |
+| 006609A0 | USA 006609A0 <- EU 00660978: state machine changeState(sm, newState), class-B template T1 |
+| 00660BA4 | USA 00660BA4 <- EU 00660B7C: state machine changeState(sm, newState), class-B template T1 |
 | 00660CE8 | USA 00660CE8 <- EU 00660CC0: state machine changeState(sm, newState), class-B template T1 |
+| 00660E2C | USA 00660E2C <- EU 00660E04: state machine changeState(sm, newState), class-B template T1 |
+| 00660F70 | USA 00660F70 <- EU 00660F48: state machine changeState(sm, newState), class-B template T1 |
+| 006610B4 | USA 006610B4 <- EU 0066108C: state machine changeState(sm, newState), class-B template T1 |
+| 006611F8 | USA 006611F8 <- EU 006611D0: state machine changeState(sm, newState), class-B template T1 |
+| 0066133C | USA 0066133C <- EU 00661314: state machine changeState(sm, newState), class-B template T1 |
+| 00661480 | USA 00661480 <- EU 00661458: state machine changeState(sm, newState), class-B template T1 |
+| 006615C4 | USA 006615C4 <- EU 0066159C: state machine changeState(sm, newState), class-B template T1 |
 | 00661708 | USA 00661708 <- EU 006616E0: state machine changeState(sm, newState), class-B template T1 |
 | 0066184C | USA 0066184C <- EU 00661824: state machine changeState(sm, newState), another instance of the |
+| 00661990 | USA 00661990 <- EU 00661968: state machine changeState(sm, newState), class-B template T1 |
+| 00661AD4 | USA 00661AD4 <- EU 00661AAC: state machine changeState(sm, newState), class-B template T1 |
+| 00661C18 | USA 00661C18 <- EU 00661BF0: state machine changeState(sm, newState), class-B template T1 |
+| 00661D5C | USA 00661D5C <- EU 00661D34: state machine changeState(sm, newState), class-B template T1 |
+| 00661EA0 | USA 00661EA0 <- EU 00661E78: state machine changeState(sm, newState), class-B template T1 |
 | 00661FE4 | USA 00661FE4 <- EU 00661FBC: state machine changeState(sm, newState), class-B template T1 |
+| 00662128 | USA 00662128 <- EU 00662100: state machine changeState(sm, newState), class-B template T1 |
+| 0066226C | USA 0066226C <- EU 00662244: state machine changeState(sm, newState), class-B template T1 |
+| 006623B0 | USA 006623B0 <- EU 00662388: state machine changeState(sm, newState), class-B template T1 |
+| 006624F4 | USA 006624F4 <- EU 006624CC: state machine changeState(sm, newState), class-B template T1 |
 | 00662638 | USA 00662638 <- EU 00662610: state machine changeState(sm, newState), class-B template T1 |
+| 006628D0 | USA 006628D0 <- EU 006628A8: state machine changeState(sm, newState), class-B template T1 |
+| 00662A14 | USA 00662A14 <- EU 006629EC: state machine changeState(sm, newState), class-B template T1 |
+| 00662B58 | USA 00662B58 <- EU 00662B30: state machine changeState(sm, newState), class-B template T1 |
+| 00662C9C | USA 00662C9C <- EU 00662C74: state machine changeState(sm, newState), class-B template T1 |
+| 00662DE0 | USA 00662DE0 <- EU 00662DB8: state machine changeState(sm, newState), class-B template T1 |
+| 00662F24 | USA 00662F24 <- EU 00662EFC: state machine changeState(sm, newState), class-B template T1 |
+| 00663068 | USA 00663068 <- EU 00663040: state machine changeState(sm, newState), class-B template T1 |
+| 006631AC | USA 006631AC <- EU 00663184: state machine changeState(sm, newState), class-B template T1 |
+| 006632F0 | USA 006632F0 <- EU 006632C8: state machine changeState(sm, newState), class-B template T1 |
+| 00663434 | USA 00663434 <- EU 0066340C: state machine changeState(sm, newState), class-B template T1 |
+| 00663578 | USA 00663578 <- EU 00663550: state machine changeState(sm, newState), class-B template T1 |
+| 00663810 | USA 00663810 <- EU 006637E8: state machine changeState(sm, newState), class-B template T1 |
+| 00663954 | USA 00663954 <- EU 0066392C: state machine changeState(sm, newState), class-B template T1 |
+| 00663A98 | USA 00663A98 <- EU 00663A70: state machine changeState(sm, newState), class-B template T1 |
+| 00663BDC | USA 00663BDC <- EU 00663BB4: state machine changeState(sm, newState), class-B template T1 |
+| 00663D20 | USA 00663D20 <- EU 00663CF8: state machine changeState(sm, newState), class-B template T1 |
+| 00663E64 | USA 00663E64 <- EU 00663E3C: state machine changeState(sm, newState), class-B template T1 |
+| 00663FA8 | USA 00663FA8 <- EU 00663F80: state machine changeState(sm, newState), class-B template T1 |
+| 006640EC | USA 006640EC <- EU 006640C4: state machine changeState(sm, newState), class-B template T1 |
+| 00664230 | USA 00664230 <- EU 00664208: state machine changeState(sm, newState), class-B template T1 |
+| 00664374 | USA 00664374 <- EU 0066434C: state machine changeState(sm, newState), class-B template T1 |
+| 006644B8 | USA 006644B8 <- EU 00664490: state machine changeState(sm, newState), class-B template T1 |
+| 006645FC | USA 006645FC <- EU 006645D4: state machine changeState(sm, newState), class-B template T1 |
+| 00664740 | USA 00664740 <- EU 00664718: state machine changeState(sm, newState), class-B template T1 |
+| 00664884 | USA 00664884 <- EU 0066485C: state machine changeState(sm, newState), class-B template T1 |
+| 006649C8 | USA 006649C8 <- EU 006649A0: state machine changeState(sm, newState), class-B template T1 |
+| 00664B0C | USA 00664B0C <- EU 00664AE4: state machine changeState(sm, newState), class-B template T1 |
+| 00664C50 | USA 00664C50 <- EU 00664C28: state machine changeState(sm, newState), class-B template T1 |
+| 00664D94 | USA 00664D94 <- EU 00664D6C: state machine changeState(sm, newState), class-B template T1 |
+| 00664ED8 | USA 00664ED8 <- EU 00664EB0: state machine changeState(sm, newState), class-B template T1 |
+| 0066501C | USA 0066501C <- EU 00664FF4: state machine changeState(sm, newState), class-B template T1 |
+| 00665160 | USA 00665160 <- EU 00665138: state machine changeState(sm, newState), class-B template T1 |
+| 006652A4 | USA 006652A4 <- EU 0066527C: state machine changeState(sm, newState), class-B template T1 |
+| 006653E8 | USA 006653E8 <- EU 006653C0: state machine changeState(sm, newState), class-B template T1 |
+| 0066552C | USA 0066552C <- EU 00665504: state machine changeState(sm, newState), class-B template T1 |
 | 00665670 | USA 00665670 <- EU 00665648: state machine changeState(sm, newState), class-B template T1 |
 | 006657B4 | USA 006657B4 <- EU 0066578C: state machine changeState(sm, newState), class-B template T1 |
+| 006658F8 | USA 006658F8 <- EU 006658D0: state machine changeState(sm, newState), class-B template T1 |
+| 00665A3C | USA 00665A3C <- EU 00665A14: state machine changeState(sm, newState), class-B template T1 |
+| 00665B80 | USA 00665B80 <- EU 00665B58: state machine changeState(sm, newState), class-B template T1 |
+| 00665CC4 | USA 00665CC4 <- EU 00665C9C: state machine changeState(sm, newState), class-B template T1 |
+| 00665E08 | USA 00665E08 <- EU 00665DE0: state machine changeState(sm, newState), class-B template T1 |
+| 00665F4C | USA 00665F4C <- EU 00665F24: state machine changeState(sm, newState), class-B template T1 |
+| 00666090 | USA 00666090 <- EU 00666068: state machine changeState(sm, newState), class-B template T1 |
+| 006661D4 | USA 006661D4 <- EU 006661AC: state machine changeState(sm, newState), class-B template T1 |
 | 00666318 | USA 00666318 <- EU 006662F0: state machine changeState(sm, newState), class-B template T1 |
+| 0066645C | USA 0066645C <- EU 00666434: state machine changeState(sm, newState), class-B template T1 |
+| 006665A0 | USA 006665A0 <- EU 00666578: state machine changeState(sm, newState), class-B template T1 |
+| 00666838 | USA 00666838 <- EU 00666810: state machine changeState(sm, newState), class-B template T1 |
+| 0066697C | USA 0066697C <- EU 00666954: state machine changeState(sm, newState), class-B template T1 |
+| 00666AC0 | USA 00666AC0 <- EU 00666A98: state machine changeState(sm, newState), class-B template T1 |
+| 00666C04 | USA 00666C04 <- EU 00666BDC: state machine changeState(sm, newState), class-B template T1 |
+| 00666D48 | USA 00666D48 <- EU 00666D20: state machine changeState(sm, newState), class-B template T1 |
+| 00666E8C | USA 00666E8C <- EU 00666E64: state machine changeState(sm, newState), class-B template T1 |
+| 00666FD0 | USA 00666FD0 <- EU 00666FA8: state machine changeState(sm, newState), class-B template T1 |
+| 00667114 | USA 00667114 <- EU 006670EC: state machine changeState(sm, newState), class-B template T1 |
+| 00667258 | USA 00667258 <- EU 00667230: state machine changeState(sm, newState), class-B template T1 |
+| 006674F4 | USA 006674F4 <- EU 006674CC: state machine changeState(sm, newState), class-B template T1 |
+| 00667638 | USA 00667638 <- EU 00667610: state machine changeState(sm, newState), class-B template T1 |
+| 0066777C | USA 0066777C <- EU 00667754: state machine changeState(sm, newState), class-B template T1 |
 | 006678C0 | USA 006678C0 <- EU 00667898: state machine changeState(sm, newState), class-B template T1 |
+| 00667A04 | USA 00667A04 <- EU 006679DC: state machine changeState(sm, newState), class-B template T1 |
+| 00667B48 | USA 00667B48 <- EU 00667B20: state machine changeState(sm, newState), class-B template T1 |
+| 00667C8C | USA 00667C8C <- EU 00667C64: state machine changeState(sm, newState), class-B template T1 |
+| 00667DD0 | USA 00667DD0 <- EU 00667DA8: state machine changeState(sm, newState), class-B template T1 |
+| 00667F14 | USA 00667F14 <- EU 00667EEC: state machine changeState(sm, newState), class-B template T1 |
 | 00668058 | USA 00668058 <- EU 00668030: state machine changeState(sm, newState), another instance of the |
+| 0066819C | USA 0066819C <- EU 00668174: state machine changeState(sm, newState), class-B template T1 |
+| 006682E0 | USA 006682E0 <- EU 006682B8: state machine changeState(sm, newState), class-B template T1 |
+| 00668424 | USA 00668424 <- EU 006683FC: state machine changeState(sm, newState), class-B template T1 |
+| 00668568 | USA 00668568 <- EU 00668540: state machine changeState(sm, newState), class-B template T1 |
+| 006686AC | USA 006686AC <- EU 00668684: state machine changeState(sm, newState), class-B template T1 |
+| 006687F0 | USA 006687F0 <- EU 006687C8: state machine changeState(sm, newState), class-B template T1 |
 | 00668934 | USA 00668934 <- EU 0066890C: state machine changeState(sm, newState), class-B template T1 |
+| 00668A78 | USA 00668A78 <- EU 00668A50: state machine changeState(sm, newState), class-B template T1 |
+| 00668BBC | USA 00668BBC <- EU 00668B94: state machine changeState(sm, newState), class-B template T1 |
+| 00668D00 | USA 00668D00 <- EU 00668CD8: state machine changeState(sm, newState), class-B template T1 |
+| 00668E44 | USA 00668E44 <- EU 00668E1C: state machine changeState(sm, newState), class-B template T1 |
+| 00668F88 | USA 00668F88 <- EU 00668F60: state machine changeState(sm, newState), class-B template T1 |
+| 006690CC | USA 006690CC <- EU 006690A4: state machine changeState(sm, newState), class-B template T1 |
+| 00669210 | USA 00669210 <- EU 006691E8: state machine changeState(sm, newState), class-B template T1 |
+| 00669354 | USA 00669354 <- EU 0066932C: state machine changeState(sm, newState), class-B template T1 |
+| 00669498 | USA 00669498 <- EU 00669470: state machine changeState(sm, newState), class-B template T1 |
+| 006695DC | USA 006695DC <- EU 006695B4: state machine changeState(sm, newState), class-B template T1 |
+| 00669720 | USA 00669720 <- EU 006696F8: state machine changeState(sm, newState), class-B template T1 |
+| 00669864 | USA 00669864 <- EU 0066983C: state machine changeState(sm, newState), class-B template T1 |
+| 006699A8 | USA 006699A8 <- EU 00669980: state machine changeState(sm, newState), class-B template T1 |
+| 00669AEC | USA 00669AEC <- EU 00669AC4: state machine changeState(sm, newState), class-B template T1 |
+| 00669C30 | USA 00669C30 <- EU 00669C08: state machine changeState(sm, newState), class-B template T1 |
+| 00669D74 | USA 00669D74 <- EU 00669D4C: state machine changeState(sm, newState), class-B template T1 |
+| 00669EB8 | USA 00669EB8 <- EU 00669E90: state machine changeState(sm, newState), class-B template T1 |
+| 00669FFC | USA 00669FFC <- EU 00669FD4: state machine changeState(sm, newState), class-B template T1 |
+| 0066A140 | USA 0066A140 <- EU 0066A118: state machine changeState(sm, newState), class-B template T1 |
+| 0066A284 | USA 0066A284 <- EU 0066A25C: state machine changeState(sm, newState), class-B template T1 |
+| 0066A3C8 | USA 0066A3C8 <- EU 0066A3A0: state machine changeState(sm, newState), class-B template T1 |
+| 0066A50C | USA 0066A50C <- EU 0066A4E4: state machine changeState(sm, newState), class-B template T1 |
+| 0066A650 | USA 0066A650 <- EU 0066A628: state machine changeState(sm, newState), class-B template T1 |
+| 0066A794 | USA 0066A794 <- EU 0066A76C: state machine changeState(sm, newState), class-B template T1 |
+| 0066A8D8 | USA 0066A8D8 <- EU 0066A8B0: state machine changeState(sm, newState), class-B template T1 |
+| 0066AA1C | USA 0066AA1C <- EU 0066A9F4: state machine changeState(sm, newState), class-B template T1 |
+| 0066AB60 | USA 0066AB60 <- EU 0066AB38: state machine changeState(sm, newState), class-B template T1 |
+| 0066ACA4 | USA 0066ACA4 <- EU 0066AC7C: state machine changeState(sm, newState), class-B template T1 |
+| 0066ADE8 | USA 0066ADE8 <- EU 0066ADC0: state machine changeState(sm, newState), class-B template T1 |
+| 0066AF2C | USA 0066AF2C <- EU 0066AF04: state machine changeState(sm, newState), class-B template T1 |
+| 0066B070 | USA 0066B070 <- EU 0066B048: state machine changeState(sm, newState), class-B template T1 |
+| 0066B1B4 | USA 0066B1B4 <- EU 0066B18C: state machine changeState(sm, newState), class-B template T1 |
+| 0066B2F8 | USA 0066B2F8 <- EU 0066B2D0: state machine changeState(sm, newState), class-B template T1 |
+| 0066B43C | USA 0066B43C <- EU 0066B414: state machine changeState(sm, newState), class-B template T1 |
 | 0066B580 | USA 0066B580 <- EU 0066B558: state machine changeState(sm, newState), another instance of the |
+| 0066B6C4 | USA 0066B6C4 <- EU 0066B69C: state machine changeState(sm, newState), class-B template T1 |
+| 0066B808 | USA 0066B808 <- EU 0066B7E0: state machine changeState(sm, newState), class-B template T1 |
+| 0066B94C | USA 0066B94C <- EU 0066B924: state machine changeState(sm, newState), class-B template T1 |
+| 0066BA90 | USA 0066BA90 <- EU 0066BA68: state machine changeState(sm, newState), class-B template T1 |
+| 0066BBD4 | USA 0066BBD4 <- EU 0066BBAC: state machine changeState(sm, newState), class-B template T1 |
+| 0066BD18 | USA 0066BD18 <- EU 0066BCF0: state machine changeState(sm, newState), class-B template T1 |
+| 0066C19C | USA 0066C19C <- EU 0066C174: state machine changeState(sm, newState), class-B template T1 |
+| 0066C2E0 | USA 0066C2E0 <- EU 0066C2B8: state machine changeState(sm, newState), class-B template T1 |
+| 0066C424 | USA 0066C424 <- EU 0066C3FC: state machine changeState(sm, newState), class-B template T1 |
+| 0066C748 | USA 0066C748 <- EU 0066C720: state machine changeState(sm, newState), class-B template T1 |
+| 0066C88C | USA 0066C88C <- EU 0066C864: state machine changeState(sm, newState), class-B template T1 |
+| 0066C9D0 | USA 0066C9D0 <- EU 0066C9A8: state machine changeState(sm, newState), class-B template T1 |
+| 0066CB14 | USA 0066CB14 <- EU 0066CAEC: state machine changeState(sm, newState), class-B template T1 |
+| 0066CC58 | USA 0066CC58 <- EU 0066CC30: state machine changeState(sm, newState), class-B template T1 |
+| 0066CD9C | USA 0066CD9C <- EU 0066CD74: state machine changeState(sm, newState), class-B template T1 |
+| 0066CEE0 | USA 0066CEE0 <- EU 0066CEB8: state machine changeState(sm, newState), class-B template T1 |
+| 0066D024 | USA 0066D024 <- EU 0066CFFC: state machine changeState(sm, newState), class-B template T1 |
+| 0066D168 | USA 0066D168 <- EU 0066D140: state machine changeState(sm, newState), class-B template T1 |
+| 0066D2AC | USA 0066D2AC <- EU 0066D284: state machine changeState(sm, newState), class-B template T1 |
+| 0066D78C | USA 0066D78C <- EU 0066D764: state machine changeState(sm, newState), class-B template T1 |
+| 0066DA28 | USA 0066DA28 <- EU 0066DA00: state machine changeState(sm, newState), class-B template T1 |
+| 0066DB6C | USA 0066DB6C <- EU 0066DB44: state machine changeState(sm, newState), class-B template T1 |
+| 0066DCB0 | USA 0066DCB0 <- EU 0066DC88: state machine changeState(sm, newState), class-B template T1 |
+| 0066DDF4 | USA 0066DDF4 <- EU 0066DDCC: state machine changeState(sm, newState), class-B template T1 |
+| 0066DF38 | USA 0066DF38 <- EU 0066DF10: state machine changeState(sm, newState), class-B template T1 |
+| 0066E07C | USA 0066E07C <- EU 0066E054: state machine changeState(sm, newState), class-B template T1 |
+| 0066E1C0 | USA 0066E1C0 <- EU 0066E198: state machine changeState(sm, newState), class-B template T1 |
+| 0066E304 | USA 0066E304 <- EU 0066E2DC: state machine changeState(sm, newState), class-B template T1 |
+| 0066E448 | USA 0066E448 <- EU 0066E420: state machine changeState(sm, newState), class-B template T1 |
+| 0066E65C | USA 0066E65C <- EU 0066E634: state machine changeState(sm, newState), class-B template T1 |
+| 0066E9DC | USA 0066E9DC <- EU 0066E9B4: state machine changeState(sm, newState), class-B template T1 |
+| 0066EB20 | USA 0066EB20 <- EU 0066EAF8: state machine changeState(sm, newState), class-B template T1 |
+| 0066EC64 | USA 0066EC64 <- EU 0066EC3C: state machine changeState(sm, newState), class-B template T1 |
+| 0066EDA8 | USA 0066EDA8 <- EU 0066ED80: state machine changeState(sm, newState), class-B template T1 |
+| 0066EEEC | USA 0066EEEC <- EU 0066EEC4: state machine changeState(sm, newState), class-B template T1 |
+| 0066F030 | USA 0066F030 <- EU 0066F008: state machine changeState(sm, newState), class-B template T1 |
+| 0066F174 | USA 0066F174 <- EU 0066F14C: state machine changeState(sm, newState), class-B template T1 |
+| 0066F2B8 | USA 0066F2B8 <- EU 0066F290: state machine changeState(sm, newState), class-B template T1 |
+| 0066F3FC | USA 0066F3FC <- EU 0066F3D4: state machine changeState(sm, newState), class-B template T1 |
+| 0066F540 | USA 0066F540 <- EU 0066F518: state machine changeState(sm, newState), class-B template T1 |
+| 0066F684 | USA 0066F684 <- EU 0066F65C: state machine changeState(sm, newState), class-B template T1 |
+| 0066F7C8 | USA 0066F7C8 <- EU 0066F7A0: state machine changeState(sm, newState), class-B template T1 |
+| 0066F90C | USA 0066F90C <- EU 0066F8E4: state machine changeState(sm, newState), class-B template T1 |
 | 00682734 | USA 00682734 <- EU 0068270C: class-B template T2_args1 (209 instances, tools/b_templates.json). |
 | 00682790 | USA 00682790 <- EU 00682768: class-B template T2_args1 (209 instances, tools/b_templates.json). |
+| 006827EC | USA 006827EC <- EU 006827C4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682848 | USA 00682848 <- EU 00682820: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006828A4 | USA 006828A4 <- EU 0068287C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682900 | USA 00682900 <- EU 006828D8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068295C | USA 0068295C <- EU 00682934: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006829B8 | USA 006829B8 <- EU 00682990: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682A14 | USA 00682A14 <- EU 006829EC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682A70 | USA 00682A70 <- EU 00682A48: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682ACC | USA 00682ACC <- EU 00682AA4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682B28 | USA 00682B28 <- EU 00682B00: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682B84 | USA 00682B84 <- EU 00682B5C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682BE0 | USA 00682BE0 <- EU 00682BB8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682C3C | USA 00682C3C <- EU 00682C14: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682C98 | USA 00682C98 <- EU 00682C70: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682CF4 | USA 00682CF4 <- EU 00682CCC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682D50 | USA 00682D50 <- EU 00682D28: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682DAC | USA 00682DAC <- EU 00682D84: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682E08 | USA 00682E08 <- EU 00682DE0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682E64 | USA 00682E64 <- EU 00682E3C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682EC0 | USA 00682EC0 <- EU 00682E98: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682F1C | USA 00682F1C <- EU 00682EF4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682F78 | USA 00682F78 <- EU 00682F50: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00682FD4 | USA 00682FD4 <- EU 00682FAC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683030 | USA 00683030 <- EU 00683008: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068308C | USA 0068308C <- EU 00683064: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006830E8 | USA 006830E8 <- EU 006830C0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683144 | USA 00683144 <- EU 0068311C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006831A0 | USA 006831A0 <- EU 00683178: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006831FC | USA 006831FC <- EU 006831D4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683258 | USA 00683258 <- EU 00683230: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006832B4 | USA 006832B4 <- EU 0068328C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683310 | USA 00683310 <- EU 006832E8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068336C | USA 0068336C <- EU 00683344: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006833C8 | USA 006833C8 <- EU 006833A0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683424 | USA 00683424 <- EU 006833FC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683480 | USA 00683480 <- EU 00683458: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006834DC | USA 006834DC <- EU 006834B4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683538 | USA 00683538 <- EU 00683510: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683594 | USA 00683594 <- EU 0068356C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006835F0 | USA 006835F0 <- EU 006835C8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068364C | USA 0068364C <- EU 00683624: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006836A8 | USA 006836A8 <- EU 00683680: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683704 | USA 00683704 <- EU 006836DC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683760 | USA 00683760 <- EU 00683738: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006837BC | USA 006837BC <- EU 00683794: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683818 | USA 00683818 <- EU 006837F0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683874 | USA 00683874 <- EU 0068384C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006838D0 | USA 006838D0 <- EU 006838A8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068392C | USA 0068392C <- EU 00683904: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683988 | USA 00683988 <- EU 00683960: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006839E4 | USA 006839E4 <- EU 006839BC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683A40 | USA 00683A40 <- EU 00683A18: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683A9C | USA 00683A9C <- EU 00683A74: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683AF8 | USA 00683AF8 <- EU 00683AD0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683B54 | USA 00683B54 <- EU 00683B2C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683BB0 | USA 00683BB0 <- EU 00683B88: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683C0C | USA 00683C0C <- EU 00683BE4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683C68 | USA 00683C68 <- EU 00683C40: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683CC4 | USA 00683CC4 <- EU 00683C9C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683D20 | USA 00683D20 <- EU 00683CF8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683D7C | USA 00683D7C <- EU 00683D54: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683DD8 | USA 00683DD8 <- EU 00683DB0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683E34 | USA 00683E34 <- EU 00683E0C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683E90 | USA 00683E90 <- EU 00683E68: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683EEC | USA 00683EEC <- EU 00683EC4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683F48 | USA 00683F48 <- EU 00683F20: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00683FA4 | USA 00683FA4 <- EU 00683F7C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684000 | USA 00684000 <- EU 00683FD8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068405C | USA 0068405C <- EU 00684034: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006840B8 | USA 006840B8 <- EU 00684090: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684114 | USA 00684114 <- EU 006840EC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684170 | USA 00684170 <- EU 00684148: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006841CC | USA 006841CC <- EU 006841A4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684228 | USA 00684228 <- EU 00684200: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684284 | USA 00684284 <- EU 0068425C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006842E0 | USA 006842E0 <- EU 006842B8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068433C | USA 0068433C <- EU 00684314: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684398 | USA 00684398 <- EU 00684370: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006843F4 | USA 006843F4 <- EU 006843CC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684450 | USA 00684450 <- EU 00684428: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006844AC | USA 006844AC <- EU 00684484: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684508 | USA 00684508 <- EU 006844E0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684564 | USA 00684564 <- EU 0068453C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006845C0 | USA 006845C0 <- EU 00684598: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068461C | USA 0068461C <- EU 006845F4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684678 | USA 00684678 <- EU 00684650: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006846D4 | USA 006846D4 <- EU 006846AC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684730 | USA 00684730 <- EU 00684708: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068478C | USA 0068478C <- EU 00684764: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006847E8 | USA 006847E8 <- EU 006847C0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684844 | USA 00684844 <- EU 0068481C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006848A0 | USA 006848A0 <- EU 00684878: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006848FC | USA 006848FC <- EU 006848D4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684958 | USA 00684958 <- EU 00684930: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006849B4 | USA 006849B4 <- EU 0068498C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684A10 | USA 00684A10 <- EU 006849E8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684A6C | USA 00684A6C <- EU 00684A44: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684AC8 | USA 00684AC8 <- EU 00684AA0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684B24 | USA 00684B24 <- EU 00684AFC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684B80 | USA 00684B80 <- EU 00684B58: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684BDC | USA 00684BDC <- EU 00684BB4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684C38 | USA 00684C38 <- EU 00684C10: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684C94 | USA 00684C94 <- EU 00684C6C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684CF0 | USA 00684CF0 <- EU 00684CC8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684D4C | USA 00684D4C <- EU 00684D24: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684DA8 | USA 00684DA8 <- EU 00684D80: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684E04 | USA 00684E04 <- EU 00684DDC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684E60 | USA 00684E60 <- EU 00684E38: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684EBC | USA 00684EBC <- EU 00684E94: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684F18 | USA 00684F18 <- EU 00684EF0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684F74 | USA 00684F74 <- EU 00684F4C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00684FD0 | USA 00684FD0 <- EU 00684FA8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068502C | USA 0068502C <- EU 00685004: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685088 | USA 00685088 <- EU 00685060: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006850E4 | USA 006850E4 <- EU 006850BC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685140 | USA 00685140 <- EU 00685118: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068519C | USA 0068519C <- EU 00685174: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006851F8 | USA 006851F8 <- EU 006851D0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685254 | USA 00685254 <- EU 0068522C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006852B0 | USA 006852B0 <- EU 00685288: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068530C | USA 0068530C <- EU 006852E4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685368 | USA 00685368 <- EU 00685340: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006853C4 | USA 006853C4 <- EU 0068539C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685420 | USA 00685420 <- EU 006853F8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068547C | USA 0068547C <- EU 00685454: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006854D8 | USA 006854D8 <- EU 006854B0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685534 | USA 00685534 <- EU 0068550C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685590 | USA 00685590 <- EU 00685568: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006855EC | USA 006855EC <- EU 006855C4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685648 | USA 00685648 <- EU 00685620: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006856A4 | USA 006856A4 <- EU 0068567C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685700 | USA 00685700 <- EU 006856D8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068575C | USA 0068575C <- EU 00685734: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006857B8 | USA 006857B8 <- EU 00685790: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685814 | USA 00685814 <- EU 006857EC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685870 | USA 00685870 <- EU 00685848: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006858CC | USA 006858CC <- EU 006858A4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685928 | USA 00685928 <- EU 00685900: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685984 | USA 00685984 <- EU 0068595C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006859E0 | USA 006859E0 <- EU 006859B8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685A3C | USA 00685A3C <- EU 00685A14: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685A98 | USA 00685A98 <- EU 00685A70: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685AF4 | USA 00685AF4 <- EU 00685ACC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685B50 | USA 00685B50 <- EU 00685B28: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685BAC | USA 00685BAC <- EU 00685B84: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685C08 | USA 00685C08 <- EU 00685BE0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685C64 | USA 00685C64 <- EU 00685C3C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685CC0 | USA 00685CC0 <- EU 00685C98: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685D1C | USA 00685D1C <- EU 00685CF4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685D78 | USA 00685D78 <- EU 00685D50: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685DD4 | USA 00685DD4 <- EU 00685DAC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685E30 | USA 00685E30 <- EU 00685E08: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685E8C | USA 00685E8C <- EU 00685E64: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685EE8 | USA 00685EE8 <- EU 00685EC0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685F44 | USA 00685F44 <- EU 00685F1C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685FA0 | USA 00685FA0 <- EU 00685F78: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00685FFC | USA 00685FFC <- EU 00685FD4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686058 | USA 00686058 <- EU 00686030: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006860B4 | USA 006860B4 <- EU 0068608C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686110 | USA 00686110 <- EU 006860E8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068616C | USA 0068616C <- EU 00686144: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006861C8 | USA 006861C8 <- EU 006861A0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686224 | USA 00686224 <- EU 006861FC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686280 | USA 00686280 <- EU 00686258: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006862DC | USA 006862DC <- EU 006862B4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686338 | USA 00686338 <- EU 00686310: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686394 | USA 00686394 <- EU 0068636C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006863F0 | USA 006863F0 <- EU 006863C8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068644C | USA 0068644C <- EU 00686424: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006864A8 | USA 006864A8 <- EU 00686480: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686504 | USA 00686504 <- EU 006864DC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686560 | USA 00686560 <- EU 00686538: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006865BC | USA 006865BC <- EU 00686594: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686618 | USA 00686618 <- EU 006865F0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686674 | USA 00686674 <- EU 0068664C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006866D0 | USA 006866D0 <- EU 006866A8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068672C | USA 0068672C <- EU 00686704: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686788 | USA 00686788 <- EU 00686760: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006867E4 | USA 006867E4 <- EU 006867BC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686840 | USA 00686840 <- EU 00686818: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068689C | USA 0068689C <- EU 00686874: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006868F8 | USA 006868F8 <- EU 006868D0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686954 | USA 00686954 <- EU 0068692C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006869B0 | USA 006869B0 <- EU 00686988: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686A0C | USA 00686A0C <- EU 006869E4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686A68 | USA 00686A68 <- EU 00686A40: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686AC4 | USA 00686AC4 <- EU 00686A9C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686B20 | USA 00686B20 <- EU 00686AF8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686B7C | USA 00686B7C <- EU 00686B54: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686BD8 | USA 00686BD8 <- EU 00686BB0: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686C34 | USA 00686C34 <- EU 00686C0C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686C90 | USA 00686C90 <- EU 00686C68: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686CEC | USA 00686CEC <- EU 00686CC4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686D48 | USA 00686D48 <- EU 00686D20: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686DA4 | USA 00686DA4 <- EU 00686D7C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686E00 | USA 00686E00 <- EU 00686DD8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686E5C | USA 00686E5C <- EU 00686E34: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686EB8 | USA 00686EB8 <- EU 00686E90: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686F14 | USA 00686F14 <- EU 00686EEC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686F70 | USA 00686F70 <- EU 00686F48: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00686FCC | USA 00686FCC <- EU 00686FA4: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00687028 | USA 00687028 <- EU 00687000: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00687084 | USA 00687084 <- EU 0068705C: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006870E0 | USA 006870E0 <- EU 006870B8: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 0068713C | USA 0068713C <- EU 00687114: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00687198 | USA 00687198 <- EU 00687170: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 006871F4 | USA 006871F4 <- EU 006871CC: R Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args1 |
+| 00687250 | USA 00687250 <- EU 00687228: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 006872AC | USA 006872AC <- EU 00687284: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 00687308 | USA 00687308 <- EU 006872E0: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 00687364 | USA 00687364 <- EU 0068733C: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 006873C0 | USA 006873C0 <- EU 00687398: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 0068741C | USA 0068741C <- EU 006873F4: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
+| 00687478 | USA 00687478 <- EU 00687450: R Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_arg |
 | 00688C34 | USA 00688C34 <- EU 00688C0C: move *value towards target by step (math "chase"): |
 | 0068A5A4 | USA 0068A5A4 <- EU 0068A57C: class-B template T3_args0 (38 instances, tools/b_templates.json). |
 | 0068A5F4 | USA 0068A5F4 <- EU 0068A5CC: class-B template T3_args0 (38 instances, tools/b_templates.json). |
+| 0068A644 | USA 0068A644 <- EU 0068A61C: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A6C0 | USA 0068A6C0 <- EU 0068A698: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A710 | USA 0068A710 <- EU 0068A6E8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A760 | USA 0068A760 <- EU 0068A738: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A7B0 | USA 0068A7B0 <- EU 0068A788: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A800 | USA 0068A800 <- EU 0068A7D8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A850 | USA 0068A850 <- EU 0068A828: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A8A0 | USA 0068A8A0 <- EU 0068A878: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A8F0 | USA 0068A8F0 <- EU 0068A8C8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A940 | USA 0068A940 <- EU 0068A918: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A990 | USA 0068A990 <- EU 0068A968: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068A9E0 | USA 0068A9E0 <- EU 0068A9B8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AA30 | USA 0068AA30 <- EU 0068AA08: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AA80 | USA 0068AA80 <- EU 0068AA58: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AAD0 | USA 0068AAD0 <- EU 0068AAA8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AB20 | USA 0068AB20 <- EU 0068AAF8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AB70 | USA 0068AB70 <- EU 0068AB48: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068ABC0 | USA 0068ABC0 <- EU 0068AB98: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AC10 | USA 0068AC10 <- EU 0068ABE8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AC60 | USA 0068AC60 <- EU 0068AC38: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068ACB0 | USA 0068ACB0 <- EU 0068AC88: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AD00 | USA 0068AD00 <- EU 0068ACD8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AD50 | USA 0068AD50 <- EU 0068AD28: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068ADA0 | USA 0068ADA0 <- EU 0068AD78: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068ADF0 | USA 0068ADF0 <- EU 0068ADC8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AE40 | USA 0068AE40 <- EU 0068AE18: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AE90 | USA 0068AE90 <- EU 0068AE68: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AEE0 | USA 0068AEE0 <- EU 0068AEB8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AF30 | USA 0068AF30 <- EU 0068AF08: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AF80 | USA 0068AF80 <- EU 0068AF58: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068AFD0 | USA 0068AFD0 <- EU 0068AFA8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068B020 | USA 0068B020 <- EU 0068AFF8: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068B328 | USA 0068B328 <- EU 0068B300: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B380 | USA 0068B380 <- EU 0068B358: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B45C | USA 0068B45C <- EU 0068B434: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068B4AC | USA 0068B4AC <- EU 0068B484: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B504 | USA 0068B504 <- EU 0068B4DC: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B55C | USA 0068B55C <- EU 0068B534: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B5B4 | USA 0068B5B4 <- EU 0068B58C: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B60C | USA 0068B60C <- EU 0068B5E4: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B664 | USA 0068B664 <- EU 0068B63C: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B6BC | USA 0068B6BC <- EU 0068B694: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B714 | USA 0068B714 <- EU 0068B6EC: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B76C | USA 0068B76C <- EU 0068B744: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B7C4 | USA 0068B7C4 <- EU 0068B79C: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B81C | USA 0068B81C <- EU 0068B7F4: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B874 | USA 0068B874 <- EU 0068B84C: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B8CC | USA 0068B8CC <- EU 0068B8A4: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B924 | USA 0068B924 <- EU 0068B8FC: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B97C | USA 0068B97C <- EU 0068B954: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068B9D4 | USA 0068B9D4 <- EU 0068B9AC: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068BA2C | USA 0068BA2C <- EU 0068BA04: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068BA84 | USA 0068BA84 <- EU 0068BA5C: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068BAD4 | USA 0068BAD4 <- EU 0068BAAC: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068BB24 | USA 0068BB24 <- EU 0068BAFC: void Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args0 |
+| 0068BB74 | USA 0068BB74 <- EU 0068BB4C: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068BBCC | USA 0068BBCC <- EU 0068BBA4: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068BC24 | USA 0068BC24 <- EU 0068BBFC: void Delegate::invoke(a1) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args1 |
+| 0068BC7C | USA 0068BC7C <- EU 0068BC54: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BCD4 | USA 0068BCD4 <- EU 0068BCAC: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BD2C | USA 0068BD2C <- EU 0068BD04: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BD84 | USA 0068BD84 <- EU 0068BD5C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BDDC | USA 0068BDDC <- EU 0068BDB4: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BE34 | USA 0068BE34 <- EU 0068BE0C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BE8C | USA 0068BE8C <- EU 0068BE64: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BEE4 | USA 0068BEE4 <- EU 0068BEBC: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BF3C | USA 0068BF3C <- EU 0068BF14: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BF94 | USA 0068BF94 <- EU 0068BF6C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068BFEC | USA 0068BFEC <- EU 0068BFC4: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C044 | USA 0068C044 <- EU 0068C01C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C09C | USA 0068C09C <- EU 0068C074: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C0F4 | USA 0068C0F4 <- EU 0068C0CC: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C14C | USA 0068C14C <- EU 0068C124: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C1A4 | USA 0068C1A4 <- EU 0068C17C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C1FC | USA 0068C1FC <- EU 0068C1D4: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C254 | USA 0068C254 <- EU 0068C22C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C2AC | USA 0068C2AC <- EU 0068C284: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C304 | USA 0068C304 <- EU 0068C2DC: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C35C | USA 0068C35C <- EU 0068C334: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C3B4 | USA 0068C3B4 <- EU 0068C38C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C40C | USA 0068C40C <- EU 0068C3E4: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C464 | USA 0068C464 <- EU 0068C43C: void Delegate::invoke(a1, a2) const (tail call through the pointer-to-member at +8, object at +4), class-B template T3_args2 |
+| 0068C4BC | USA 0068C4BC <- EU 0068C494: R Delegate::invoke() const (tail call through the pointer-to-member at +8, object at +4; 0 if unset), class-B template T2_args0 |
 | 0068C794 | USA 0068C794 <- EU 0068C76C: proportional chase: |
 
 ## Class B templates (b_templates.json)

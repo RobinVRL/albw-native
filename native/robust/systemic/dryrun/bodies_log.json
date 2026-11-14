@@ -1,0 +1,1087 @@
+{
+ "bodies_fixed": 71, 
+ "disassembled": [], 
+ "owner_params": [
+  [
+   "00298C70", 
+   "undefined __stdcall func_00298C70(undefined4 * param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "0033456C", 
+   "undefined __stdcall func_0033456C(int * param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "00391CA8", 
+   "undefined func_00391CA8(undefined4 param_1)"
+  ], 
+  [
+   "00391CE8", 
+   "undefined func_00391CE8(undefined4 param_1)"
+  ], 
+  [
+   "004451A4", 
+   "undefined __stdcall func_004451A4(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "00445204", 
+   "undefined __stdcall func_00445204(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "004576CC", 
+   "undefined __stdcall func_004576CC(int param_1, uint param_2, int param_3, undefined4 param_4)"
+  ], 
+  [
+   "00457B8C", 
+   "undefined __stdcall func_00457B8C(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "00457FBC", 
+   "undefined __stdcall func_00457FBC(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "0045845C", 
+   "undefined __stdcall func_0045845C(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "00458690", 
+   "undefined __stdcall func_00458690(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "00458E14", 
+   "undefined __stdcall func_00458E14(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "004BCAE0", 
+   "undefined __stdcall func_004BCAE0(int param_1, undefined4 param_2)"
+  ], 
+  [
+   "004C339C", 
+   "bool __stdcall func_004C339C(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "0050A958", 
+   "undefined __stdcall func_0050A958(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "0050AB3C", 
+   "undefined __stdcall func_0050AB3C(int param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)"
+  ], 
+  [
+   "0050B788", 
+   "int __stdcall func_0050B788(undefined4 param_1, undefined4 param_2)"
+  ]
+ ], 
+ "owner_params_skipped": [
+  [
+   "00298DF8", 
+   "has stack/VFP parameters: by hand"
+  ], 
+  [
+   "00299014", 
+   "has stack/VFP parameters: by hand"
+  ], 
+  [
+   "00299014", 
+   "has stack/VFP parameters: by hand"
+  ], 
+  [
+   "002A018C", 
+   "no function"
+  ], 
+  [
+   "00556984", 
+   "no function"
+  ]
+ ], 
+ "removal_refused": [
+  [
+   "00126EEC", 
+   [
+    "00126e88 DATA"
+   ]
+  ], 
+  [
+   "0022F32C", 
+   [
+    "002584e0 DATA"
+   ]
+  ], 
+  [
+   "0023E464", 
+   [
+    "0023e39c DATA"
+   ]
+  ], 
+  [
+   "003975E4", 
+   [
+    "0039758c DATA"
+   ]
+  ], 
+  [
+   "00397668", 
+   [
+    "00397590 DATA"
+   ]
+  ], 
+  [
+   "003976EC", 
+   [
+    "00397594 DATA"
+   ]
+  ], 
+  [
+   "00397764", 
+   [
+    "00397598 DATA"
+   ]
+  ], 
+  [
+   "003977DC", 
+   [
+    "0039759c DATA"
+   ]
+  ], 
+  [
+   "00397858", 
+   [
+    "003975a0 DATA"
+   ]
+  ], 
+  [
+   "003978A0", 
+   [
+    "003975a8 DATA"
+   ]
+  ], 
+  [
+   "00397900", 
+   [
+    "003975ac DATA"
+   ]
+  ], 
+  [
+   "0039795C", 
+   [
+    "003975b0 DATA"
+   ]
+  ], 
+  [
+   "003979DC", 
+   [
+    "003975b8 DATA"
+   ]
+  ], 
+  [
+   "00397A5C", 
+   [
+    "003975bc DATA"
+   ]
+  ], 
+  [
+   "0039E3B8", 
+   [
+    "0039e34c DATA"
+   ]
+  ], 
+  [
+   "003A365C", 
+   [
+    "003a363c DATA", 
+    "003a3650 DATA", 
+    "003a366c DATA", 
+    "003a367c DATA"
+   ]
+  ], 
+  [
+   "003A36E0", 
+   [
+    "003a3640 DATA", 
+    "003a3644 DATA"
+   ]
+  ], 
+  [
+   "003A36FC", 
+   [
+    "003a3648 DATA"
+   ]
+  ], 
+  [
+   "003A370C", 
+   [
+    "003a364c DATA"
+   ]
+  ], 
+  [
+   "003A371C", 
+   [
+    "003a3654 DATA"
+   ]
+  ], 
+  [
+   "003A372C", 
+   [
+    "003a3658 DATA"
+   ]
+  ], 
+  [
+   "003A373C", 
+   [
+    "003a365c DATA"
+   ]
+  ], 
+  [
+   "003A374C", 
+   [
+    "003a3660 DATA"
+   ]
+  ], 
+  [
+   "003A375C", 
+   [
+    "003a3668 DATA"
+   ]
+  ], 
+  [
+   "003A376C", 
+   [
+    "003a3664 DATA"
+   ]
+  ], 
+  [
+   "003A377C", 
+   [
+    "003a3680 DATA", 
+    "003a3684 DATA", 
+    "003a3688 DATA", 
+    "003a368c DATA"
+   ]
+  ], 
+  [
+   "003A378C", 
+   [
+    "003a3674 DATA"
+   ]
+  ], 
+  [
+   "003A37A0", 
+   [
+    "003a3670 DATA"
+   ]
+  ], 
+  [
+   "003A37B0", 
+   [
+    "003a3678 DATA"
+   ]
+  ], 
+  [
+   "003A37C4", 
+   [
+    "003a369c DATA", 
+    "003a36a0 DATA"
+   ]
+  ], 
+  [
+   "003E5520", 
+   [
+    "003e54e4 DATA", 
+    "003e54e8 DATA", 
+    "003e54ec DATA"
+   ]
+  ], 
+  [
+   "004E50D4", 
+   [
+    "002584f4 DATA"
+   ]
+  ], 
+  [
+   "0056B010", 
+   [
+    "0056afd0 DATA"
+   ]
+  ]
+ ], 
+ "removed": [
+  [
+   "0013D80C", 
+   "0013D80C", 
+   "pop-before-push (EU 0013D810 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0013F530", 
+   "0013F530", 
+   "pop-before-push (EU 0013F540 pop {r4, r5, r6, lr}), reached by fall-through"
+  ], 
+  [
+   "001434BC", 
+   "001434BC", 
+   "pop-before-push (EU 00143598 vpop {d8, d9}), reached by fall-through"
+  ], 
+  [
+   "00151138", 
+   "00151138", 
+   "pop-before-push (EU 0015113C pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00188F2C", 
+   "00188F2C", 
+   "pop-before-push (EU 00188F30 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0019628C", 
+   "0019628C", 
+   "pop-before-push (EU 00196290 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "001A3F04", 
+   "001A3F04", 
+   "pop-before-push (EU 001A4130 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "001B3778", 
+   "001B3754", 
+   "pop-before-push (EU 001B3770 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "001B4598", 
+   "001B4574", 
+   "pop-before-push (EU 001B4578 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "00205E20", 
+   "00205E20", 
+   "pop-before-push (EU 00205E24 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00208534", 
+   "00208534", 
+   "pop-before-push (EU 00208A0C vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "0024AC7C", 
+   "0024AC7C", 
+   "pop-before-push (EU 0024AC80 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00252114", 
+   "0025213C", 
+   "pop-before-push (EU 00252140 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0025214C", 
+   "00252174", 
+   "pop-before-push (EU 00252178 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00255E6C", 
+   "00255E40", 
+   "pop-before-push (EU 00255E88 pop {r4, r5}), reached by fall-through"
+  ], 
+  [
+   "00297E28", 
+   "00297ED0", 
+   "pop-before-push (EU 002981D0 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through"
+  ], 
+  [
+   "00298394", 
+   "00298438", 
+   "pop-before-push (EU 00298B18 pop {r4, r5, r6, r7, r8, sb, sl, fp, lr}), reached by fall-through"
+  ], 
+  [
+   "00298B90", 
+   "00298C34", 
+   "pop-before-push (EU 00298C38 pop {r4, r6, pc}), reached by fall-through"
+  ], 
+  [
+   "00298C74", 
+   "00298D18", 
+   "pop-before-push (EU 00298D1C pop {r4, r5, r6, lr}), reached by fall-through"
+  ], 
+  [
+   "00298E64", 
+   "00298F08", 
+   "pop-before-push (EU 00298FAC pop {r4, r5, r6, pc}), reached by fall-through"
+  ], 
+  [
+   "002990A4", 
+   "00299148", 
+   "pop-before-push (EU 002992A4 pop {r4, r5, r6, r7, r8, sb, sl, pc}), reached by fall-through"
+  ], 
+  [
+   "002992E0", 
+   "00299384", 
+   "pop-before-push (EU 002993E8 pop {r4, r5, r7, pc}), reached by fall-through"
+  ], 
+  [
+   "00299574", 
+   "00299618", 
+   "pop-before-push (EU 002998E0 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through"
+  ], 
+  [
+   "002999EC", 
+   "00299A90", 
+   "pop-before-push (EU 00299AE4 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "002A01D4", 
+   "002A01B0", 
+   "pop-before-push (EU 002A0478 vpop {d8, d9, d10, d11, d12}), reached by fall-through"
+  ], 
+  [
+   "002CD780", 
+   "002CD75C", 
+   "pop-before-push (EU 002CD760 pop {r4, r5, r6, lr}), reached by fall-through"
+  ], 
+  [
+   "00315710", 
+   "003156EC", 
+   "pop-before-push (EU 003156F0 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00315868", 
+   "00315844", 
+   "pop-before-push (EU 00315848 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00316F98", 
+   "00316F74", 
+   "pop-before-push (EU 00317304 vpop {d8, d9}), reached by fall-through"
+  ], 
+  [
+   "003345D8", 
+   "003345B4", 
+   "pop-before-push (EU 003345E8 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "00375FAC", 
+   "00375F88", 
+   "pop-before-push (EU 00375F8C pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0037C5FC", 
+   "0037C5D8", 
+   "pop-before-push (EU 0037C5DC pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0037CD90", 
+   "0037CD6C", 
+   "pop-before-push (EU 0037CD70 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "0037D290", 
+   "0037D26C", 
+   "pop-before-push (EU 0037D270 pop {r4, lr}), reached by fall-through"
+  ], 
+  [
+   "00391CAC", 
+   "00391C8C", 
+   "pop-before-push (EU 00391CBC pop {r4, lr}), reached by fall-through; start right after the prologue of func_00391CA8"
+  ], 
+  [
+   "00391CEC", 
+   "00391CCC", 
+   "pop-before-push (EU 00391F48 pop {r4, r5, r6, r7, r8, sb, sl, fp, ip, lr}), reached by fall-through; start right after the prologue of func_00391CE8"
+  ], 
+  [
+   "00391F94", 
+   "00391F74", 
+   "pop-before-push (EU 0039219C pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_00391F90"
+  ], 
+  [
+   "004008C8", 
+   "004008C8", 
+   "pop-before-push (EU 00400A40 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through"
+  ], 
+  [
+   "004451A8", 
+   "00445188", 
+   "pop-before-push (EU 004451DC pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_004451A0"
+  ], 
+  [
+   "0044520C", 
+   "004451EC", 
+   "pop-before-push (EU 00445220 pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_00445204"
+  ], 
+  [
+   "00457904", 
+   "004578E0", 
+   "pop-before-push (EU 004578E0 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "0045792C", 
+   "00457908", 
+   "pop-before-push (EU 00457948 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00457928"
+  ], 
+  [
+   "00457974", 
+   "00457950", 
+   "pop-before-push (EU 00457B5C pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_00457970"
+  ], 
+  [
+   "00457B90", 
+   "00457B6C", 
+   "pop-before-push (EU 00457DBC pop {r4, r5, r6, r7, r8, sb, pc}), reached by fall-through; start right after the prologue of func_00457B8C"
+  ], 
+  [
+   "00457F88", 
+   "00457F64", 
+   "pop-before-push (EU 00457F90 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00457F84"
+  ], 
+  [
+   "00457FC0", 
+   "00457F9C", 
+   "pop-before-push (EU 00458060 pop {r4, r5, lr}), reached by fall-through; start right after the prologue of func_00457FBC"
+  ], 
+  [
+   "00458438", 
+   "00458414", 
+   "pop-before-push (EU 00458434 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458434"
+  ], 
+  [
+   "00458460", 
+   "0045843C", 
+   "pop-before-push (EU 00458488 pop {r4, r5, r6, r7, lr}), reached by fall-through; start right after the prologue of func_0045845C"
+  ], 
+  [
+   "00458694", 
+   "00458670", 
+   "pop-before-push (EU 004586BC pop {r4, r5, r6, r7, r8, lr}), reached by fall-through; start right after the prologue of func_00458690"
+  ], 
+  [
+   "00458A3C", 
+   "00458A18", 
+   "pop-before-push (EU 00458A90 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458A38"
+  ], 
+  [
+   "00458AD4", 
+   "00458AB0", 
+   "pop-before-push (EU 00458AD0 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00458AD0"
+  ], 
+  [
+   "00458E18", 
+   "00458DF4", 
+   "pop-before-push (EU 00458E40 pop {r4, r5, r6, r7, r8, sb, sl, fp, lr}), reached by fall-through; start right after the prologue of func_00458E14"
+  ], 
+  [
+   "0046B6E0", 
+   "0046B6E0", 
+   "pop-before-push (EU 0046B810 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "0046B8E8", 
+   "0046B8E8", 
+   "pop-before-push (EU 0046B93C pop {r4, r5, r6, pc}), reached by fall-through"
+  ], 
+  [
+   "0046B9C8", 
+   "0046B9C8", 
+   "pop-before-push (EU 0046BA44 pop {r4, pc}), reached by fall-through"
+  ], 
+  [
+   "0046BCF4", 
+   "0046BCF4", 
+   "pop-before-push (EU 0046BD70 pop {r4, r5, pc}), reached by fall-through"
+  ], 
+  [
+   "004BC7EC", 
+   "004BC7C4", 
+   "pop-before-push (EU 004BC820 pop {r4, r5, r6, pc}), reached by fall-through"
+  ], 
+  [
+   "004BCB10", 
+   "004BCAE8", 
+   "pop-before-push (EU 004BCB34 pop {r4, r5, r6, pc}), reached by fall-through"
+  ], 
+  [
+   "004C2B24", 
+   "004C2B00", 
+   "pop-before-push (EU 004C2E68 vpop {d8, d9}), reached by fall-through"
+  ], 
+  [
+   "004C2E98", 
+   "004C2E74", 
+   "pop-before-push (EU 004C2EC8 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_004C2E94"
+  ], 
+  [
+   "004C3250", 
+   "004C322C", 
+   "pop-before-push (EU 004C3288 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_004C324C"
+  ], 
+  [
+   "004C32C0", 
+   "004C329C", 
+   "pop-before-push (EU 004C3358 pop {r4, pc}), reached by fall-through; start right after the prologue of func_004C32BC"
+  ], 
+  [
+   "004C33A0", 
+   "004C337C", 
+   "pop-before-push (EU 004C339C pop {r4, pc}), reached by fall-through; start right after the prologue of func_004C339C"
+  ], 
+  [
+   "004E4F7C", 
+   "004E4F54", 
+   "pop-before-push (EU 004E4F54 vpop {d8}), reached by fall-through"
+  ], 
+  [
+   "0050A750", 
+   "0050A72C", 
+   "pop-before-push (EU 0050A8EC pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; start right after the prologue of func_0050A74C"
+  ], 
+  [
+   "0050A95C", 
+   "0050A938", 
+   "pop-before-push (EU 0050AA50 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_0050A958"
+  ], 
+  [
+   "0050AB40", 
+   "0050AB1C", 
+   "pop-before-push (EU 0050ABC8 pop {r4, r5, r6, pc}), reached by fall-through; start right after the prologue of func_0050AB3C"
+  ], 
+  [
+   "0050B6E4", 
+   "0050B6C0", 
+   "pop-before-push (EU 0050B750 pop {r4, r5, r6, lr}), reached by fall-through; start right after the prologue of func_0050B6E0"
+  ], 
+  [
+   "0050B78C", 
+   "0050B768", 
+   "pop-before-push (EU 0050BC18 pop {r4, r5, r6, r7, r8, sb, sl, fp, pc}), reached by fall-through; start right after the prologue of func_0050B788"
+  ], 
+  [
+   "0050BCA0", 
+   "0050BC7C", 
+   "pop-before-push (EU 0050BD2C pop {r4, r5, pc}), reached by fall-through; start right after the prologue of func_0050BC9C"
+  ], 
+  [
+   "00556990", 
+   "00556920", 
+   "pop-before-push (EU 00556940 pop {r4, pc}), reached by fall-through; start right after the prologue of func_00556984"
+  ]
+ ], 
+ "signatures": [
+  [
+   "0013D85C", 
+   "float __stdcall func_0013D85C(void)"
+  ], 
+  [
+   "0014A124", 
+   "float __stdcall func_0014A124(float fparam_0)"
+  ], 
+  [
+   "0015375C", 
+   "float __stdcall func_0015375C(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "001A053C", 
+   "float __stdcall func_001A053C(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "002063A4", 
+   "float __stdcall func_002063A4(undefined4 param_1)"
+  ], 
+  [
+   "002133E8", 
+   "float __stdcall func_002133E8(undefined4 param_1)"
+  ], 
+  [
+   "0021551C", 
+   "float __stdcall func_0021551C(undefined4 param_1)"
+  ], 
+  [
+   "00245484", 
+   "float __stdcall func_00245484(float fparam_0, float fparam_1, float fparam_2)"
+  ], 
+  [
+   "0028F1FC", 
+   "undefined4 __stdcall func_0028F1FC(float fparam_0)"
+  ], 
+  [
+   "0028F2B8", 
+   "undefined4 __stdcall func_0028F2B8(float fparam_0)"
+  ], 
+  [
+   "002B04E8", 
+   "float __stdcall func_002B04E8(void)"
+  ], 
+  [
+   "002B7DEC", 
+   "float __stdcall func_002B7DEC(undefined4 param_1)"
+  ], 
+  [
+   "002BB8F4", 
+   "float __stdcall func_002BB8F4(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "002CEFDC", 
+   "float __stdcall func_002CEFDC(float fparam_0, float fparam_1, float fparam_2)"
+  ], 
+  [
+   "002E0458", 
+   "float __stdcall func_002E0458(void)"
+  ], 
+  [
+   "002FBFC4", 
+   "float __stdcall func_002FBFC4(undefined4 param_1)"
+  ], 
+  [
+   "0032A440", 
+   "float __stdcall func_0032A440(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00359D8C", 
+   "float __stdcall func_00359D8C(void)"
+  ], 
+  [
+   "0036EAF8", 
+   "float __stdcall func_0036EAF8(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "003E19E8", 
+   "float __stdcall func_003E19E8(float fparam_0, float fparam_1, float fparam_2, float fparam_3, float fparam_4)"
+  ], 
+  [
+   "003E1A24", 
+   "float __stdcall func_003E1A24(float fparam_0, float fparam_1, float fparam_2, float fparam_3, float fparam_4, float fparam_5)"
+  ], 
+  [
+   "004136EC", 
+   "float __stdcall func_004136EC(float fparam_0)"
+  ], 
+  [
+   "00413ADC", 
+   "float __stdcall func_00413ADC(float fparam_0)"
+  ], 
+  [
+   "00413BA4", 
+   "float __stdcall func_00413BA4(undefined4 param_1, float fparam_0)"
+  ], 
+  [
+   "004BDFFC", 
+   "float __stdcall func_004BDFFC(float fparam_0, float fparam_1, float fparam_2, float fparam_3, float fparam_4)"
+  ], 
+  [
+   "004F898C", 
+   "float __stdcall func_004F898C(void)"
+  ], 
+  [
+   "004F944C", 
+   "float __stdcall func_004F944C(void)"
+  ], 
+  [
+   "004F9594", 
+   "float __stdcall func_004F9594(void)"
+  ], 
+  [
+   "004FB1F8", 
+   "float __stdcall func_004FB1F8(void)"
+  ], 
+  [
+   "004FBF4C", 
+   "float __stdcall func_004FBF4C(void)"
+  ], 
+  [
+   "004FDE50", 
+   "float __stdcall func_004FDE50(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00500E60", 
+   "float __stdcall func_00500E60(undefined4 param_1)"
+  ], 
+  [
+   "0051E8AC", 
+   "float __stdcall func_0051E8AC(undefined4 param_1, undefined4 param_2, float fparam_0, float fparam_1)"
+  ], 
+  [
+   "00520024", 
+   "float __stdcall func_00520024(void)"
+  ], 
+  [
+   "00521238", 
+   "float __stdcall func_00521238(undefined4 param_1)"
+  ], 
+  [
+   "00521298", 
+   "float __stdcall func_00521298(undefined4 param_1)"
+  ], 
+  [
+   "00525A70", 
+   "float __stdcall func_00525A70(void)"
+  ], 
+  [
+   "00528734", 
+   "float __stdcall func_00528734(undefined4 param_1, undefined4 param_2, undefined4 param_3)"
+  ], 
+  [
+   "0052E860", 
+   "float __stdcall func_0052E860(undefined4 param_1)"
+  ], 
+  [
+   "00531470", 
+   "float __stdcall func_00531470(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00531490", 
+   "float __stdcall func_00531490(undefined4 param_1)"
+  ], 
+  [
+   "00531968", 
+   "float __stdcall func_00531968(undefined4 param_1)"
+  ], 
+  [
+   "0053E668", 
+   "float __stdcall func_0053E668(void)"
+  ], 
+  [
+   "0053EDC8", 
+   "float __stdcall func_0053EDC8(undefined4 param_1)"
+  ], 
+  [
+   "00540A64", 
+   "float __stdcall func_00540A64(void)"
+  ], 
+  [
+   "00542330", 
+   "float __stdcall func_00542330(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00542350", 
+   "float __stdcall func_00542350(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "005445F8", 
+   "float __stdcall func_005445F8(undefined4 param_1)"
+  ], 
+  [
+   "00546258", 
+   "float __stdcall func_00546258(undefined4 param_1)"
+  ], 
+  [
+   "00546264", 
+   "float __stdcall func_00546264(undefined4 param_1, float fparam_0)"
+  ], 
+  [
+   "0054DE3C", 
+   "float __stdcall func_0054DE3C(undefined4 param_1, undefined4 param_2, undefined4 param_3)"
+  ], 
+  [
+   "0054DE54", 
+   "float __stdcall func_0054DE54(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, float fparam_0)"
+  ], 
+  [
+   "005500C0", 
+   "float __stdcall func_005500C0(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00552C88", 
+   "undefined4 __stdcall func_00552C88(undefined4 param_1)"
+  ], 
+  [
+   "00553058", 
+   "float __stdcall func_00553058(undefined4 param_1)"
+  ], 
+  [
+   "00554E74", 
+   "float __stdcall func_00554E74(undefined4 param_1)"
+  ], 
+  [
+   "00556CE4", 
+   "float __stdcall func_00556CE4(undefined4 param_1)"
+  ], 
+  [
+   "00564688", 
+   "float __stdcall func_00564688(undefined4 param_1)"
+  ], 
+  [
+   "0056A148", 
+   "float __stdcall func_0056A148(undefined4 param_1)"
+  ], 
+  [
+   "005720B8", 
+   "float __stdcall func_005720B8(void)"
+  ], 
+  [
+   "005720D0", 
+   "float __stdcall func_005720D0(void)"
+  ], 
+  [
+   "00581F68", 
+   "float __stdcall func_00581F68(undefined4 param_1)"
+  ], 
+  [
+   "00582C90", 
+   "float __stdcall func_00582C90(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "00584808", 
+   "float __stdcall func_00584808(undefined4 param_1)"
+  ], 
+  [
+   "00588004", 
+   "float __stdcall func_00588004(undefined4 param_1, undefined4 param_2, float fparam_0, float fparam_1)"
+  ], 
+  [
+   "0058A77C", 
+   "float __stdcall func_0058A77C(undefined4 param_1, undefined4 param_2)"
+  ], 
+  [
+   "0058AF2C", 
+   "float __stdcall func_0058AF2C(undefined4 param_1)"
+  ]
+ ], 
+ "unchanged": [
+  [
+   "00100C90", 
+   "already typed"
+  ], 
+  [
+   "00100C94", 
+   "ok: real function; 00100C90 (mov r0,r0) falls through into it"
+  ], 
+  [
+   "00114D80", 
+   "manual: pop-before-push (EU 00114DE4 pop {r4, lr}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "00140A60", 
+   "manual: pop-before-push (EU 00140A98 vpop {d8}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "00164284", 
+   "ok: start verified (prologue at the EU address)"
+  ], 
+  [
+   "001AD404", 
+   "manual: pop-before-push (EU 001AD520 vpop {d8}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "00255BE0", 
+   "manual: pop-before-push (EU 00255BA0 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0025B79C", 
+   "manual: pop-before-push (EU 0025B7A4 pop {r4, lr}), reached by fall-through; kept: table start (sure=True, decomp status honest)"
+  ], 
+  [
+   "0025B894", 
+   "manual: pop-before-push (EU 0025B8A8 pop {r4, lr}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "00299458", 
+   "manual: pop-before-push (EU 00299530 pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "002A87FC", 
+   "manual: pop-before-push (EU 002A8B30 vpop {d8}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "0030AC74", 
+   "manual: pop-before-push (EU 0030B0CC pop {r4, r5, r6, pc}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "0035008C", 
+   "manual: pop-before-push (EU 003516A4 vpop {d8, d9, d10, d11}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "00361708", 
+   "manual: pop-before-push (EU 0036169C pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "00361774", 
+   "manual: pop-before-push (EU 003616E0 pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "00361784", 
+   "map_shift: pop-before-push (EU 0036171C pop {r4, r5, r6, lr}), reached by fall-through; prologue at EU 003616E4 has no function: EU map entry off by 4"
+  ], 
+  [
+   "003F0010", 
+   "manual: pop-before-push (EU 003F0058 vpop {d8, d9, d10}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "0040F5CC", 
+   "manual: pop-before-push (EU 0040F5A8 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0040F698", 
+   "manual: pop-before-push (EU 0040F674 pop {r3, r4, r5, r6, r7, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "004100E4", 
+   "manual: pop-before-push (EU 00410210 pop {r4, r5, pc}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "0046B85C", 
+   "manual: pop-before-push (EU 0046B8B4 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BAE4", 
+   "manual: pop-before-push (EU 0046BB84 pop {r4, r5, r6, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BBDC", 
+   "manual: pop-before-push (EU 0046BC34 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BC68", 
+   "manual: pop-before-push (EU 0046BCC0 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BE28", 
+   "manual: pop-before-push (EU 0046BE80 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BEB4", 
+   "manual: pop-before-push (EU 0046BEB4 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BEFC", 
+   "manual: pop-before-push (EU 0046BF54 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046BF88", 
+   "manual: pop-before-push (EU 0046BFE0 vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046C018", 
+   "manual: pop-before-push (EU 0046C098 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0046C0C8", 
+   "manual: pop-before-push (EU 0046C0CC pop {r4, pc}), reached by fall-through; kept: table start (sure=False, decomp status hack)"
+  ], 
+  [
+   "004C33C8", 
+   "map_shift: pop-before-push (EU 004C362C pop {r4, r5, r6, r7, pc}), reached by fall-through; prologue at EU 004C33A0 has no function: EU map entry off by 4"
+  ], 
+  [
+   "004FA420", 
+   "manual: pop-before-push (EU 004FA4F4 vpop {d8}), reached by a branch; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "0050B788", 
+   "ok: start verified (prologue at the EU address)"
+  ], 
+  [
+   "00556C7C", 
+   "manual: pop-before-push (EU 00556C0C vpop {d8}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0056B51C", 
+   "manual: pop-before-push (EU 0056B4C8 pop {r3, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "0056B62C", 
+   "manual: pop-before-push (EU 0056B600 pop {r4, r5, r6, r7, r8, pc}), reached by fall-through; kept: table start (sure=False, decomp status honest)"
+  ], 
+  [
+   "00591550", 
+   "manual: pop-before-push (EU 005915A0 vpop {d8, d9, d10}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+  ], 
+  [
+   "005AD49C", 
+   "manual: pop-before-push (EU 005AD478 pop {r4, pc}), reached by fall-through; kept: table start (sure=True, decomp status None)"
+  ]
+ ]
+}

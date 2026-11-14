@@ -776,7 +776,10 @@ def signature(name):
     """(param count, returns value) from the fully analysed Ghidra dump, or None.
     The declaration may span several lines (long parameter lists are wrapped)."""
     if name not in _SIG:
-        path = next((p for p in (os.path.join(ROOT, "build", d, name + ".c") for d in ("ghidra_analyzed2", "ghidra_analyzed")) if os.path.exists(p)), "")
+        dirs = [os.path.join(ROOT, "build", d) for d in ("ghidra_analyzed2", "ghidra_analyzed")]
+        if os.environ.get("ALBW_GHIDRA_DIR"):  # tools/systemic_rebuild.sh (default off)
+            dirs = [os.environ["ALBW_GHIDRA_DIR"]] + [d for d in (os.environ.get("ALBW_GHIDRA_EXTRA_DIR"),) if d]
+        path = next((p for p in (os.path.join(d, name + ".c") for d in dirs) if os.path.exists(p)), "")
         sig = None
         if os.path.exists(path):
             import re

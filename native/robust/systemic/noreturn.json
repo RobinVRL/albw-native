@@ -1,0 +1,134 @@
+{
+ "001024E0": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "001024E0",
+  "how": "EU 001024FC bxne lr",
+  "returns": true
+ },
+ "00104338": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00104338",
+  "how": "EU 00104348 tail call to 00106394, which returns (EU 00106398 bx lr)",
+  "returns": true
+ },
+ "00104788": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00104788",
+  "how": "falls through into 0010478C, which returns (EU 001047B8 pop {r4, pc})",
+  "returns": true
+ },
+ "00104868": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00104868",
+  "how": "EU 0010488C bx lr",
+  "returns": true
+ },
+ "0010586C": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "0010586C",
+  "how": "EU 00105874 bx lr",
+  "returns": true
+ },
+ "001081A4": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "001081A4",
+  "how": "falls through into 001081CC, which returns (EU 0010823C pop {r4, r5, r6, pc})",
+  "returns": true
+ },
+ "0010C1B8": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "0010C1B8",
+  "how": "SDK panic (kept no-return)",
+  "returns": false
+ },
+ "00151148": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00151148",
+  "how": "EU 0015114C tail call to 002C34A4, which returns (EU 002C34F8 pop {r4, r5, r6, pc})",
+  "returns": true
+ },
+ "00192934": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00192934",
+  "how": "EU 00192A28 pop {r4, pc}",
+  "returns": true
+ },
+ "00352210": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "003521EC",
+  "how": "EU 00352254 pop {r4, r5, r6, pc}",
+  "returns": true
+ },
+ "00397C6C": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "00397C48",
+  "how": "EU 00397C50 tail call to 004CF478, which returns (EU 004CF4E4 pop {r4, r5, r6, r7, r8, pc})",
+  "returns": true
+ },
+ "003AB8DC": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "003AB8B8",
+  "how": "EU 003AB968 pop {r3, r4, r5, r6, r7, pc}",
+  "returns": true
+ },
+ "003C8BD8": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "003C8BB4",
+  "how": "EU 003C8BC4 bx r1 (indirect tail call)",
+  "returns": true
+ },
+ "003CDAC0": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "003CDA9C",
+  "how": "EU 003CDAF4 pop {r4, r5, r6, pc}",
+  "returns": true
+ },
+ "003DCE04": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "003DCDE4",
+  "how": "EU 003DCE78 pop {r4, pc}",
+  "returns": true
+ },
+ "004BC8D8": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "004BC8B0",
+  "how": "EU 004BC984 pop {r4, r5, pc}",
+  "returns": true
+ },
+ "004CF478": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "004CF450",
+  "how": "EU 004CF4E4 pop {r4, r5, r6, r7, r8, pc}",
+  "returns": true
+ },
+ "004ECF6C": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "004ECF44",
+  "how": "EU 004ECF50 tail call to 004CD7C8, which returns (EU 004CD7B0 bxeq lr)",
+  "returns": true
+ },
+ "004F500C": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "004F4FE4",
+  "how": "EU 004F5118 pop {r4, r5, r6, pc}",
+  "returns": true
+ },
+ "004FABDC": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "004FABB4",
+  "how": "EU 004FAC44 pop {r4, pc}",
+  "returns": true
+ },
+ "0057F260": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "0057F238",
+  "how": "EU 0057F388 pop {r4, r5, r6, pc}",
+  "returns": true
+ },
+ "0065D630": {
+  "agrees_with_false_noreturn_json": true,
+  "eu": "0065D608",
+  "how": "EU 0065D73C bx r1 (indirect tail call)",
+  "returns": true
+ }
+}
