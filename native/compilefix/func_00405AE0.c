@@ -142,7 +142,7 @@ int * func_00405AE0(undefined4 *param_1,int param_2,int param_3,float *param_4,c
       local_2c = uVar16;
     }
     (**(code **)(*(int *)CF_FBITS(param_4[5]) + 8))
-              ((int *)CF_FBITS(param_4[5]),&local_38,puVar4[-0x11],param_4[6],piVar13,piVar17[4]);
+              ((int *)CF_FBITS(param_4[5]),&local_38,puVar4[-0x11],CF_FBITS(param_4[6]),piVar13,piVar17[4]);  /* boot agent: param_4[6] is a word (a float through an unprototyped call was promoted to double) */
     if (local_38 != (uint *)0x0) {
       uVar16 = local_34 & 0xffff;
       if (uVar16 == 0) {
