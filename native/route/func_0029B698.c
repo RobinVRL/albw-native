@@ -1,0 +1,56 @@
+/* USA 0029B698 (EU 0029B674): TaskFileSelect::calc (vtable 006DAA14 +0x64). TaskFileSelect is
+ * the title screen + file select task (loads Environment/TitleLogo.bch / TitleCamera.bch,
+ * states table 006A4960..).
+ * Route: runs every frame from the title screen until a file is chosen (state 0x68 0029CC88
+ * then creates TaskMainGame).
+ * Bugs: both inlined StateMgr::exec dispatches (the task's StateMgr at +0xBC, and the
+ * sub-object at *(+0x138)+4) were printed by Ghidra as `(*(code *)*piVar4)()`: the first one
+ * without its `this` (garbage r0 on every state handler call of the title screen). 00122C78 also
+ * reads r2 (0 here unless an anim frame call ran before; then r2 is dead garbage on ARM too).
+ * Verified instruction by instruction against EU 0029B674..0029B870 (input test 0x81B on
+ * +0x4D0, the +0x4DC bit 1, s8 state +0xC0 <2 / ==2 branches, vldrne/vldreq 15.0f/1.0f into
+ * *(+0xF4)+0x90, tail call 001E30D0(this)).  Confidence: high. */
+#include "route.h"
+
+extern uint32_t data_00712450[], data_007124F0[], data_00711F50[], data_0070B960[];
+int func_00520B48(int obj);
+void func_0025F9FC(int obj, int a);
+void func_00661C18(char *sm, uint32_t newState);
+int func_00587F74(int obj, int *name, int a);
+void func_00122C78(int *obj, uint32_t a, uint32_t b);
+int func_001E30D0(char *self);
+
+void func_0029B698(char *self)
+{
+    if (func_00520B48((int)data_00712450[0]) == 0) {
+        char *pad = GPTR_TO(char, data_007124F0[0]);
+        if ((RF(pad, 0x4D0, uint32_t) & 0x81B) != 0 || (RF(pad, 0x4DC, uint32_t) & 2) != 0) {
+            int8_t s = RF(self, 0xC0, int8_t);
+            if (s < 2) {
+                func_0025F9FC((int)RF(self, 0xEC, uint32_t), 1);
+                func_00661C18(RAT(self, 0xBC), 2);
+            } else if (s == 2) {
+                route_safestr name = route_safestr_make("SE_S_START_FILE_SELECT");
+                func_00587F74((int)data_00711F50[0], (int *)&name, 0);
+                func_00661C18(RAT(self, 0xBC), 3);
+            }
+        }
+    }
+    char *o = RP(self, 0xEC);
+    RVFN(void (*)(char *), o, 0x60)(o);
+
+    route_statemgr_exec(RAT(self, 0xBC));
+
+    if (RF(self, 0xC0, int8_t) >= 1) {
+        char *sub = RP(self, 0x138);
+        uint8_t flag = RF(sub, 0xE8, uint8_t);
+        RF(RP(self, 0xF4), 0x90, float) = flag != 0 ? 15.0f : 1.0f;
+        func_00122C78((int *)RP(self, 0xF4), flag, 0);
+        route_statemgr_exec(RAT(RP(self, 0x138), 4));
+    }
+    if (RF(RP(self, 0xEC), 0x194, uint8_t) != 0) {
+        RF(RP(self, 0xF4), 0x94, uint8_t) = 0;
+        RF(GPTR_TO(char, data_0070B960[0]), 0x2C1B, uint8_t) = 0;
+    }
+    func_001E30D0(self);
+}
