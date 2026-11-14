@@ -62,4 +62,4 @@ first frame -> title screen -> file select -> gameplay.
 | Primitive renderer / effects (queued) | — | sead PrimitiveRenderer (004979CC) and eft particle producers + hand-written GLSL |
 | Audio (queued) | — | nn::snd / DSP -> SDL3 audio (BCSTM streams, BCSAR banks) |
 | 64-bit (queued) | — | shared type headers (sead, game objects), retype pointer-in-int functions, build --arch x86_64 to zero errors |
-| Robustness (queued) | 104 rewrites done | next batch from native/robust/PRIORITY.md (369 boot-reachable defects) after the systemic rebuild re-ranks them |
+| Robustness (queued) | 104 hand-checked rewrites + 600 template-generated (verified against reference disassembly; compile at -m32), 680 ranked functions done; NOT linked yet | after the boot agent reaches first frames: add native/robust/*.c (+ -Inative/robust) to link.sh/link64.sh, A/B smoke-run, then next batch from PRIORITY.md |
