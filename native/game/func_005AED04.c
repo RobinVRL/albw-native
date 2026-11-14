@@ -7,13 +7,6 @@ extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_007256F8;
 
 
-static void fill_names(sead_SafeString *t, const char *const *names, int n) {
-    for (int i = 0; i < n; i++) {
-        t[i].vtbl = &data_006F5988;
-        t[i].mStringTop = names[i];
-    }
-}
-
 void func_005AED04(void) {
     data_007256F8 = 0x00000000u;
 }

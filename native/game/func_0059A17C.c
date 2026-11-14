@@ -24,13 +24,6 @@ void func_003D30B4(void);
 void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
 
 
-static void fill_names(sead_SafeString *t, const char *const *names, int n) {
-    for (int i = 0; i < n; i++) {
-        t[i].vtbl = &data_006F5988;
-        t[i].mStringTop = names[i];
-    }
-}
-
 void func_0059A17C(void) {
     data_007A02D0 = (uint32_t)(uintptr_t)&data_006EFCC8;
     data_007A02D4 = 0x00000000u;

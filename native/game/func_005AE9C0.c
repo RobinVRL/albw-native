@@ -18,13 +18,6 @@ extern uint32_t data_007158E0;
 extern uint32_t data_007158E4;
 
 
-static void fill_names(sead_SafeString *t, const char *const *names, int n) {
-    for (int i = 0; i < n; i++) {
-        t[i].vtbl = &data_006F5988;
-        t[i].mStringTop = names[i];
-    }
-}
-
 void func_005AE9C0(void) {
     data_007158B8 = 0x00008202u;
     data_007158BC = 0x00040030u;

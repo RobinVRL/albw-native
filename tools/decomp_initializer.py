@@ -193,12 +193,11 @@ def emit(usa, eu, mem, fn_of, tail=None, code=None):
            " * Fills %d sead::SafeString name tables (%d names) and %d other globals. */" % (
                len(runs), sum(len(n) for _, n in runs), len(body) - len(runs)),
            "#include <stdint.h>", '#include "sead.h"', ""]
-    out += sorted(externs) + [""] + tables + ["",
-            "static void fill_names(sead_SafeString *t, const char *const *names, int n) {",
-            "    for (int i = 0; i < n; i++) {",
-            "        t[i].vtbl = &data_%08X;" % SAFESTRING_VTBL,
-            "        t[i].mStringTop = names[i];", "    }", "}", "",
-            "void func_%s(void) {" % usa] + body + ["}", ""]
+    helper = ["static void fill_names(sead_SafeString *t, const char *const *names, int n) {",
+              "    for (int i = 0; i < n; i++) {",
+              "        t[i].vtbl = &data_%08X;" % SAFESTRING_VTBL,
+              "        t[i].mStringTop = names[i];", "    }", "}", ""] if runs else []
+    out += sorted(externs) + [""] + tables + [""] + helper + ["void func_%s(void) {" % usa] + body + ["}", ""]
     return "\n".join(out)
 
 
