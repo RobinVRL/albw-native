@@ -671,20 +671,21 @@ _Noreturn void func_0010A98C(uint32_t result) {
 
 /* parameter type descriptor built by the caller (0049BD4C: {4, 00676254, 00676270, 00676264}) */
 typedef struct {
-    uint32_t size;                                 /* size of the parameter copy */
-    void (*copy)(const void *src, void *dst);      /* placement-copy the parameter */
-    void (*destroy)(void *param);                  /* destroy the copy after the run */
-    void (*invoke)(void *entry, void *param);      /* call entry with the copy */
-} NnThreadTypeInfo;
+    uint32_t size;   /* size of the parameter copy */
+    gptr_t copy;     /* void (*)(const void *src, void *dst): placement-copy the parameter */
+    gptr_t destroy;  /* void (*)(void *param): destroy the copy after the run */
+    gptr_t invoke;   /* void (*)(void *entry, void *param): call entry with the copy */
+} NnThreadTypeInfo;  /* game memory: 4-byte words (gptr.h) */
+typedef void (*NnThreadCopyFn)(const void *src, void *dst);
 
 /* start block read by the trampoline 0010994C (matched: {done, run, first, second, optional}) */
 typedef struct {
-    void (*done)(void *param);
-    void (*invoke)(void *entry, void *param);
-    void *entry;
-    void *param;
-    void *auto_stack; /* freed by 00106320 at thread end when the SDK allocated the stack */
-} NnThreadStart;
+    gptr_t done;               /* void (*)(void *param) */
+    gptr_t invoke;             /* void (*)(void *entry, void *param) */
+    void *ALBW_GP entry;
+    void *ALBW_GP param;
+    void *ALBW_GP auto_stack;  /* freed by 00106320 at thread end when the SDK allocated the stack */
+} NnThreadStart;  /* read by the decompiled trampoline 0010994C: 4-byte words (gptr.h) */
 
 extern void func_0010994C(void *start); /* SDK thread trampoline (decompiled) */
 
@@ -706,7 +707,7 @@ static void result_check(uint32_t r) {
 uint32_t func_00104248(void *thread, const NnThreadTypeInfo *ti, void *entry, const void *param,
                        uintptr_t stack_top, int32_t priority, int32_t core, int32_t auto_stack) {
     uintptr_t copy = (stack_top - ti->size) & ~(uintptr_t)7;
-    ti->copy(param, (void *)copy);
+    GFN(NnThreadCopyFn, ti->copy)(param, (void *)copy);
     NnThreadStart *s = (NnThreadStart *)((copy - sizeof(NnThreadStart)) & ~(uintptr_t)7);
     s->done = ti->destroy;
     s->invoke = ti->invoke;
