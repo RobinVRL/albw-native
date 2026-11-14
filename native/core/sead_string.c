@@ -279,6 +279,7 @@ int32_t func_00111A20(uint32_t self_w, uint32_t fmt, void *args) {
  * are gathered as 32-bit integers (no double conversions: none in these formats).
  * Ghidra. Confidence: high (function), see note (callers). */
 #include <stdarg.h>
+#ifndef ALBW_LINK_GAME_003E6AA8   /* native/game/func_003E6AA8.c is the linked one */
 int32_t func_003E6AA8(uint32_t buf, uint32_t size, int32_t maxlen, uint32_t fmt, ...) {
     uint32_t lim = (uint32_t)maxlen + 1;
     if (size > lim) size = lim;
@@ -294,6 +295,8 @@ int32_t func_003E6AA8(uint32_t buf, uint32_t size, int32_t maxlen, uint32_t fmt,
     va_end(ap);
     return r;
 }
+#endif
+
 
 /* ------------------------------------------------------------------ SafeString queries */
 
