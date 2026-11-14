@@ -1,0 +1,5 @@
+func_0049D4A8.c
+func_0049DA04.c
+func_0049D3D8.c
+func_0049F920.c
+func_004C58F0.c
