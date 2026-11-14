@@ -42,6 +42,13 @@ clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o
 python3 -c "import json;print('\n'.join(json.load(open('$B/decomp/report.json'))['objects']))" > $B/objs.txt
 echo $B/data/gamedata.o >> $B/objs.txt
 ld.lld -m elf_i386 -r -o $B/albw_game.o @$B/objs.txt
+# bool results come back in %al only: zero-extending adapters for the decomp's bool functions
+# (tools/boolret.py), the converted callers read the whole register
+llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_defs.txt
+python3 tools/boolret.py $B/albw_game.o $B/objs.txt $B/objs_bool.txt $B/boolret.s $B/native_defs.txt
+ld.lld -m elf_i386 -r -o $B/albw_game.o @$B/objs_bool.txt
+clang --target=i686-linux-gnu -c $B/boolret.s -o $B/native/boolret.o
+NATIVE+=($B/native/boolret.o)
 # names the decomp calls by C++/ad-hoc names -> the function they are (tools/resolve_names.py +
 # hand-verified ones)
 cat native/symbol_aliases.txt native/symbol_aliases_manual.txt 2>/dev/null | grep -v '^#' | grep . > $B/aliases.txt || true
