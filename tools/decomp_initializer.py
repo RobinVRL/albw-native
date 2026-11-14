@@ -162,7 +162,7 @@ def emit(usa, eu, mem, fn_of, tail=None, code=None):
         externs.add("extern uint32_t data_%08X;" % base)
         tables.append("static const char *const names_%08X[%d] = {\n%s\n};" % (
             base, len(names), "\n".join("    %s," % c_str(s) for s in names)))
-        body.append("    fill_names((SafeString *)&data_%08X, names_%08X, %d);" % (base, base, len(names)))
+        body.append("    fill_names((sead_SafeString *)&data_%08X, names_%08X, %d);" % (base, base, len(names)))
     for a in addrs:
         if a in used:
             continue
@@ -192,13 +192,12 @@ def emit(usa, eu, mem, fn_of, tail=None, code=None):
     out = ["/* USA %s (EU %08X): static initialiser, decompiled by tools/decomp_initializer.py." % (usa, eu),
            " * Fills %d sead::SafeString name tables (%d names) and %d other globals. */" % (
                len(runs), sum(len(n) for _, n in runs), len(body) - len(runs)),
-           "#include <stdint.h>", "",
-           "typedef struct { const void *vtbl; const char *str; } SafeString;  /* sead::SafeString */", ""]
+           "#include <stdint.h>", '#include "sead.h"', ""]
     out += sorted(externs) + [""] + tables + ["",
-            "static void fill_names(SafeString *t, const char *const *names, int n) {",
+            "static void fill_names(sead_SafeString *t, const char *const *names, int n) {",
             "    for (int i = 0; i < n; i++) {",
             "        t[i].vtbl = &data_%08X;" % SAFESTRING_VTBL,
-            "        t[i].str = names[i];", "    }", "}", "",
+            "        t[i].mStringTop = names[i];", "    }", "}", "",
             "void func_%s(void) {" % usa] + body + ["}", ""]
     return "\n".join(out)
 
