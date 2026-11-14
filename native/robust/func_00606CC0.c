@@ -22,7 +22,7 @@ void *func_0032740C(void *self, void *params, const char *name, uint32_t r3);
 void *func_0054D89C(void *self, uint32_t index);
 void func_001511F0(void *p);
 void func_001512E8(void *p);
-void func_00151148(void *p, int32_t arg);
+float func_00151148(void *p, int32_t arg);   /* returns float (s0); result discarded */
 
 extern char data_006DC4D4[];  /* vtable */
 

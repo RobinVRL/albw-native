@@ -19,7 +19,8 @@
  * Confidence: high. */
 #include "robust.h"
 
-void func_002C11E8(char *self, uint32_t first, uint32_t v54, uint8_t v58) {
+/* returns this in r0 (194 converted callers use it as the request pointer) */
+uint32_t func_002C11E8(char *self, uint32_t first, uint32_t v54, uint8_t v58) {
     FLD(self, 0x04, int32_t) = 3;
     FLD(self, 0x00, int32_t) = 0;
     FLD(self, 0x08, char *) = AT(self, 0x0C);   /* inline storage (non-null) */
@@ -36,4 +37,5 @@ void func_002C11E8(char *self, uint32_t first, uint32_t v54, uint8_t v58) {
         FLD(e, 0x10, float) = 1.0f;
         FLD(e, 0x14, uint32_t) = 0x000000FFu;  /* low byte 0xFF; upper bytes were unset (ip) */
     }
+    return (uint32_t)(uintptr_t)self;
 }
