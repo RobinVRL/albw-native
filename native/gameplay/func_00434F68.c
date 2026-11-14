@@ -37,7 +37,9 @@ static const float *kcl_vec(char *t, int idxOff) {
     return (const float *)AT(GPTR(kcl, 4, char), FLD(pr, idxOff, uint16_t) * 12);
 }
 
-void func_00434F68(char *t, char *kcl, char *prism, char *xf, const float *offset) {
+void func_00434F68(char *t, char *kcl, uint32_t prism_w, uint32_t xf_w, const float *offset) {
+    char *prism = (char *)gp_ptr(prism_w);
+    char *xf = (char *)gp_ptr(xf_w);
     func_00433ABC(t, kcl, prism);
     char *pr = GPTR(t, 4, char);
     FLD(t, 0x64, uint16_t) = FLD(pr, 0xE, uint16_t);

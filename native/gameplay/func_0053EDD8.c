@@ -10,7 +10,8 @@
  * Verified against EU 0053ED94-0053EDF0. Confidence: high. */
 #include "gameplay.h"
 
-int func_0053EDD8(void *ctrl) {
+int func_0053EDD8(uint32_t ctrl_w) {
+    void *ctrl = (void *)gp_ptr(ctrl_w);
     void *a = GPTR(ctrl, 0x10, void);
     char *b = GPTR(a, 0x14, char);
     if (FLD(b, 0x1C, uint8_t) != 0)

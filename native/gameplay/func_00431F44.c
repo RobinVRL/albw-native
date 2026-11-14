@@ -1,6 +1,6 @@
 /* USA 00431F44 <- EU 00431F24: KCL collision object, segment (swept sphere) query p0 -> p1
  * against the mesh: sets up the global KCL query context and walks the octree.
- *     int f(KclObj *obj, u32 user, const Query *q, u32 unused);   returns (s8)ctx->hitFlag (+0x6D)
+ *     int f(KclObj *obj, u32 user, const Query *q);   returns (s8)ctx->hitFlag (+0x6D)
  *   local = copy of the first 0x2A bytes of q (00110D44), local+0x2C = 0.0f,
  *   local+0x30 = data_007A9260 (Vec3); local+0x28 (multi flag, from q+0x28) is cleared unless
  *   both q->p0 (q+0x1C) and q->p1 (q+0x20) lie within obj+0x49C of the last single-sphere centre
@@ -26,6 +26,8 @@
  * build that word needs the native stack below 4 GiB or a context field widened by the owner of
  * the KCL query structures.
  *
+ * Prototype = round 2's `int (int, int, byte *)` (r3 is not live-in: the old 4th parameter was
+ * dropped; obj as a 32-bit word + gp_ptr for -m64).
  * Verified against EU 00431F24-00432234 instruction by instruction (incl. the `bgt` / `bhs`
  * radius tests, the C70 operand order, the ldrsb return). Confidence: high. */
 #include "gameplay.h"
@@ -38,12 +40,13 @@ extern char data_00694750[];
 extern char data_006F7BD8[];
 extern uint8_t data_00709C38;
 void func_0068B200(float *box, const float *p);   /* AABB {min, max} extend by p */
-int func_0042E990(void *obj, float *seg, uint32_t mask, void *cb);
-int func_0042EFB0(void *obj, float *mn, float *mx, uint32_t mask, void *cb);
+void func_0042E990(uint32_t obj_w, const float *p, uint32_t attrMask, char *cb);
+int func_0042EFB0(uint32_t obj_w, const float *mn, const float *mx, uint32_t mask, void *cb);
 
 typedef void (*kcl_cb_fn)(void *cb, void *obj);
 
-int func_00431F44(char *obj, uint32_t user, const char *q, uint32_t unused) {
+int func_00431F44(uint32_t obj_w, uint32_t user, const char *q) {
+    char *obj = (char *)gp_ptr(obj_w);
     uint32_t localw[15];
     char *local = (char *)localw;
     memcpy(local, q, 0x2A);
@@ -114,7 +117,7 @@ int func_00431F44(char *obj, uint32_t user, const char *q, uint32_t unused) {
     float dy = FLD(ctx, 0x1C, float) - FLD(ctx, 0x28, float);
     float dz = FLD(ctx, 0x20, float) - FLD(ctx, 0x2C, float);
     if (VCMP_LE(dx * dx + dy * dy + dz * dz, FLD(GPTR(obj, 0x58, char), 0xE8, float))) {
-        func_0042E990(obj, (float *)AT(ctx, 0x18), mask, cbw);
+        func_0042E990(obj_w, (const float *)AT(ctx, 0x18), mask, (char *)cbw);
     } else {
         float box[6];
         uint32_t fmax = 0x7F7FFFFFu, fmin = 0xFF7FFFFFu;
@@ -122,7 +125,7 @@ int func_00431F44(char *obj, uint32_t user, const char *q, uint32_t unused) {
         memcpy(&box[3], &fmin, 4); memcpy(&box[4], &fmin, 4); memcpy(&box[5], &fmin, 4);
         func_0068B200(box, (float *)AT(ctx, 0x18));
         func_0068B200(box, (float *)AT(ctx, 0x24));
-        func_0042EFB0(obj, &box[0], &box[3], mask, cbw);
+        func_0042EFB0(obj_w, &box[0], &box[3], mask, cbw);
     }
     return FLD(ctx, 0x6D, int8_t);
 }

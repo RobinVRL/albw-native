@@ -27,8 +27,8 @@ extern char data_00734498[];
 int func_00100174(void *guard);   /* static-local guard acquire (Thumb) */
 int func_0010B3EC(void *buf, int cap, void *storage);
 int func_004A97F8(void *mgr, float *mn, float *mx, void *buf, uint32_t layer);
-int func_004A9178(void *mgr, void *entry, const float *pos, void *a2, uint32_t a3, uint32_t extra,
-                  float f0, float f1);
+void func_004A9178(uint32_t mgr_w, uint32_t e_w, const float *p, void *cb, uint32_t attrMask,
+                   uint32_t flag, float r, float h);
 
 void func_004AAD4C(char *mgr, const float *pos, void *a2, uint32_t a3, uint32_t mask,
                    uint32_t extra, float f0, float h) {
@@ -55,7 +55,7 @@ void func_004AAD4C(char *mgr, const float *pos, void *a2, uint32_t a3, uint32_t 
             if (FLD(buf, 0, uint32_t) > (uint32_t)i)
                 head = gp_ptr(FLD(GPTR(buf, 8, char), i * 4, uint32_t));
             for (char *node = GPTR(head, 4, char); node != head; node = GPTR(node, 4, char))
-                func_004A9178(mgr, GPTR(node, 8, char), pos, a2, a3, extra, f0, h);
+                func_004A9178(gp_u32(mgr), FLD(node, 8, uint32_t), pos, a2, a3, extra, f0, h);
         }
         int32_t off = FLD(big, 0xC, int32_t);
         for (char *obj = (char *)gp_ptr(FLD(big, 4, uint32_t) - (uint32_t)off);
@@ -63,7 +63,7 @@ void func_004AAD4C(char *mgr, const float *pos, void *a2, uint32_t a3, uint32_t 
              obj = (char *)gp_ptr(FLD(obj + off, 4, uint32_t) - (uint32_t)off)) {
             char *lst = obj + 0xB4 + (layer < 6 ? layer * 12 : 0);
             for (char *node = GPTR(lst, 4, char); node != lst; node = GPTR(node, 4, char))
-                func_004A9178(mgr, GPTR(node, 8, char), pos, a2, a3, extra, f0, h);
+                func_004A9178(gp_u32(mgr), FLD(node, 8, uint32_t), pos, a2, a3, extra, f0, h);
         }
     }
 }

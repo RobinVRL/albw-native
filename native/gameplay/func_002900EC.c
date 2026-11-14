@@ -28,7 +28,8 @@ extern uint8_t data_006F6314[];
 int func_0052FBA0(int mgr, uint32_t handle);
 int func_00100174(uint32_t *guard);
 
-float func_002900EC(void *player, int flag) {
+float func_002900EC(uint32_t player_w, int flag) {
+    void *player = (void *)gp_ptr(player_w);
     float k = flag != 0 ? 0.0855f : 0.095f;
     float s = k * FLD(GPTR(player, 0x14, void), 0x24, float);
     void *obj = GPTR(player, 0x48, void);

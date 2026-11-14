@@ -8,6 +8,7 @@
 
 int func_00291FE8(void *ac, float *pos, float power);
 
-int func_00291FE0(void *player, float *pos, float power) {
+int func_00291FE0(uint32_t player_w, float *pos, float power) {
+    void *player = (void *)gp_ptr(player_w);
     return func_00291FE8(GPTR(player, 0x14, void), pos, power);
 }

@@ -37,6 +37,7 @@
 extern char data_007307DC[];
 extern uint8_t data_00709C38;
 void func_0010F1DC(void *list, void *link);
+void albw_kcl_walk(char *obj, char *node, uint32_t slot, char *cb);
 
 typedef void (*kcl_cb_fn)(void *cb, void *obj);
 
@@ -90,12 +91,13 @@ static int prism_hit(char *obj, char *ctx, float r, int multi) {
     return 1;
 }
 
-void func_004317D4(char *obj, char *node, uint32_t slot, char *cb) {
+/* pointer version (recursion; also for other native rewrites, e.g. the box walkers) */
+void albw_kcl_walk(char *obj, char *node, uint32_t slot, char *cb) {
     uint32_t w = FLD(node, slot, uint32_t);
     if ((w & 0x80000000u) == 0) {
         char *child = node + w;
         for (uint32_t k = 0; k < 0x20; k += 4)
-            func_004317D4(obj, child, k, cb);
+            albw_kcl_walk(obj, child, k, cb);
         return;
     }
     char *ctx = data_007307DC;
@@ -142,4 +144,10 @@ void func_004317D4(char *obj, char *node, uint32_t slot, char *cb) {
             return;
         }
     }
+}
+
+/* round-2 callers: `extern int func_004317D4(int, int, int, undefined4 *)`: obj and node as
+ * 32-bit words (-m64: the upper half of an int argument register is undefined) */
+void func_004317D4(uint32_t obj_w, uint32_t node_w, uint32_t slot, char *cb) {
+    albw_kcl_walk((char *)gp_ptr(obj_w), (char *)gp_ptr(node_w), slot, cb);
 }

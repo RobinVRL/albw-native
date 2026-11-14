@@ -7,8 +7,8 @@
  * the float in s0 is lost at all 3 call sites; the conversions were C casts (cvttss2si:
  * 0x80000000 for NaN/huge x where vcvt saturates) and the final exponent add was printed as a
  * float VALUE conversion of the bit pattern (2 bit-cast sites).
- * albw_exp_approx() is the exact float version; func_ keeps the callers' int prototype and
- * returns the result's bit pattern.
+ * Round 2 declares `extern float func_00490628(float)` in its 4 caller files (returns.json):
+ * func_ returns the float (= albw_exp_approx).
  * Verified against EU 00490600-0049067C. Confidence: high. */
 #include "gameplay.h"
 #include "gp_math.h"
@@ -30,6 +30,6 @@ float albw_exp_approx(float x) {
     return gp_u2f(bits);
 }
 
-int func_00490628(float x) {
-    return (int)gp_f2u(albw_exp_approx(x));
+float func_00490628(float x) {
+    return albw_exp_approx(x);
 }

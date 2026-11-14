@@ -38,7 +38,8 @@ typedef void (*kcl_cb_fn)(void *cb, void *obj);
 static inline uint32_t lsr_r(uint32_t v, uint32_t s) { s &= 0xFF; return s >= 32 ? 0 : v >> s; }
 static inline uint32_t lsl_r(uint32_t v, uint32_t s) { s &= 0xFF; return s >= 32 ? 0 : v << s; }
 
-void func_0042E990(char *obj, const float *p, uint32_t attrMask, char *cb) {
+void func_0042E990(uint32_t obj_w, const float *p, uint32_t attrMask, char *cb) {
+    char *obj = (char *)gp_ptr(obj_w);
     char *ctx = data_007307DC;
     FLD(ctx, 0x68, uint32_t) = attrMask;
     char *hdr = GPTR(obj, 0x5C, char);

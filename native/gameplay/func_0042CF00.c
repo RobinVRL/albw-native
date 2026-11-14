@@ -20,7 +20,9 @@
 #include "gameplay.h"
 #pragma STDC FP_CONTRACT OFF
 
-int func_0042CF00(char *pl, const float *p, const float *dir, char *hit, float maxT) {
+int func_0042CF00(uint32_t pl_w, const float *p, const float *dir, uint32_t hit_w, float maxT) {
+    char *pl = (char *)gp_ptr(pl_w);
+    char *hit = (char *)gp_ptr(hit_w);
     float nx = FLD(pl, 0x58, float), ny = FLD(pl, 0x5C, float), nz = FLD(pl, 0x60, float);
     float d = FLD(pl, 0x64, float);
     float nd = dir[0] * nx + dir[1] * ny + dir[2] * nz;

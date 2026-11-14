@@ -17,12 +17,15 @@
  * (vmul then two non-fused vmla, single precision), as here.
  * Verified against EU 004CEAC8-004CEF20 instruction by instruction (incl. the second, dead
  * "rescale" block after the multiply, kept for exactness: the flag was cleared just before).
+ * Prototype = the round-2 callers' `extern int func_004CEAF0(int)` (344 files): `this` as an int
+ * word + gp_ptr (-m64), r0 at exit (the new flags word) returned. Calls 0051E5F8 through its
+ * exact pointer version albw_anim_rotation (the stack Vec3's address is a native pointer).
  * Confidence: high. */
 #include "gameplay.h"
 #pragma STDC FP_CONTRACT OFF
 
 extern uint32_t data_0070B960;
-int func_0051E5F8(void *self, float *out, float *a, float f0, float f1);
+int albw_anim_rotation(char *self, float *out, float *a, float f0, float f1);   /* = 0051E5F8 */
 int func_001151EC(uint32_t *dst, uint32_t *src);
 int func_00676F18(int a, float *m, uint32_t *b);
 int func_00676BF4(int a, float *m, uint32_t b);
@@ -38,8 +41,8 @@ static void rescale(char *self) {
     FLD(self, 0x164, uint32_t) &= ~0x40000000u;
 }
 
-void func_004CEAF0(void *obj) {
-    char *self = (char *)obj;
+int func_004CEAF0(int obj) {
+    char *self = (char *)gp_ptr((uint32_t)obj);
     float *S = (float *)AT(self, 0xB0);
     float *W = (float *)AT(self, 0x104);
     if (VCMP_GT(FLD(self, 0x134, float), 0.0f)) {
@@ -48,7 +51,7 @@ void func_004CEAF0(void *obj) {
         t[1] = FLD(self, 0x98, uint32_t);
         t[2] = FLD(self, 0xA8, uint32_t);
         t[3] = 0;   /* unused stack word */
-        func_0051E5F8(gp_ptr(data_0070B960), (float *)AT(self, 0xE0), (float *)t,
+        albw_anim_rotation((char *)gp_ptr(data_0070B960), (float *)AT(self, 0xE0), (float *)t,
                       FLD(self, 0x134, float), FLD(self, 0x138, float));
         if (FLD(self, 0x164, uint32_t) & 0x40000000u)
             rescale(self);
@@ -83,4 +86,5 @@ void func_004CEAF0(void *obj) {
             func_00676BF4(a, W, 0);
     }
     FLD(self, 0x164, uint32_t) |= 0x8000000u;
+    return (int)FLD(self, 0x164, uint32_t);   /* r0 at exit: the new flags word */
 }

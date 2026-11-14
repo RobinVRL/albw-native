@@ -28,7 +28,7 @@ extern char data_00709D28[];
 int func_00589A64(void *e);
 int func_0042E8C8(void *mesh, void *cb, uint32_t mask);
 void func_0042E990(void *mesh, const float *p, uint32_t mask, void *cb);
-int func_0042EFB0(void *mesh, float *mn, float *mx, uint32_t mask, void *cb);
+int func_0042EFB0(uint32_t obj_w, const float *mn, const float *mx, uint32_t mask, void *cb);
 int func_00434418(void *mesh, float *out, float r);
 int func_004342CC(void *mesh, float *out, const float *p);
 void func_0068B200(float *box, const float *p);
@@ -53,8 +53,9 @@ static void xz_box(float *box, const float *c, float r) {
     func_0068B200(box, t);
 }
 
-void func_004A9178(void *mgr, char *e, const float *p, void *cb, uint32_t attrMask, uint32_t flag,
-                   float r, float h) {
+void func_004A9178(uint32_t mgr_w, uint32_t e_w, const float *p, void *cb, uint32_t attrMask, uint32_t flag, float r, float h) {
+    (void)mgr_w;   /* unused on ARM too */
+    char *e = (char *)gp_ptr(e_w);
     if (FLD(e, 0x44, uint8_t) == 0 || !func_00589A64(e))
         return;
     char *mesh = GPTR(e, 0x10, char);
@@ -81,7 +82,7 @@ void func_004A9178(void *mgr, char *e, const float *p, void *cb, uint32_t attrMa
             func_004342CC(mesh, local, p);
             float box[6];
             xz_box(box, local, r);
-            func_0042EFB0(mesh, &box[0], &box[3], attrMask, cb);
+            func_0042EFB0(gp_u32(mesh), &box[0], &box[3], attrMask, cb);
         }
     } else {                                                 /* static mesh */
         float R = FLD(GPTR(mesh, 0x5C, char), 0x38, float);  /* 005706B0 */
@@ -94,7 +95,7 @@ void func_004A9178(void *mgr, char *e, const float *p, void *cb, uint32_t attrMa
             xz_box(box, p, r);
             float mn[3] = {box[0] - mp[0], box[1] - mp[1], box[2] - mp[2]};
             float mx[3] = {box[3] - mp[0], box[4] - mp[1], box[5] - mp[2]};
-            func_0042EFB0(mesh, mn, mx, attrMask, cb);
+            func_0042EFB0(gp_u32(mesh), mn, mx, attrMask, cb);
         }
     }
     FLD(data_00709D28, 8, uint32_t) = 0;

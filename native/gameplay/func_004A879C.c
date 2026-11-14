@@ -27,7 +27,9 @@ void func_004A7F00(void *mgr, void *ent, uint32_t layer);
 void func_0010F1F8(void *link);
 void func_0010F1DC(void *list, void *link);
 
-void func_004A879C(char *mgr, char *ent, uint32_t layer) {
+void func_004A879C(uint32_t mgr_w, uint32_t ent_w, uint32_t layer) {
+    char *mgr = (char *)gp_ptr(mgr_w);
+    char *ent = (char *)gp_ptr(ent_w);
     FLD(ent, 0x1C, uint32_t) = layer;
     char *shape = func_00589A64(ent) ? GPTR(ent, 0x10, char) : GPTR(ent, 0x18, char);
     if (gp_f2i_bits(FLD(shape, 0x40, float) - FLD(shape, 0x34, float)) > 0x40000000 ||

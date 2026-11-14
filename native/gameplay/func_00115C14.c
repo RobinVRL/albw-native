@@ -2,8 +2,8 @@
  *   vldmia r0,{s2,s3}; s6 = s2*s2; vmla s6 += s3*s3; vsqrt s0 = s6
  *   vcmpe s0,#0; bxle lr; s6 = 1/s0; v *= s6; vstmia r0,{s4,s5}
  * Same defects as 00115DC8 (void in Ghidra: length lost; NaN length takes the early return).
- * func_ keeps the callers' `int (float *)` prototype (returns the length bits);
- * albw_vec2_normalize() is the exact float version.
+ * Round 2 declares `extern float func_00115C14(float *)` in the 3 caller files: func_ returns
+ * the float (= albw_vec2_normalize).
  * Verified against EU 00115C14-00115C50. Confidence: high. */
 #include <math.h>
 #include "gameplay.h"
@@ -22,6 +22,6 @@ float albw_vec2_normalize(float *v) {
     return len;
 }
 
-int func_00115C14(float *v) {
-    return (int)gp_f2u(albw_vec2_normalize(v));
+float func_00115C14(float *v) {
+    return albw_vec2_normalize(v);
 }

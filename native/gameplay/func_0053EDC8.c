@@ -6,8 +6,9 @@
  * i386 every call leaves the float in x87 st(0) unpopped -> x87 stack overflow after 8 calls,
  * then every float return on that thread reads NaN. Callers that need the value are lost
  * either way until the signature table says float.
- * Here: integer-class definition returning the bit pattern (no x87 leak), plus the exact float
- * albw_anim_end_frame(). Verified against EU 0053ED84-0053ED90. Confidence: high. */
+ * Round 2: all 9 converted caller files declare `extern float func_0053EDC8(int)`, so func_
+ * now returns the float (this file returned the bits in an int before; that would now pop an
+ * empty x87 st(0) per call). `this` taken as an int word + gp_ptr (callers pass an int). Verified against EU 0053ED84-0053ED90. Confidence: high. */
 #include "gameplay.h"
 
 float albw_anim_end_frame(void *ctrl) {
@@ -16,6 +17,6 @@ float albw_anim_end_frame(void *ctrl) {
     return FLD(b, 0x14, float);
 }
 
-uint32_t func_0053EDC8(void *ctrl) {
-    return gp_f2u(albw_anim_end_frame(ctrl));
+float func_0053EDC8(int ctrl) {
+    return albw_anim_end_frame(gp_ptr((uint32_t)ctrl));
 }

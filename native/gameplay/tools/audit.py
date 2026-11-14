@@ -4,7 +4,8 @@
   python3 native/gameplay/tools/audit.py ADDR [ADDR...]      (USA addresses, or @file with one per line)
   python3 native/gameplay/tools/audit.py --json out.json ADDR...
 
-For each function, from the current Ghidra C (build/ghidra_analyzed3, fallback ghidra_analyzed2)
+For each function, from the current Ghidra C (build/ghidra_analyzed4 = round 2, fallback
+ghidra_extra4, ghidra_analyzed3, ghidra_analyzed2)
 compared with ARM-derived facts (native/robust/tools/livein2.json: real argument registers;
 native/gameplay/tools/retreads.json: return registers the callers read):
 
@@ -49,7 +50,7 @@ def native_defs():
 
 
 def src(a):
-    for d in ("ghidra_analyzed3", "ghidra_analyzed2", "ghidra_extra3", "ghidra_extra"):
+    for d in ("ghidra_analyzed4", "ghidra_extra4", "ghidra_analyzed3", "ghidra_analyzed2", "ghidra_extra3", "ghidra_extra"):
         p = os.path.join(PORT, "build", d, "func_%s.c" % a)
         if os.path.exists(p):
             return open(p, errors="replace").read(), d
@@ -70,7 +71,7 @@ def converted_ret(a):
     if _conv is None:
         _conv = {}
         # the active conversion (round-1 systemic fixes) wins over the older one
-        for pat in (("*", "func_*.c"), ("ghidra_analyzed3", "*", "func_*.c")):
+        for pat in (("*", "func_*.c"), ("ghidra_analyzed3", "*", "func_*.c"), ("ghidra_analyzed4", "*", "func_*.c")):
             for f in glob.glob(os.path.join(PORT, "build", "decomp", "ghidra_fallback", *pat)):
                 _conv[os.path.basename(f)[5:13]] = f
     f = _conv.get(a)

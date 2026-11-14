@@ -7,6 +7,7 @@
 
 int func_002917DC(void *ac, uint8_t flag, float power);
 
-int func_002917D4(void *player, uint8_t flag, float power) {
+int func_002917D4(uint32_t player_w, uint8_t flag, float power) {
+    void *player = (void *)gp_ptr(player_w);
     return func_002917DC(GPTR(player, 0x14, void), flag, power);
 }

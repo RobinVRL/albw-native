@@ -26,7 +26,9 @@ void func_00115C70(float *out, const float *a, const float *b);   /* a - b */
 void func_00115D70(float *out, const float *v, float s);          /* v * s */
 void func_00115DC8(float *v);                                     /* normalize */
 
-int func_0042D464(char *c, const float *q0, const float *dir, char *hit, float len) {
+int func_0042D464(uint32_t c_w, const float *q0, const float *dir, uint32_t hit_w, float len) {
+    char *c = (char *)gp_ptr(c_w);
+    char *hit = (char *)gp_ptr(hit_w);
     float a[3], dl[3], q1[3], s, t;
     memcpy(a, q0, 12);
     func_00115D70(dl, dir, len);

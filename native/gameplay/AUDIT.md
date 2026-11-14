@@ -5,11 +5,13 @@ the math library, the collision system, the physics/movement core with the playe
 per-frame actor update. Addresses are USA (EU in the tables where they differ). Rewrites live in
 `native/gameplay/func_<USA>.c` (one strong `func_<USA>` per file, `#include "gameplay.h"`).
 
-**Summary:** 73 rewrites (math 28, player/physics/actor 31, collision 14), 3 test programs
-(`test/run_math_tests.sh`, `test/player_test.c`, `test/collision_test.c`; all pass -m32/-m64),
-float-mode patch `fpmath.patch` (not applied).
+**Summary:** 97 rewrites (math 29, player/physics/actor 49 incl. wall merge 3, action change 1,
+angle chase 1, enemy knock-back 13; collision 19 incl. KCL box walkers, main sweeps, grid cell), 9 test
+programs run by `test/run_tests.sh` (all pass -m32 and -m64), float-mode patch `fpmath.patch`
+(the build now uses its flags). Section 6 is the round-2 re-audit (what changed, signature check
+of every rewrite, link blockers).
 
-**Status: not linked yet.** `tools/link.sh` builds `native/game`, `native/sdk`, `native/runtime`,
+**Status: not linked yet** (link blockers: section 6.4). `tools/link.sh` builds `native/game`, `native/sdk`, `native/runtime`,
 `native/robust` only. To use these files, add `native/gameplay/*.c` to its `NATIVE` list with
 the same `EXTRA` flags as `native/robust` (and drop any duplicate definition: none of the
 addresses here is defined in `native/game`, `native/robust` or `native/sdk` today; re-check with
@@ -24,6 +26,8 @@ addresses here is defined in `native/game`, `native/robust` or `native/sdk` toda
 | `retreads.py` (capstone) | for every `bl F` call site, which of r0/r1/s0/s1 the caller READS before writing after the call (VFP operands parsed by hand: capstone marks the destination of `vldr`/`vldm` as read). Ghidra-independent evidence of a function's real return registers. -> `retreads.json` (8,870 callees) |
 | `audit.py ADDR...` | per-function defect audit: Ghidra signature vs ARM live-in (`native/robust/tools/livein2.json`): missing register args; lost return (callers read r0/s0, Ghidra says void / non-float; notes when the converter already restored r0); `in_`/`unaff_`/`extraout_` reads; `&stack0x`; `UNRECOVERED_JUMPTABLE` (no-arg); float bit-casts (raw Ghidra / still present in the compiled conversion); float->int conversions; `SQRT`; double; static callers; existing native override |
 | `callgraph.json` | ARM direct-call graph (USA -> callees), for `audit.py` |
+| `sigcheck.py [--all]` | ABI check of every `func_*.c` here against the prototypes the round-2 converted callers declare (`build/decomp/ghidra_fallback/ghidra_analyzed4`): RET (float vs int return: i386 x87 hazard), ARGS (float/int argument sequence differs), M64PTR (pointer parameter where callers pass a 32-bit int: upper half of the register undefined on x86-64), VOIDRET |
+| `livein_dregs.py` | float-argument live-in that livein2 misses: `vpush {d0}` / `vmov.f64 d8, d0` saves (capstone reports vpush lists as written, so s0/s1 looked defined). -> `livein_dregs.json`: 20 functions with the pattern, 17 with a really-read s-register missing from the round-2 signature (004A9F98 21 callers, 004A7620 18, 002B0D7C 13, 004AAD4C, 00536CA4, 0066FA50, 004AAF44, ...) |
 
 ## Global audit numbers (all 23,529 Ghidra-sourced functions without a native override)
 
@@ -38,6 +42,15 @@ addresses here is defined in `native/game`, `native/robust` or `native/sdk` toda
 | unprototyped callee declarations (`extern int f();`) of float-taking functions | 42 callees | 206 caller files | C default promotion passes every float as an 8-byte double: all later arguments shift (e.g. 004FD464 x80 files, 0025B860 x31, 005211F4 x30) |
 | float<->int bit-casts printed as value casts | 2,070 (raw) / **525 residual** | 15,104 / **1,148 residual** | residual = still in the compiled round-1 conversion (`ghidra_fallback/ghidra_analyzed3`), e.g. `(float)*(undefined8 *)` vldm pairs in Matrix34 multiply |
 | float->int conversions as C casts | 1,402 | 5,682 | x86 `cvttss2si` gives 0x80000000 on NaN/overflow; ARM `vcvt` saturates, NaN -> 0 |
+
+Round 2 (`ghidra_analyzed4` + `systemic2` signature table), same audit over 23,492 functions without
+a native override: `in_rN` reads in converted files 1,322 -> 421 files (`in_sN` 328 -> 434), missing
+argument registers 796 -> 417, lost r0 return 131 -> 40, lost s0 return 22 -> 4 (all 4 are leaves
+that do not touch s0: benign), raw bit-casts 2,091 / converted residual **518 functions / 1,084
+sites** (was 525 / 1,148: the `(float)*(undefined8 *)` vldm-pair pattern is still there, e.g.
+00115960), float->int sites 1,427 (most now `VectorFloatTo*`, which saturate correctly; the
+remaining plain C casts are the hazard), unprototyped `()` declarations 42 callees / 206 files ->
+**8 callees / 41 sites**, mixed float/int return declarations of one callee across files -> **0**.
 | `SQRT()` (= double `__builtin_sqrt`) | 381 | | exact when stored straight to float (sqrt double-rounding is innocuous), a hazard only inside wider expressions |
 | double arithmetic | 6 | | |
 
@@ -53,8 +66,12 @@ from one Ghidra signature, so the converted sources agree among themselves excep
 - native definitions that disagree with the callers' class: `native/robust/func_0065E398.c`
   (`void`; 18 caller files declare it `float`: they read a popped-empty NaN), `native/sdk/memory.c`
   0010E74C memmove (`void *`; 13 caller files declare it `float`, they pop an empty st(0)).
+Round 2: no callee has mixed declarations any more; 0053EDC8 and 00556CE4 are now `float`
+everywhere; still disagreeing native definitions (not in this folder): `native/sdk/snd.c` 003E1634
+(callers float), `native/robust` 0065D120 (12 caller files float), 006640EC (36), 0065F560 (5),
+0066E07C (1): each pops an empty x87 st(0) per call on i386.
 Rule used for every file here: a `func_<ADDR>` keeps the return class the converted callers
-declare; where the ARM function really returns a float Ghidra lost, the exact version is an
+declare (round 2 changed seven of them to float: section 6.1); where the ARM function really returns a float Ghidra lost, the exact version is an
 `albw_*` function (`gp_math.h`) and the signature table has to be fixed before func_ changes.
 
 ## 1. Math library
@@ -237,8 +254,10 @@ action system (an action id + a table of 178 actions) rather than one movement r
 | 10 | 002906A4 (+002906B8) | 4 | s0 lost; r2/r3 swap; 001DD48C's 3rd argument dropped | rewritten |
 | 11 | 002917D4, 00291A04, 0028F268, 0028FBF0, 00290240, 00291518, 002923B0, 0029081C (+ inner halves) | 1-8 | s0 or r1-r3 lost | rewritten |
 | 12 | 002900EC | 2 | r1 lost (selects the speed constant) | rewritten |
-| 13 | 0038E13C (wall merge enter) | vtable | 8 lost stack objects, 11 bit-casts, `in_stack` | **open** |
-| 14 | 0038EA34 (wall merge move) | vtable | uses 0053EE30's lost float (`in_s0`, fixed at the source by the getter rewrite); bit-cast compare | **open** |
+| 13 | 0038E13C (wall merge enter) | vtable | round 2: exit x from `in_stack_ffffff90` (garbage exit position), SafeString vtable never stored, stale ToImageR handle, handle tested as float | rewritten |
+| 14 | 0038EA34 (wall merge move) | vtable | round 2: merge target Vec3 never written (slide toward garbage), NaN `ble` branches | rewritten |
+| 14b | 002908B8 (apply action change) | 2 | ridden actor's vt[0x60] float lost, speed bit-compare done as float compare, 0010DBBC stack pair never written | rewritten |
+| 14c | 0051D2F4 (integer angle chase) | 257 | `(int)` C cast: NaN rate -> maxStep instead of minStep, overflow | rewritten |
 | 15 | 0053EE20 | 7 sites | float/int declarations disagree in the old conversion | open (signature table) |
 | 16 | 004EFB10, 004C6DD0, 004EF7EC | 1 | `extraout_r1` passed where the callee reads only r0 | benign |
 | 17 | 004C0350 | 55 | flagged (s0 "missing") but **false positive**: s0 is written on both paths by vldreq/vldrne | none |
@@ -246,7 +265,7 @@ action system (an action id + a table of 178 actions) rather than one movement r
 ### Rewritten (player/physics): 31 files
 
 - `func_004CEAF0.c` model world matrix: restores the stack Vec3 (base z column) and s1 passed to 0051E5F8; vmul + unfused vmla order. High.
-- `func_0051E5F8.c` animation rotation matrix: full ARM signature (self, out, a, f0, f1), saturating conversion, ARM floor/NaN. High. **Link only together with callers regenerated for the 5-argument signature** (today the converted callers pass the float where `a` now is).
+- `func_0051E5F8.c` animation rotation matrix: full ARM signature (self, out, a, f0, f1), saturating conversion, ARM floor/NaN. High. Round 2 regenerated the callers with the 5-argument signature: linkable (section 6.1).
 - `func_0053EE30.c`, `func_0053EDC8.c` frame getters: return the float's bits in the int class (no x87 leak) + exact `albw_anim_frame` / `albw_anim_end_frame`. High.
 - `func_0053EDD8.c` isEnd with `blt`/`bls`/`bne` NaN semantics. High.
 - `func_004C1388.c`: restores the return value (0 on the early path), signed bit-compare clamp, full 004C10C4 prototype. High.
@@ -313,13 +332,14 @@ them already rewritten as `ALBW_AS_*` by the round-1 conversion that is now comp
 
 | # | USA | callers | defects | status |
 |---|---|---|---|---|
-| 1 | 0042EFB0 KCL box walk | 5 (hot) | 4 lost stack objects (`in_stack_ffffff10..1c`: the distance vector), 93 bit-casts, 12 float->int | **open** |
+| 1 | 0042EFB0 KCL box walk | 5 (hot) | round 2: distance vector still `in_stack_ffffff10..1c` (73 uses), 6 `(uint)` bound casts (box past 2^31 -> no prisms), shift UB, dropped r0 | rewritten |
 | 2 | 004317D4 KCL subtree/leaf | 3 (recursive) | radius bit-cast -> every prism "hits" | rewritten |
 | 3 | 0042E990 KCL point query | 5 | radius + vertex-z bit-casts, `(uint)` of vcvt.s32 | rewritten |
 | 4 | 004A879C grid register | 120 | "size > 2.0" bit compare printed as `(int)` -> big colliders never in the large list | rewritten |
-| 5 | 004A9F98 sweep | 21 | s0/s1 bounds lost (`in_s0/in_s1`), 15 bit-casts | **open** |
-| 6 | 004A7620 sweep | 18 | s0/s1 lost, 4 bit-casts | **open** |
-| 7 | 0043081C KCL partial box | 2 | 4 lost stack objects, 10 bit-casts | **open** |
+| 5 | 004A9F98 sweep | 21 | round 2: s0/s1 still lost (`vpush {d0}` pattern), fallback call 3 args | rewritten (albw_ + func_ with the constant bounds) |
+| 6 | 004A7620 sweep | 18 | round 2: s0/s1 still lost | rewritten (same) |
+| 7 | 0043081C KCL partial box | 2 | round 2: distance vector `in_stack` (35 uses), bound via `(int)ALBW_AS_U32` | rewritten |
+| 7b | 00581A18 grid cell of a point | 3 | `(int)` casts: far +x/+z -> cell 0 instead of 25 | rewritten |
 | 8 | 00434F68 prism -> triangle | 3 | thickness `(float)int` -> garbage radius on every triangle | rewritten |
 | 9 | 00431F44 KCL segment query | virtual | endpoint x stored via `(int)` | rewritten |
 | 10 | 004ED9F4 prefilter | 2 | AABB read via `(float)int`, stack argument dropped | rewritten |
@@ -363,30 +383,114 @@ checks: 0042DA98, 0042CF00, 004ED9F4, 004317D4, 0042E990.
 Test: `native/gameplay/test/collision_test.c` (0042DA98, 0042D8F4, 0042CF00; build line in its
 header, needs `-lm`), passes -m32 and -m64.
 
-## 5. Biggest remaining risks for gameplay
+## 5. Enemy damage reaction / knock-back (002B2590)
 
-1. **KCL box walkers 0042EFB0 / 0043081C are still Ghidra C** with lost stack objects (the
-   distance vector) and ~100 bit-casts: every large/box KCL query (long segments in 00431F44,
-   the box path of 004A9178) goes through them. Next rewrite target; the leaf code equals
-   004317D4's.
-2. **Main sweeps 004A7620 / 004A9F98 lose their s0/s1 bounds** (39 call sites); wall merge
-   enter/move 0038E13C / 0038EA34 (8 lost stack objects); knock-back table 002B2590 not audited.
-3. **Signature table.** Many rewrites restore real ARM parameters/returns (player wrappers,
-   0051E5F8, 004A9F98 class); they are only correct once the converter declares callees from the
-   ARM live-in set and the `retreads.json` return registers. The same table must give one
-   return class per function: on i386 any float/int return mismatch corrupts the x87 stack
-   (current offenders: 0053EDC8 [rewritten], 00556CE4, robust 0065E398, sdk 0010E74C).
-4. **Unprototyped `()` declarations of float-taking callees** (42 callees, 206 caller files):
-   floats are passed as doubles and every later argument shifts.
-5. **Residual bit-casts**: 1,148 sites in 525 functions remain in the compiled round-1
-   conversion (e.g. the `(float)*(undefined8 *)` vldm-pair pattern, fixed here for Matrix34
-   multiply only). Converter rule needed: an 8-byte integer -> float cast of a load is the low
-   word's bits.
-6. **Float model not pinned** (see Float mode): today correct only because clang's i686 default
-   CPU has SSE2; FTZ/DAZ not set (denormal handling differs from the 3DS); DN not reproducible.
-7. **Pointers to code-embedded constants**: pool words that point into .text at non-function
-   addresses are emitted as raw numbers by gen_data (00115B68 fixed here); a few more may exist
-   (`ldr` pool words into .text that are not function starts: 122 values, mostly IPC command
-   headers, i.e. not pointers).
-8. **64-bit**: game pointers in data go through `gp_ptr`/`gp_u32` (assumes the game arena below
-   4 GiB); 00431F44 stores a stack object's address into a global 32-bit context field.
+002B2590 (EU 002B256C) is the CONSTRUCTOR of the enemy damage-reaction state machine, not a
+dispatcher: 33 `cRT_*` states, each {enter, exec, exit} delegates at +0x18/+0x1C/+0x20 copied from
+data_00698944 (map recovered by emulating the ctor). Knock-back states: 14 Zero (002AF4DC /
+002ADDA0 / 002AEE8C), 15 Small (002AF59C / 002ADF78 / 002AF570), 16 KnockBack (002AD8A0 /
+002AC268 / 002AD730), 17 Big (002AE9F8 / 002ACE08 / 002AE9B8), 18 Ice (002AEA54 / 002ACF20 /
+002AE9E0), 30 SpecialDie (002B0584 / 002AF63C / 002B1638). The work is in shared helpers:
+002B0D7C start knock-back, 002AFEF0 per-frame (clean in round 2), 002B193C death/launch, exits
+002B0754 / 002B1644 / 002B05F0. Player side 0031EDC4: clean in round 2.
+
+| # | USA | callers | round-2 defects | status |
+|---|---|---|---|---|
+| 1 | 002B0D7C knock-back start | 12 fn / 14 sites | strength s0 lost (`vpush {d0}` pattern), vt[0x68] float return lost (speed = garbage^2), virtual called without &frames, SafeString for SE_EN_DAMAGE_FAINT never written, "speed == 0" compares unrelated values | rewritten (ARM 5-arg signature) |
+| 2 | its 12 enter callers (002AF4DC, 002AF59C, 002AD8A0, 002AE9F8, 002AEA54, 002ADF60, 002ACBAC, 002B1710, 002AEA9C, 002AF624, 002AE1BC, 002AE214) | delegates | strength constant (0 .. 0.35, ice choice on actor+0x895) dropped | rewritten |
+| 3 | 002AF168 TornadoFreeze enter (221 insns) | delegate | passes 0.32 (knock-back and death path), dropped | **open: blocks linking 002B0D7C** |
+| 4 | 002B193C death/launch | | 7 float->int, 4 SQRT | open |
+| 5 | 002AAD94 Launch exec, 002AB978 Fall enter, 002AE274 HammerBreak enter | | lost stack objects, float->int | open |
+| 6 | 002AB3DC / 002AB3E0 / 002AB61C | | 2-4 residual bit-casts | open |
+
+## 6. Round-2 re-audit (this pass)
+
+### 6.1 What round 2 changed for the existing rewrites (sigcheck.py)
+
+- Return class now **float** in every converted caller for 00115154 (sinCos: s0 = sin), 00115DC8,
+  00115C14 (normalize length), 00490628 (exp), 00491624 (Mtx33 from Euler: s0 = m[1]), 0053EDC8,
+  0053EE30 (frame getters). The func_ definitions returned int (bits) to match round 1; on i386
+  that would now pop an empty x87 st(0) in every caller. All seven now return the ARM s0 value
+  (test_math.c checks the values, incl. sinCos with aliased outputs).
+- 0051E5F8: round 2 gives exactly r0, r1, r2, s0, s1 (`extern int (int, float *, undefined4,
+  float, float)` in all 12 caller files). The rewrite now takes `(int self, float *out, uint32_t
+  a, f0, f1)` and is **linkable**; round 2 still has the `(uint)` frame conversion and the NaN
+  floor branch (fixed here, residual_test.c). Its pointer body is `albw_anim_rotation`, used by
+  004CEAF0 (whose stack Vec3 address must not go through a 32-bit word on -m64).
+- 00431F44: round 2 dropped the dead 4th parameter: definition now `(obj, user, q)`.
+- M64PTR: 25 definitions took a native pointer where the callers pass an `int`; on x86-64 the
+  upper half of that argument register is undefined. All now take `uint32_t` + `gp_ptr`
+  (pointer bodies kept as `albw_kcl_walk` for 004317D4 etc.). 004CEAF0 now returns r0 (flags).
+- Remaining sigcheck findings: VOIDRET (void definition, callers declare int, no caller uses the
+  value: 0028F268, 0028FBF0, 0042E990, 004317D4, 00434F68, 004A879C, 004A9178) benign; ARGS:
+  002B0D7C (sec. 5), 004AAD4C / 004AAF44 (callers lose s0/s1: `vpush {d0}` pattern),
+  004ED9F4 (callers drop the stack argument).
+
+### 6.2 Residual bit-casts / float->int casts in the collision/player/math graph (431 functions)
+
+Round 2 leaves 6 functions / 13 sites with residual bit-casts and 16 / 30 with float->int casts
+(most `VectorFloatTo*`, exact). Fixed by rewrite: 00115960 (Matrix44 multiply, vldm-pair
+`(float)*(undefined8 *)`: rows 2-3 of b garbage), 0051D2F4 (angle chase, 257 callers),
+00581A18 (grid cell), 002908B8 (action change), plus the KCL walkers. Left: 004906A8 (log
+approx: all conversions are exact intrinsics), 0042BD5C (6 raw casts, 0 residual), 0043285C
+(`in_d8/in_d9`), 004A9BDC (`unaff_r8`), 0042C7B8 / 0042BB2C (2 stack objects each).
+
+### 6.3 New rewrites (EU = USA - 0x20/0x24 etc., ranges in each header)
+
+| USA | role | round-2 bug fixed | verification | conf |
+|---|---|---|---|---|
+| 0042EFB0 | KCL octree box query | distance vector `in_stack` (73 uses), saturating bounds, shift >= 32, r0 | EU 0042EF90-00430294 insn by insn | high |
+| 0043081C | KCL partial-box recursion | distance vector `in_stack` (35), bound bit-cast | EU 004307FC-004317B0 | high |
+| 004A7620 | world sweep (all layers) | s0/s1 lost: path chosen at random; `albw_collision_sweep` exact, func_ passes (2.0, 4.0) = 26 of 27 ARM sites | EU 004A75F8-004A7ED4 | high flow / med names |
+| 004A9F98 | area sweep | same; fallback call; func_ (2.0, 4.0) exact at all 23 sites | EU 004A9F70-004AA9CC | high / med |
+| 0038E13C | wall merge enter (vt+0x10 of data_006E6D78) | exit x garbage, SafeString vtable, ToImageR handle, float test of a handle | EU 0038E118-0038E844 | high / med |
+| 0038EA34 | wall merge calc (vt+0x14) | merge target never written, NaN branches, 00114608 folded | EU 0038EA10-0038EFB8 | high / med |
+| 0038E8C8 | wall merge exit (vt+0x18) | none (prototype only) | EU 0038E8A4-0038E8D8 | high |
+| 002908B8 | apply pending player action | vt[0x60] float lost, speed bit-compare (DN NaN), stack pair | EU 002908E0-00290E8C + both jump tables | high |
+| 002B0D7C + 12 enters | enemy knock-back start | section 5 | each insn by insn | high (flow) |
+| 0051D2F4 | integer angle chase | `(int)` cast NaN/overflow | EU 0051D2CC-0051D350 | high |
+| 00581A18 | grid cell of a point | `(int)` cast overflow | EU 005819F0-00581A9C | high |
+| 00115960 | Matrix44 multiply | vldm-pair value conversion | EU 00115960-00115A8C | high |
+
+Tests: `test/run_tests.sh` builds and runs test_math (55), player, collision, residual (24),
+kcl_box, knockback, sweep (56), wall (68), action, each -m32 and -m64 with the build's float
+flags (-no-pie -fno-pic: test stubs are reached through 32-bit vtable words). All pass.
+Game objects in tests come from `test/lowmem.h` (MAP_32BIT on -m64).
+
+### 6.4 Link blockers / caveats
+
+1. 002B0D7C: 002AF168 (TornadoFreeze enter, passes 0.32) is still a 4-argument converted caller.
+   Rewrite it (or give 002B0D7C r0-r3+s0 in the signature table) before linking 002B0D7C.
+2. 004AAD4C / 004AAF44: callers pass no s0/s1; 004ED9F4: callers drop the stack argument. Need
+   the signature table (livein_dregs.json for the first two).
+3. 004A7620 / 004A9F98 func_ use the constant bounds (2.0, 4.0): exact except the call at
+   00341D28 (EU 003422E4: f0 = 1.0). Exact once the table gives them s0/s1 (then define func_
+   as the albw_ versions).
+4. Matched decomp objects in the -m32 link (`build/objs.txt`) for the same addresses:
+   0028FBF0 (r_0028FBF0.cpp), 00290248, 002906B8, 00291A40, 00291FE0, 002AD8A0 (declares
+   002B0D7C `void`: an x87 leak per call against the float definition), 0038E8C8, 004D80A4,
+   0053EE30, 0068C690. link.sh must keep exactly one per address (the native/gameplay one where
+   the matched code calls a changed prototype, e.g. 002AD8A0).
+5. -m64: several rewrites (and the round-2 callers) store native stack addresses in 32-bit game
+   words (00431F44 ctx+0, sweep query copies, 0051E5F8's `a`): only correct with game threads on
+   low stacks. Stubs/callbacks called through 32-bit vtable words need code below 4 GiB
+   (-no-pie or the low-4GB arena).
+
+## 7. Biggest remaining risks for gameplay (ranked)
+
+1. **Signature table for the `vpush {d0}` float arguments** (livein_dregs.json: 17 functions incl.
+   the sweeps, 002B0D7C, 004AAD4C, 004AAF44): until then those rewrites run with constant or
+   dropped floats at some sites (6.4 items 1-3).
+2. **Duplicate definitions at link time** (6.4 item 4) and the native robust/sdk definitions
+   whose return class disagrees with round-2 callers (003E1634, 0065D120, 006640EC, 0065F560,
+   0066E07C): i386 x87 stack corruption -> every later float return NaN.
+3. **Enemy reaction states still Ghidra C**: 002AF168, 002B193C (death/launch), 002AAD94,
+   002AB978, 002AE274; each enemy class's vt[0x68] direction virtual must return float.
+4. **Residual vldm-pair bit-casts** (518 functions / 1,084 sites globally, e.g. any other
+   `(float)*(undefined8 *)`): a converter rule (low word bits) is still needed.
+5. **Collider vt[2] narrow-phase tests** reached from the sweeps were not audited; 0042BD5C,
+   0042C7B8, 0042BB2C, 0043285C, 004A9BDC still Ghidra C.
+6. **Float model**: flags now pinned; FTZ/DAZ still not set (fpmath.patch item 2); DN only
+   reproduced in 002908B8's bit compare.
+7. **64-bit**: native stack addresses in 32-bit words (6.4 item 5); code-embedded constants
+   (gen_data) as before.

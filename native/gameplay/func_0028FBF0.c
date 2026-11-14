@@ -6,6 +6,7 @@
 
 void func_0028FBF8(void *ac, float *p);
 
-void func_0028FBF0(void *player, float *p) {
+void func_0028FBF0(uint32_t player_w, float *p) {
+    void *player = (void *)gp_ptr(player_w);
     func_0028FBF8(GPTR(player, 0x14, void), p);
 }

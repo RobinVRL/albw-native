@@ -7,6 +7,7 @@
 
 void func_0028F270(void *ac, float *a1, int a2, int a3);
 
-void func_0028F268(void *player, float *a1, int a2, int a3) {
+void func_0028F268(uint32_t player_w, float *a1, int a2, int a3) {
+    void *player = (void *)gp_ptr(player_w);
     func_0028F270(GPTR(player, 0x14, void), a1, a2, a3);
 }

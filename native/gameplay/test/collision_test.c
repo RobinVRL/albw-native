@@ -13,7 +13,9 @@
 float func_0042DA98(const float *p1, const float *q1, const float *p2, const float *q2,
                     float *out_s, float *out_t);
 float func_0042D8F4(const float *p, const float *a, const float *b, float *out_t, float *out_dir);
-int func_0042CF00(char *pl, const float *p, const float *dir, char *hit, float maxT);
+int func_0042CF00(uint32_t pl, const float *p, const float *dir, uint32_t hit, float maxT);
+#include "gameplay.h"
+#include "lowmem.h"
 
 static int fails;
 #define CHECK(c) do { if (!(c)) { printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c); fails++; } } while (0)
@@ -54,26 +56,24 @@ int main(void) {
     }
     /* ray/plane: plane y = 0 (normal (0,1,0), d 0 at shape+0x58..0x64) */
     {
-        uint32_t plw[0x68 / 4] = {0};
-        char *pl = (char *)plw;
+        char *pl = lowalloc(0x68);
         float n[4] = {0, 1, 0, 0};
         memcpy(pl + 0x58, n, 16);
-        uint32_t hitw[8];
-        char *hit = (char *)hitw;
+        char *hit = lowalloc(32);
         float p[3] = {0, 2, 0}, d1[3] = {0, -4, 0}, d2[3] = {1, 0, 0}, o[3] = {0, 0, 0};
         float h[3], hn[3];
-        memset(hitw, 0xAA, sizeof hitw);
-        CHECK(func_0042CF00(pl, p, d1, hit, 1.0f) == 1);           /* t = (0-2)/-4 = 0.5 */
+        memset(hit, 0xAA, 32);
+        CHECK(func_0042CF00(gp_u32(pl), p, d1, gp_u32(hit), 1.0f) == 1);           /* t = (0-2)/-4 = 0.5 */
         memcpy(h, hit + 0x10, 12);
         memcpy(hn, hit + 4, 12);
         CHECK(h[0] == 0.0f && h[1] == 0.0f && h[2] == 0.0f && hn[1] == 1.0f);
-        CHECK(func_0042CF00(pl, p, d1, NULL, 0.25f) == 0);         /* t > maxT */
-        CHECK(func_0042CF00(pl, p, d2, NULL, 1.0f) == 0);          /* parallel, off-plane */
-        CHECK(func_0042CF00(pl, o, d2, hit, 1.0f) == 1);           /* parallel, on-plane: p */
+        CHECK(func_0042CF00(gp_u32(pl), p, d1, 0, 0.25f) == 0);         /* t > maxT */
+        CHECK(func_0042CF00(gp_u32(pl), p, d2, 0, 1.0f) == 0);          /* parallel, off-plane */
+        CHECK(func_0042CF00(gp_u32(pl), o, d2, gp_u32(hit), 1.0f) == 1);           /* parallel, on-plane: p */
         memcpy(h, hit + 0x10, 12);
         CHECK(h[0] == 0.0f && h[1] == 0.0f && h[2] == 0.0f);
         float up[3] = {0, 4, 0};
-        CHECK(func_0042CF00(pl, p, up, NULL, 10.0f) == 0);         /* t = -0.5 < 0 */
+        CHECK(func_0042CF00(gp_u32(pl), p, up, 0, 10.0f) == 0);         /* t = -0.5 < 0 */
     }
     printf("%s (%d failures)\n", fails ? "FAILED" : "ok", fails);
     return fails != 0;

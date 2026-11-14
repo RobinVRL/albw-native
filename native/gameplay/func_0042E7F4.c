@@ -31,7 +31,8 @@ static void call_vt5(char *obj, char *q) {
     fn(obj, 0, q);
 }
 
-int func_0042E7F4(char *obj, char *q, int count) {
+int func_0042E7F4(char *obj, uint32_t q_w, int count) {
+    char *q = (char *)gp_ptr(q_w);
     char *ctx = data_007307DC;
     FLD(ctx, 0x6E, uint8_t) = 1;
     FLD(obj, 0x488, uint32_t) = gp_u32(obj + 0x88);

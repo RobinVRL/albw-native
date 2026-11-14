@@ -10,10 +10,10 @@
  *    length returned here with 0). The exact version is albw_vec3_normalize() (float).
  *  - NaN: `bxle` is taken for an unordered compare, so a NaN length leaves the vector as is;
  *    Ghidra's `if (len <= 0) return;` falls through for NaN and writes NaN * v.
- * func_00115DC8 itself keeps the callers' declared prototype `int (float *)` (a float return
- * here would leave a value on the i386 x87 stack at all 488 converted call sites, see
- * gameplay.h); it returns the length's bit pattern in the int. Once the signature table
- * declares `float func_00115DC8(float *)` consistently, define it as albw_vec3_normalize.
+ * RETURN CLASS: round 2 (systemic2/returns.json, 24 s0-reading sites) declares
+ * `extern float func_00115DC8(float *)` in all 248 converted caller files, so func_ now returns
+ * the float (it returned the bits in an int before round 2: on i386 that would now pop an
+ * empty x87 st(0) in every caller).
  * Verified against EU 00115DC8-00115E0C. Confidence: high. */
 #include <math.h>
 #include "gameplay.h"
@@ -34,6 +34,6 @@ float albw_vec3_normalize(float *v) {
     return len;
 }
 
-int func_00115DC8(float *v) {
-    return (int)gp_f2u(albw_vec3_normalize(v));
+float func_00115DC8(float *v) {
+    return albw_vec3_normalize(v);
 }

@@ -3,12 +3,13 @@
  *     native/gameplay/func_004CEAF0.c native/gameplay/func_0053EDD8.c native/gameplay/func_004C1388.c \
  *     native/gameplay/func_002917AC.c -o /tmp/pt && /tmp/pt          (also -m64)
  * Callees are stubs that record their arguments. Game objects are 32-bit-addressed in the game;
- * here they are static buffers, so pointer fields are only used on the -m32 build (or on -m64
- * when the buffers happen to be below 4 GiB: the test checks and skips those parts). */
+ * here they come from lowalloc() (below 4 GiB on -m64, test/lowmem.h).
+ * Prototypes = the round-2 converted callers' (int words for `this`, float frame getters). */
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include "gameplay.h"
+#include "lowmem.h"
 
 static int fails;
 #define CHECK(c) do { if (!(c)) { printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c); fails++; } } while (0)
@@ -19,7 +20,7 @@ static float g_rot[9];
 static float g_t0, g_t1, g_a[3];
 static int g_copy, g_skel;
 static int skel_used(void) { return g_skel; }
-int func_0051E5F8(void *self, float *out, float *a, float f0, float f1) {
+int albw_anim_rotation(char *self, float *out, float *a, float f0, float f1) {
     memcpy(out, g_rot, sizeof g_rot); g_t0 = f0; g_t1 = f1; memcpy(g_a, a, 12); return 0;
 }
 int func_001151EC(uint32_t *d, uint32_t *s) { memcpy(d, s, 48); g_copy++; return 0; }
@@ -34,14 +35,16 @@ int func_004C10C4(int self, float *p, uint32_t flags, int a3, float f0, float f1
 static int g_hit; static float g_pow;
 int func_0031EDC4(int act, float *pos, uint8_t flag, float power) { g_hit = act; g_pow = power; return 5; }
 
-void func_004CEAF0(void *obj);
-int func_0053EDD8(void *ctrl);
-int func_004C1388(void *self);
+int func_004CEAF0(int obj);
+int func_0053EDD8(uint32_t ctrl);
+int func_004C1388(uint32_t self);
 int func_002917AC(void *ac, float *pos, uint8_t flag, float power);
 
-static char obj[0x900];
+static char *obj;
+#define W32(p) ((uint32_t)gp_u32(p))
 
 int main(void) {
+    obj = lowalloc(0x900);
     /* 004CEAF0: base = rows {1,2,3,10},{4,5,6,20},{7,8,9,30}; scale (2,3,4); rotation = a
      * permutation matrix -> W = R*S exactly; translation copied. */
     float base[12] = {1, 2, 3, 10, 4, 5, 6, 20, 7, 8, 9, 30};
@@ -51,7 +54,7 @@ int main(void) {
     FLD(obj, 0x134, float) = 0.5f; FLD(obj, 0x138, float) = 7.0f;
     float R[9] = {0, 1, 0, 0, 0, 1, 1, 0, 0};   /* rows: e1, e2, e0 */
     memcpy(g_rot, R, sizeof R);
-    func_004CEAF0(obj);
+    CHECK((uint32_t)func_004CEAF0((int)W32(obj)) == FLD(obj, 0x164, uint32_t));
     float *W = (float *)(obj + 0x104);
     /* S rows: {2,6,12},{8,15,24},{14,24,36}; W row0 = S row1, row1 = S row2, row2 = S row0 */
     CHECK(W[0] == 8 && W[1] == 15 && W[2] == 24 && W[3] == 10);
@@ -61,29 +64,29 @@ int main(void) {
     CHECK((FLD(obj, 0x164, uint32_t) & 0x40000000) == 0 && (FLD(obj, 0x164, uint32_t) & 0x8000000));
     /* NaN time: ARM `ble` takes the copy path */
     uint32_t qnan = 0x7FC00000; memcpy(obj + 0x134, &qnan, 4);
-    g_copy = 0; func_004CEAF0(obj); CHECK(g_copy == 1);
+    g_copy = 0; func_004CEAF0((int)W32(obj)); CHECK(g_copy == 1);
 
     /* 0053EDD8 isEnd: only with addressable 32-bit pointers */
-    static char c[0x40], b1[0x40], b2[0x40];
-    if ((uint64_t)(uintptr_t)b2 < 0x100000000ull) {
+    char *c = lowalloc(0x40), *b1 = lowalloc(0x40), *b2 = lowalloc(0x40);
+    {
         FLD(c, 0x10, uint32_t) = gp_u32(b1); FLD(b1, 0x14, uint32_t) = gp_u32(b2);
         FLD(b2, 0x1C, uint8_t) = 0; FLD(b2, 0x10, float) = 1.0f;
-        FLD(b2, 0x08, float) = 5; FLD(b2, 0x14, float) = 5; CHECK(func_0053EDD8(c) == 1);
-        FLD(b2, 0x08, float) = 4; CHECK(func_0053EDD8(c) == 0);
-        FLD(b2, 0x10, float) = -1.0f; FLD(b2, 0x08, float) = 0; CHECK(func_0053EDD8(c) == 1);
+        FLD(b2, 0x08, float) = 5; FLD(b2, 0x14, float) = 5; CHECK(func_0053EDD8(W32(c)) == 1);
+        FLD(b2, 0x08, float) = 4; CHECK(func_0053EDD8(W32(c)) == 0);
+        FLD(b2, 0x10, float) = -1.0f; FLD(b2, 0x08, float) = 0; CHECK(func_0053EDD8(W32(c)) == 1);
         memcpy(b2 + 0x10, &qnan, 4); FLD(b2, 0x08, float) = -0.5f;      /* NaN rate -> backwards */
-        CHECK(func_0053EDD8(c) == 1);
-        FLD(b2, 0x1C, uint8_t) = 1; CHECK(func_0053EDD8(c) == 0);
+        CHECK(func_0053EDD8(W32(c)) == 1);
+        FLD(b2, 0x1C, uint8_t) = 1; CHECK(func_0053EDD8(W32(c)) == 0);
     }
     /* 004C1388: clamp by bit compare */
     FLD(obj, 0x8AC, uint32_t) = 0; FLD(obj, 0x3E8, int32_t) = 9;
-    FLD(obj, 0x834, float) = -1.0f; CHECK(func_004C1388(obj) == 77 && g_f0 == 1.5f && g_f1 == 5.5f);
-    FLD(obj, 0x834, float) = 0.03f; func_004C1388(obj);
+    FLD(obj, 0x834, float) = -1.0f; CHECK(func_004C1388(W32(obj)) == 77 && g_f0 == 1.5f && g_f1 == 5.5f);
+    FLD(obj, 0x834, float) = 0.03f; func_004C1388(W32(obj));
     CHECK(g_f0 == (0.03f * 50.0f) * 1.5f);
-    FLD(obj, 0x834, float) = 1.0f; func_004C1388(obj); CHECK(g_f0 == 3.0f);
-    memcpy(obj + 0x834, &qnan, 4); func_004C1388(obj); CHECK(g_f0 == 3.0f);   /* NaN bits > 2.0 */
+    FLD(obj, 0x834, float) = 1.0f; func_004C1388(W32(obj)); CHECK(g_f0 == 3.0f);
+    memcpy(obj + 0x834, &qnan, 4); func_004C1388(W32(obj)); CHECK(g_f0 == 3.0f);   /* NaN bits > 2.0 */
     CHECK(g_flags == 0x20000000 && g_a3 == 9 && g_r1 == 0x1234);
-    FLD(obj, 0x8AC, uint32_t) = 0x800; CHECK(func_004C1388(obj) == 0);
+    FLD(obj, 0x8AC, uint32_t) = 0x800; CHECK(func_004C1388(W32(obj)) == 0);
 
     /* 002917AC: class-2 action forwards (obj, pos, flag, power) */
     static char ac[0x60];

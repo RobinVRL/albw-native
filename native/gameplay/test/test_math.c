@@ -23,8 +23,8 @@ int func_00115D70(float *, float *, float);
 int func_00115D88(float *, float *, float);
 int func_00115DAC(float *, float *, float *, float);
 int func_00115E10(float *, float *, float *);
-int func_00115DC8(float *);
-int func_00115C14(float *);
+float func_00115DC8(float *);
+float func_00115C14(float *);
 int func_00115B68(float *, float *, float *);
 int func_00115CA8(float *, float *, float *);
 int func_00115074(float *, float *, float *);
@@ -35,14 +35,14 @@ int func_00114E74(float *, float *, float *);
 int func_0011549C(float *, float *, float *);
 int func_0011593C(uint32_t *);
 int func_001119F4(uint32_t *, uint32_t *);
-int func_00115154(float *, float *, uint32_t);
+float func_00115154(float *, float *, uint32_t);
 int func_004904CC(float, float);
 int func_004905E0(float);
 int func_0068C690(float *);
 int func_004D80A4(float *, uint32_t, float);
 int func_003E183C(float *, float *, float);
 int func_00491E80(float *, uint32_t, uint32_t, uint32_t);
-int func_00491624(float *, uint32_t, uint32_t, uint32_t);
+float func_00491624(float *, uint32_t, uint32_t, uint32_t);
 
 static int fails, checks;
 #define CHECK(c) do { checks++; if (!(c)) { fails++; printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c); } } while (0)
@@ -99,7 +99,7 @@ static void test_normalize(void) {
     CHECK(feq(v[0], 3.0f * (1.0f / 5.0f)) && feq(v[1], 4.0f * (1.0f / 5.0f)) && feq(v[2], 0.0f));
     /* func_ keeps the int prototype and returns the length's bits */
     float w[3] = {0, 0, 2};
-    CHECK((uint32_t)func_00115DC8(w) == 0x40000000u && feq(w[2], 1.0f));
+    CHECK(feq(func_00115DC8(w), 2.0f) && feq(w[2], 1.0f));
     /* zero: unchanged, returns 0 */
     float z[3] = {0, 0, 0};
     CHECK(feq(albw_vec3_normalize(z), 0.0f) && feq(z[0], 0) && feq(z[1], 0) && feq(z[2], 0));
@@ -154,7 +154,9 @@ static void test_trig(void) {
     float s, c;
     func_00115154(&s, &c, 0x40000000u);          /* entry 64, f = 0 */
     CHECK(feq(s, data_006C3AB8[256]) && feq(c, data_006C3AB8[258]));
-    func_00115154(&s, &c, 0x00800000u);          /* entry 0, f = 0.5 */
+    /* round 2: float class, s0 = the sin value (also when s and c alias: the register, not *s) */
+    CHECK(feq(func_00115154(&s, &c, 0x00800000u), data_006C3AB8[0] + data_006C3AB8[1] * 0.5f));
+    { float a; CHECK(feq(func_00115154(&a, &a, 0x40000000u), data_006C3AB8[256]) && feq(a, data_006C3AB8[258])); }
     CHECK(feq(s, data_006C3AB8[0] + data_006C3AB8[1] * 0.5f) && feq(c, data_006C3AB8[2] + data_006C3AB8[3] * 0.5f));
     /* atan2: quadrant constants */
     CHECK((uint32_t)func_004904CC(0.0f, 0.0f) == 0);
@@ -184,7 +186,8 @@ static void test_trig(void) {
     func_00491E80(M, 0x40000000u, 0, 0);
     float sx = data_006C3AB8[256], cx = data_006C3AB8[258], s0 = data_006C3AB8[0], c0 = data_006C3AB8[2];
     CHECK(feq(M[8], -s0) && feq(M[9], sx * c0) && feq(M[10], cx * c0) && feq(M[3], 0) && feq(M[11], 0));
-    func_00491624(M3, 0x40000000u, 0, 0);
+    float r3 = func_00491624(M3, 0x40000000u, 0, 0);   /* s0 at exit = m[1] */
+    CHECK(feq(r3, M3[1]));
     CHECK(feq(M3[0], M[0]) && feq(M3[1], M[1]) && feq(M3[2], M[2]) && feq(M3[4], M[5]) && feq(M3[8], M[10]));
 }
 

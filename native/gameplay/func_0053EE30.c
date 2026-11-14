@@ -6,12 +6,9 @@
  *
  * What was wrong: Ghidra decompiled it as `void f(void) { return; }` (empty body, no `this`):
  * every caller's frame value is an uninitialised in_s0.
- * RETURN CLASS: all 28 converted caller files declare `extern int func_0053EE30(void)`; a float
- * definition would leave one x87 value per call on i386 (stack full after 8 calls -> every
- * later float return is NaN). So func_0053EE30 returns the frame's BIT PATTERN in the integer
- * class (exact for any caller that reinterprets it), and albw_anim_frame() is the exact float
- * version for rewritten callers. Switch func_0053EE30 to `float` together with the signature
- * table. Verified against EU 0053EE08-0053EE14. Confidence: high. */
+ * RETURN CLASS: round 2 (params r0, returns.json float) declares
+ * `extern float func_0053EE30(int)` in all 14 converted caller files, so func_ now returns the
+ * float; `this` taken as an int word + gp_ptr. albw_anim_frame() is the same for rewrites. Verified against EU 0053EE08-0053EE14. Confidence: high. */
 #include "gameplay.h"
 
 float albw_anim_frame(void *ctrl) {
@@ -20,6 +17,6 @@ float albw_anim_frame(void *ctrl) {
     return FLD(b, 0x08, float);
 }
 
-uint32_t func_0053EE30(void *ctrl) {
-    return gp_f2u(albw_anim_frame(ctrl));
+float func_0053EE30(int ctrl) {
+    return albw_anim_frame(gp_ptr((uint32_t)ctrl));
 }

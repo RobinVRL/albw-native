@@ -5,6 +5,7 @@
 
 int func_00290824(void *act, float h);
 
-int func_0029081C(void *player, float h) {
+int func_0029081C(uint32_t player_w, float h) {
+    void *player = (void *)gp_ptr(player_w);
     return func_00290824(GPTR(player, 0x14, void), h);
 }

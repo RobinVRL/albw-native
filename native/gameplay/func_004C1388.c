@@ -19,7 +19,8 @@
 int func_00520FC0(void);
 int func_004C10C4(int self, float *p, uint32_t flags, int a3, float f0, float f1);
 
-int func_004C1388(void *self) {
+int func_004C1388(uint32_t self_w) {
+    void *self = (void *)gp_ptr(self_w);
     if (FLD(self, 0x8AC, uint32_t) & 0x800)
         return 0;
     float v = FLD(self, 0x834, float) * 50.0f;
