@@ -194,3 +194,14 @@ uint64_t func_003DB398(void) {
     int64_t since2000 = local - 946684800;              /* 2000-01-01 00:00:00 */
     return (uint64_t)(since2000 * 1000 + ts.tv_nsec / 1000000);
 }
+
+/* USA 003CDDC8 (EU 003CDDA4) Play Coins: read the coin count (u16 *out) -> Result. Original:
+ * opens "$coin:/gamecoin.dat" (SharedExtSaveData f000000b, mounted by 003CDED0), validates it
+ * (magic 0x4F00, 003CE480), applies the daily pedometer award (003CE0B4) and writes it back
+ * (003CE5EC). Natively the decompiled chain corrupts the native stack (an object/stream
+ * mismatch not yet found), and a PC has no pedometer: report 0 coins, success.
+ * Confidence: medium (meaning), temporary. */
+uint32_t func_003CDDC8(uint16_t *out_coins) {
+    *out_coins = 0;
+    return 0;
+}
