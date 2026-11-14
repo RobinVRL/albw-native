@@ -40,3 +40,23 @@ uint32_t func_003D4F20(uint8_t *reader, int16_t *buf, int32_t *out_count, int32_
     *out_count = 1;
     return 1;
 }
+
+/* armcc C library multibyte conversion (Thumb code at the start of the image), used e.g. by
+ * 0040E588 to turn a char path into the UTF-16 path for nn::fs. The game never calls setlocale,
+ * so the C locale applies: one byte per character, wchar_t is 16 bits. The decompiled Thumb
+ * versions call through misresolved helpers (crash in "00301084"). Confidence: high (C locale).
+ *   USA 00100790  mbstate init (zero the 8-byte state)
+ *   USA 001007A2  size_t mbrlen(const char *s, size_t n, mbstate_t *ps)
+ *   USA 001007C0  size_t mbrtowc(wchar16 *pwc, const char *s, size_t n, mbstate_t *ps) */
+void func_00100790(uint32_t *state) { state[0] = 0; state[1] = 0; }
+uint32_t func_001007A2(const char *s, uint32_t n, uint32_t *state) {
+    if (!s) return 0;
+    if (n == 0) return (uint32_t)-2;
+    return *s ? 1 : 0;
+}
+uint32_t func_001007C0(uint16_t *pwc, const char *s, uint32_t n, uint32_t *state) {
+    if (!s) return 0;
+    if (n == 0) return (uint32_t)-2;
+    if (pwc) *pwc = (uint8_t)*s;
+    return *s ? 1 : 0;
+}
