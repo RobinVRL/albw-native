@@ -1,8 +1,7 @@
 /* USA 005EB8B8 (EU 005EB890): static initialiser, decompiled by tools/decomp_initializer.py.
  * Fills 2 sead::SafeString name tables (3 names) and 5 other globals. */
 #include <stdint.h>
-
-typedef struct { const void *vtbl; const char *str; } SafeString;  /* sead::SafeString */
+#include "sead.h"
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_00714E10;
@@ -23,16 +22,16 @@ static const char *const names_0079D780[2] = {
     "AuxBus_B",
 };
 
-static void fill_names(SafeString *t, const char *const *names, int n) {
+static void fill_names(sead_SafeString *t, const char *const *names, int n) {
     for (int i = 0; i < n; i++) {
         t[i].vtbl = &data_006F5988;
-        t[i].str = names[i];
+        t[i].mStringTop = names[i];
     }
 }
 
 void func_005EB8B8(void) {
-    fill_names((SafeString *)&data_00714E20, names_00714E20, 1);
-    fill_names((SafeString *)&data_0079D780, names_0079D780, 2);
+    fill_names((sead_SafeString *)&data_00714E20, names_00714E20, 1);
+    fill_names((sead_SafeString *)&data_0079D780, names_0079D780, 2);
     data_00714E10 = 0xFFFFFFFFu;
     data_00714E14 = 0xFFFFFFFFu;
     data_00714E18 = 0x00000000u;

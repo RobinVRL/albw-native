@@ -1,8 +1,7 @@
 /* USA 005C2118 (EU 005C20F0): static initialiser, decompiled by tools/decomp_initializer.py.
  * Fills 23 sead::SafeString name tables (23 names) and 5 other globals. */
 #include <stdint.h>
-
-typedef struct { const void *vtbl; const char *str; } SafeString;  /* sead::SafeString */
+#include "sead.h"
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_00714050;
@@ -106,37 +105,37 @@ static const char *const names_00714168[1] = {
     "itt_tutorial_milk",
 };
 
-static void fill_names(SafeString *t, const char *const *names, int n) {
+static void fill_names(sead_SafeString *t, const char *const *names, int n) {
     for (int i = 0; i < n; i++) {
         t[i].vtbl = &data_006F5988;
-        t[i].str = names[i];
+        t[i].mStringTop = names[i];
     }
 }
 
 void func_005C2118(void) {
-    fill_names((SafeString *)&data_00714060, names_00714060, 1);
-    fill_names((SafeString *)&data_0071406C, names_0071406C, 1);
-    fill_names((SafeString *)&data_00714078, names_00714078, 1);
-    fill_names((SafeString *)&data_00714084, names_00714084, 1);
-    fill_names((SafeString *)&data_00714090, names_00714090, 1);
-    fill_names((SafeString *)&data_0071409C, names_0071409C, 1);
-    fill_names((SafeString *)&data_007140A8, names_007140A8, 1);
-    fill_names((SafeString *)&data_007140B4, names_007140B4, 1);
-    fill_names((SafeString *)&data_007140C0, names_007140C0, 1);
-    fill_names((SafeString *)&data_007140CC, names_007140CC, 1);
-    fill_names((SafeString *)&data_007140D8, names_007140D8, 1);
-    fill_names((SafeString *)&data_007140E4, names_007140E4, 1);
-    fill_names((SafeString *)&data_007140F0, names_007140F0, 1);
-    fill_names((SafeString *)&data_007140FC, names_007140FC, 1);
-    fill_names((SafeString *)&data_00714108, names_00714108, 1);
-    fill_names((SafeString *)&data_00714114, names_00714114, 1);
-    fill_names((SafeString *)&data_00714120, names_00714120, 1);
-    fill_names((SafeString *)&data_0071412C, names_0071412C, 1);
-    fill_names((SafeString *)&data_00714138, names_00714138, 1);
-    fill_names((SafeString *)&data_00714144, names_00714144, 1);
-    fill_names((SafeString *)&data_00714150, names_00714150, 1);
-    fill_names((SafeString *)&data_0071415C, names_0071415C, 1);
-    fill_names((SafeString *)&data_00714168, names_00714168, 1);
+    fill_names((sead_SafeString *)&data_00714060, names_00714060, 1);
+    fill_names((sead_SafeString *)&data_0071406C, names_0071406C, 1);
+    fill_names((sead_SafeString *)&data_00714078, names_00714078, 1);
+    fill_names((sead_SafeString *)&data_00714084, names_00714084, 1);
+    fill_names((sead_SafeString *)&data_00714090, names_00714090, 1);
+    fill_names((sead_SafeString *)&data_0071409C, names_0071409C, 1);
+    fill_names((sead_SafeString *)&data_007140A8, names_007140A8, 1);
+    fill_names((sead_SafeString *)&data_007140B4, names_007140B4, 1);
+    fill_names((sead_SafeString *)&data_007140C0, names_007140C0, 1);
+    fill_names((sead_SafeString *)&data_007140CC, names_007140CC, 1);
+    fill_names((sead_SafeString *)&data_007140D8, names_007140D8, 1);
+    fill_names((sead_SafeString *)&data_007140E4, names_007140E4, 1);
+    fill_names((sead_SafeString *)&data_007140F0, names_007140F0, 1);
+    fill_names((sead_SafeString *)&data_007140FC, names_007140FC, 1);
+    fill_names((sead_SafeString *)&data_00714108, names_00714108, 1);
+    fill_names((sead_SafeString *)&data_00714114, names_00714114, 1);
+    fill_names((sead_SafeString *)&data_00714120, names_00714120, 1);
+    fill_names((sead_SafeString *)&data_0071412C, names_0071412C, 1);
+    fill_names((sead_SafeString *)&data_00714138, names_00714138, 1);
+    fill_names((sead_SafeString *)&data_00714144, names_00714144, 1);
+    fill_names((sead_SafeString *)&data_00714150, names_00714150, 1);
+    fill_names((sead_SafeString *)&data_0071415C, names_0071415C, 1);
+    fill_names((sead_SafeString *)&data_00714168, names_00714168, 1);
     data_00714050 = 0xFFFFFFFFu;
     data_00714054 = 0xFFFFFFFFu;
     data_00714058 = 0x00000000u;

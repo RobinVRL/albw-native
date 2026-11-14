@@ -1,8 +1,7 @@
 /* USA 005EE8B4 (EU 005EE88C): static initialiser, decompiled by tools/decomp_initializer.py.
  * Fills 28 sead::SafeString name tables (28 names) and 5 other globals. */
 #include <stdint.h>
-
-typedef struct { const void *vtbl; const char *str; } SafeString;  /* sead::SafeString */
+#include "sead.h"
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_00710E00;
@@ -126,42 +125,42 @@ static const char *const names_00710F54[1] = {
     "cmn_action_check",
 };
 
-static void fill_names(SafeString *t, const char *const *names, int n) {
+static void fill_names(sead_SafeString *t, const char *const *names, int n) {
     for (int i = 0; i < n; i++) {
         t[i].vtbl = &data_006F5988;
-        t[i].str = names[i];
+        t[i].mStringTop = names[i];
     }
 }
 
 void func_005EE8B4(void) {
-    fill_names((SafeString *)&data_00710E10, names_00710E10, 1);
-    fill_names((SafeString *)&data_00710E1C, names_00710E1C, 1);
-    fill_names((SafeString *)&data_00710E28, names_00710E28, 1);
-    fill_names((SafeString *)&data_00710E34, names_00710E34, 1);
-    fill_names((SafeString *)&data_00710E40, names_00710E40, 1);
-    fill_names((SafeString *)&data_00710E4C, names_00710E4C, 1);
-    fill_names((SafeString *)&data_00710E58, names_00710E58, 1);
-    fill_names((SafeString *)&data_00710E64, names_00710E64, 1);
-    fill_names((SafeString *)&data_00710E70, names_00710E70, 1);
-    fill_names((SafeString *)&data_00710E7C, names_00710E7C, 1);
-    fill_names((SafeString *)&data_00710E88, names_00710E88, 1);
-    fill_names((SafeString *)&data_00710E94, names_00710E94, 1);
-    fill_names((SafeString *)&data_00710EA0, names_00710EA0, 1);
-    fill_names((SafeString *)&data_00710EAC, names_00710EAC, 1);
-    fill_names((SafeString *)&data_00710EB8, names_00710EB8, 1);
-    fill_names((SafeString *)&data_00710EC4, names_00710EC4, 1);
-    fill_names((SafeString *)&data_00710ED0, names_00710ED0, 1);
-    fill_names((SafeString *)&data_00710EDC, names_00710EDC, 1);
-    fill_names((SafeString *)&data_00710EE8, names_00710EE8, 1);
-    fill_names((SafeString *)&data_00710EF4, names_00710EF4, 1);
-    fill_names((SafeString *)&data_00710F00, names_00710F00, 1);
-    fill_names((SafeString *)&data_00710F0C, names_00710F0C, 1);
-    fill_names((SafeString *)&data_00710F18, names_00710F18, 1);
-    fill_names((SafeString *)&data_00710F24, names_00710F24, 1);
-    fill_names((SafeString *)&data_00710F30, names_00710F30, 1);
-    fill_names((SafeString *)&data_00710F3C, names_00710F3C, 1);
-    fill_names((SafeString *)&data_00710F48, names_00710F48, 1);
-    fill_names((SafeString *)&data_00710F54, names_00710F54, 1);
+    fill_names((sead_SafeString *)&data_00710E10, names_00710E10, 1);
+    fill_names((sead_SafeString *)&data_00710E1C, names_00710E1C, 1);
+    fill_names((sead_SafeString *)&data_00710E28, names_00710E28, 1);
+    fill_names((sead_SafeString *)&data_00710E34, names_00710E34, 1);
+    fill_names((sead_SafeString *)&data_00710E40, names_00710E40, 1);
+    fill_names((sead_SafeString *)&data_00710E4C, names_00710E4C, 1);
+    fill_names((sead_SafeString *)&data_00710E58, names_00710E58, 1);
+    fill_names((sead_SafeString *)&data_00710E64, names_00710E64, 1);
+    fill_names((sead_SafeString *)&data_00710E70, names_00710E70, 1);
+    fill_names((sead_SafeString *)&data_00710E7C, names_00710E7C, 1);
+    fill_names((sead_SafeString *)&data_00710E88, names_00710E88, 1);
+    fill_names((sead_SafeString *)&data_00710E94, names_00710E94, 1);
+    fill_names((sead_SafeString *)&data_00710EA0, names_00710EA0, 1);
+    fill_names((sead_SafeString *)&data_00710EAC, names_00710EAC, 1);
+    fill_names((sead_SafeString *)&data_00710EB8, names_00710EB8, 1);
+    fill_names((sead_SafeString *)&data_00710EC4, names_00710EC4, 1);
+    fill_names((sead_SafeString *)&data_00710ED0, names_00710ED0, 1);
+    fill_names((sead_SafeString *)&data_00710EDC, names_00710EDC, 1);
+    fill_names((sead_SafeString *)&data_00710EE8, names_00710EE8, 1);
+    fill_names((sead_SafeString *)&data_00710EF4, names_00710EF4, 1);
+    fill_names((sead_SafeString *)&data_00710F00, names_00710F00, 1);
+    fill_names((sead_SafeString *)&data_00710F0C, names_00710F0C, 1);
+    fill_names((sead_SafeString *)&data_00710F18, names_00710F18, 1);
+    fill_names((sead_SafeString *)&data_00710F24, names_00710F24, 1);
+    fill_names((sead_SafeString *)&data_00710F30, names_00710F30, 1);
+    fill_names((sead_SafeString *)&data_00710F3C, names_00710F3C, 1);
+    fill_names((sead_SafeString *)&data_00710F48, names_00710F48, 1);
+    fill_names((sead_SafeString *)&data_00710F54, names_00710F54, 1);
     data_00710E00 = 0xFFFFFFFFu;
     data_00710E04 = 0xFFFFFFFFu;
     data_00710E08 = 0x00000000u;
