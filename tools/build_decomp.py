@@ -65,6 +65,19 @@ def void_tail_returns(text, addr, sigs):
     m = re.search(r"\n\n(void)\s+%s\s*\(" % own, text)
     if not m:
         return text
+    if addr in RETURNS_THIS:
+        # proven from the machine code (tools/returns_this.py): r0 at every return is the
+        # incoming r0, i.e. the function returns its first argument (constructors return this)
+        pm = re.match(r"\s*\(\s*([^,)]*?)\bparam_1\s*[,)]", text[m.end() - 1:])
+        body_at = text.index("{", m.end())
+        body = text[body_at:]
+        if pm and not re.search(r"\b(float|double)\b", pm.group(1)) and \
+                not re.search(r"\bparam_1\s*(?:[-+*/|&^]?=(?!=)|\+\+|--)|(?:\+\+|--)\s*param_1\b", body):
+            body = re.sub(r"\breturn;", "return (undefined4)param_1;", body)
+            if not re.search(r"return \(undefined4\)param_1;\s*\}\s*$", body):
+                body = re.sub(r"\n\}\s*$", "\n  return (undefined4)param_1;\n}\n", body)
+            return text[:m.start(1)] + "undefined4" + text[m.end(1):body_at] + body
+        return text
 
     def ok(callee):
         sig = (sigs or {}).get("func_" + callee) if callee else None
@@ -112,6 +125,8 @@ DATA_NAME = re.compile(r"^(?:data_|ro_|bss_|DAT_|G_|g_|PTR_|ptr_|gData_|rodata_|
 TEXT_LO, TEXT_HI = 0x00100000, 0x00693000
 DATA_LO, DATA_HI = 0x00693000, 0x006FF000 + 0x289F0 + 0x87A44
 ANY_ADDR_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]*_(?:0x)?([0-9A-Fa-f]{8})$")
+_rt = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "native", "returns_this.json")
+RETURNS_THIS = set(json.load(open(_rt))) if os.path.exists(_rt) else set()  # tools/returns_this.py
 CTORS = set()  # USA addresses of the game's static constructors (filled in main)
 
 
