@@ -41,6 +41,7 @@
 void albw_fp_set_3ds_mode(void) { _mm_setcsr(_mm_getcsr() | 0x8040u); }
 
 #include "../runtime/runtime.h"
+#include "../include/gptr.h" /* ALBW_GP: game pointer words (x86-64 low-4GB build) */
 
 /* ================================================================== results */
 #define RES_OK              0x00000000u
@@ -998,8 +999,8 @@ void func_0049BCF4(int64_t ticks) {
 #define U8(p, o)  (*(uint8_t *)((uint8_t *)(p) + (o)))
 #define U32(p, o) (*(uint32_t *)((uint8_t *)(p) + (o)))
 #define S32(p, o) (*(int32_t *)((uint8_t *)(p) + (o)))
-#define PTR(p, o) (*(void **)((uint8_t *)(p) + (o)))
-#define VCALL(obj, off) ((void (*)(void *))((*(void ***)(obj))[(off) / 4]))(obj)
+#define PTR(p, o) (*(void * ALBW_GP *)((uint8_t *)(p) + (o)))
+#define VCALL(obj, off) ((void (*)(void *))((*(void * ALBW_GP * ALBW_GP *)(obj))[(off) / 4]))(obj)
 
 static void store_tick(void *self, int off) {
     uint64_t t = system_tick();
@@ -1013,7 +1014,7 @@ extern void func_00601658(int32_t display);
 extern void func_00601390(void);
 extern void func_005FF418(void *obj);
 extern void func_00104914(void);
-extern void *data_00715160[];        /* graphics/display context object pointer */
+extern void * ALBW_GP data_00715160[];        /* graphics/display context object pointer */
 extern uint32_t data_00715458[];     /* u64 frame period (ticks) */
 
 /* USA 0049AD58 (EU 0049AD30)  framework main loop (noreturn): this+0xA0 = vcount(0x402);
@@ -1156,15 +1157,15 @@ void func_0049ABAC(void *self) {
  * sead::SafeString {vtbl 006F5988, *data_00712FA8} and pass it to 00297138(*data_00711F50, &s);
  * then 0029E230(*data_007143B8). Confidence: high. */
 extern uint32_t data_006F5988[];
-extern void *data_00712FA8[];
-extern void *data_00711F50[];
-extern void *data_007143B8[];
+extern void * ALBW_GP data_00712FA8[];
+extern void * ALBW_GP data_00711F50[];
+extern void * ALBW_GP data_007143B8[];
 extern void func_00297138(void *obj, void *safe_string);
 extern void func_0029E230(void *obj);
 void func_0025E25C(void *self) {
     store_tick(self, 0x140);
     U32(self, 0x148) = 0;
-    struct { const void *vtbl; const void *str; } s = { data_006F5988, data_00712FA8[0] };
+    struct { const void *ALBW_GP vtbl; const void *ALBW_GP str; } s = { ALBW_LAUNDER(data_006F5988), data_00712FA8[0] };
     func_00297138(data_00711F50[0], &s);
     func_0029E230(data_007143B8[0]);
 }
@@ -1226,7 +1227,7 @@ void *func_0049BAF8(void *self) {
 }
 
 extern uint32_t data_006F751C[];     /* sead::Thread vtable (secondary at +0x4C) */
-extern void *data_00715430[];        /* sead::ThreadMgr instance */
+extern void * ALBW_GP data_00715430[];        /* sead::ThreadMgr instance */
 extern void func_0010F1F8(void *node);
 extern void func_0049BC44(void *self);
 extern void func_0058FA5C(void *p);  /* operator delete */

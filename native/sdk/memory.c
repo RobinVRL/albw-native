@@ -54,11 +54,11 @@ static inline void heap_free(sead_Heap *h, void *p) {
  * 0x0010983C: `add r0, r0, #0x24; bl 0x10E294; ldr r0, [r0, #0x68]`). These two offsets are the
  * 32-bit layouts of game objects; they become field names once sead::Thread/ThreadMgr are typed
  * (64-bit open item, see memory.md). */
-extern void *data_00715430;
+extern void * ALBW_GP data_00715430;
 enum { SEAD_THREADMGR_TLS_OFFSET = 0x24, SEAD_THREAD_CURRENT_HEAP_OFFSET = 0x68 };
 
 /* sead::HeapMgr::sInstancePtr (USA data 0x00715210): passed as `this` by the wrappers */
-extern void *data_00715210;
+extern void * ALBW_GP data_00715210;
 
 /* nn::os::ThreadLocalStorage::GetValue (threads area): this thread's value of the slot */
 void *func_0010E294(const void *tls);
@@ -215,14 +215,14 @@ uint32_t func_001022A0(void) {
 
 /* ================================================================== current heap (sead::HeapMgr) */
 
-static void **current_heap_slot(const char *who) {
+static void * ALBW_GP *current_heap_slot(const char *who) {
     void *thread_mgr = data_00715430;
     if (!thread_mgr)
         runtime_fatal("%s before sead::ThreadMgr exists (sead::HeapMgr::initialize not run yet)", who);
     void *thread = func_0010E294((const uint8_t *)thread_mgr + SEAD_THREADMGR_TLS_OFFSET);
     if (!thread)
         runtime_fatal("%s on a thread without a sead::Thread (TLS slot empty)", who);
-    return (void **)((uint8_t *)thread + SEAD_THREAD_CURRENT_HEAP_OFFSET);
+    return (void * ALBW_GP *)((uint8_t *)thread + SEAD_THREAD_CURRENT_HEAP_OFFSET);
 }
 
 /* USA 0x0010DB90 (EU same) sead::HeapMgr::getCurrentHeap(this) -> Heap*.
@@ -237,7 +237,7 @@ sead_Heap *func_0010DB90(void *heap_mgr) {
  * Disasm: swap Thread+0x68 with r1, return the old value. 152 call sites (save/restore around
  * scoped allocations; callers compare the result with 1 as "no previous"). Confidence: high. */
 sead_Heap *func_0010983C(void *heap_mgr, sead_Heap *heap) {
-    void **slot = current_heap_slot("sead::HeapMgr::setCurrentHeap");
+    void * ALBW_GP *slot = current_heap_slot("sead::HeapMgr::setCurrentHeap");
     sead_Heap *old = *slot;
     *slot = heap;
     return old;

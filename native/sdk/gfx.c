@@ -88,6 +88,7 @@
 #include "../platform/platform.h"
 #include "../render/render.h"
 #include "../runtime/runtime.h"
+#include "../include/gptr.h" /* ALBW_GP: game pointer words (x86-64 low-4GB build) */
 
 #ifndef MAP_FIXED_NOREPLACE
 #define MAP_FIXED_NOREPLACE 0x100000
@@ -932,7 +933,7 @@ int32_t func_006006B0(void *alloc_fn, void *free_fn) {
 /* USA 006003B4  nngxGetAllocator(void **alloc, void **free) (nngx data 0x00714820 {alloc, free});
  * used by 003F3668 / 003F9A00 / 003F9AA4 / 003FDDC0 to free VRAM through the game's allocator.
  * Confidence: high (body). */
-void func_006003B4(void **alloc_fn, void **free_fn) {
+void func_006003B4(void *ALBW_GP *alloc_fn, void *ALBW_GP *free_fn) { /* game words */
     lock();
     if (alloc_fn) *alloc_fn = G.alloc_fn;
     if (free_fn) *free_fn = G.free_fn;
