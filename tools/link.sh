@@ -9,10 +9,10 @@ SDL=$(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags --libs sdl3)
 
 mkdir -p $B/native
 NATIVE=()
-for f in native/platform/platform.c native/runtime/*.c $(ls native/sdk/*.c native/game/*.c 2>/dev/null); do
+for f in native/platform/platform.c native/runtime/*.c $(ls native/sdk/*.c native/game/*.c native/robust/*.c 2>/dev/null); do
     o=$B/native/$(basename "$f" .c).o
     EXTRA=()
-    [[ "$f" == native/game/* ]] && EXTRA=(-include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
+    [[ "$f" == native/game/* || "$f" == native/robust/* ]] && EXTRA=(-Inative/robust -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
     [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
         $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")
