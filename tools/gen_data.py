@@ -82,6 +82,7 @@ def main():
     ap.add_argument("--code", required=True)
     ap.add_argument("--map", help="eu_usa_map.json when --code is the EU build")
     ap.add_argument("--decomp", default=os.path.join(ROOT, "..", "albw-decomp-ai"))
+    ap.add_argument("--extra", help="file with more symbol names to define (from native objects)")
     ap.add_argument("--report", default=os.path.join(ROOT, "build", "decomp", "report.json"))
     ap.add_argument("--out", default=os.path.join(ROOT, "build", "data", "gamedata.s"))
     a = ap.parse_args()
@@ -95,7 +96,10 @@ def main():
     else:
         starts = json.load(open(os.path.join(a.decomp, "funcs.json")))["starts"]
         fn_of = {s: "func_%08X" % s for s in starts}
-    unresolved = json.load(open(a.report))["unresolved"]
+    unresolved = dict(json.load(open(a.report))["unresolved"])
+    if a.extra and os.path.exists(a.extra):
+        for name in open(a.extra).read().split():
+            unresolved.setdefault(name, 1)
 
     def word(addr, w):
         """Assembly for the 4-byte word w stored at addr."""

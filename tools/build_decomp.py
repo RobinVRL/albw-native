@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "decomp")
@@ -72,6 +73,9 @@ ADDR_IN_NAME = re.compile(r"(?:^|[^0-9A-Fa-f])(?:0x)?([0-9A-Fa-f]{8})(?![0-9A-Fa
 FUNC_NAME = re.compile(r"^(?:func_|FUN_|f_|sub_|fn_|func_0x|FUN_0x)(?:0x)?([0-9A-Fa-f]{8})$")
 DATA_NAME = re.compile(r"^(?:data_|ro_|bss_|DAT_|G_|g_|PTR_|ptr_|gData_|rodata_|str_|s_|tbl_|vt_|vtbl_)(?:0x)?([0-9A-Fa-f]{8})$")
 TEXT_LO, TEXT_HI = 0x00100000, 0x00693000
+DATA_LO, DATA_HI = 0x00693000, 0x006FF000 + 0x289F0 + 0x87A44
+ANY_ADDR_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]*_(?:0x)?([0-9A-Fa-f]{8})$")
+CTORS = set()  # USA addresses of the game's static constructors (filled in main)
 
 
 MANGLED = re.compile(r"^_Z(\d+)")
@@ -93,10 +97,13 @@ def canon_ref(name):
     if m:
         a = int(m.group(1), 16)
         return "func_%08X" % a
-    m = DATA_NAME.match(name)
+    m = DATA_NAME.match(name) or ANY_ADDR_NAME.match(name)
     if m:
         a = int(m.group(1), 16)
-        return ("func_%08X" if TEXT_LO <= a < TEXT_HI else "data_%08X") % a
+        if TEXT_LO <= a < TEXT_HI:
+            return "func_%08X" % a
+        if DATA_LO <= a < DATA_HI:
+            return "data_%08X" % a
     return None
 
 
@@ -151,6 +158,21 @@ def pick_primary(addr, defs, kinds, obj=None):
     return None
 
 
+def static_init(obj):
+    """(section, value) of the compiler's static initialiser (_GLOBAL__sub_I_*) in obj, if any."""
+    out = subprocess.run(["llvm-readelf", "-s", "-S", "--wide", obj], capture_output=True, text=True).stdout
+    secs = {}
+    for l in out.splitlines():
+        m = re.match(r"\s*\[\s*(\d+)\]\s+(\S+)", l)
+        if m:
+            secs[m.group(1)] = m.group(2)
+    for l in out.splitlines():
+        p = l.split()
+        if len(p) >= 8 and p[-1].startswith("_GLOBAL__sub_I_") and p[3] == "FUNC":
+            return secs.get(p[6]), int(p[1], 16)
+    return None
+
+
 def build_one(job):
     path, addrs, decomp_flags = job
     src = os.path.join(OUT, path)
@@ -176,8 +198,13 @@ def build_one(job):
     else:
         obj = fin  # already normalised: re-derive the report from it
     defs, und, kinds = nm(obj)
-    prim = {}
+    prim, sinit = {}, {}
     for a in addrs:
+        si = static_init(obj) if a in CTORS and obj != fin else None
+        if si and si[0]:
+            sinit[a] = si
+            prim[a] = "func_" + a
+            continue
         p = pick_primary(a, defs, kinds, obj)
         if p:
             prim[a] = p
@@ -195,8 +222,12 @@ def build_one(job):
             else:
                 args += ["--localize-symbol=" + d]
         # exports are weak: a native SDK replacement defining the same func_<ADDR> wins at link time
+        for a, (sec, val) in sinit.items():
+            args += ["--add-symbol", "func_%s=%s:%d,weak,function" % (a.upper(), sec, val)]
         for a, p in prim.items():
             want = "func_" + a.upper()
+            if a in sinit:
+                continue
             if p != want:
                 sec = ".text." + p
                 args += ["--add-symbol", "%s=%s:0,weak,function" % (want, sec), "--localize-symbol=" + p]
@@ -231,11 +262,20 @@ def main():
     ap.add_argument("--arch", choices=("x86", "x86_64"), default="x86",
                     help="x86 = 32-bit intermediate build; x86_64 = the release target (tracks 64-bit health)")
     a = ap.parse_args()
-    global OUT, TARGET
+    global OUT, TARGET, CTORS
     if a.arch == "x86_64":
         OUT, TARGET = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu"
     decomp = os.path.abspath(a.decomp)
     os.makedirs(OUT, exist_ok=True)
+    # the game's static constructors (their source's _GLOBAL__sub_I_* is the function)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import gen_data, struct as _st
+    code = open(os.path.join(decomp, "rom", "eu_code.bin"), "rb").read()
+    emap = json.load(open(os.path.join(decomp, "shared", "eu_usa_map.json")))
+    fn_of = {int(v["eu"], 16): "func_" + k for k, v in emap.items()}
+    ctors, _ = gen_data.init_tables(code, lambda x: _st.unpack_from("<I", code, x - 0x100000)[0], fn_of)
+    CTORS = {c[5:] for c in ctors}
+    print("static constructors: %d" % len(CTORS))
     print("mirrored %d files" % mirror(decomp))
 
     matched = json.load(open(os.path.join(decomp, "functions.json")))

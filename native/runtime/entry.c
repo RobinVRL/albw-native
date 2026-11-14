@@ -2,6 +2,8 @@
  *     runtime init x4 -> C++ static constructors -> initialiser table -> final init -> game main,
  * with the platform layer brought up first. SDK functions in this chain are replaced natively
  * (native/sdk/); everything else is the decompiled game code. */
+#define _GNU_SOURCE
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +38,11 @@ int main(int argc, char **argv) {
     fprintf(stderr, "startup: %u static constructors\n", albw_ctors_count);
     int verbose = getenv("ALBW_TRACE_CTORS") != NULL;
     for (uint32_t i = 0; i < albw_ctors_count; i++) {
-        if (verbose || (i & 63) == 0) fprintf(stderr, "ctor %u/%u\n", i, albw_ctors_count);
+        if (verbose || (i & 63) == 0) {
+            Dl_info di;
+            const char *name = dladdr((void *)albw_ctors[i], &di) && di.dli_sname ? di.dli_sname : "?";
+            fprintf(stderr, "ctor %u/%u %s\n", i, albw_ctors_count, name);
+        }
         albw_ctors[i]();
     }
     for (uint32_t i = 0; i < albw_inits_count; i++) albw_inits[i]();

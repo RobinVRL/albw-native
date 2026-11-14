@@ -53,7 +53,7 @@ def is_sdk(addr):
 
 def disasm(addr, n=48):
     m = json.load(open(os.path.join(DECOMP, "shared", "eu_usa_map.json")))
-    eu = int(m[addr]["eu"], 16)
+    eu = int(m[addr]["eu"], 16) if addr in m else int(addr, 16)  # outside the table: start of code, same in EU
     py = os.path.join(DECOMP, ".venv", "bin", "python")
     code = ("from capstone import *;d=open(%r,'rb').read();md=Cs(CS_ARCH_ARM,CS_MODE_ARM)\n"
             "for i in md.disasm(d[%d:%d],%d):print('  %%08x  %%s %%s'%%(i.address,i.mnemonic,i.op_str))"

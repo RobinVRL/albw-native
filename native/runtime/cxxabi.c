@@ -33,3 +33,16 @@ void __cxa_guard_abort(uint32_t *g) {
 void __cxa_pure_virtual(void) {
     runtime_fatal("pure virtual function called from %p", __builtin_return_address(0));
 }
+
+/* ARM C++ ABI array construction (USA 0x00100118, Thumb in the game's C library):
+ * construct `count` elements of `size` bytes with `ctor`, return the array. */
+typedef void *(*VecCtor)(void *);
+
+void *__aeabi_vec_ctor_nocookie_nodtor(void *array, VecCtor ctor, uint32_t size, uint32_t count) {
+    if (ctor) {
+        char *p = array;
+        for (uint32_t i = 0; i < count; i++, p += size) ctor(p);
+    }
+    return array;
+}
+void *func_00100118(void *, VecCtor, uint32_t, uint32_t) __attribute__((alias("__aeabi_vec_ctor_nocookie_nodtor")));

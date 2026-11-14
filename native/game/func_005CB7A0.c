@@ -1,0 +1,41 @@
+/* USA 005CB7A0 (EU 005CB778): static initialiser, decompiled by tools/decomp_initializer.py.
+ * Fills 1 sead::SafeString name tables (1 names) and 7 other globals. */
+#include <stdint.h>
+
+typedef struct { const void *vtbl; const char *str; } SafeString;  /* sead::SafeString */
+
+extern uint32_t data_006A8B52;
+extern uint32_t data_006F5988;  /* sead::SafeString vtable */
+extern uint32_t data_006F599C;
+extern uint32_t data_00715368;
+extern uint32_t data_0071536C;
+extern uint32_t data_00715370;
+extern uint32_t data_00715374;
+extern uint32_t data_00725974;
+extern uint32_t data_0072597C;
+extern uint32_t data_00725980;
+void func_00100000(void);
+void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_00688DA0(void);
+
+static const char *const names_00725974[1] = {
+    "",
+};
+
+static void fill_names(SafeString *t, const char *const *names, int n) {
+    for (int i = 0; i < n; i++) {
+        t[i].vtbl = &data_006F5988;
+        t[i].str = names[i];
+    }
+}
+
+void func_005CB7A0(void) {
+    fill_names((SafeString *)&data_00725974, names_00725974, 1);
+    data_00715368 = 0xFFFFFFFFu;
+    data_0071536C = 0xFFFFFFFFu;
+    data_00715370 = 0x00000000u;
+    data_00715374 = 0x00000000u;
+    data_0072597C = (uint32_t)(uintptr_t)&data_006F599C;
+    data_00725980 = (uint32_t)(uintptr_t)&data_006A8B52;
+    func_005902C0((uint32_t)(uintptr_t)&data_0072597C, (uint32_t)(uintptr_t)&func_00688DA0, (uint32_t)(uintptr_t)&func_00100000);
+}
