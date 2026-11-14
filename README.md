@@ -11,6 +11,9 @@ built **only from decompiled source**.
   IPC emulation. The Nintendo SDK libraries linked into the game (`nn::fs`, `nn::hid`,
   `nn::gx`/graphics, `nn::snd`, `nn::os`...) are **replaced at the function level** by native
   implementations on Linux, SDL2 and OpenGL.
+- Graphics: the game's GPU-command producers are replaced by native OpenGL code. Model files whose
+  material state is stored as prebuilt GPU command blobs are decoded **once, at load time**, into
+  OpenGL state (asset conversion); GPU commands are never interpreted at runtime.
 - The game's data and assets come from your own ROM at build/run time and are never committed.
 
 ## Rule: the finished game is 64-bit
