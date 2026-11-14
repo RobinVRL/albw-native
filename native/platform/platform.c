@@ -4,6 +4,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Screen layout engine (presets, custom layout, touch mapping), shared with the Qt frontend.
+ * Compiled into this translation unit so the build scripts that compile platform.c alone
+ * (tools/link.sh, native/assets/build.sh, native/render/test/build.sh) need no change.
+ * A build that compiles layout.c separately defines PLAT_LAYOUT_SEPARATE. */
+#ifndef PLAT_LAYOUT_SEPARATE
+#include "layout.c"
+#else
+#include "layout.h"
+#endif
+
+/* Keyboard + game controller input (input.h), compiled in the same way as layout.c; a build
+ * that compiles input.c separately defines PLAT_INPUT_SEPARATE. */
+#ifndef PLAT_INPUT_SEPARATE
+#include "input.c"
+#else
+#include "input.h"
+#endif
+
 #define GL_DEFINE(ret, name, args) ret (*name) args;
 GL_FUNCS(GL_DEFINE)
 #undef GL_DEFINE
@@ -74,10 +92,17 @@ GLuint gl_program(const char *vs, const char *fs) {
 /* ------------------------------------------------------------------ state */
 static SDL_Window *win;
 static SDL_GLContext ctx;
-static SDL_Gamepad *pad;
 static PlatConfig cfg;
 static PlatInput in;
 static uint64_t next_frame_ns;
+/* screen layout state (see the layout section below) */
+static LayoutConfig g_layout_cfg;
+static Layout g_layout;
+static LayoutEdit g_layout_edit;
+static int g_layout_editing;
+static char g_layout_base_title[256];
+static SDL_Cursor *g_layout_cursor[4];   /* default, move, nwse, nesw */
+static void plat_layout_title(void);
 
 typedef struct { GLuint fbo, color, depth; int w, h; } Target;
 static Target screens[2];
@@ -125,6 +150,7 @@ int plat_init(const char *title, const PlatConfig *c) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return -1;
     }
+    input_init();  /* keyboard + controllers: config, mapping DB, already connected pads */
     int debug = getenv("ALBW_GL_DEBUG") != NULL;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -141,6 +167,9 @@ int plat_init(const char *title, const PlatConfig *c) {
         fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
         return -1;
     }
+    snprintf(g_layout_base_title, sizeof g_layout_base_title, "%s", title);
+    layout_load(&g_layout_cfg, NULL);  /* defaults if there is no layout.cfg yet */
+    plat_layout_title();
     ctx = SDL_GL_CreateContext(win);
     if (!ctx) {
         fprintf(stderr, "Could not create an OpenGL 3.3 core context (%s).\n"
@@ -177,7 +206,7 @@ int plat_init(const char *title, const PlatConfig *c) {
 }
 
 void plat_shutdown(void) {
-    if (pad) SDL_CloseGamepad(pad);
+    input_shutdown();
     if (ctx) SDL_GL_DestroyContext(ctx);
     if (win) SDL_DestroyWindow(win);
     SDL_Quit();
@@ -185,107 +214,192 @@ void plat_shutdown(void) {
 
 uint64_t plat_ticks_ns(void) { return SDL_GetTicksNS(); }
 
-/* layout: top screen above, bottom screen centred below, both scaled to fit the window */
-static void layout(int ww, int wh, float rect[2][4], int px[2][4]) {
-    float s = (float)ww / TOP_W;
-    if (SCREEN_H * 2 * s > wh) s = (float)wh / (SCREEN_H * 2);
-    float tw = TOP_W * s, bw = BOTTOM_W * s, h = SCREEN_H * s;
-    float x0 = (ww - tw) / 2, y0 = (wh - 2 * h) / 2;
-    float r[2][4] = {{x0, y0, tw, h}, {(ww - bw) / 2, y0 + h, bw, h}};  /* pixels, top-left origin */
-    for (int i = 0; i < 2; i++) {
-        for (int k = 0; k < 4; k++) px[i][k] = (int)r[i][k];
-        rect[i][0] = r[i][0] / ww * 2 - 1;
-        rect[i][1] = 1 - (r[i][1] + r[i][3]) / wh * 2;
-        rect[i][2] = r[i][2] / ww * 2;
-        rect[i][3] = r[i][3] / wh * 2;
+/* ------------------------------------------------------------------ screen layout (layout.c)
+ * Where the two screens go in the window: presets or a custom layout, saved in layout.cfg.
+ *   F2 / Shift+F2   next / previous preset
+ *   F3              custom layout editor on/off (Esc also leaves it). In the editor:
+ *                   left drag = move a screen, drag a corner or right drag = resize,
+ *                   wheel = scale, Shift = free aspect, Alt = no snapping
+ *   F4              swap the screens (presets) / bring the other screen to the front (custom)
+ *   Ctrl + left/right drag   move/resize a screen without entering the editor (-> custom) */
+
+#define LAYOUT_HANDLE 10.0f      /* corner handle size, window points */
+
+static void plat_layout_update(void) {
+    int ww, wh;
+    SDL_GetWindowSizeInPixels(win, &ww, &wh);
+    layout_compute(&g_layout_cfg, ww, wh, &g_layout);
+}
+
+static void plat_layout_title(void) {
+    char t[512];
+    if (!g_layout_editing && g_layout_cfg.preset == LAYOUT_DEFAULT && !g_layout_cfg.swap) snprintf(t, sizeof t, "%s", g_layout_base_title);
+    else snprintf(t, sizeof t, "%s  [%s%s]%s", g_layout_base_title, layout_preset_name(g_layout_cfg.preset),
+                  g_layout_cfg.swap && g_layout_cfg.preset != LAYOUT_CUSTOM ? ", swapped" : "",
+                  g_layout_editing ? "  LAYOUT EDITOR: drag = move, corner/right-drag = resize, wheel = scale, "
+                               "Shift = free aspect, Alt = no snap, F3 = done" : "");
+    SDL_SetWindowTitle(win, t);
+}
+
+static void plat_layout_changed(void) {
+    plat_layout_update();
+    plat_layout_title();
+    if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());
+}
+
+static void plat_layout_cursor(int which) {
+    static const SDL_SystemCursor ids[4] = {SDL_SYSTEM_CURSOR_DEFAULT, SDL_SYSTEM_CURSOR_MOVE,
+                                            SDL_SYSTEM_CURSOR_NWSE_RESIZE, SDL_SYSTEM_CURSOR_NESW_RESIZE};
+    if (!g_layout_cursor[which]) g_layout_cursor[which] = SDL_CreateSystemCursor(ids[which]);
+    if (g_layout_cursor[which]) SDL_SetCursor(g_layout_cursor[which]);
+}
+
+/* Layout keys and mouse editing. Returns 1 if the event was consumed (not passed to the game). */
+static int plat_layout_event(const SDL_Event *e) {
+    float pd = SDL_GetWindowPixelDensity(win);
+    SDL_Keymod mod = SDL_GetModState();
+    switch (e->type) {
+    case SDL_EVENT_KEY_DOWN:
+        if (e->key.key == SDLK_F2) {
+            if (!e->key.repeat) {
+                int n = LAYOUT_PRESET_COUNT, step = (mod & SDL_KMOD_SHIFT) ? n - 1 : 1;
+                g_layout_cfg.preset = (g_layout_cfg.preset + step) % n;
+                plat_layout_changed();
+            }
+            return 1;
+        }
+        if (e->key.key == SDLK_F3) {
+            if (!e->key.repeat) {
+                g_layout_editing = !g_layout_editing;
+                plat_layout_update();
+                if (g_layout_editing) layout_make_custom(&g_layout_cfg, &g_layout);
+                layout_edit_end(&g_layout_edit);
+                plat_layout_cursor(0);
+                plat_layout_changed();
+            }
+            return 1;
+        }
+        if (e->key.key == SDLK_F4) {
+            if (!e->key.repeat) {
+                if (g_layout_cfg.preset == LAYOUT_CUSTOM) g_layout_cfg.custom_front ^= 1;
+                else g_layout_cfg.swap ^= 1;
+                plat_layout_changed();
+            }
+            return 1;
+        }
+        if (e->key.key == SDLK_ESCAPE && g_layout_editing) {  /* leave the editor instead of quitting */
+            g_layout_editing = 0;
+            layout_edit_end(&g_layout_edit);
+            plat_layout_cursor(0);
+            plat_layout_changed();
+            return 1;
+        }
+        return 0;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        if (e->button.button != SDL_BUTTON_LEFT && e->button.button != SDL_BUTTON_RIGHT) return g_layout_editing;
+        if (!g_layout_editing && !(mod & SDL_KMOD_CTRL)) return 0;
+        plat_layout_update();
+        if (layout_edit_begin(&g_layout_edit, &g_layout_cfg, &g_layout, e->button.x * pd, e->button.y * pd, LAYOUT_HANDLE * pd,
+                              e->button.button == SDL_BUTTON_RIGHT)) {
+            plat_layout_title();
+            return 1;
+        }
+        return g_layout_editing;
+    case SDL_EVENT_MOUSE_MOTION:
+        if (g_layout_edit.mode != LAYOUT_EDIT_NONE) {
+            plat_layout_update();
+            layout_edit_update(&g_layout_edit, &g_layout_cfg, &g_layout, e->motion.x * pd, e->motion.y * pd, (mod & SDL_KMOD_SHIFT) != 0,
+                               (mod & SDL_KMOD_ALT) != 0);
+            return 1;
+        }
+        if (g_layout_editing) {
+            int s, c;
+            plat_layout_update();
+            int m = layout_edit_hit(&g_layout, e->motion.x * pd, e->motion.y * pd, LAYOUT_HANDLE * pd, &s, &c);
+            plat_layout_cursor(m == LAYOUT_EDIT_RESIZE ? (c == 0 || c == 3 ? 2 : 3) : m == LAYOUT_EDIT_MOVE ? 1 : 0);
+        }
+        return 0;
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+        if (g_layout_edit.mode != LAYOUT_EDIT_NONE) {
+            layout_edit_end(&g_layout_edit);
+            plat_layout_changed();
+            return 1;
+        }
+        return g_layout_editing;
+    case SDL_EVENT_MOUSE_WHEEL:
+        if (g_layout_editing && e->wheel.y != 0) {
+            plat_layout_update();
+            int s = layout_hit(&g_layout, e->wheel.mouse_x * pd, e->wheel.mouse_y * pd);
+            if (s >= 0) {
+                layout_edit_scale(&g_layout_cfg, &g_layout, s, e->wheel.y > 0 ? 1.1f : 1 / 1.1f);
+                plat_layout_changed();
+            }
+            return 1;
+        }
+        return 0;
+    default:
+        return 0;
     }
 }
 
-static uint32_t key_bit(SDL_Keycode k) {
-    switch (k) {
-    case SDLK_X: return KEY_A;
-    case SDLK_Z: return KEY_B;
-    case SDLK_S: return KEY_X;
-    case SDLK_A: return KEY_Y;
-    case SDLK_Q: return KEY_L;
-    case SDLK_W: return KEY_R;
-    case SDLK_RETURN: return KEY_START;
-    case SDLK_RSHIFT: case SDLK_BACKSPACE: return KEY_SELECT;
-    case SDLK_I: return KEY_DUP;
-    case SDLK_K: return KEY_DDOWN;
-    case SDLK_J: return KEY_DLEFT;
-    case SDLK_L: return KEY_DRIGHT;
-    default: return 0;
-    }
+/* editor overlay: outlines, corner handles and snap guides, drawn with scissored clears */
+static void plat_layout_fill(int x, int y, int w, int h, float r, float g, float b) {
+    if (w <= 0 || h <= 0) return;
+    glScissor(x, g_layout.wh - (y + h), w, h);
+    glClearColor(r, g, b, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-static uint32_t pad_bit(int b) {
-    switch (b) {
-    case SDL_GAMEPAD_BUTTON_EAST: return KEY_A;   /* Nintendo layout: A on the right */
-    case SDL_GAMEPAD_BUTTON_SOUTH: return KEY_B;
-    case SDL_GAMEPAD_BUTTON_NORTH: return KEY_X;
-    case SDL_GAMEPAD_BUTTON_WEST: return KEY_Y;
-    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return KEY_L;
-    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return KEY_R;
-    case SDL_GAMEPAD_BUTTON_START: return KEY_START;
-    case SDL_GAMEPAD_BUTTON_BACK: return KEY_SELECT;
-    case SDL_GAMEPAD_BUTTON_DPAD_UP: return KEY_DUP;
-    case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return KEY_DDOWN;
-    case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return KEY_DLEFT;
-    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: return KEY_DRIGHT;
-    default: return 0;
+static void plat_layout_overlay(void) {
+    float pd = SDL_GetWindowPixelDensity(win);
+    int t = pd > 1.5f ? 3 : 2, hs = (int)(LAYOUT_HANDLE * pd);
+    glEnable(GL_SCISSOR_TEST);
+    for (int k = 0; k < 2; k++) {
+        int s = g_layout.order[k];
+        if (!g_layout.visible[s]) continue;
+        int x = (int)g_layout.r[s].x, y = (int)g_layout.r[s].y, w = (int)g_layout.r[s].w, h = (int)g_layout.r[s].h;
+        float cr = s ? 0.3f : 1.0f, cg = s ? 0.8f : 0.75f, cb = s ? 1.0f : 0.2f;  /* top amber, bottom blue */
+        plat_layout_fill(x, y, w, t, cr, cg, cb);
+        plat_layout_fill(x, y + h - t, w, t, cr, cg, cb);
+        plat_layout_fill(x, y, t, h, cr, cg, cb);
+        plat_layout_fill(x + w - t, y, t, h, cr, cg, cb);
+        for (int c = 0; c < 4; c++)
+            plat_layout_fill((c & 1 ? x + w : x) - hs / 2, (c & 2 ? y + h : y) - hs / 2, hs, hs, 1, 1, 1);
     }
+    if (g_layout_edit.guide_x >= 0) plat_layout_fill((int)g_layout_edit.guide_x - 1, 0, 2, g_layout.wh, 1, 0.2f, 0.8f);
+    if (g_layout_edit.guide_y >= 0) plat_layout_fill(0, (int)g_layout_edit.guide_y - 1, g_layout.ww, 2, 1, 0.2f, 0.8f);
+    glDisable(GL_SCISSOR_TEST);
 }
 
 int plat_poll(void) {
-    static uint32_t kb, gp;
     uint32_t prev = in.held;
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-        switch (e.type) {
-        case SDL_EVENT_QUIT: return 0;
-        case SDL_EVENT_KEY_DOWN:
-            if (e.key.key == SDLK_ESCAPE) return 0;
-            kb |= key_bit(e.key.key);
-            break;
-        case SDL_EVENT_KEY_UP: kb &= ~key_bit(e.key.key); break;
-        case SDL_EVENT_GAMEPAD_ADDED: if (!pad) pad = SDL_OpenGamepad(e.gdevice.which); break;
-        case SDL_EVENT_GAMEPAD_BUTTON_DOWN: gp |= pad_bit(e.gbutton.button); break;
-        case SDL_EVENT_GAMEPAD_BUTTON_UP: gp &= ~pad_bit(e.gbutton.button); break;
-        default: break;
-        }
+        if (plat_layout_event(&e)) continue;  /* layout keys (F2-F4) and layout editing with the mouse */
+        if (e.type == SDL_EVENT_QUIT) return 0;
+        input_handle_event(&e);  /* controller hotplug, MENU/QUIT keys, binding capture */
     }
-    /* circle pad: arrow keys or left stick */
-    const bool *ks = SDL_GetKeyboardState(NULL);
-    int x = (ks[SDL_SCANCODE_RIGHT] - ks[SDL_SCANCODE_LEFT]) * 156;
-    int y = (ks[SDL_SCANCODE_UP] - ks[SDL_SCANCODE_DOWN]) * 156;
-    if (pad) {
-        int ax = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX), ay = SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY);
-        if (abs(ax) > 4000 || abs(ay) > 4000) { x = ax * 156 / 32767; y = -ay * 156 / 32767; }
-        if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 16000) gp |= KEY_ZL; else gp &= ~KEY_ZL;
-        if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16000) gp |= KEY_ZR; else gp &= ~KEY_ZR;
-    }
-    in.cpad_x = (int16_t)x;
-    in.cpad_y = (int16_t)y;
-    uint32_t cp = (x > 40 ? KEY_CPAD_RIGHT : 0) | (x < -40 ? KEY_CPAD_LEFT : 0) |
-                  (y > 40 ? KEY_CPAD_UP : 0) | (y < -40 ? KEY_CPAD_DOWN : 0);
+    /* buttons (keyboard kb, controllers gp), circle pad (+ its direction bits cp), C-stick,
+     * motion, frontend menu: input.c, mapping from input.cfg */
+    uint32_t kb, gp, cp;
+    if (!input_update(&in, &kb, &gp, &cp)) return 0;
 
-    /* touch: left mouse button on the bottom screen */
+    /* touch: left mouse button on the bottom screen, wherever the layout draws it. A touch starts
+     * inside the screen and, while held, follows the pointer clamped to the screen's edges. */
+    static int touching;
     float mx, my;
-    int ww, wh;
-    float rect[2][4];
-    int px[2][4];
     SDL_MouseButtonFlags mb = SDL_GetMouseState(&mx, &my);
-    SDL_GetWindowSizeInPixels(win, &ww, &wh);
     float pd = SDL_GetWindowPixelDensity(win);
-    mx *= pd;
-    my *= pd;
-    layout(ww, wh, rect, px);
-    int *b = px[SCREEN_BOTTOM];
-    in.touch = (mb & SDL_BUTTON_LMASK) && mx >= b[0] && mx < b[0] + b[2] && my >= b[1] && my < b[1] + b[3];
+    int tx, ty;
+    plat_layout_update();
+    int inside = layout_to_screen(&g_layout, SCREEN_BOTTOM, mx * pd, my * pd, &tx, &ty);
+    int pressed = (mb & SDL_BUTTON_LMASK) && !g_layout_editing && g_layout_edit.mode == LAYOUT_EDIT_NONE &&
+                  g_layout.visible[SCREEN_BOTTOM];
+    touching = pressed && (inside || touching);
+    in.touch = touching;
     if (in.touch) {
-        in.touch_x = (int)((mx - b[0]) * BOTTOM_W / b[2]);
-        in.touch_y = (int)((my - b[1]) * SCREEN_H / b[3]);
+        in.touch_x = tx;
+        in.touch_y = ty;
     }
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0);
     in.down = in.held & ~prev;
@@ -307,26 +421,31 @@ void plat_begin_screen(int screen) {
 }
 
 void plat_end_frame(void) {
-    int ww, wh;
-    float rect[2][4];
-    int px[2][4];
-    SDL_GetWindowSizeInPixels(win, &ww, &wh);
-    layout(ww, wh, rect, px);
+    plat_layout_update();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, ww, wh);
+    glViewport(0, 0, g_layout.ww, g_layout.wh);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
+    glDisable(GL_SCISSOR_TEST);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(blit_prog);
     glBindVertexArray(blit_vao);
     GLint loc = glGetUniformLocation(blit_prog, "rect");
-    for (int i = 0; i < 2; i++) {
+    GLint filter = g_layout_cfg.linear_filter ? GL_LINEAR : GL_NEAREST;
+    for (int k = 0; k < 2; k++) {
+        int i = g_layout.order[k];
+        if (!g_layout.visible[i]) continue;
+        float rect[4];
+        layout_rect_ndc(&g_layout, i, rect);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, screens[i].color);
-        glUniform4fv(loc, 1, rect[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+        glUniform4fv(loc, 1, rect);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
+    if (g_layout_editing || g_layout_edit.mode != LAYOUT_EDIT_NONE) plat_layout_overlay();
     SDL_GL_SwapWindow(win);
 
     /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate) */

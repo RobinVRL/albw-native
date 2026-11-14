@@ -18,11 +18,20 @@ enum {
     KEY_CPAD_RIGHT = 1u << 28, KEY_CPAD_LEFT = 1u << 29, KEY_CPAD_UP = 1u << 30, KEY_CPAD_DOWN = 1u << 31,
 };
 
-typedef struct {
+typedef struct PlatInput {
     uint32_t held, down, up;   /* down/up: changed this frame */
     int16_t cpad_x, cpad_y;    /* circle pad, -156..156 like the hardware */
     int touch;                 /* bottom screen touched */
     int touch_x, touch_y;      /* 0..319, 0..239 */
+    /* from input.c (keyboard + controllers, configured in input.cfg: see input.h) */
+    int16_t cstick_x, cstick_y;  /* New 3DS C-stick (right stick by default), -156..156, +y = up;
+                                    not in held (the game does not read it) */
+    int menu;                  /* frontend menu binding pressed this frame (never seen by the game) */
+    int controllers;           /* game controllers connected */
+    int motion;                /* 1 = accel/gyro come from a controller's sensors this frame */
+    float accel[3];            /* G, SDL axes (controller held in front of you: +x right, +y up,
+                                  +z toward you); no sensor = lying still: 0, 1, 0 */
+    float gyro[3];             /* deg/s around those axes (pitch, yaw, roll); no sensor = 0 */
 } PlatInput;
 
 typedef struct {

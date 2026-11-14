@@ -6,6 +6,8 @@
 #   ./run.sh --gdb           run under gdb (shows where it stops)
 #   ./run.sh --viewer [model [index]]   asset viewer: draws a model + texture decoded from your ROM
 #   ./run.sh --scale 3       window size multiplier (default 2), other args are passed through
+#   ./run.sh --qt [--demo | viewer args]   Qt frontend (64-bit) with the asset viewer as content
+#                            (or the platform test scene); the game attaches to it once 64-bit
 #
 # Environment (defaults shown):
 #   ALBW_ROM        path to your decrypted .3ds (RomFS is read from it)
@@ -19,6 +21,11 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+if [[ "${1:-}" == "--qt" ]]; then
+    shift   # ALBW_ROM from the environment, else the ROM chosen in File > Open ROM
+    native/frontend/qt/build.sh build/frontend-qt >/dev/null
+    exec build/frontend-qt/albw-qt "$@"
+fi
 : "${ALBW_ROM:=/path/to/your/game.3ds}"
 export ALBW_ROM
 # prefer native Wayland when available (the 32-bit SDL needs lib32-libxkbcommon + lib32-libdecor);
