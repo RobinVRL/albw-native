@@ -82,6 +82,8 @@ def virtual_this(text):
     return RE_VCALL0_NOARGS.sub(lambda m: "(**(code **)*%s)(%s)" % (m.group(1), m.group(1)), text)
 
 
+RE_ARGCOUNT = re.compile(r"too (?:many|few) arguments to function call")
+RE_DECLARED_HERE = re.compile(r"note: '(\w+)' declared here")
 SIG_OVERRIDES = {
     "func_0010E74C": "void *func_0010E74C(uint *param_1,uint *param_2,uint param_3)",
     "func_0065E398": "void func_0065E398(undefined4 *param_1,undefined1 param_2)",
@@ -385,6 +387,22 @@ def build_one(job):
                 text = launder_symbol(text, sym)
             with open(src, "w") as fh:
                 fh.write(text)
+            r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
+        for _ in range(8):
+            # a call whose argument count disagrees with the callee's (ARM-evidence) prototype:
+            # the Ghidra text and the signature table differ. Keep the source compiling with an
+            # unprototyped declaration of that callee (same return type; arguments as written)
+            if not r.returncode or not RE_ARGCOUNT.search(r.stderr):
+                break
+            names = set(RE_DECLARED_HERE.findall(r.stderr))
+            text = open(src).read()
+            new_text = text
+            for n in names:
+                new_text = re.sub(r"(extern\s+[^;(]*?\b%s)\s*\([^;]*\);" % re.escape(n), r"\1();", new_text)
+            if new_text == text:
+                break
+            with open(src, "w") as fh:
+                fh.write(new_text)
             r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
         if r.returncode:
             err = next((l for l in r.stderr.splitlines() if "error:" in l or "error in backend" in l), r.stderr[:200])
