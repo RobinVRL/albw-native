@@ -111,8 +111,8 @@ void *func_0016FD34(void *self_, void *params, void *r2, uint32_t r3) {
 
         char *k = func_0010BAB4(0x48);
         if (k) func_004EDC9C(k);
-        struct { void *vtbl; char *buf; int32_t cap; char data[0x40]; } fs;
-        fs.vtbl = data_006F6FE8;
+        struct { void *ALBW_GP vtbl; char *ALBW_GP buf; int32_t cap; char data[0x40]; } fs;
+        fs.vtbl = ALBW_LAUNDER(data_006F6FE8);
         fs.buf = fs.data;
         fs.cap = 0x40;
         fs.data[0x3F] = 0;
@@ -150,10 +150,10 @@ void *func_0016FD34(void *self_, void *params, void *r2, uint32_t r3) {
         char *m = func_0010BAB4(0xA8);
         if (m) {
             ss_assure(data_00725974);
-            sead_SafeString ss = { data_006F5988, FLD(data_00725974, 4, char *) };
+            sead_SafeString ss = { ALBW_LAUNDER(data_006F5988), FLD(data_00725974, 4, char *) };
             m = func_0016A2FC(m, 1, &ss, 1);
         }
-        sead_SafeString crack = { data_006F5988, "crack" };
+        sead_SafeString crack = { ALBW_LAUNDER(data_006F5988), ALBW_LAUNDER("crack") }; /* gptr.h */
         func_00169608(m, 0, &crack, FLD(res2d0, 0x1C8, uint32_t));
         func_0016A02C(m, -1, -1, NULL);
         char list[0x5C];

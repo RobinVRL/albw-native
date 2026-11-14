@@ -22,13 +22,13 @@ typedef int32_t (*RomFsReadFn)(RomFsFile *self, int32_t *out_read, uint32_t off_
                                uint32_t off_hi, void *buf, uint32_t size);
 typedef void (*RomFsCloseFn)(RomFsFile *self);
 struct RomFsFile {
-    void *const *vtbl;
+    void *const ALBW_GP *ALBW_GP vtbl; /* 4-byte game words (gptr.h) */
     uint32_t handle;
 };
 
 extern uint32_t data_00714998[];       /* fs session state; +0x10 = fs:USER session handle */
 extern uint32_t data_0079CE10[];       /* file-object pool */
-extern void *const data_006EFAFC[];    /* RomFS file object vtable */
+extern void *const ALBW_GP data_006EFAFC[];    /* RomFS file object vtable */
 
 int32_t func_0010F7EC(const uint32_t *session, uint32_t *out_handle, uint32_t transaction,
                       uint32_t archive_id, uint32_t arch_path_type, const void *arch_path,

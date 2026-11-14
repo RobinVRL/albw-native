@@ -4,12 +4,14 @@
  * is read as a typed access at its byte offset from a char* base. Pointer fields are read and
  * written with pointer types (FLD(p, off, Foo *)): on the 32-bit build this is the game's layout
  * exactly; for the 64-bit build those structures get native layouts, and these accesses are the
- * places that will need a struct instead (they are greppable as FLD(..., *) ). */
+ * places that will need a struct instead (they are greppable as FLD(..., *) ). In the x86-64
+ * low-4GB build they are written FLD(p, off, T * ALBW_GP): a 4-byte game word (gptr.h). */
 #ifndef ALBW_ROBUST_H
 #define ALBW_ROBUST_H
 
 #include <stdint.h>
 #include <string.h>
+#include "gptr.h" /* ALBW_GP: 4-byte game pointer words on x86-64, empty on 32-bit */
 
 /* typed lvalue for the field at byte offset `off` of object `p` */
 #define FLD(p, off, T) (*(T *)((char *)(p) + (off)))
@@ -20,7 +22,7 @@
  *   ptr: function address (non-virtual) or vtable byte offset (virtual)
  *   adj: (this adjustment << 1) | is_virtual */
 typedef struct albw_pmf {
-    void *ptr;
+    void *ALBW_GP ptr;
     int32_t adj;
 } albw_pmf;
 
@@ -37,8 +39,8 @@ static inline char *albw_pmf_this(const albw_pmf *m, void *obj) {
 /* the function the PMF designates on the adjusted object `self` */
 static inline void *albw_pmf_fn(const albw_pmf *m, const char *self) {
     if (m->adj & 1) {  /* virtual: ptr is a byte offset into the vtable */
-        const char *vt = *(char *const *)self;
-        return *(void *const *)(vt + (intptr_t)m->ptr);
+        const char *vt = *(char *const ALBW_GP *)self;
+        return *(void *const ALBW_GP *)(vt + (intptr_t)m->ptr);
     }
     return m->ptr;
 }

@@ -16,9 +16,9 @@ typedef void (*vfn_self)(char *self);
 static inline void albw_sm_change_state(char *sm, uint32_t newState) {
     int8_t cur = FLD(sm, 0x04, int8_t);
     if (cur != -1) {
-        const albw_pmf *m = FLD(sm, 0x20, albw_pmf *) + cur;
+        const albw_pmf *m = FLD(sm, 0x20, albw_pmf * ALBW_GP) + cur;
         if (albw_pmf_valid(m)) {
-            char *self = albw_pmf_this(m, FLD(sm, 0x14, char *));
+            char *self = albw_pmf_this(m, FLD(sm, 0x14, char * ALBW_GP));
             ((sm_exit_fn)albw_pmf_fn(m, self))(self, newState);
         }
     }
@@ -26,20 +26,20 @@ static inline void albw_sm_change_state(char *sm, uint32_t newState) {
     FLD(sm, 0x04, uint8_t) = (uint8_t)newState;
     FLD(sm, 0x00, uint32_t) = 0;
     FLD(sm, 0x05, uint8_t) = prev;
-    if (FLD(sm, 0x10, void *) != 0) {
+    if (FLD(sm, 0x10, void * ALBW_GP) != 0) {
         int32_t idx = FLD(sm, 0x04, int8_t);
-        char *e = FLD(sm, 0x0C, char *);
+        char *e = FLD(sm, 0x0C, char * ALBW_GP);
         if ((uint32_t)idx < FLD(sm, 0x08, uint32_t))
             e += idx * 0x24;
-        ((vfn_self)FLD(FLD(e, 0, char *), 0x08, void *))(e);
+        ((vfn_self)FLD(FLD(e, 0, char * ALBW_GP), 0x08, void * ALBW_GP))(e);
         sead_SafeString name;
-        name.vtbl = &data_006F5988;
-        name.mStringTop = FLD(e, 0x04, const char *);
-        func_0010BEB4(FLD(sm, 0x10, void *), &name);
+        name.vtbl = ALBW_LAUNDER(&data_006F5988); /* gptr.h: symbol -> 4-byte word */
+        name.mStringTop = FLD(e, 0x04, const char * ALBW_GP);
+        func_0010BEB4(FLD(sm, 0x10, void * ALBW_GP), &name);
     }
-    const albw_pmf *m = FLD(sm, 0x18, albw_pmf *) + FLD(sm, 0x04, int8_t);
+    const albw_pmf *m = FLD(sm, 0x18, albw_pmf * ALBW_GP) + FLD(sm, 0x04, int8_t);
     if (albw_pmf_valid(m)) {
-        char *self = albw_pmf_this(m, FLD(sm, 0x14, char *));
+        char *self = albw_pmf_this(m, FLD(sm, 0x14, char * ALBW_GP));
         ((sm_enter_fn)albw_pmf_fn(m, self))(self);
     }
 }

@@ -22,6 +22,9 @@
 /* SDK system-call wrappers: declared as plain functions, provided by the native SDK layer */
 #define __svc(n)
 
+/* ALBW_GP: 4-byte game pointer qualifier (empty on 32-bit), see native/include/gptr.h */
+#include "include/gptr.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

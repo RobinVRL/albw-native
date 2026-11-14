@@ -60,6 +60,7 @@
 #include <unistd.h>
 
 #include "../runtime/runtime.h"
+#include "../include/gptr.h"
 
 /* ---------------------------------------------------------------------------------------------
  * result codes
@@ -1128,7 +1129,7 @@ int32_t func_003C9BA0(const uint32_t *handle) {
 /* Layout of the SDK's file and directory server objects: {vtable, u32 session handle}
  * (003C8BF0 / 0010DC6C: obj[0] = vtable 006EFAFC, obj[1] = handle). */
 struct fs_server_object {
-    void *vtable;
+    void *ALBW_GP vtable; /* 4-byte game word (gptr.h) */
     uint32_t handle;
 };
 

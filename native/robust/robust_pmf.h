@@ -34,7 +34,7 @@ typedef void (*albw_dlg_v2)(char *self, uintptr_t a1, uintptr_t a2);
 
 /* the adjusted object and target of a delegate, or NULL when invoke() does nothing */
 static inline void *albw_delegate_target(char *dlg, char **self_out) {
-    char *obj = FLD(dlg, 0x04, char *);
+    char *obj = FLD(dlg, 0x04, char * ALBW_GP);
     if (obj == 0)
         return 0;
     const albw_pmf *m = (const albw_pmf *)AT(dlg, 0x08);
@@ -86,16 +86,16 @@ static inline void albw_owner_sm_change_state_if_different(char *owner, int32_t 
     FLD(owner, 0x988, uint8_t) = flag;
     int8_t cur = FLD(sm, 0x04, int8_t);
     if (cur != -1) {
-        const albw_pmf *m = FLD(sm, 0x20, albw_pmf *) + cur;
+        const albw_pmf *m = FLD(sm, 0x20, albw_pmf * ALBW_GP) + cur;
         if (albw_pmf_valid(m)) {
-            char *self = albw_pmf_this(m, FLD(sm, 0x14, char *));
+            char *self = albw_pmf_this(m, FLD(sm, 0x14, char * ALBW_GP));
             ((albw_sm_exit_fn)albw_pmf_fn(m, self))(self, newState);
         }
     }
     func_003931EC(sm, (int8_t)newState);
-    const albw_pmf *m = FLD(owner, 0x978, albw_pmf *) + FLD(sm, 0x04, int8_t);
+    const albw_pmf *m = FLD(owner, 0x978, albw_pmf * ALBW_GP) + FLD(sm, 0x04, int8_t);
     if (albw_pmf_valid(m)) {
-        char *self = albw_pmf_this(m, FLD(sm, 0x14, char *));
+        char *self = albw_pmf_this(m, FLD(sm, 0x14, char * ALBW_GP));
         ((albw_sm_enter_fn)albw_pmf_fn(m, self))(self);
     }
 }
