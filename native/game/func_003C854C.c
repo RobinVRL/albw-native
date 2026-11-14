@@ -16,7 +16,11 @@
  *
  * Rewritten by meaning from the EU disassembly: the Ghidra version kept the found entry's
  * offset/size in unaffected registers (unaff_r4/r5/r8) and returned NotFound natively for
- * "rom:/World/Sound/Jack.bcsar", which exists. Directory open (vtable +4) is separate.
+ * "rom:/World/Sound/Jack.bcsar", which exists.
+ * Also here: USA 003C8238 (EU 003C8214) OpenDirectory (vtable +4), same lookup: a directory
+ * -> dir object {vtable 006EFA8C, archive, first child dir, first file, archive+4}; a FILE at
+ * that path -> 0xE0C04702 (sead's isExistFile 00499974 relies on this to try the file next);
+ * nothing -> 0xC8804471. (The decompiled table lookups 0068F1B8/0068F3E4 fail natively.)
  * Confidence: high (RomFS format; object layout read from 003C854C and a live archive). */
 #include <stdint.h>
 
@@ -67,6 +71,56 @@ static uint32_t lookup(const uint8_t *arch, int dir, uint32_t parent, const uint
         off = U32(e, next_at);
     }
     return EMPTY;
+}
+
+/* resolve a UTF-16 path: returns 1 dir / 2 file / 0 none, *off = entry offset */
+static int resolve(const uint8_t *arch, const uint16_t *p, uint32_t *off)
+{
+    uint32_t parent = 0;
+    for (;;) {
+        while (*p == '/')
+            p++;
+        const uint16_t *start = p;
+        while (*p && *p != '/')
+            p++;
+        uint32_t n = (uint32_t)(p - start);
+        if (n == 0) { *off = parent; return 1; }           /* "" or trailing '/': the dir itself */
+        uint32_t d = lookup(arch, 1, parent, start, n);
+        if (*p == '/') {
+            if (d == EMPTY) return 0;
+            parent = d;
+            continue;
+        }
+        if (d != EMPTY) { *off = d; return 1; }
+        uint32_t f = lookup(arch, 0, parent, start, n);
+        if (f == EMPTY) return 0;
+        *off = f;
+        return 2;
+    }
+}
+
+extern uint32_t data_006EFA8C[];
+
+uint32_t func_003C8238(uint8_t *arch, uint32_t *out_dir, const uint32_t *path)
+{
+    const uint16_t *p = path[0] == 4 ? (const uint16_t *)(uintptr_t)path[1] : 0;
+    uint32_t off;
+    int kind = p ? resolve(arch, p, &off) : 0;
+    if (kind == 0)
+        return 0xC8804471u;
+    if (kind == 2)
+        return 0xE0C04702u;
+    const uint8_t *e = PTR(U32(arch, 0x80)) + off;   /* dir entry: parent, sibling, child, file */
+    uint32_t *d = func_0010FB48(arch + 0xF4);
+    *out_dir = (uint32_t)(uintptr_t)d;
+    if (!d)
+        return RES_NO_MEMORY;
+    d[0] = (uint32_t)(uintptr_t)data_006EFA8C;
+    d[1] = (uint32_t)(uintptr_t)arch;
+    d[2] = U32(e, 8);
+    d[3] = U32(e, 12);
+    d[5] = U32(arch, 4);
+    return 0;
 }
 
 uint32_t func_003C854C(uint8_t *arch, uint32_t *out_file, const uint32_t *path, uint32_t mode)
