@@ -5,3 +5,4 @@ One entry per boot-loop stop: where it stopped, cause, fix. USA addresses (EU in
 | # | stop | cause | fix |
 |---|------|-------|-----|
 | 1 | HeapMgr::initialize 0010B47C: FileDeviceMgr heap NULL, crash | ExpHeap::adjust (0049C924) was correct; the parent's resizeBack 0049C208 (EU 0049C1E0) calls isInclude(ptr) via vtable +0x40 with ptr left in r1, Ghidra dropped the argument -> isInclude read garbage -> 0 | native/game/func_0049C208.c, func_0049C334.c (resizeFront, same bug): pass ptr |
+| 2 | svc 0x23 tripwire in 0010DC6C (RomFS work-size query, from FileDeviceMgr -> 0010D0F4) | Ghidra 0010DC6C passed 6 of 12 OpenFileDirectly args and read the header from wrong slots; pool alloc 0010FB48 lost its lock argument; file-object vtable wrappers (read/write/flush/getSize/setPriority/openLink) typed void, losing the Result | native/game/func_0010DC6C.c (rewritten from asm), func_0010FB48.c, func_003C90F8/003C91C0/003C9138/00561334/003C9038/003C9018.c (return the Result) |
