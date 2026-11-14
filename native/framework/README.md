@@ -33,16 +33,20 @@ declare the function. "Bug fixed" compares with the version the current build us
 | 002DFF7C (002DFF58) | SpawnParam::reset() (returns this+0x10 in r0) | 102 | 3 | none - typed/64-bit clean | high |
 | 004B9A10 (004B99E8) | Base450::Base450(bool) (actor-side base, IDisposer at +0x38, 2 list heads) | 69 | 3 | none - typed/64-bit clean | high |
 | 0010A464 | IDisposer-derived framework object ctor (vtbl data_006D68BC; class unnamed) | 69 | 1/3 | none - typed/64-bit clean | high |
+| 0049D4A8 (0049D480) | sead::TaskMgr::createTaskSync(arg) (boot path: 0048E718 -> here) | 4 | 2 | converted C threads an uninitialised `in_s0` through 0010F1F8 (float-declared; core's `void` definition would unbalance the i386 x87 stack per unlink): list erase/insert inline; OffsetList vtable word written; exact loop re-reads | high |
+| 0049DA04 (0049D9DC) | sead::TaskMgr::changeTaskState_(task, state) (jump table read from the ROM) | 9 | 2 | **state 1 (async create): the prepare-thread message call `t->vt[0xC](t, 1, 1)` lost its 3rd argument** (BlockType = blocking) in the converted C; same `in_s0` list-erase issue | high (call semantics: medium) |
+| 004C58F0 (004C58C8) | ActorProfile / unit-heap set-up of the main-game init (004EE6C8) | 1 | 4 | **lost stack object**: the load argument's first word (SafeString vtable of "Archive/ActorProfile.szs", `str r4,[sp,#4]`) was never written: 001E1228 received the path with a garbage vtable | high |
 | 00520FC0 (00520F98) | getPlayerPos()-style accessor `(*data_0070FB60)->+0x1C` | 434 | 3 | none | high |
 
 Each file's header has the full ARM-derived description, the round-2 diff and the prototype used.
-All 16 pass `tools/sigcheck.py` (definition vs every converted caller declaration: return class,
+All 19 pass `tools/sigcheck.py` (definition vs every converted caller declaration: return class,
 float/int argument order, pointer-vs-int on x86-64): **all OK**.
 
 ## Tests
 
 `test/run_tests.sh` (from anywhere; `TMPDIR` for the binaries):
-- `test/framework_test.c`: every function with recording stubs and low-memory objects
+- `test/framework_test.c`: every function (incl. TaskMgr state changes / createTaskSync with a
+  delegate list, ActorProfile load argument byte by byte) with recording stubs and low-memory objects
   (`native/gameplay/test/lowmem.h`), run on a stack below 4 GiB (the functions keep 32-bit words
   pointing at their own frame, as the game threads do on their low stacks). -m32 and -m64: pass.
 - `test/enemy_diff.c` (-m32): 004FD464 against the round-2 converted Ghidra C on identical inputs,
@@ -51,6 +55,9 @@ float/int argument order, pointer-vs-int on x86-64): **all OK**.
   uninitialised stack). Pass.
 
 `tools/sigcheck.py`: `native/gameplay/tools/sigcheck.py` pointed at this directory.
+`tools/lostframe.py ADDR...` (capstone; run with `../albw-decomp-ai/.venv/bin/python3`): ARM
+sp-relative stores vs. the albw_frame slots the converted C writes (finds lost stack objects);
+`--scan`: every converted source whose `&stack0x` object is never assigned (see below).
 
 ## Link notes
 
@@ -61,9 +68,12 @@ float/int argument order, pointer-vs-int on x86-64): **all OK**.
 - I first wrote 00150E40 (Actor/ActorBase ctor, 174 caller files) and dropped it: native/hot
   has `hot/func_00150E40.c` with the same reading (independent agreement, Ghidra C correct).
 - **Caller signature mismatches** (existing native callers, not in this directory):
-  - `native/route/func_00348558.c` declares `void *func_002D55D0(char *, int32_t)`: on x86-64 it
-    reads rax while every definition (matched C++ or ours) is the 32-bit `this + 8`; fine in
-    practice (32-bit results zero-extend) but the declaration should be `int`/`uint32_t`.
+  - `native/route/alt/func_00348558.c` (the asm-verified alternative to compilefix's version, not
+    linked as is) declares `void *func_002D55D0(char *, int32_t)` and uses the result as a
+    pointer: on x86-64 it reads all of rax while every definition (the matched C++ `void *` one
+    or ours, `int` = the 32-bit `this + 8`) is a 32-bit value. Works in practice (a 32-bit
+    result zero-extends) but before swapping that file in, declare `int func_002D55D0(uint32_t,
+    uint32_t)` and convert the result with `gp_ptr`.
   - native callers declare 0010A794 / 004EDC9C `void` (robust) and 00150A84 `void`
     (`robust/func_00192390.c`): harmless (integer class).
 - 0010BEC4, 00150A84, 004FD464, 0049D3D8 call memcpy 0010E3C4 (native/sdk/memory.c), operator
@@ -92,22 +102,51 @@ float/int argument order, pointer-vs-int on x86-64): **all OK**.
   build; the boot agent's `native/game/func_001031B4.c` (2 params) is consistent with it.
 - If it does: 0049F920 / 0049F7B8 / 0049F79C / 0049D3D8 here are exact natives of that path
   (return `this` / the task, as the ARM does).
-- Expected next trap on that path: 0049D4A8 (createTaskSync) is still Ghidra; its converted
-  form threads a meaningless `in_s0` through the ListNode erase calls (0010F1F8 declared
+- 0049D4A8 (createTaskSync) / 0049DA04 now have drop-ins here; the converted forms thread a meaningless `in_s0` through the ListNode erase calls (0010F1F8 declared
   `float(int*, float)` by the signature table: an s0 pass-through). native/core defines
   0010F1F8 as `void` and asks for a converter SIG_OVERRIDE (`native/core/sead_list.c`,
   `callers_0010F1F8_float.txt`); linked before that override, every such i386 caller (0049D4A8
   included) pops an empty x87 st(0). Link core's 0010F1F8 only together with that converter fix.
 
+## Tier 2 / tier 4 review (round 2 continued)
+
+Checked against the EU code (instruction by instruction where noted, otherwise with
+`tools/lostframe.py`, `native/gameplay/tools/audit.py` and the callees' ARM live-in from
+`native/robust/tools/livein2.json`). native/game has no override on any of these.
+
+| USA | role | result |
+|---|---|---|
+| 0048E718 | prepare task creation (CreateArg {2, 006887A8}, createTaskSync, static guard) | converted C correct (frame offsets checked; the ARM never calls `__cxa_guard_release`, the C mirrors it): no drop-in |
+| 0048E670 | game framework vtable method (vt calls 0x38/0x40/0x44/0x3C/0x48) | correct; the junk r2/r3 Ghidra passes to vt[0x38] is junk on ARM too |
+| 004ECA48 | root task set-up | markers / frame check clean; not hand-verified insn by insn (210 insns) |
+| 0049CEC8 | task heap array (`TaskHeap` ExpHeaps per method tree) | correct (insn by insn) |
+| 0049D4A8 / 0049DA04 | createTaskSync / changeTaskState_ | drop-ins here (above) |
+| 004960AC + framework vtable data_006F6C88.. (52 methods) | per-frame calc/draw dispatch | procFrame is native (sdk/os.c); the rest are matched or clean by the markers. 00496160 / 004961C4 extraout/in_ registers are dead on ARM (callee live-in) |
+| delegate invokes (0068C464, 0068C4BC, ... 15 in native/robust) | sead::Delegate PMF call | covered by native/robust (class B), robust's 0068C464 passes r1/r2 through as the ARM does |
+| 0014AA1C | seq manager changeTask (scene change) | correct (insn by insn) |
+| 004EF418 | scene manager request | correct (insn by insn); 0043BC3C's lost r2 is not read by it (live-in r0, r1) |
+| 004EE6C8 / 004EE8DC / 004EECD4 / 0014B00C | game / stage / course prepares | frame check clean (sp+0 = 5th call arguments) |
+| 002761A0 / 0027E0C8 / 001BAD4C | stage BYAML / map KCL / course BYAML loaders | flagged registers are dead on ARM (0016B8DC, 00689794 live-ins); 001BAD4C as ROUTE.md |
+| 004C58F0 | ActorProfile | drop-in here (bug) |
+| **004ABA98** (EU 004ABA70) | stage map/KCL init (004EE8DC -> here), 326 insns | **real bug, not rewritten**: for course 8 (scenes 2/4/8: Course/dgn_EastCommon.bch, Course/Demo050_Common.bch, Course/Demo090_Common.bch) the 0x50-byte CreateArg passed to 00504D48 (`mov r1, sp`) is never written by the converted C (`&stack0xffffff70`): ARM sp+0x00 = data_006F5988, +0x04 = data_006C57E0, +0x08 = 0, +0x0C = 0, +0x10 = 0x20, +0x14..+0x28 = 0, +0x2C = data_006F5988, +0x30 = data_0069E0F8, u8 +0x34 = 7, +0x35 = 4, +0x36 = +0x37 = +0x38 = 0, +0x3C = data_006F5988, +0x40 = the BCH path, +0x44 = 0, +0x48 = 001E2444's result (resource), u8 +0x4C = 1 (EU 004ABB50-004ABBDC). Needed if the opening demo uses course 8 scene 4/8 |
+
+**Systemic: lost stack objects in the converter** (`tools/lostframe.py --scan`): 379 converted
+sources keep a Ghidra `&stack0x..` object as an albw_frame slot that is never assigned; in 74 of
+them the C also reads the callee-filled data through a separate `in_stack_..` variable
+(e.g. 00102E40 reads `in_stack_ffffffd0` instead of the byte 001058EC wrote). The ARM code stores
+into those slots (004FD464, 004C58F0, 004ABA98 confirmed by hand); the frame converter has to
+attach the sp-relative stores (and the in_stack_ reads) to the slot. Highest-caller entries:
+00168E9C (native), 004F5588, 004FD464 (fixed here), 004F70A8, 001E1EDC (native), 006875AC,
+004FC244, 00309850, 002B0D7C (native), 002D56A8.
+
 ## Gaps (not done)
 
-- Tier 2: 0049D4A8 TaskMgr::createTaskSync (delegate list walk, ~120 insns), 0048E718 /
-  0048E670 / 004ECA48 (prepare/root task creation), TaskBase tree insert/remove (0049FBC4,
-  0049F5FC are matched), per-frame calc/draw dispatch (sead MethodTree 0049A188 / 0049546C /
-  004960AC) and the delegate classes: not rewritten.
+- Tier 2: 004ECA48 not verified insn by insn; method-tree internals 0049A188 / 0049546C (clean
+  by markers) not hand-checked.
+- Tier 4: 004ABA98 (above); the prepares 004EE6C8 / 004EE8DC / 004EECD4 and the loaders were
+  checked with the detectors only.
 - Tier 1: the StateMgr execute step is inlined into every owner's calc (e.g. 00203138: PMF call
   from the +0x1C table with no null test, counter++, then 00352210(model, 1, (float)counter)),
   so there is no shared function; the changeState copies are robust's.
 - Tier 3: ActorMgr::find 0052FBA0 / 0052FBDC, getRandom 0058A7D4, getActorId 00588BE4 are matched
   sources (not checked in depth); 0010BEB4 (model anim by name, 374 callers) is gfx-middleware.
-- Tier 4 (resource/scene plumbing on the title -> field route): not started.

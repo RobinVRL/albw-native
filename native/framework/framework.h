@@ -79,4 +79,33 @@ static inline uint32_t fw_ss_copy(char *dst, const int32_t *bufsize, fw_SafeStri
     return r;
 }
 
+/* sead::ListNode::erase_() (0010F1F8) inline: node {+0 prev, +4 next}.
+ *   if (prev) prev->next = next; if (next) next->prev = prev (each re-read); next = prev = 0.
+ * Done inline because 0010F1F8's return class is in flux (converted callers declare it
+ * `float` (s0 pass-through), native/core defines it `void`): calling it from here with either
+ * declaration would unbalance the i386 x87 stack against one of the two definitions. */
+static inline void fw_list_erase(void *node) {
+    char *n = node;
+    uint32_t prev = FLD(n, 0, uint32_t);
+    if (prev != 0)
+        FLD(gp_ptr(prev), 4, uint32_t) = FLD(n, 4, uint32_t);
+    uint32_t next = FLD(n, 4, uint32_t);
+    if (next != 0)
+        FLD(gp_ptr(next), 0, uint32_t) = FLD(n, 0, uint32_t);
+    FLD(n, 4, uint32_t) = 0;
+    FLD(n, 0, uint32_t) = 0;
+}
+
+/* sead::ListNode::insertFront_ (0010F1DC) inline: list head h {+0 prev?, +4 ..}, node n:
+ *   p = h->+0; h->+0 = n; n->+4 = h; n->+0 = p; if (p) p->+4 = n. */
+static inline void fw_list_insert(void *head, void *node) {
+    char *h = head, *n = node;
+    uint32_t p = FLD(h, 0, uint32_t);
+    FLD(h, 0, uint32_t) = gp_u32(n);
+    FLD(n, 4, uint32_t) = gp_u32(h);
+    FLD(n, 0, uint32_t) = p;
+    if (p != 0)
+        FLD(gp_ptr(p), 4, uint32_t) = gp_u32(n);
+}
+
 #endif

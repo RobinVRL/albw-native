@@ -30,6 +30,9 @@ int func_0025D9E8(uint32_t self_w, int *arg, int name);
 int func_0049D3D8(uint32_t self_w, uint32_t *arg, uint32_t heaps_w);
 int func_004FD464(void *self, uint32_t *arg, uint32_t *param);
 int func_00520FC0(void);
+int func_0049DA04(uint32_t self_w, int *task, uint32_t state);
+int func_0049D4A8(uint32_t self_w, uint32_t *arg);
+int func_004C58F0(uint32_t self_w, int *parent);
 
 /* ---- game data ---- */
 uint32_t data_006D68BC[4], data_006ED880[4], data_006EB32C[32], data_006F6C44[4], data_006F5C98[4];
@@ -135,6 +138,50 @@ static int c9a2c; int func_004F9A2C(void *self, void *name) { c9a2c++; return 0;
 int func_0054DD54(void *p, uint32_t i) { return 1; }
 int func_0054DD3C(void *p, uint32_t i) { return 1; }
 uint32_t func_0054D89C(void *self, uint32_t i) { return o89c; }
+
+
+/* ---- TaskMgr state / createTaskSync stubs ---- */
+uint32_t data_007153D0, data_006F550C[4], data_00712538, data_006F5988[4];
+static int n_append; static uint32_t append_list[8];
+int func_0049D0D8(void *mgr, void *list, void *task) { append_list[n_append++] = gp_u32(list); return 0; }
+static int n_b7e4; int func_0048B7E4(void *p) { n_b7e4++; return 0; }
+static uint32_t msg_args[3]; static uint32_t r_msg = 1;
+static uint32_t thread_msg(void *t, uint32_t m, uint32_t b) { msg_args[0] = gp_u32(t); msg_args[1] = m; msg_args[2] = b; return r_msg; }
+static char vlog[256];
+static uint32_t vt_2c(void *t) { strcat(vlog, "2C "); return 0; }
+static uint32_t vt_34(void *t) { strcat(vlog, "34 "); return 0; }
+static uint32_t vt_44(void *t) { strcat(vlog, "44 "); return 0; }
+static uint32_t vt_48(void *t) { strcat(vlog, "48 "); return 0; }
+static uint32_t vt_28(void *t) { strcat(vlog, "28 "); return 0; }
+static uint32_t task_vt[0x20], thr_vt[8];
+static uint32_t cec8_ha __attribute__((unused));
+int func_0049CEC8(void *mgr, void *ha, void *arg) {
+    uint32_t *h = ha; cec8_ha = gp_u32(ha); h[0] = 0x4EA0; h[1] = 0; h[5] = 0; return 0;
+}
+static int n9c8; static uint32_t c9c8[2];
+int func_0049F9C8(void *task, uint32_t i, uint32_t p) { c9c8[n9c8++ & 1] = (i << 16) | p; return 0; }
+static uint32_t cb_task; static uint32_t create_cb(void *t) { cb_task = gp_u32(t); strcat(vlog, "cb "); return 0; }
+static uint32_t dlg_seen[4]; static int n_dlg;
+static uint32_t dlg_invoke(void *d, void *task) { dlg_seen[n_dlg++] = gp_u32(task); return 0; }
+static uint32_t dlg_vt[2];
+
+/* ---- ActorProfile loader stubs ---- */
+static char a038_names[3][32]; static uint32_t a038_args[3][4]; static int n_a038;
+uint32_t func_004A0038(uint32_t size, uint32_t n, void *name, uint32_t align, void *parent, uint32_t z) {
+    fw_SafeString *s = name; strcpy(a038_names[n_a038], GPTR_TO(char, s->top));
+    a038_args[n_a038][0] = size; a038_args[n_a038][1] = n; a038_args[n_a038][2] = s->vtbl; a038_args[n_a038][3] = z;
+    return 0xA0 + n_a038++;
+}
+static char b954_name[64]; static char *tmp_heap;
+static int tmp_destroyed; static uint32_t tmp_destroy(void *h) { tmp_destroyed++; return 0x77; }
+uint32_t func_0010B954(uint32_t size, void *name, void *parent, int32_t dir, uint32_t z) {
+    strcpy(b954_name, GPTR_TO(char, ((fw_SafeString *)name)->top)); return gp_u32(tmp_heap);
+}
+static uint32_t la_seen[16];
+uint32_t func_001E1228(void *mgr, void *arg, void *z) { memcpy(la_seen, arg, 0x3C); return 0x5E5; }
+uint32_t func_0019B04C(uint32_t i) { return (i == 3 || i == 0x27F) ? 0x1000 * (i + 1) : 0; }
+static int n5004; static uint32_t c5004[3];
+int func_00325004(void *p, uint32_t res, uint32_t heap) { n5004++; c5004[0] = gp_u32(p); c5004[1] = res; c5004[2] = heap; return 0; }
 
 static void test_state(void) {
     char *sm = lowalloc(0x40);
@@ -337,6 +384,89 @@ static void test_enemy(void) {
     CHECK(B(e, 0x8B5) == 0 && B(e, 0x8B8) == 1);
 }
 
+
+static void test_taskstate(void) {
+    char *mgr = lowalloc(0x100), *task = lowalloc(0x100), *thr = lowalloc(0x20), *lst = lowalloc(0x20);
+    task_vt[0x2C / 4] = GPTR_OF((void *)vt_2c); task_vt[0x34 / 4] = GPTR_OF((void *)vt_34);
+    task_vt[0x44 / 4] = GPTR_OF((void *)vt_44); task_vt[0x48 / 4] = GPTR_OF((void *)vt_48);
+    task_vt[0x28 / 4] = GPTR_OF((void *)vt_28);
+    thr_vt[0xC / 4] = GPTR_OF((void *)thread_msg);
+    W(task, 0) = GPTR_OF(task_vt); W(thr, 0) = GPTR_OF(thr_vt);
+    /* 1: from 0 only, appends to +0x2C, sends (1, 1) to the prepare thread */
+    W(mgr, 0x24) = gp_u32(thr); B(task, 0x60) = 0; n_append = 0; log_[0] = 0;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 1) == 1 && B(task, 0x60) == 1);
+    CHECK(append_list[0] == gp_u32(mgr + 0x2C) && msg_args[0] == gp_u32(thr) && msg_args[1] == 1 && msg_args[2] == 1);
+    CHECK(strcmp(log_, "lock unlock ") == 0);
+    r_msg = 0; B(task, 0x60) = 0;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 1) == 0 && B(task, 0x60) == 1);  /* refused, state kept */
+    r_msg = 1;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 1) == 0);                       /* same state */
+    B(task, 0x60) = 2;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 1) == 0 && B(task, 0x60) == 2); /* cur != 0 */
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 8) == 0 && func_0049DA04(gp_u32(mgr), (int *)task, 3) == 0);
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 0) == 0);
+    /* 4: unlink node +0x34 from its list (count--), append to +0x44, 0048B7E4, vt[0x2C] */
+    char *prev = lowalloc(16), *next = lowalloc(16);
+    W(task, 0x34) = gp_u32(prev); W(task, 0x38) = gp_u32(next); W(task, 0x40) = gp_u32(lst); W(lst, 8) = 5;
+    W(prev, 4) = gp_u32(task + 0x34); W(next, 0) = gp_u32(task + 0x34);
+    B(task, 0x60) = 1; n_append = 0; vlog[0] = 0; data_007153D0 = 0x7153; n_b7e4 = 0;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 4) == 1 && B(task, 0x60) == 4);
+    CHECK(W(task, 0x40) == 0 && W(lst, 8) == 4 && W(task, 0x34) == 0 && W(task, 0x38) == 0);
+    CHECK(W(prev, 4) == gp_u32(next) && W(next, 0) == gp_u32(prev));
+    CHECK(append_list[0] == gp_u32(mgr + 0x44) && n_b7e4 == 1 && strcmp(vlog, "2C ") == 0);
+    /* 6 only from 4 */
+    vlog[0] = 0; n_append = 0;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 6) == 1 && B(task, 0x60) == 6 && strcmp(vlog, "44 48 ") == 0);
+    CHECK(append_list[0] == gp_u32(mgr + 0x68));
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 5) == 1 && B(task, 0x60) == 5);
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 6) == 0 && B(task, 0x60) == 5);
+    vlog[0] = 0;
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 7) == 1 && B(task, 0x60) == 7 && strcmp(vlog, "34 ") == 0);
+    CHECK(func_0049DA04(gp_u32(mgr), (int *)task, 2) == 1 && B(task, 0x60) == 2);
+
+    /* createTaskSync */
+    char *arg = lowalloc(0x100), *o = lowalloc(0x60), *dl = lowalloc(8), *out = lowalloc(4);
+    g_task = lowalloc(0x100); memset(g_task, 0, 0x100);
+    W(g_task, 0) = GPTR_OF(task_vt); W(g_task, 0x28) = 0x2828;
+    char *m0 = lowalloc(0x20); W(g_task, 0x44) = gp_u32(m0);
+    data_0079E048 = 2;
+    W(arg, 0) = 2; W(arg, 4) = 0x123; W(arg, 0x5C) = 0; W(arg, 0x7C) = GPTR_OF((void *)create_cb);
+    B(arg, 8 + 0x10) = 0; B(arg, 8 + 0x14 + 0x10) = 1; W(arg, 8 + 0x14 + 0xC) = 0x99;
+    dlg_vt[0] = GPTR_OF((void *)dlg_invoke); W(dl, 0) = GPTR_OF(dlg_vt);
+    W(o, 0x20) = gp_u32(dl); B(o, 0x38) = 0; W(o, 0x1C) = 0; W(o, 0x18) = gp_u32(o); /* node owner */
+    W(arg, 0x70) = gp_u32(o); W(arg, 0x6C) = gp_u32(out);
+    W(mgr, 0x24) = 0; vlog[0] = 0; n9c8 = 0; n_dlg = 0; heap_calls = 0;
+    CHECK(func_0049D4A8(gp_u32(mgr), (uint32_t *)arg) == (int)gp_u32(g_task));
+    CHECK(W(m0, 0x14) == 0x2828 && cb_task == gp_u32(g_task) && B(g_task, 0x60) == 4);
+    CHECK(strcmp(vlog, "cb 28 2C ") == 0);                       /* create cb, prepare, state 4 */
+    CHECK(heap_calls == 4 && heap_args[0] == 0x4EA0 && heap_args[1] == 0x901 && heap_args[2] == 0x4EA0 && heap_args[3] == 0x903); /* createTask_ + prepare */
+    CHECK(n9c8 == 1 && c9c8[0] == ((1u << 16) | 0x99));
+    CHECK(n_dlg == 1 && dlg_seen[0] == gp_u32(g_task));          /* delegate called once */
+    CHECK(B(o, 0x38) == 0 && W(o, 0x1C) == 0 && W(o, 0x10) == 0 && W(o, 0x14) == 0); /* unlinked again */
+    CHECK(W(out, 0) == gp_u32(g_task));
+}
+
+static void test_actorprofile(void) {
+    char *self = lowalloc(0x40), *parent = lowalloc(8);
+    static uint32_t hvt[8]; hvt[0x10 / 4] = GPTR_OF((void *)tmp_destroy);
+    tmp_heap = lowalloc(8); W(tmp_heap, 0) = GPTR_OF(hvt);
+    data_00712538 = 0x2538; n_a038 = 0; n5004 = 0; tmp_destroyed = 0;
+    CHECK(func_004C58F0(gp_u32(self), (int *)parent) == 0x77 && tmp_destroyed == 1);
+    CHECK(W(self, 0x14) == 0xA0 && W(self, 0x20) == 0xA1 && W(self, 0x24) == 0xA2);
+    CHECK(strcmp(a038_names[0], "PlayerUnitHeap") == 0 && a038_args[0][0] == 0x24000 && a038_args[0][1] == 1);
+    CHECK(strcmp(a038_names[1], "SmallUnitHeap") == 0 && a038_args[1][0] == 0x1800 && a038_args[1][1] == 0x78);
+    CHECK(strcmp(a038_names[2], "ActorUnitHeap") == 0 && a038_args[2][0] == 0x8000 && a038_args[2][1] == 0xD8);
+    CHECK(a038_args[0][2] == GPTR_OF(data_006F5988) && a038_args[2][3] == 0);
+    CHECK(memcmp(b954_name, "\x83v\x83\x8d\x83t\x83" "B\x81[\x83\x8b\x83p\x83\x89\x83\x81\x81[\x83^", 23) == 0);
+    /* the load argument: the fix is word 0 (path SafeString vtable) */
+    CHECK(la_seen[0] == GPTR_OF(data_006F5988) && strcmp(GPTR_TO(char, la_seen[1]), "Archive/ActorProfile.szs") == 0);
+    CHECK(la_seen[2] == gp_u32(tmp_heap) && la_seen[3] == gp_u32(tmp_heap) && la_seen[4] == 0x20);
+    for (int i = 5; i <= 10; i++) CHECK(la_seen[i] == 0);
+    CHECK(la_seen[11] == GPTR_OF(data_006F5988) && strcmp(GPTR_TO(char, la_seen[12]), "World") == 0);
+    CHECK(la_seen[13] == 0x01000407u && B(la_seen, 0x38) == 1);
+    CHECK(n5004 == 2 && c5004[0] == 0x280000 + 0x18 && c5004[1] == 0x5E5 && c5004[2] == gp_u32(tmp_heap));
+}
+
 static void run_all(void) {
     test_state();
     test_ctors();
@@ -344,6 +474,8 @@ static void run_all(void) {
     test_se();
     test_accessors();
     test_enemy();
+    test_taskstate();
+    test_actorprofile();
 }
 
 /* The functions keep 32-bit words that point at their own stack frame (00150A84's local
