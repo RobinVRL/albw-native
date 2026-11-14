@@ -18,6 +18,7 @@ extern const uint32_t albw_inits_count;
 
 /* startup chain, in the order the game calls it */
 void func_00100024(void);
+void func_00100E60(void);
 void func_00100C18(void);
 void func_00100C90(void);
 
@@ -32,9 +33,12 @@ int main(int argc, char **argv) {
 
     fprintf(stderr, "startup: runtime init\n");
     func_00100024();  /* zero .bss (decompiled, harmless) */
-    /* 00100BC4 / 00100D84 / 00100E60: armcc C-library start-up (per-thread library state, heap,
-     * stdio). On Linux, libc did all of this before main(); the native replacement is to not run
-     * the 3DS version. */
+    /* 00100BC4 / 00100D84: armcc C-library start-up (per-thread library state, stdio). On Linux,
+     * libc did all of this before main(); the native replacement is to not run the 3DS version. */
+    /* 00100E60: nn startup (nninitStartUp): SetHeapSize(0x60000) (native, sdk/memory.c) and the
+     * nn allocator on a 0x40000 MemoryBlock (00100E78). The framework bootstrap 00100F68 puts
+     * sead's RootHeapMemory right after it (albw_os_heap_address() + 0x40000). */
+    func_00100E60();
     fprintf(stderr, "startup: %u static constructors\n", albw_ctors_count);
     int verbose = getenv("ALBW_TRACE_CTORS") != NULL;
     for (uint32_t i = 0; i < albw_ctors_count; i++) {
