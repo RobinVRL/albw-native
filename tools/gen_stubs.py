@@ -45,10 +45,13 @@ def main():
         if libc_like.match(s) or s in system:
             continue  # provided by the C library / compiler runtime at final link
         if s.startswith(("data_", "DAT_", "_ZTV", "_ZTI", "_ZTS")) or re.match(r"^[a-z]*Ram[0-9a-f]{8}$", s):
-            out.append('__attribute__((aligned(16))) unsigned char stub_data_%d[4096] __asm__("%s");' % (i, s))
+            out.append('__attribute__((aligned(16), visibility("hidden"))) unsigned char stub_data_%d[4096] __asm__("%s");' % (i, s))
             ndat += 1
             continue
-        out.append('void stub_%d(void) __asm__("%s");' % (i, s))
+        # hidden: the binary is linked with -rdynamic, and an exported stub named like a C++
+        # runtime symbol (_ZdlPv, _ZTVN10__cxxabiv1...) would interpose libstdc++ for host
+        # libraries (GL/EGL drivers) loaded at run time
+        out.append('void stub_%d(void) __asm__("%s") __attribute__((visibility("hidden")));' % (i, s))
         out.append('void stub_%d(void) { runtime_fatal("stub %s called from %%p", __builtin_return_address(0)); }'
                    % (i, s.replace('"', '')))
         nfun += 1

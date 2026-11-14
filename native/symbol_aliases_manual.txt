@@ -4,3 +4,7 @@
 # createFn, u32, SafeString&, PtrListBase*, SafeString&, const char*, int); dtor 0019B5EC.
 _ZN7FactoryC1EPFPvvEjRK10SafeStringP11PtrListBaseS5_PKci func_0019B51C
 _ZN7FactoryD1Ev func_0019B5EC
+# operator delete(void*) as called by matched C++ sources = the game's own delete
+# (USA 0058FA08, native in sdk/memory.c). Without it _ZdlPv became an exported tripwire stub
+# that also replaced libstdc++'s operator delete for host libraries (EGL driver crashed).
+_ZdlPv func_0058FA08
