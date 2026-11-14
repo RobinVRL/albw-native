@@ -7,3 +7,12 @@ _Noreturn void runtime_fatal(const char *fmt, ...) __attribute__((format(printf,
 
 /* thread-local SDK block (see intrinsics.c) */
 uintptr_t albw_tls(void);
+
+/* low memory for the x86-64 low-4GB mode (lowmem.c; plain allocations on i386) */
+#include <stddef.h>
+#include <pthread.h>
+void *albw_low_map(size_t size, int prot, int extra_flags);
+void albw_check_low(const void *p, const char *what);
+int albw_thread_create_low(pthread_t *out, const pthread_attr_t *attr, void *(*fn)(void *), void *arg,
+                           size_t stack_size);
+int albw_run_on_low_stack(int (*fn)(void *), void *arg, size_t stack_size);

@@ -22,7 +22,19 @@ void func_00100E60(void);
 void func_00100C18(void);
 void func_00100C90(void);
 
+struct MainArgs { int argc; char **argv; };
+static int game_main(void *p);
+
 int main(int argc, char **argv) {
+    /* x86-64 low-4GB mode: the game runs on a low stack (game code keeps stack addresses in
+     * 32-bit words), same thread; on i386 game_main is called directly (runtime/lowmem.c) */
+    struct MainArgs a = {argc, argv};
+    return albw_run_on_low_stack(game_main, &a, 16u << 20);
+}
+
+static int game_main(void *p) {
+    int argc = ((struct MainArgs *)p)->argc;
+    char **argv = ((struct MainArgs *)p)->argv;
     PlatConfig cfg = {2, 1, 1};
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--scale") && i + 1 < argc) cfg.scale = atoi(argv[++i]);

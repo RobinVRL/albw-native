@@ -518,7 +518,13 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_attr_setstacksize(&attr, 1u << 20);
     pthread_t pt;
+#if defined(__x86_64__)
+    /* low-4GB mode: the stack (game code keeps stack addresses in 32-bit words) and glibc's
+     * static TLS of the thread live in low memory (native/runtime/lowmem.c) */
+    int err = albw_thread_create_low(&pt, &attr, thread_main, o, 1u << 20);
+#else
     int err = pthread_create(&pt, &attr, thread_main, o);
+#endif
     pthread_attr_destroy(&attr);
     if (err) {
         obj_lock();

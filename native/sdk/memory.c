@@ -27,6 +27,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include "../runtime/runtime.h"
+#include "../include/gptr.h"
 
 /* ================================================================== game symbols used here */
 
@@ -37,7 +38,7 @@ typedef struct sead_Heap sead_Heap;
 typedef void *(*sead_HeapAllocFn)(sead_Heap *self, uint32_t size, int32_t alignment);
 typedef void (*sead_HeapFreeFn)(sead_Heap *self, void *p);
 struct sead_Heap {
-    void *const *vtbl;
+    void *const ALBW_GP *ALBW_GP vtbl; /* 4-byte game words (gptr.h) */
 };
 enum { SEAD_HEAP_VSLOT_ALLOC = 0x18 / 4, SEAD_HEAP_VSLOT_FREE = 0x1C / 4 };
 
@@ -111,7 +112,11 @@ static pthread_mutex_t g_os_memory_lock = PTHREAD_MUTEX_INITIALIZER;
 static int32_t region_resize(Region *r, uint32_t size) {
     if (size > APP_MEMORY_SIZE) return RESULT_OUT_OF_MEMORY;
     if (!r->base) {
-        void *p = mmap(NULL, APP_MEMORY_SIZE, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
+        int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE;
+#if defined(__x86_64__)
+        flags |= MAP_32BIT; /* low-4GB mode: game addresses fit 32-bit words (native/64BIT.md) */
+#endif
+        void *p = mmap(NULL, APP_MEMORY_SIZE, PROT_NONE, flags, -1, 0);
         if (p == MAP_FAILED) return RESULT_OUT_OF_MEMORY;
         r->base = p;
     }
