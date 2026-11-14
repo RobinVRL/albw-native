@@ -205,3 +205,60 @@ uint32_t func_003CDDC8(uint16_t *out_coins) {
     *out_coins = 0;
     return 0;
 }
+
+/* USA 003C9E8C (EU 003C9E68) texture conversion to the PICA layout (no source existed):
+ *   Result (u32 fmt, u32 width, u32 height, const void *src, void *dst, u32 *out_pica_format)
+ * fmt 0x64..0x6F = PICA formats 0..11 (RGBA8, RGB8, RGBA5551, RGB565, RGBA4, LA8, HILO8, L8,
+ * A8, LA4, L4, A4) with 32/24/16/16/16/16/16/8/8/8/4/4 bits per pixel; *out = PICA format.
+ * src is linear, top row first, in the conventional byte order; RGBA8 (0x64) words, RGB8
+ * (0x65) triples and LA8 (0x69) halfwords are byte-reversed into the PICA order first. dst
+ * gets the PICA tiled layout: 8x8 tiles, Morton order inside a tile, rows flipped (PICA
+ * row 0 = bottom). src == dst is allowed (temporary copy). width/height must be multiples
+ * of 8 (and non-zero), src/dst/out non-NULL, else 0xE0E1300A / 0xE0E13002 / 0xE0E1300C.
+ * Rewritten from the EU disassembly (the original allocates its temporaries through the
+ * allocator hooks at 0x00714820/24; natively malloc). Confidence: high (8/16/24/32 bpp),
+ * medium (4 bpp nibble order: low nibble = even pixel). */
+#include <stdlib.h>
+static uint32_t morton8(uint32_t x, uint32_t y) {
+    uint32_t o = 0;
+    for (int i = 0; i < 3; i++) o |= (((x >> i) & 1) | (((y >> i) & 1) << 1)) << (2 * i);
+    return o;
+}
+uint32_t func_003C9E8C(uint32_t fmt, uint32_t w, uint32_t h, const uint8_t *src, uint8_t *dst,
+                       uint32_t *out_format) {
+    static const uint8_t bits[12] = {32, 24, 16, 16, 16, 16, 16, 8, 8, 8, 4, 4};
+    if (!src || !dst) return 0xE0E13002u;
+    if (w == 0 || h == 0 || (w & 7) || (h & 7)) return 0xE0E1300Au;
+    if (fmt < 0x64 || fmt >= 0x70) return 0xE0E1300Cu;
+    uint32_t f = fmt - 0x64, bpp = bits[f];
+    if (out_format) *out_format = f;
+    size_t bytes = (size_t)w * h * bpp / 8;
+    uint8_t *in = malloc(bytes), *out = malloc(bytes);
+    if (!in || !out) { free(in); free(out); return 0xD8613004u; }
+    memcpy(in, src, bytes);
+    size_t n = (size_t)w * h;
+    if (fmt == 0x64)
+        for (size_t i = 0; i < n; i++) { uint8_t *p = in + 4 * i, t; t = p[0]; p[0] = p[3]; p[3] = t; t = p[1]; p[1] = p[2]; p[2] = t; }
+    else if (fmt == 0x65)
+        for (size_t i = 0; i < n; i++) { uint8_t *p = in + 3 * i, t = p[0]; p[0] = p[2]; p[2] = t; }
+    else if (fmt == 0x69)
+        for (size_t i = 0; i < n; i++) { uint8_t *p = in + 2 * i, t = p[0]; p[0] = p[1]; p[1] = t; }
+    memset(out, 0, bytes);
+    for (uint32_t y = 0; y < h; y++) {
+        uint32_t fy = h - 1 - y;
+        for (uint32_t x = 0; x < w; x++) {
+            uint32_t si = y * w + x;
+            uint32_t di = ((fy >> 3) * (w >> 3) + (x >> 3)) * 64 + morton8(x, fy);
+            if (bpp == 4) {
+                uint8_t v = (in[si / 2] >> (4 * (si & 1))) & 0xF;
+                out[di / 2] |= (uint8_t)(v << (4 * (di & 1)));
+            } else {
+                memcpy(out + (size_t)di * (bpp / 8), in + (size_t)si * (bpp / 8), bpp / 8);
+            }
+        }
+    }
+    memcpy(dst, out, bytes);
+    free(in);
+    free(out);
+    return 0;
+}
