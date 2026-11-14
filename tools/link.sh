@@ -78,4 +78,13 @@ NATIVE+=($B/native/thunks.o)
 python3 tools/gen_stubs.py $B/albw_game.o "${NATIVE[@]}" > $B/stubs.c
 clang "${CFLAGS[@]}" -w -c $B/stubs.c -o $B/native/stubs.o
 clang -m32 -no-pie -o $B/albw "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -rdynamic
+# i386 only: float results come back in x87 st(0); direct calls that ignore one (void/int
+# prototype of a float-returning function) would leak x87 slots until every float is NaN.
+# Relink with pop adapters and redirect those call sites (tools/x87check.py; ALBW_X87FIX=0: off)
+if [[ "${ALBW_X87FIX:-1}" != 0 ]]; then
+    python3 tools/x87check.py --thunks $B/albw > $B/x87pop.s 2>/dev/null
+    clang --target=i686-linux-gnu -c $B/x87pop.s -o $B/native/x87pop.o
+    clang -m32 -no-pie -o $B/albw "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -rdynamic
+    python3 tools/x87check.py --patch $B/albw
+fi
 echo "linked $B/albw ($(du -h $B/albw | cut -f1))"
