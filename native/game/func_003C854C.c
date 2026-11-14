@@ -63,7 +63,7 @@ static uint32_t lookup(const uint8_t *arch, int dir, uint32_t parent, const uint
     if (!buckets)
         return EMPTY;
     uint32_t off = U32(hash, 4 * (name_hash(parent, s, n) % buckets));
-    uint32_t next_at = dir ? 0x10 : 0x1C, name_at = dir ? 0x18 : 0x20;
+    uint32_t next_at = dir ? 0x10 : 0x18, name_at = dir ? 0x18 : 0x20;   /* hash-chain link; file entry: +0x18 (+0x1C is the name length) */
     while (off != EMPTY && off + name_at <= msize) {
         const uint8_t *e = meta + off;
         if (U32(e, 0) == parent && name_eq(e + name_at, U32(e, name_at - 4), s, n))

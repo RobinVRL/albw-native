@@ -117,10 +117,12 @@ def main():
     ap.add_argument("--map", help="eu_usa_map.json when --code is the EU build")
     ap.add_argument("--decomp", default=os.path.join(ROOT, "..", "albw-decomp-ai"))
     ap.add_argument("--extra", help="file with more symbol names to define (from native objects)")
+    ap.add_argument("--addr-taken", help="file with the DAT_ names the sources use as &DAT_ (address)")
     ap.add_argument("--report", default=os.path.join(ROOT, "build", "decomp", "report.json"))
     ap.add_argument("--out", default=os.path.join(ROOT, "build", "data", "gamedata.s"))
     a = ap.parse_args()
     code = open(a.code, "rb").read()
+    addr_taken = set(open(a.addr_taken).read().split()) if a.addr_taken else set()
     rd = lambda addr: struct.unpack_from("<I", code, addr - TEXT)[0]
     text_end = TEXT + (RO - TEXT)
 
@@ -217,7 +219,10 @@ def main():
                 w = word(addr, rd(addr))
                 o = addr - TEXT
                 e = code.find(b"\0", o, o + 256)
-                if w.startswith(".long 0x") and e - o >= 2 and all(0x20 <= b < 0x7F for b in code[o:e]):
+                # (a short string used through its address, "any\0" = 0x00796E61, also looks like
+                # a pointer into .bss: the sources taking &DAT_ decide it is the string)
+                if (w.startswith(".long 0x") or sym in addr_taken) and e - o >= 2 and \
+                        all(0x20 <= b < 0x7F for b in code[o:e]):
                     # a string stored among the code, used through its address (`&DAT_001b9364`
                     # = "%s_f%s_b"): emit the whole string (its first word is unchanged)
                     raw = code[o:e + 1]

@@ -33,7 +33,9 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
 done
 # data symbols the native code uses get defined by the data generator too
 llvm-nm -u --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_syms.txt
-python3 tools/gen_data.py --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
+grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp/ghidra_fallback native/game native/robust native/gameplay native/sdk \
+    | sed 's/^&//' | sort -u > $B/addr_taken_pool.txt
+python3 tools/gen_data.py --addr-taken $B/addr_taken_pool.txt --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
     --map ../albw-decomp-ai/shared/eu_usa_map.json --extra $B/native_syms.txt >/dev/null
 clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o
 # exactly the objects of the current source selection (stale ones from older selections excluded)
