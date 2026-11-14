@@ -171,6 +171,10 @@ RE_DECLARED_HERE = re.compile(r"note: '(\w+)' declared here")
 SIG_OVERRIDES = {
     "func_0010E74C": "void *func_0010E74C(uint *param_1,uint *param_2,uint param_3)",
     "func_0065E398": "void func_0065E398(undefined4 *param_1,undefined1 param_2)",
+    # __aeabi_uidivmod / __aeabi_idivmod: quotient in r0, remainder in r1 (`x >> 0x20`); typed
+    # int, the remainder was lost on i386 (message-queue ring indices 0 / -1)
+    "func_00110710": "ulonglong func_00110710(uint param_1,uint param_2)",
+    "func_001104E4": "longlong func_001104E4(int param_1,int param_2)",
 }
 # Ghidra writes `fX = func_0010E74C(...)` where s0 merely survived memmove: drop the assignment
 RE_MEMMOVE_FLOAT = re.compile(r"\b\w+ = (func_0010E74C\()")
