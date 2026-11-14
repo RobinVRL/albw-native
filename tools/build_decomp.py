@@ -39,7 +39,13 @@ RE_REG_PIN = re.compile(r"__asm\s*\(\s*\"r\d+\"\s*\)")
 RE_HEX_E = re.compile(r"(0[xX][0-9a-fA-F]*[eE])([+-])")
 
 
+RE_GARBLED_RETURN = re.compile(r"#define (\w+) \(\*\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
+
+
 def rewrite(text):
+    # the stack-layout pass of the converter turns `return local_c;` into a bogus macro
+    # `#define local_c (*(return *)(albw_frame + K))` (21 functions): restore the return
+    text = RE_GARBLED_RETURN.sub(r"return \1;", text)
     text = RE_TLS.sub(r"\1 = albw_tls();", text)
     text = RE_ASM_BLOCK.sub("", text)
     text = RE_REG_PIN.sub("", text)
