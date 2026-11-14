@@ -115,9 +115,7 @@ def run(insns, proven):
                 for r in (0, 1, 2, 3, 12):
                     regs.pop(r, None)
                 if tgt in proven and r0 is not None and not cond:
-                    regs[0] = r0
-                elif cond:
-                    return False
+                    regs[0] = r0  # (a conditional call leaves r0-r3/ip unknown)
                 idx += 1
                 continue
             # writes to pc other than the patterns above
