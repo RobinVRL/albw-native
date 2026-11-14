@@ -1,0 +1,121 @@
+/* compilefix: USA 00408C50 (EU 00408C30), Ghidra-derived (build/ghidra_analyzed4).
+ * Failed to compile: operand of type 'float' cannot be cast to a pointer type
+ * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
+ *  - (T *)<float expr> -> (T *)CF_FBITS(expr): 32-bit copy of the float (vmov/vstr), never a conversion [2]
+ *  - explicit (T)(uintptr_t) casts at int<->pointer mismatches (identity on the 32-bit ARM) [1]
+ * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
+ * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
+ * functions retyped non-void return 0, as the converter does). */
+#include "ghidra_types.h"
+#include "compilefix.h"
+
+extern int func_004098FC(undefined4 param_1,int param_2,undefined4 param_3,float *param_4,float fparam_0);
+extern int func_00409940(int param_1,int param_2,int param_3,float *param_4,int *param_5,float fparam_0);
+extern int func_00409A00(int param_1,float *param_2,float *param_3,int param_4,float *param_5,float *param_6);
+extern int func_00409A64(int param_1,int param_2,int param_3,float *param_4,float *param_5,float fparam_0);
+extern float DAT_00408e1c;
+
+// USA 00408C50 <- EU 00408C30 (Ghidra, non-matching)
+// PARAM param_4 Stack[0x0]:4 uint
+// PARAM param_5 Stack[0x4]:4 float *
+// GLOBAL DAT_00408e1c float
+
+void func_00408C50(int param_1,int param_2,float *param_3,uint param_4,float *param_5)
+
+{
+  _Alignas(8) unsigned char albw_frame[0x70]; /* entry_sp - 0x60 .. entry_sp + 0x10 */
+#define stack0xffffffa0 (*(undefined4 *)(albw_frame + 0x0))
+#define stack0xffffffa4 (*(undefined4 *)(albw_frame + 0x4))
+  __builtin_memcpy(albw_frame + 0x60, &param_4, 4);
+  __builtin_memcpy(albw_frame + 0x64, &param_5, 4);
+#define param_4 (*(uint *)(albw_frame + 0x60))
+#define param_5 (*(float * *)(albw_frame + 0x64))
+  float *pfVar1;
+  int *piVar2;
+  float *pfVar3;
+  ulonglong uVar4;
+  float fVar5;
+  float *in_stack_ffffffa0;
+  float *in_stack_ffffffa4;
+  #define local_54 ((float *)(albw_frame + 0xc))
+  #define local_48 (*(float *)(albw_frame + 0x18))
+  #define local_44 (*(float *)(albw_frame + 0x1c))
+  #define local_40 (*(float *)(albw_frame + 0x20))
+  #define local_38 (*(float *)(albw_frame + 0x28))
+  #define local_34 ((float *)(albw_frame + 0x2c))
+  fVar5 = DAT_00408e1c;
+  uVar4 = (ulonglong)(uint)ALBW_AS_U32(DAT_00408e1c);
+  if ((param_4 & 1) != 0) {
+    *param_5 = DAT_00408e1c;
+  }
+  if ((param_4 & 2) != 0) {
+    param_5[8] = ALBW_AS_F32(-*(int *)(param_2 + 0x1c));
+  }
+  if ((param_4 & 0x10) != 0) {
+    param_5[6] = fVar5;
+  }
+  if (1 < *(uint *)(param_2 + 0xc)) {
+    param_4 = param_4 & 0xffffffd3;
+  }
+  piVar2 = *(int **)(param_2 + 0x10);
+  if (piVar2 != (int *)(param_2 + 0x10)) {
+    do {
+      pfVar3 = (float *)(piVar2 + -0x19);
+      fVar5 = ALBW_AS_F32(uVar4);
+      if ((param_4 & 0x33) != 0) {
+        local_48 = *param_3 - ALBW_AS_F32(piVar2[-0xd]);
+        local_44 = param_3[1] - ALBW_AS_F32(piVar2[-0xc]);
+        local_40 = param_3[2] - ALBW_AS_F32(piVar2[-0xb]);
+        fVar5 = SQRT(local_48 * local_48 + local_44 * local_44 + local_40 * local_40);
+      }
+      uVar4 = CONCAT44(fVar5,ALBW_AS_F32(uVar4));
+      if ((param_4 & 3) != 0) {
+        in_stack_ffffffa0 = (float *)&stack0xffffffa4;
+        func_00409940(param_2,(int)pfVar3,(int)param_3,&local_38,(int *)in_stack_ffffffa0,fVar5);
+        if ((param_4 & 1) != 0) {
+          fVar5 = *param_5;
+          if (*param_5 <= local_38) {
+            fVar5 = local_38;
+          }
+          *param_5 = fVar5;
+        }
+        if ((param_4 & 2) != 0) {
+          pfVar1 = (float *)CF_FBITS(param_5[8]);
+          if ((int)param_5[8] <= (int)in_stack_ffffffa4) {
+            pfVar1 = in_stack_ffffffa4;
+          }
+          param_5[8] = ALBW_AS_F32(pfVar1);
+        }
+      }
+      if ((param_4 & 0xc) != 0) {
+        in_stack_ffffffa4 = &local_38;
+        in_stack_ffffffa0 = local_54;
+        func_00409A00(param_2,pfVar3,param_3,param_1 + 4,in_stack_ffffffa0,in_stack_ffffffa4);
+        if ((param_4 & 4) != 0) {
+          param_5[2] = local_54[0];
+        }
+        if ((param_4 & 8) != 0) {
+          param_5[3] = local_38;
+        }
+      }
+      if ((param_4 & 0x20) != 0) {
+        in_stack_ffffffa0 = local_34;
+        func_00409A64(param_2,(int)pfVar3,(int)param_3,&local_48,in_stack_ffffffa0,
+                      ALBW_AS_F32((uVar4 >> 0x20)));
+        param_5[1] = local_34[0];
+      }
+      if ((param_4 & 0x10) != 0) {
+        func_004098FC(param_2,(int)pfVar3,(undefined4)(uintptr_t)(param_3),(float *)&stack0xffffffa0,ALBW_AS_F32((uVar4 >> 0x20)));
+        param_5[7] = *(float *)(param_2 + 0x28);
+        pfVar3 = in_stack_ffffffa0;
+        if (ALBW_AS_F32(in_stack_ffffffa0) < param_5[6]) {
+          pfVar3 = (float *)CF_FBITS(param_5[6]);
+        }
+        param_5[6] = ALBW_AS_F32(pfVar3);
+      }
+      piVar2 = (int *)*piVar2;
+    } while (piVar2 != (int *)(param_2 + 0x10));
+  }
+  return;
+}
+

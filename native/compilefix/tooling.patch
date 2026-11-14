@@ -1,0 +1,235 @@
+diff -ruN a/albw-decomp-ai/shared/include/ghidra_types.h b/albw-decomp-ai/shared/include/ghidra_types.h
+--- a/albw-decomp-ai/shared/include/ghidra_types.h	2026-11-14 15:56:09.390288021 -0500
++++ b/albw-decomp-ai/shared/include/ghidra_types.h	2026-11-14 15:56:51.436918127 -0500
+@@ -172,4 +172,22 @@
+     default: (uint64_t)(x))
+ #endif
+ 
++#ifndef __cplusplus
++/* compilefix classes (native/compilefix/README.md), proposed for the converter output: */
++/* (T *)<float expr>: a register/slot copy of the 32 bits, never a conversion */
++#define ALBW_PTR_BITS(x) _Generic((x), \
++    float: (uintptr_t)albw_bits_u32(_Generic((x), float: (x), default: 0.0f)), \
++    default: (x))
++/* X._0_3_ = v: the 3 low bytes (strh + strb) */
++static inline void albw_set3(void *p, uint32_t v)
++{ unsigned char *b = (unsigned char *)p; b[0] = (unsigned char)v; b[1] = (unsigned char)(v >> 8); b[2] = (unsigned char)(v >> 16); }
++#define SUB43(x, n) ((uint32_t)(x) >> ((n) * 8) & 0xFFFFFFu)
++/* NAN(x) = unordered compare; INFINITY = +inf; the NaN constants Ghidra prints as NAN / -NAN are
++ * the words 0x7FFFFFFF / 0xFFFFFFFF in this game (mvn rX,#0x80000000 / mvn rX,#0) */
++#define NAN(x) __builtin_isnan(x)
++#define INFINITY __builtin_inff()
++#define ALBW_NAN_POS albw_bits_f32(0x7FFFFFFFu)
++#define ALBW_NAN_NEG albw_bits_f32(0xFFFFFFFFu)
++#endif
++
+ #endif
+diff -ruN a/albw-decomp-ai/tools/import_ghidra.py b/albw-decomp-ai/tools/import_ghidra.py
+--- a/albw-decomp-ai/tools/import_ghidra.py	2026-11-14 15:56:09.384643871 -0500
++++ b/albw-decomp-ai/tools/import_ghidra.py	2026-11-14 15:57:01.385407560 -0500
+@@ -177,7 +177,7 @@
+     return "%s %s" % (ctype, name)
+ 
+ 
+-PIECE = re.compile(r"\b([A-Za-z_]\w*)\._(\d+)_(\d+)_")
++PIECE = re.compile(r"\b([A-Za-z_]\w*(?:\[[^\[\]]+\])?)\._(\d+)_(\d+)_")  # also arr[i]._O_S_ (22 failures)
+ 
+ 
+ def piece(m):
+@@ -307,7 +307,48 @@
+ PTR_LABEL = re.compile(r"\bPTR_[A-Za-z]\w*?_([0-9a-f]{8})\b")
+ 
+ 
++# ---------------------------------------------------------------- compile fixes (ALBW_CONVERT_CF=1)
++# Classes from native/compilefix/README.md in the port (run-3 build: 283 failures).
++SET3 = re.compile(r"\b([A-Za-z_]\w*(?:\[[^\[\]]+\])?)\._(\d+)_3_ = ([^;]*);")  # raw Ghidra X._O_3_ = v;
++BAD_LABEL = re.compile(r"\bs_[^\s;,()\[\]]*?_([0-9a-f]{8})(?:\._(\d+)_(\d+)_)?(?:\s*\+\s*(0x[0-9a-f]+|\d+))?")
++BADSB = re.compile(r"\(\(int\)\(BADSPACEBASE \*\)0x0 \+ (0x[0-9a-f]+)\)(?:\s*\+\s*(0x[0-9a-f]+|\d+))?")
++
++
++def cf_enabled():
++    return os.environ.get("ALBW_CONVERT_CF") == "1"
++
++
++def compile_fixes(text):
++    """Exact C forms for constructs C rejects (each checked against the ARM, see the port's
++    native/compilefix/README.md): string labels with punctuation and BADSPACEBASE-relative code
++    addresses -> s_cf_<address> (44 + 22 failures), 3-byte stores (5), Ghidra's 4-byte view
++    _local_XX of a frame slot (18), -NAN / NAN constants (19 with NAN(x) in ghidra_types.h)."""
++    def label(m):
++        if re.fullmatch(r"s_\w+_[0-9a-f]{8}", re.split(r"[.+ ]", m.group(0))[0]):
++            return m.group(0)  # a valid identifier: leave it to the declaration pass
++        a = int(m.group(1), 16)
++        if m.group(2):
++            ea, size = a + int(m.group(2)), int(m.group(3))
++            if size == 4 and ea % 4 == 0:
++                return "DAT_%08x" % ea  # a literal-pool word Ghidra merged into a string
++            return "(*(undefined%d *)(s_cf_%08x + %d))" % (size, a, int(m.group(2)))
++        return "s_cf_%08x" % (a + (int(m.group(4), 0) if m.group(4) else 0))
++    text = re.sub(r"^// GLOBAL s_\S*[<>?\t]\S* string\n", "", text, flags=re.M)
++    text = BAD_LABEL.sub(label, text)
++    text = BADSB.sub(lambda m: "((int)s_cf_%08x)" % (int(m.group(1), 16) + (int(m.group(2), 0) if m.group(2) else 0)), text)
++    text = SET3.sub(r"albw_set3((char *)&\1 + \2, \3);", text)
++    for v in set(re.findall(r"\b_(local_[0-9a-f]+)\b", text)):
++        if re.search(r"\b%s\b" % v, text.replace("_" + v, "")):
++            text = re.sub(r"\b_%s\b" % v, "(*(undefined4 *)&%s)" % v, text)
++    text = re.sub(r"-NAN\b(?!\s*\()", "ALBW_NAN_NEG", text)
++    text = re.sub(r"\bNAN\b(?!\s*\()", "ALBW_NAN_POS", text)
++    text = re.sub(r"\bcase \([\w ]+\*+\)(0x[0-9a-f]+|\d+):", r"case \1:", text)  # switch on a pointer (8)
++    return text
++
++
+ def convert(text, addr, sigs=None):
++    if cf_enabled():
++        text = compile_fixes(text)
+     if v2_enabled():
+         text = bits_casts(text)
+         # PTR_DAT_<addr> / PTR_s_..._<addr>: Ghidra's label of the pointer word at <addr> (a
+@@ -335,7 +376,7 @@
+         decl.append(("extern undefined4 *%s;" if deref else "extern undefined4 %s;") % name)
+     # full-analysis labels: strings (s_<text>_<addr>, u_..._<addr>) and absolute data (_DAT_<addr>)
+     for name in sorted(set(re.findall(r"\b[su]_\w*?_[0-9a-f]{8}\b", text))):
+-        decl.append("extern char %s[];" % name)
++        decl.append("extern char %s[];" % name)  # (s_cf_<addr> included: gen_data LABEL_NAME)
+     for name in sorted(set(re.findall(r"\b_DAT_[0-9a-f]{8}\b", text))):
+         deref = re.search(r"\*%s\b|\b%s\s*\[" % (name, name), text)  # unary * only ("a * b" is multiply)
+         decl.append(("extern undefined4 *%s;" if deref else "extern undefined4 %s;") % name)
+Binary files a/albw-decomp-ai/tools/__pycache__/import_ghidra.cpython-314.pyc and b/albw-decomp-ai/tools/__pycache__/import_ghidra.cpython-314.pyc differ
+diff -ruN a/albw-port/tools/build_decomp.py b/albw-port/tools/build_decomp.py
+--- a/albw-port/tools/build_decomp.py	2026-11-14 15:56:09.377914745 -0500
++++ b/albw-port/tools/build_decomp.py	2026-11-14 15:56:51.437426230 -0500
+@@ -83,6 +83,90 @@
+ 
+ 
+ RE_ARGCOUNT = re.compile(r"too (?:many|few) arguments to function call")
++RE_CF_ERR = re.compile(r"operand of type 'float' cannot be cast to a pointer type|pointer cannot be cast to type 'float'|"
++                       r"statement requires expression of integer type \('[^']*\*'")
++RE_DIAG = re.compile(r"^(.+?):(\d+):(\d+):((?:\{\d+:\d+-\d+:\d+\})*):?\s*(error|warning): (.*)$", re.M)
++
++
++def _cf_operand(text, i):
++    """(start, end) of the unary expression at text[i] (import_ghidra._operand)."""
++    import importlib
++    ig = importlib.import_module("import_ghidra")
++    return ig._operand(text, i)
++
++
++def cf_error_rewrite(text, stderr):
++    lines = text.split("\n")
++    starts = [0]
++    for ln in lines:
++        starts.append(starts[-1] + len(ln) + 1)
++    edits = []
++    for m in RE_DIAG.finditer(stderr):
++        if m.group(5) != "error":
++            continue
++        i = starts[int(m.group(2)) - 1] + int(m.group(3)) - 1
++        msg = m.group(6)
++        if msg.startswith("operand of type 'float' cannot be cast"):
++            r = _cf_operand(text, i)
++            if r:
++                edits.append((r[0], r[1], "ALBW_PTR_BITS(", ")"))
++        elif msg.startswith("pointer cannot be cast to type 'float'"):
++            j = i - len("(float)") if text[:i].endswith("(float)") else i
++            if text.startswith("(float)", j):
++                r = _cf_operand(text, j + len("(float)"))
++                if r:
++                    edits.append((j, r[1], "ALBW_AS_F32(", ")", r[0]))
++        elif msg.startswith("statement requires expression of integer type"):
++            k = text.find("(", i)
++            e = _cf_operand(text, k)
++            if e:
++                edits.append((e[0], e[1], "(int)(uintptr_t)", ""))
++    edits.sort(key=lambda e: e[0], reverse=True)
++    last = None
++    for e in edits:
++        if last is not None and e[1] > last:
++            continue
++        a, b, pre, suf = e[:4]
++        body = text[e[4]:b] if len(e) == 5 else text[a:b]
++        text = text[:a] + pre + body + suf + text[b:]
++        last = a
++    return text
++
++
++def fconv_rewrite(text, stderr, src):
++    """Wrap the converted expression of each -Wfloat-conversion / -Wimplicit-int-float-conversion
++    warning in a bit copy (warnings inside the ALBW_AS_* macro bodies are skipped)."""
++    lines = text.split("\n")
++    starts = [0]
++    for ln in lines:
++        starts.append(starts[-1] + len(ln) + 1)
++    out = stderr.splitlines()
++    edits = []
++    for n, l in enumerate(out):
++        m = RE_DIAG.match(l)
++        if not m or m.group(5) != "warning" or not os.path.samefile(m.group(1), src):
++            continue
++        rng = re.findall(r"\{(\d+):(\d+)-(\d+):(\d+)\}", m.group(4))
++        if not rng:
++            continue
++        nxt = out[n + 1] if n + 1 < len(out) else ""
++        col = int(m.group(3)) - 1
++        if re.search(r"expanded from macro '(ALBW_AS|albw)", nxt) and not lines[int(m.group(2)) - 1][col:].startswith("ALBW_AS_"):
++            continue
++        msg = m.group(6)
++        w = "ALBW_AS_U32(" if "floating-point number into integer: 'float'" in msg else \
++            "ALBW_AS_F32(" if "to 'float' may lose precision" in msg else None
++        if w:
++            l1, c1, l2, c2 = map(int, rng[0])
++            edits.append((starts[l1 - 1] + c1 - 1, starts[l2 - 1] + c2 - 1, w))
++    edits.sort(reverse=True)
++    last = None
++    for a, b, w in edits:
++        if last is not None and b > last:
++            continue
++        text = text[:a] + w + text[a:b] + ")" + text[b:]
++        last = a
++    return text
+ RE_DECLARED_HERE = re.compile(r"note: '(\w+)' declared here")
+ SIG_OVERRIDES = {
+     "func_0010E74C": "void *func_0010E74C(uint *param_1,uint *param_2,uint param_3)",
+@@ -407,6 +491,31 @@
+             with open(src, "w") as fh:
+                 fh.write(new_text)
+             r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
++        for _ in range(8):
++            # error-driven exact rewrites (native/compilefix/README.md): (T *)<float> -> bit copy
++            # (97 failures + 12 more hidden behind other errors); (float)<pointer> -> bit copy;
++            # switch on a pointer-typed variable (8)
++            if not r.returncode or not RE_CF_ERR.search(r.stderr):
++                break
++            text = open(src).read()
++            new_text = cf_error_rewrite(text, r.stderr)
++            if new_text == text:
++                break
++            with open(src, "w") as fh:
++                fh.write(new_text)
++            r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
++        if not r.returncode and not cpp and os.environ.get("ALBW_FCONV") == "1" and "/ghidra_fallback/" in src:
++            # implicit float<->int conversions are Ghidra COPYs between a float and an int-typed
++            # variable / pool word: make them bit copies (whole build: 1647 sites in 471 files)
++            text = open(src).read()
++            w = subprocess.run(cmd + ["-fsyntax-only", "-Wno-everything", "-Wfloat-conversion",
++                                      "-Wimplicit-int-float-conversion", "-fdiagnostics-print-source-range-info",
++                                      "-fno-caret-diagnostics", src], capture_output=True, text=True).stderr
++            new_text = fconv_rewrite(text, w, src)
++            if new_text != text:
++                with open(src, "w") as fh:
++                    fh.write(new_text)
++                r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
+         if r.returncode:
+             err = next((l for l in r.stderr.splitlines() if "error:" in l or "error in backend" in l), r.stderr[:200])
+             return {"path": path, "addrs": addrs, "ok": False, "error": err.split("error:", 1)[-1].strip()}
+@@ -572,7 +681,10 @@
+         if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
+             os.makedirs(os.path.dirname(dst), exist_ok=True)
+             text = open(raw, encoding="utf-8", errors="replace").read()
+-            text = rewrite(eu_fun_to_usa(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(text, addr, sigs)))), addr, sigs)))
++            # FUN_<EU> -> func_<USA> *before* convert(): convert() declares the callees it sees,
++            # so a callee still spelled FUN_ was called through an implicit `int f()` (float
++            # arguments promoted to double). 1054 Ghidra sources call a FUN_ name; 6 failures.
++            text = rewrite(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(eu_fun_to_usa(text), addr, sigs)))), addr, sigs))
+             if ARCH64:
+                 text = ptr32_rewrite(text)
+             with open(dst, "w") as fh:
