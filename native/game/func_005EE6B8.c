@@ -19,7 +19,7 @@ extern uint32_t data_00785AB8;
 extern uint32_t data_00785ABC;
 extern uint32_t data_00785AC0;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006092E8(void);
 
 
@@ -40,10 +40,10 @@ void func_005EE6B8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjEventStoneBeauty";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Cxgp·×·×Î";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203C\203x\203\223\203g\227p\202\267\202\327\202\267\202\327\220\316";
     data_0070F440 = ret0;
     data_00785850 = 0x00000000u;
     data_00785854 = 0x00000005u;
     data_00785858 = (uintptr_t)&data_0078585C;
-    func_0019B51C((uintptr_t)&data_00785870, (uintptr_t)&func_006092E8, 0x0000007Eu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00785870, (uintptr_t)&func_006092E8, 0x0000007Eu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00785850, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

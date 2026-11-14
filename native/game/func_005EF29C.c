@@ -1,0 +1,35 @@
+/* USA 005EF29C (EU 005EF274): static initialiser, decompiled by tools/decomp_initializer.py.
+ * 1 sead::SafeString name tables (4 names), 4 other stores, 1 calls. */
+#include <stdint.h>
+#include "sead.h"
+
+extern uint32_t data_006F5988;  /* sead::SafeString vtable */
+extern uint32_t data_007134B8;
+extern uint32_t data_007134BC;
+extern uint32_t data_007134C0;
+extern uint32_t data_007134C4;
+extern uint32_t data_0079BA94;
+void func_005902C0(void);
+
+static const char *const names_0079BA94[4] = {
+    "N_ArrowT_00",
+    "N_ArrowB_00",
+    "N_ArrowL_00",
+    "N_ArrowR_00",
+};
+
+static void fill_names(sead_SafeString *t, const char *const *names, int n) {
+    for (int i = 0; i < n; i++) {
+        t[i].vtbl = &data_006F5988;
+        t[i].mStringTop = names[i];
+    }
+}
+
+void func_005EF29C(void) {
+    fill_names((sead_SafeString *)&data_0079BA94, names_0079BA94, 4);
+    data_007134B8 = 0xFFFFFFFFu;
+    data_007134BC = 0xFFFFFFFFu;
+    data_007134C0 = 0x00000000u;
+    data_007134C4 = 0x00000000u;
+    func_005902C0();
+}

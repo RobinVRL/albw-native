@@ -95,241 +95,241 @@ static const char *const names_0070C4CC[1] = {
     "00",
 };
 static const char *const names_0070C4D8[1] = {
-    "00FXtB[hiåj",
+    "00\201F\220X\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C4E4[1] = {
     "02",
 };
 static const char *const names_0070C4F0[1] = {
-    "02FLR³ñÌÆ",
+    "02\201F\203L\203R\203\212\202\263\202\361\202\314\211\306",
 };
 static const char *const names_0070C4FC[1] = {
     "03",
 };
 static const char *const names_0070C508[1] = {
-    "03FwÌtB[hiåj",
+    "03\201F\203w\203\211\202\314\223\203\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C514[1] = {
     "05",
 };
 static const char *const names_0070C520[1] = {
-    "05FÖuRtB[hiåj",
+    "05\201F\202\326\203u\203\211\216R\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C52C[1] = {
     "07",
 };
 static const char *const names_0070C538[1] = {
-    "07FJCüû",
+    "07\201F\203J\203\201\203C\203\217\223\374\214\373",
 };
 static const char *const names_0070C544[1] = {
     "0A",
 };
 static const char *const names_0070C550[1] = {
-    "0AFRÖÌüèû",
+    "0A\201F\216R\202\326\202\314\223\374\202\350\214\373",
 };
 static const char *const names_0070C55C[1] = {
     "0F",
 };
 static const char *const names_0070C568[1] = {
-    "0FFè¢ÌêO",
+    "0F\201F\212\350\202\242\202\314\221\352\221O",
 };
 static const char *const names_0070C574[1] = {
     "10",
 };
 static const char *const names_0070C580[1] = {
-    "10FXÖÌ¹",
+    "10\201F\220X\202\326\202\314\223\271",
 };
 static const char *const names_0070C58C[1] = {
     "11",
 };
 static const char *const names_0070C598[1] = {
-    "11FXÌè¢®O",
+    "11\201F\220X\202\314\220\350\202\242\211\256\221O",
 };
 static const char *const names_0070C5A4[1] = {
     "12",
 };
 static const char *const names_0070C5B0[1] = {
-    "12FXÌr",
+    "12\201F\220X\202\314\222r",
 };
 static const char *const names_0070C5BC[1] = {
     "13",
 };
 static const char *const names_0070C5C8[1] = {
-    "13F³ïO",
+    "13\201F\213\263\211\357\221O",
 };
 static const char *const names_0070C5D4[1] = {
     "14",
 };
 static const char *const names_0070C5E0[1] = {
-    "14Fæê",
+    "14\201F\225\346\217\352",
 };
 static const char *const names_0070C5EC[1] = {
     "15",
 };
 static const char *const names_0070C5F8[1] = {
-    "15FìÌÈªèp",
+    "15\201F\220\354\202\314\213\310\202\252\202\350\212p",
 };
 static const char *const names_0070C604[1] = {
     "16",
 };
 static const char *const names_0070C610[1] = {
-    "16F@¨ÎÎÌÆO",
+    "16\201F\226\202\226@\202\250\202\316\202\316\202\314\211\306\221O",
 };
 static const char *const names_0070C61C[1] = {
     "17",
 };
 static const char *const names_0070C628[1] = {
-    "17FìÌã¬èO",
+    "17\201F\220\354\202\314\217\343\227\254\216\350\221O",
 };
 static const char *const names_0070C634[1] = {
     "18",
 };
 static const char *const names_0070C640[1] = {
-    "18FXtB[hiåj",
+    "18\201F\212X\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C64C[1] = {
     "1A",
 };
 static const char *const names_0070C658[1] = {
-    "1AFÑÔ",
+    "1A\201F\227\321\212\324",
 };
 static const char *const names_0070C664[1] = {
     "1B",
 };
 static const char *const names_0070C670[1] = {
-    "1BFétB[hiåj",
+    "1B\201F\217\351\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C67C[1] = {
     "1D",
 };
 static const char *const names_0070C688[1] = {
-    "1DFã¬Ì¡´",
+    "1D\201F\217\343\227\254\202\314\211\241\213\264",
 };
 static const char *const names_0070C694[1] = {
     "1E",
 };
 static const char *const names_0070C6A0[1] = {
-    "1EFÌ_aOiåj",
+    "1E\201F\223\214\202\314\220_\223a\221O\201i\221\345\201j",
 };
 static const char *const names_0070C6AC[1] = {
     "22",
 };
 static const char *const names_0070C6B8[1] = {
-    "22Fbè®³ñÌÆO",
+    "22\201F\222b\226\350\211\256\202\263\202\361\202\314\211\306\221O",
 };
 static const char *const names_0070C6C4[1] = {
     "25",
 };
 static const char *const names_0070C6D0[1] = {
-    "25FâQ",
+    "25\201F\212\342\214Q",
 };
 static const char *const names_0070C6DC[1] = {
     "28",
 };
 static const char *const names_0070C6E8[1] = {
-    "28FQ[",
+    "28\201F\203Q\201[\203\200",
 };
 static const char *const names_0070C6F4[1] = {
     "29",
 };
 static const char *const names_0070C700[1] = {
-    "29F}Ù",
+    "29\201F\220}\217\221\212\331",
 };
 static const char *const names_0070C70C[1] = {
     "2A",
 };
 static const char *const names_0070C718[1] = {
-    "2AF®¨ÌX",
+    "2A\201F\223\256\225\250\202\314\220X",
 };
 static const char *const names_0070C724[1] = {
     "2B",
 };
 static const char *const names_0070C730[1] = {
-    "2BFNÌÆÌ¼",
+    "2B\201F\203\212\203\223\203N\202\314\211\306\202\314\220\274",
 };
 static const char *const names_0070C73C[1] = {
     "2C",
 };
 static const char *const names_0070C748[1] = {
-    "2CFNÌÆO",
+    "2C\201F\203\212\203\223\203N\202\314\211\306\221O",
 };
 static const char *const names_0070C754[1] = {
     "2D",
 };
 static const char *const names_0070C760[1] = {
-    "2DFNÌÆÌ´",
+    "2D\201F\203\212\203\223\203N\202\314\211\306\202\314\223\214\213\264",
 };
 static const char *const names_0070C76C[1] = {
     "2E",
 };
 static const char *const names_0070C778[1] = {
-    "2EFnCAÎã¬",
+    "2E\201F\203n\203C\203\212\203A\214\316\217\343\227\254",
 };
 static const char *const names_0070C784[1] = {
     "2F",
 };
 static const char *const names_0070C790[1] = {
-    "2FFÌ_aÌì",
+    "2F\201F\223\214\202\314\220_\223a\202\314\223\354\223\214",
 };
 static const char *const names_0070C79C[1] = {
     "30",
 };
 static const char *const names_0070C7A8[1] = {
-    "30F»tB[hiåj",
+    "30\201F\215\273\224\231\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C7B4[1] = {
     "32",
 };
 static const char *const names_0070C7C0[1] = {
-    "32F®¨ÌXÌì",
+    "32\201F\223\256\225\250\202\314\220X\202\314\223\354",
 };
 static const char *const names_0070C7CC[1] = {
     "33",
 };
 static const char *const names_0070C7D8[1] = {
-    "33F¼nÑiåj",
+    "33\201F\216\274\222n\221\321\201i\221\345\201j",
 };
 static const char *const names_0070C7E4[1] = {
     "SD",
 };
 static const char *const names_0070C7F0[1] = {
-    "SDFÌX",
+    "SD\201F\214\225\202\314\220X",
 };
 static const char *const names_0070C7FC[1] = {
     "35",
 };
 static const char *const names_0070C808[1] = {
-    "35FÎtB[hiåj",
+    "35\201F\214\316\203t\203B\201[\203\213\203h\201i\221\345\201j",
 };
 static const char *const names_0070C814[1] = {
     "37",
 };
 static const char *const names_0070C820[1] = {
-    "37FnCAÎÌk",
+    "37\201F\203n\203C\203\212\203A\214\316\202\314\226k\223\214",
 };
 static const char *const names_0070C82C[1] = {
     "3A",
 };
 static const char *const names_0070C838[1] = {
-    "3AF»ÖÌkJ",
+    "3A\201F\215\273\224\231\202\326\202\314\214k\222J",
 };
 static const char *const names_0070C844[1] = {
     "ZR",
 };
 static const char *const names_0070C850[1] = {
-    "ZRF][Ì¢",
+    "ZR\201F\203]\201[\203\211\202\314\227\242",
 };
 static const char *const names_0070C85C[1] = {
     "",
 };
 static const char *const names_0070C868[1] = {
-    "íÏÝ",
+    "\215\355\217\234\215\317\202\335",
 };
 static const char *const names_0070C874[1] = {
     "3F",
 };
 static const char *const names_0070C880[1] = {
-    "3FFnCAÎÌìp",
+    "3F\201F\203n\203C\203\212\203A\214\316\202\314\223\354\223\214\212p",
 };
 
 static void fill_names(sead_SafeString *t, const char *const *names, int n) {

@@ -16,7 +16,7 @@ extern uint32_t data_0076405C;
 extern uint32_t data_00764060;
 extern uint32_t data_00764074;
 uintptr_t func_003C5604(uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603EF8(void);
 
 
@@ -34,10 +34,10 @@ void func_005B634C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojWarpSages";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"«ÒÌÔ[vIuWF";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\214\253\216\322\202\314\212\324\203\217\201[\203v\203I\203u\203W\203F";
     data_0070C3C8 = ret0;
     data_00764054 = 0x00000000u;
     data_00764058 = 0x00000005u;
     data_0076405C = (uintptr_t)&data_00764060;
-    func_0019B51C((uintptr_t)&data_00764074, (uintptr_t)&func_00603EF8, 0x0000011Au, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00764074, (uintptr_t)&func_00603EF8, 0x0000011Au, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00764054, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

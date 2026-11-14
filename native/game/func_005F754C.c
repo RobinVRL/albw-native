@@ -20,7 +20,7 @@ extern uint32_t data_00753D34;
 extern uint32_t data_00753D38;
 extern uint32_t data_00753D3C;
 extern uint32_t data_00753D50;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006084EC(void);
 void func_00608518(void);
 
@@ -45,7 +45,7 @@ void func_005F754C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojDoorSwitchWind";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"XCb`àiÌÙüûj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203X\203C\203b\203`\224\340\201i\225\227\202\314\212\331\223\374\214\373\201j";
     fill_names((sead_SafeString *)&data_0070BF40, names_0070BF40, 2);
     data_0070BF30 = 0xFFFFFFFFu;
     data_0070BF34 = 0xFFFFFFFFu;
@@ -54,7 +54,7 @@ void func_005F754C(void) {
     data_00753AC8 = 0x00000000u;
     data_00753ACC = 0x00000005u;
     data_00753AD0 = (uintptr_t)&data_00753AD4;
-    func_0019B51C((uintptr_t)&data_00753AE8, (uintptr_t)&func_00608518, 0x000000B3u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00753AE8, (uintptr_t)&func_00608518, 0x000000B3u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00753AC8, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00753D30;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -62,9 +62,9 @@ void func_005F754C(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MojDoorSwitchEast";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"XCb`àiÌ_aüûj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203X\203C\203b\203`\224\340\201i\223\214\202\314\220_\223a\223\374\214\373\201j";
     data_00753D30 = 0x00000000u;
     data_00753D34 = 0x00000005u;
     data_00753D38 = (uintptr_t)&data_00753D3C;
-    func_0019B51C((uintptr_t)&data_00753D50, (uintptr_t)&func_006084EC, 0x000000B4u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00753D50, (uintptr_t)&func_006084EC, 0x000000B4u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00753D30, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

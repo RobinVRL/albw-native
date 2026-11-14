@@ -17,7 +17,7 @@ extern uint32_t data_007614B4;
 extern uint32_t data_007614B8;
 extern uint32_t data_007614CC;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603ECC(void);
 
 
@@ -37,10 +37,10 @@ void func_005B5850(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojTrapFloat";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Vgbv";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\225\202\227V\203g\203\211\203b\203v";
     data_0070C374 = ret1;
     data_007614AC = 0x00000000u;
     data_007614B0 = 0x00000005u;
     data_007614B4 = (uintptr_t)&data_007614B8;
-    func_0019B51C((uintptr_t)&data_007614CC, (uintptr_t)&func_00603ECC, 0x000000DBu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007614CC, (uintptr_t)&func_00603ECC, 0x000000DBu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_007614AC, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

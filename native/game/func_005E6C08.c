@@ -21,7 +21,7 @@ extern uint32_t data_0075B500;
 extern uint32_t data_0075B504;
 extern uint32_t data_0075B518;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060862C(void);
 
 
@@ -39,12 +39,12 @@ void func_005E6C08(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojPushPullStatue";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"µø«Î";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\211\237\202\265\210\370\202\253\220\316\221\234";
     data_0070C140 = ret0;
     data_0075B290 = 0x00000000u;
     data_0075B294 = 0x00000005u;
     data_0075B298 = (uintptr_t)&data_0075B29C;
-    func_0019B51C((uintptr_t)&data_0075B2B0, (uintptr_t)&func_0060862C, 0x0000000Bu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0075B2B0, (uintptr_t)&func_0060862C, 0x0000000Bu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0075B290, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075B4F8;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -52,9 +52,9 @@ void func_005E6C08(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MojPushPullLowralStatue";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"µø«ÎiEéj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\211\237\202\265\210\370\202\253\220\316\221\234\201i\203\215\203E\203\211\203\213\217\351\201j";
     data_0075B4F8 = 0x00000000u;
     data_0075B4FC = 0x00000005u;
     data_0075B500 = (uintptr_t)&data_0075B504;
-    func_0019B51C((uintptr_t)&data_0075B518, (uintptr_t)&func_0060862C, 0x0000000Cu, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0075B518, (uintptr_t)&func_0060862C, 0x0000000Cu, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0075B4F8, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

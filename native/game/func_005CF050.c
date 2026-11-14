@@ -53,7 +53,7 @@ extern uint32_t data_0077EC99;
 extern uint32_t data_0077EC9A;
 extern uint32_t data_0077EC9B;
 extern uint32_t data_0077EC9C;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006071EC(void);
 void func_00608EE4(void);
 
@@ -97,7 +97,7 @@ void func_005CF050(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcShopManMagic";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"@¨ÎÎiõj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\226\202\226@\202\250\202\316\202\316\201i\214\365\201j";
     fill_names((sead_SafeString *)&data_0070ECA0, names_0070ECA0, 3);
     fill_names((sead_SafeString *)&data_0070ECBC, names_0070ECBC, 1);
     fill_names((sead_SafeString *)&data_0070ECC8, names_0070ECC8, 1);
@@ -139,7 +139,7 @@ void func_005CF050(void) {
     *(uint8_t *)&data_0077EC9A = 0xFu;
     *(uint8_t *)&data_0077EC9B = 0x1Eu;
     *(uint8_t *)&data_0077EC9C = 0x1u;
-    func_0019B51C((uintptr_t)&data_0077E780, (uintptr_t)&func_006071EC, 0x000001A5u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0077E780, (uintptr_t)&func_006071EC, 0x000001A5u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0077E760, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0077E9C8;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -147,9 +147,9 @@ void func_005CF050(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcShopManMagicUra";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"@¨ÎÎiÅj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\226\202\226@\202\250\202\316\202\316\201i\210\305\201j";
     data_0077E9C8 = 0x00000000u;
     data_0077E9CC = 0x00000005u;
     data_0077E9D0 = (uintptr_t)&data_0077E9D4;
-    func_0019B51C((uintptr_t)&data_0077E9E8, (uintptr_t)&func_00608EE4, 0x000001A6u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0077E9E8, (uintptr_t)&func_00608EE4, 0x000001A6u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0077E9C8, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

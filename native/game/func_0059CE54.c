@@ -108,7 +108,7 @@ extern uint32_t data_00781544;
 extern uint32_t data_00781548;
 extern uint32_t data_0078154C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00604374(void);
 void func_0060AD50(void);
 
@@ -291,7 +291,7 @@ void func_0059CE54(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcZelda";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"[_";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203[\203\213\203_";
     data_0070F0DC = ret5;
     data_0070F0E0 = ret3;
     data_00780FB0 = 0x00000000u;
@@ -300,7 +300,7 @@ void func_0059CE54(void) {
     data_00781544 = 0x00000000u /* 0.0 f */;
     data_00781548 = 0x40000000u /* 2.0 f */;
     data_0078154C = 0x40E00000u /* 7.0 f */;
-    func_0019B51C((uintptr_t)&data_00780FD0, (uintptr_t)&func_0060AD50, 0x00000191u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00780FD0, (uintptr_t)&func_0060AD50, 0x00000191u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00780FB0, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00781218;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -308,9 +308,9 @@ void func_0059CE54(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcZeldaDemo";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"[_f";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203[\203\213\203_\203f\203\202";
     data_00781218 = 0x00000000u;
     data_0078121C = 0x00000005u;
     data_00781220 = (uintptr_t)&data_00781224;
-    func_0019B51C((uintptr_t)&data_00781238, (uintptr_t)&func_00604374, 0x00000192u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00781238, (uintptr_t)&func_00604374, 0x00000192u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00781218, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

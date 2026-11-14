@@ -57,7 +57,7 @@ extern uint32_t data_00773F8D;
 extern uint32_t data_00773F8E;
 extern uint32_t data_00773F8F;
 extern uint32_t data_00773F90;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00606028(void);
 void func_00608D88(void);
 
@@ -111,7 +111,7 @@ void func_005C59A0(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcGameStadium";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"EX^WA®ijÌqj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203\215\203E\203\211\203\213\203X\203^\203W\203A\203\200\211\256\201i\222j\202\314\216q\201j";
     fill_names((sead_SafeString *)&data_0070DF50, names_0070DF50, 1);
     fill_names((sead_SafeString *)&data_0070DF5C, names_0070DF5C, 1);
     fill_names((sead_SafeString *)&data_0070DF68, names_0070DF68, 1);
@@ -157,7 +157,7 @@ void func_005C59A0(void) {
     *(uint8_t *)&data_00773F8E = 0xFu;
     *(uint8_t *)&data_00773F8F = 0x1Eu;
     *(uint8_t *)&data_00773F90 = 0xFu;
-    func_0019B51C((uintptr_t)&data_00773A74, (uintptr_t)&func_00606028, 0x000001E3u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00773A74, (uintptr_t)&func_00606028, 0x000001E3u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00773A54, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00773CBC;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -165,9 +165,9 @@ void func_005C59A0(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcGameStadiumGirl";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"EX^WA®iÌqj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203\215\203E\203\211\203\213\203X\203^\203W\203A\203\200\211\256\201i\217\227\202\314\216q\201j";
     data_00773CBC = 0x00000000u;
     data_00773CC0 = 0x00000005u;
     data_00773CC4 = (uintptr_t)&data_00773CC8;
-    func_0019B51C((uintptr_t)&data_00773CDC, (uintptr_t)&func_00608D88, 0x000001E4u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00773CDC, (uintptr_t)&func_00608D88, 0x000001E4u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00773CBC, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

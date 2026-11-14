@@ -22,7 +22,7 @@ extern uint32_t data_0078CEA4;
 extern uint32_t data_0078CEA8;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011DCB8(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605598(void);
 
 static const char *const names_0078CE90[2] = {
@@ -52,7 +52,7 @@ void func_005C0CA8(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ÎRe}l[W";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\211\316\216R\222e\203}\203l\201[\203W\203\203";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjMeganeLava";
     data_0070F824 = ret1;
@@ -62,5 +62,5 @@ void func_005C0CA8(void) {
     data_0078CEA0 = 0x00000000u /* 0.0 f */;
     data_0078CEA4 = 0x3F800000u /* 1.0 f */;
     data_0078CEA8 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_0078CC48, (uintptr_t)&func_00605598, 0x00000043u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0078CC48, (uintptr_t)&func_00605598, 0x00000043u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0078CC28, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

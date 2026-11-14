@@ -39,7 +39,7 @@ extern uint32_t data_00770EE0;
 extern uint32_t data_00770EE4;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00118020(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006033E0(void);
 
 static const char *const names_00770E7C[4] = {
@@ -87,7 +87,7 @@ void func_005ABAA4(void) {
     *(uintptr_t *)((char *)stk + 8) = (uintptr_t)&data_0069EC50;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"tg­ñ";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203\212\203t\203g\202\255\202\361";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NpcBirdLift";
     fill_names((sead_SafeString *)&data_00770EE4, names_00770EE4, 14);
@@ -113,5 +113,5 @@ void func_005ABAA4(void) {
     data_00770ED8 = 0x40C00000u /* 6.0 f */;
     data_00770EDC = 0x41200000u /* 10.0 f */;
     data_00770EE0 = 0x3DCCCCCDu /* 0.10000000149011612 f */;
-    func_0019B51C((uintptr_t)&data_00770C34, (uintptr_t)&func_006033E0, 0x000001B3u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_00770C34, (uintptr_t)&func_006033E0, 0x000001B3u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00770C14, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0069EC50);
 }

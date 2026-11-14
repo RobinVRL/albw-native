@@ -54,7 +54,7 @@ extern uint32_t data_0076DF3C;
 extern uint32_t data_0076DF40;
 extern uint32_t data_0076DF44;
 extern uint32_t data_0076DF58;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060AAF8(void);
 
 
@@ -67,7 +67,7 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MassTree";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Øiõj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\226\330\201i\214\365\201j";
     data_0070D570 = 0xFFFFFFFFu;
     data_0070D574 = 0xFFFFFFFFu;
     data_0070D578 = 0x00000000u;
@@ -75,7 +75,7 @@ void func_0059B9F8(void) {
     data_0076CBF8 = 0x00000000u;
     data_0076CBFC = 0x00000005u;
     data_0076CC00 = (uintptr_t)&data_0076CC04;
-    func_0019B51C((uintptr_t)&data_0076CC18, (uintptr_t)&func_0060AAF8, 0x0000014Du, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0076CC18, (uintptr_t)&func_0060AAF8, 0x0000014Du, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0076CBF8, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076CE60;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -83,11 +83,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MassTreeD";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"ØiÅj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\226\330\201i\210\305\201j";
     data_0076CE60 = 0x00000000u;
     data_0076CE64 = 0x00000005u;
     data_0076CE68 = (uintptr_t)&data_0076CE6C;
-    func_0019B51C((uintptr_t)&data_0076CE80, (uintptr_t)&func_0060AAF8, 0x0000014Eu, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0076CE80, (uintptr_t)&func_0060AAF8, 0x0000014Eu, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0076CE60, (uintptr_t)((char *)stk + 40), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076D0C8;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 56);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -95,11 +95,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 48) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 52) = (uintptr_t)"MassTreeLightYellow";
     *(uintptr_t *)((char *)stk + 56) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 60) = (uintptr_t)"Øiõ:©Fj";
+    *(uintptr_t *)((char *)stk + 60) = (uintptr_t)"\226\330\201i\214\365:\211\251\220F\201j";
     data_0076D0C8 = 0x00000000u;
     data_0076D0CC = 0x00000005u;
     data_0076D0D0 = (uintptr_t)&data_0076D0D4;
-    func_0019B51C((uintptr_t)&data_0076D0E8, (uintptr_t)&func_0060AAF8, 0x00000152u, (uintptr_t)((char *)stk + 48));
+    func_0019B51C((uintptr_t)&data_0076D0E8, (uintptr_t)&func_0060AAF8, 0x00000152u, (uintptr_t)((char *)stk + 48), (uintptr_t)&data_0076D0C8, (uintptr_t)((char *)stk + 56), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076D330;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 72);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -107,11 +107,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 64) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 68) = (uintptr_t)"MassTreeDarkYellow";
     *(uintptr_t *)((char *)stk + 72) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 76) = (uintptr_t)"ØiÅ:©Fj";
+    *(uintptr_t *)((char *)stk + 76) = (uintptr_t)"\226\330\201i\210\305:\211\251\220F\201j";
     data_0076D330 = 0x00000000u;
     data_0076D334 = 0x00000005u;
     data_0076D338 = (uintptr_t)&data_0076D33C;
-    func_0019B51C((uintptr_t)&data_0076D350, (uintptr_t)&func_0060AAF8, 0x00000153u, (uintptr_t)((char *)stk + 64));
+    func_0019B51C((uintptr_t)&data_0076D350, (uintptr_t)&func_0060AAF8, 0x00000153u, (uintptr_t)((char *)stk + 64), (uintptr_t)&data_0076D330, (uintptr_t)((char *)stk + 72), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076D598;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 88);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -119,11 +119,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 80) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 84) = (uintptr_t)"MassTreeDarkRed";
     *(uintptr_t *)((char *)stk + 88) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 92) = (uintptr_t)"ØiÅ:ÔFj";
+    *(uintptr_t *)((char *)stk + 92) = (uintptr_t)"\226\330\201i\210\305:\220\324\220F\201j";
     data_0076D598 = 0x00000000u;
     data_0076D59C = 0x00000005u;
     data_0076D5A0 = (uintptr_t)&data_0076D5A4;
-    func_0019B51C((uintptr_t)&data_0076D5B8, (uintptr_t)&func_0060AAF8, 0x00000154u, (uintptr_t)((char *)stk + 80));
+    func_0019B51C((uintptr_t)&data_0076D5B8, (uintptr_t)&func_0060AAF8, 0x00000154u, (uintptr_t)((char *)stk + 80), (uintptr_t)&data_0076D598, (uintptr_t)((char *)stk + 88), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076D800;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 104);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -131,11 +131,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 96) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 100) = (uintptr_t)"MassTreeApple";
     *(uintptr_t *)((char *)stk + 104) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 108) = (uintptr_t)"SÌØ";
+    *(uintptr_t *)((char *)stk + 108) = (uintptr_t)"\203\212\203\223\203S\202\314\226\330";
     data_0076D800 = 0x00000000u;
     data_0076D804 = 0x00000005u;
     data_0076D808 = (uintptr_t)&data_0076D80C;
-    func_0019B51C((uintptr_t)&data_0076D820, (uintptr_t)&func_0060AAF8, 0x00000155u, (uintptr_t)((char *)stk + 96));
+    func_0019B51C((uintptr_t)&data_0076D820, (uintptr_t)&func_0060AAF8, 0x00000155u, (uintptr_t)((char *)stk + 96), (uintptr_t)&data_0076D800, (uintptr_t)((char *)stk + 104), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076DA68;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 120);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -143,11 +143,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 112) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 116) = (uintptr_t)"MassTreeSmall";
     *(uintptr_t *)((char *)stk + 120) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 124) = (uintptr_t)"¬³¢Ø";
+    *(uintptr_t *)((char *)stk + 124) = (uintptr_t)"\217\254\202\263\202\242\226\330";
     data_0076DA68 = 0x00000000u;
     data_0076DA6C = 0x00000005u;
     data_0076DA70 = (uintptr_t)&data_0076DA74;
-    func_0019B51C((uintptr_t)&data_0076DA88, (uintptr_t)&func_0060AAF8, 0x0000014Fu, (uintptr_t)((char *)stk + 112));
+    func_0019B51C((uintptr_t)&data_0076DA88, (uintptr_t)&func_0060AAF8, 0x0000014Fu, (uintptr_t)((char *)stk + 112), (uintptr_t)&data_0076DA68, (uintptr_t)((char *)stk + 120), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076DCD0;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 136);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -155,11 +155,11 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 128) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 132) = (uintptr_t)"MassTreeStump";
     *(uintptr_t *)((char *)stk + 136) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 140) = (uintptr_t)"Øiõj";
+    *(uintptr_t *)((char *)stk + 140) = (uintptr_t)"\220\330\212\224\201i\214\365\201j";
     data_0076DCD0 = 0x00000000u;
     data_0076DCD4 = 0x00000005u;
     data_0076DCD8 = (uintptr_t)&data_0076DCDC;
-    func_0019B51C((uintptr_t)&data_0076DCF0, (uintptr_t)&func_0060AAF8, 0x00000150u, (uintptr_t)((char *)stk + 128));
+    func_0019B51C((uintptr_t)&data_0076DCF0, (uintptr_t)&func_0060AAF8, 0x00000150u, (uintptr_t)((char *)stk + 128), (uintptr_t)&data_0076DCD0, (uintptr_t)((char *)stk + 136), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076DF38;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 152);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -167,9 +167,9 @@ void func_0059B9F8(void) {
     *(uintptr_t *)((char *)stk + 144) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 148) = (uintptr_t)"MassTreeStumpD";
     *(uintptr_t *)((char *)stk + 152) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 156) = (uintptr_t)"ØiÅj";
+    *(uintptr_t *)((char *)stk + 156) = (uintptr_t)"\220\330\212\224\201i\210\305\201j";
     data_0076DF38 = 0x00000000u;
     data_0076DF3C = 0x00000005u;
     data_0076DF40 = (uintptr_t)&data_0076DF44;
-    func_0019B51C((uintptr_t)&data_0076DF58, (uintptr_t)&func_0060AAF8, 0x00000151u, (uintptr_t)((char *)stk + 144));
+    func_0019B51C((uintptr_t)&data_0076DF58, (uintptr_t)&func_0060AAF8, 0x00000151u, (uintptr_t)((char *)stk + 144), (uintptr_t)&data_0076DF38, (uintptr_t)((char *)stk + 152), 0x00000000u);
 }

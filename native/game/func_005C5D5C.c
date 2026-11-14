@@ -68,7 +68,7 @@ extern uint32_t data_00777053;
 extern uint32_t data_00777054;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00116960(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00606224(void);
 
 static const char *const names_0070E5F8[3] = {
@@ -164,7 +164,7 @@ void func_005C5D5C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcMountaineer";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"zÎ®";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\215z\220\316\211\256";
     data_0070E5E4 = ret3;
     data_00776D3C = 0x00000000u;
     data_00776D40 = 0x00000005u;
@@ -192,7 +192,7 @@ void func_005C5D5C(void) {
     *(uint8_t *)&data_00777052 = 0xFu;
     *(uint8_t *)&data_00777053 = 0x28u;
     *(uint8_t *)&data_00777054 = 0x14u;
-    func_0019B51C((uintptr_t)&data_00776D5C, (uintptr_t)&func_00606224, 0x000001C2u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00776D5C, (uintptr_t)&func_00606224, 0x000001C2u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00776D3C, (uintptr_t)((char *)stk + 24), 0x00000000u);
     data_00776FA4 = 0x00000001u;
     data_00776FA8 = 0x00000000u;
     data_00776FAC = 0x00000000u;

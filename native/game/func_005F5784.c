@@ -41,7 +41,7 @@ extern uint32_t data_0078C488;
 extern uint32_t data_0078C48C;
 extern uint32_t data_0078C490;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00609E9C(void);
 
 
@@ -83,10 +83,10 @@ void func_005F5784(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMediumGanonTrident";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"KmÌ³·Ü½";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203K\203m\203\223\202\314\202\263\202\267\202\334\202\275";
     data_0070F7D0 = ret0;
     data_0078C1CC = 0x00000000u;
     data_0078C1D0 = 0x00000005u;
     data_0078C1D4 = (uintptr_t)&data_0078C1D8;
-    func_0019B51C((uintptr_t)&data_0078C1EC, (uintptr_t)&func_00609E9C, 0x0000022Eu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078C1EC, (uintptr_t)&func_00609E9C, 0x0000022Eu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078C1CC, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_006A21BC);
 }

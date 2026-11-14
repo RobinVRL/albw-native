@@ -58,7 +58,7 @@ extern uint32_t data_00773A4D;
 extern uint32_t data_00773A4E;
 extern uint32_t data_00773A4F;
 extern uint32_t data_00773A50;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607020(void);
 void func_00607C9C(void);
 
@@ -117,7 +117,7 @@ void func_005AC3D0(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcGameRaceStart";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"nC[X®X^[g";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203n\203C\203\211\203\213\203\214\201[\203X\211\256\203X\203^\201[\203g";
     fill_names((sead_SafeString *)&data_0070DEB8, names_0070DEB8, 3);
     fill_names((sead_SafeString *)&data_0070DED4, names_0070DED4, 1);
     fill_names((sead_SafeString *)&data_0070DEE0, names_0070DEE0, 1);
@@ -164,7 +164,7 @@ void func_005AC3D0(void) {
     *(uint8_t *)&data_00773A4E = 0x14u;
     *(uint8_t *)&data_00773A4F = 0xFu;
     *(uint8_t *)&data_00773A50 = 0xAu;
-    func_0019B51C((uintptr_t)&data_00773534, (uintptr_t)&func_00607C9C, 0x000001DEu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00773534, (uintptr_t)&func_00607C9C, 0x000001DEu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00773514, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0077377C;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -172,9 +172,9 @@ void func_005AC3D0(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcGameRaceGoal";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"nC[X®S[";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203n\203C\203\211\203\213\203\214\201[\203X\211\256\203S\201[\203\213";
     data_0077377C = 0x00000000u;
     data_00773780 = 0x00000005u;
     data_00773784 = (uintptr_t)&data_00773788;
-    func_0019B51C((uintptr_t)&data_0077379C, (uintptr_t)&func_00607020, 0x000001DFu, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0077379C, (uintptr_t)&func_00607020, 0x000001DFu, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0077377C, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

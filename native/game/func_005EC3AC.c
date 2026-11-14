@@ -16,7 +16,7 @@ extern uint32_t data_0078948C;
 extern uint32_t data_00789490;
 extern uint32_t data_007894A4;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00608F54(void);
 
 
@@ -34,10 +34,10 @@ void func_005EC3AC(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjJewelRockBullet";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"WGbNÌeÛ";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203W\203\205\203G\203\213\203\215\203b\203N\202\314\222e\212\333";
     data_0070F638 = ret0;
     data_00789484 = 0x00000000u;
     data_00789488 = 0x00000005u;
     data_0078948C = (uintptr_t)&data_00789490;
-    func_0019B51C((uintptr_t)&data_007894A4, (uintptr_t)&func_00608F54, 0x00000084u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007894A4, (uintptr_t)&func_00608F54, 0x00000084u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00789484, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

@@ -20,15 +20,15 @@ extern uint32_t data_0079A734;
 extern uint32_t data_0079A748;
 extern uint32_t data_0079A990;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00608020(void);
 
 static const char *const names_0079A990[5] = {
-    "  1 s[",
-    "  5 s[",
-    " 20 s[",
-    " 50 s[",
-    "100 s[",
+    "  1 \203\213\203s\201[",
+    "  5 \203\213\203s\201[",
+    " 20 \203\213\203s\201[",
+    " 50 \203\213\203s\201[",
+    "100 \203\213\203s\201[",
 };
 
 static void fill_names(sead_SafeString *t, const char *const *names, int n) {
@@ -52,7 +52,7 @@ void func_005E36E4(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"s[N«oµò";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203\213\203s\201[\227N\202\253\217o\202\265\220\362";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"TagRupeeFountain";
     fill_names((sead_SafeString *)&data_0079A990, names_0079A990, 5);
@@ -62,5 +62,5 @@ void func_005E36E4(void) {
     data_0079A728 = 0x00000000u;
     data_0079A72C = 0x00000005u;
     data_0079A730 = (uintptr_t)&data_0079A734;
-    func_0019B51C((uintptr_t)&data_0079A748, (uintptr_t)&func_00608020, 0x00000277u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0079A748, (uintptr_t)&func_00608020, 0x00000277u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0079A728, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

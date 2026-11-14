@@ -22,7 +22,7 @@ extern uint32_t data_00784E90;
 extern uint32_t data_00784E94;
 extern uint32_t data_00784E98;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006088EC(void);
 
 
@@ -44,7 +44,7 @@ void func_005EA2B8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjDropRentalItem";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Æµ½^ACe";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\227\216\202\306\202\265\202\275\203\214\203\223\203^\203\213\203A\203C\203e\203\200";
     data_0070F418 = ret2;
     data_0070F41C = ret0;
     data_00784C28 = 0x00000000u;
@@ -53,5 +53,5 @@ void func_005EA2B8(void) {
     data_00784E90 = 0xBC23D70Au /* -0.009999999776482582 f */;
     data_00784E94 = 0xBD75C28Fu /* -0.05999999865889549 f */;
     data_00784E98 = 0xBDB851ECu /* -0.09000000357627869 f */;
-    func_0019B51C((uintptr_t)&data_00784C48, (uintptr_t)&func_006088EC, 0x00000054u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00784C48, (uintptr_t)&func_006088EC, 0x00000054u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00784C28, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

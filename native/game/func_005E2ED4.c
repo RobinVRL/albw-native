@@ -19,7 +19,7 @@ extern uint32_t data_00794E20;
 extern uint32_t data_00794E58;
 extern uint32_t data_00794E5C;
 extern uint32_t data_00794E60;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607F30(void);
 
 static const char *const names_0070FAE0[1] = {
@@ -49,7 +49,7 @@ void func_005E2ED4(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ECÌ©½Üè";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\227E\213C\202\314\202\251\202\275\202\334\202\350";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjTriForceBrave";
     fill_names((sead_SafeString *)&data_0070FAE0, names_0070FAE0, 1);
@@ -64,5 +64,5 @@ void func_005E2ED4(void) {
     data_00794E58 = 0x00000000u /* 0.0 f */;
     data_00794E5C = 0x00000000u /* 0.0 f */;
     data_00794E60 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_00794BD8, (uintptr_t)&func_00607F30, 0x00000052u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_00794BD8, (uintptr_t)&func_00607F30, 0x00000052u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00794BB8, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

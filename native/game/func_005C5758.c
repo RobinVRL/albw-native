@@ -33,7 +33,7 @@ extern uint32_t data_0077350D;
 extern uint32_t data_0077350E;
 extern uint32_t data_0077350F;
 extern uint32_t data_00773510;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605FFC(void);
 
 static const char *const names_0070DE78[1] = {
@@ -71,7 +71,7 @@ void func_005C5758(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcGameOctorok";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPCIN^bN";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPC\203I\203N\203^\203\215\203b\203N";
     fill_names((sead_SafeString *)&data_0070DE78, names_0070DE78, 1);
     fill_names((sead_SafeString *)&data_0070DE84, names_0070DE84, 1);
     fill_names((sead_SafeString *)&data_0070DE90, names_0070DE90, 1);
@@ -98,5 +98,5 @@ void func_005C5758(void) {
     *(uint8_t *)&data_0077350E = 0xFu;
     *(uint8_t *)&data_0077350F = 0x28u;
     *(uint8_t *)&data_00773510 = 0x14u;
-    func_0019B51C((uintptr_t)&data_00773284, (uintptr_t)&func_00605FFC, 0x000001E5u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00773284, (uintptr_t)&func_00605FFC, 0x000001E5u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00773264, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

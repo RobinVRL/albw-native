@@ -25,7 +25,7 @@ extern uint32_t data_0075A408;
 extern uint32_t data_0075A40C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011DD28(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607810(void);
 
 static const char *const names_0075A3C8[6] = {
@@ -62,7 +62,7 @@ void func_005E1034(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"EéE";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203\215\203E\203\211\203\213\217\351\214\213\212E";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MojLoruleBarrier";
     data_0070C0E4 = ret1;
@@ -72,5 +72,5 @@ void func_005E1034(void) {
     data_0075A404 = 0x00000000u /* 0.0 f */;
     data_0075A408 = 0x40133333u /* 2.299999952316284 f */;
     data_0075A40C = 0x40200000u /* 2.5 f */;
-    func_0019B51C((uintptr_t)&data_0075A180, (uintptr_t)&func_00607810, 0x0000011Fu, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0075A180, (uintptr_t)&func_00607810, 0x0000011Fu, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0075A160, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

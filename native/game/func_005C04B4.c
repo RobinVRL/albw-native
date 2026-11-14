@@ -19,7 +19,7 @@ extern uint32_t data_007865B0;
 extern uint32_t data_007865B4;
 extern uint32_t data_007865B8;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605460(void);
 
 
@@ -40,10 +40,10 @@ void func_005C04B4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjFirePillar";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Î";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\211\316\222\214";
     data_0070F4A4 = ret0;
     data_00786348 = 0x00000000u;
     data_0078634C = 0x00000005u;
     data_00786350 = (uintptr_t)&data_00786354;
-    func_0019B51C((uintptr_t)&data_00786368, (uintptr_t)&func_00605460, 0x0000002Eu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00786368, (uintptr_t)&func_00605460, 0x0000002Eu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00786348, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

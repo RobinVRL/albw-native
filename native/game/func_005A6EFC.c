@@ -22,7 +22,7 @@ extern uint32_t data_00789200;
 extern uint32_t data_00789204;
 extern uint32_t data_00789208;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00602F24(void);
 
 
@@ -46,10 +46,10 @@ void func_005A6EFC(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjJavelin";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\223\212\221\204";
     data_0070F608 = ret0;
     data_00788F8C = 0x00000000u;
     data_00788F90 = 0x00000005u;
     data_00788F94 = (uintptr_t)&data_00788F98;
-    func_0019B51C((uintptr_t)&data_00788FAC, (uintptr_t)&func_00602F24, 0x00000041u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00788FAC, (uintptr_t)&func_00602F24, 0x00000041u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00788F8C, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

@@ -17,7 +17,7 @@ extern uint32_t data_0076C690;
 extern uint32_t data_0076C694;
 extern uint32_t data_0076C6A8;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605ABC(void);
 
 
@@ -37,10 +37,10 @@ void func_005A19FC(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MassShrubLight";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"áØiõj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\222\341\226\330\201i\214\365\201j";
     data_0070D544 = ret1;
     data_0076C688 = 0x00000000u;
     data_0076C68C = 0x00000005u;
     data_0076C690 = (uintptr_t)&data_0076C694;
-    func_0019B51C((uintptr_t)&data_0076C6A8, (uintptr_t)&func_00605ABC, 0x00000141u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0076C6A8, (uintptr_t)&func_00605ABC, 0x00000141u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0076C688, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

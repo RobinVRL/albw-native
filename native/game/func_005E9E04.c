@@ -78,7 +78,7 @@ extern uint32_t data_00780A49;
 extern uint32_t data_00780A4A;
 extern uint32_t data_00780A4B;
 extern uint32_t data_00780A4C;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00609E38(void);
 void func_0060A010(void);
 void func_0060A04C(void);
@@ -139,7 +139,7 @@ void func_005E9E04(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcTreasureHunterLight";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPCgW[n^[(õ)";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPC\203g\203\214\203W\203\203\201[\203n\203\223\203^\201[(\214\365)";
     fill_names((sead_SafeString *)&data_0070EF50, names_0070EF50, 1);
     fill_names((sead_SafeString *)&data_0070EF5C, names_0070EF5C, 1);
     fill_names((sead_SafeString *)&data_0070EF68, names_0070EF68, 1);
@@ -201,7 +201,7 @@ void func_005E9E04(void) {
     *(uint8_t *)&data_00780A4A = 0xFu;
     *(uint8_t *)&data_00780A4B = 0x28u;
     *(uint8_t *)&data_00780A4C = 0x5u;
-    func_0019B51C((uintptr_t)&data_007802A0, (uintptr_t)&func_0060A04C, 0x000001EEu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007802A0, (uintptr_t)&func_0060A04C, 0x000001EEu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00780280, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_007804E8;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -209,11 +209,11 @@ void func_005E9E04(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcTreasureHunterDark";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"NPCgW[n^[(Å)";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"NPC\203g\203\214\203W\203\203\201[\203n\203\223\203^\201[(\210\305)";
     data_007804E8 = 0x00000000u;
     data_007804EC = 0x00000005u;
     data_007804F0 = (uintptr_t)&data_007804F4;
-    func_0019B51C((uintptr_t)&data_00780508, (uintptr_t)&func_00609E38, 0x000001EFu, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00780508, (uintptr_t)&func_00609E38, 0x000001EFu, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_007804E8, (uintptr_t)((char *)stk + 40), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00780750;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 56);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -221,9 +221,9 @@ void func_005E9E04(void) {
     *(uintptr_t *)((char *)stk + 48) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 52) = (uintptr_t)"NpcTreasureHunterGrave";
     *(uintptr_t *)((char *)stk + 56) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 60) = (uintptr_t)"NPCgW[n^[(¨æ)";
+    *(uintptr_t *)((char *)stk + 60) = (uintptr_t)"NPC\203g\203\214\203W\203\203\201[\203n\203\223\203^\201[(\202\250\225\346)";
     data_00780750 = 0x00000000u;
     data_00780754 = 0x00000005u;
     data_00780758 = (uintptr_t)&data_0078075C;
-    func_0019B51C((uintptr_t)&data_00780770, (uintptr_t)&func_0060A010, 0x000001F0u, (uintptr_t)((char *)stk + 48));
+    func_0019B51C((uintptr_t)&data_00780770, (uintptr_t)&func_0060A010, 0x000001F0u, (uintptr_t)((char *)stk + 48), (uintptr_t)&data_00780750, (uintptr_t)((char *)stk + 56), 0x00000000u);
 }

@@ -27,7 +27,7 @@ extern uint32_t data_0078B820;
 extern uint32_t data_0078B824;
 extern uint32_t data_0078B828;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605530(void);
 
 
@@ -58,10 +58,10 @@ void func_005C0B5C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMediumFire";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"fBEÌ@";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203\201\203f\203B\203E\203\200\202\314\211\212\226\202\226@";
     data_0070F768 = ret2;
     data_0078B5A0 = 0x00000000u;
     data_0078B5A4 = 0x00000005u;
     data_0078B5A8 = (uintptr_t)&data_0078B5AC;
-    func_0019B51C((uintptr_t)&data_0078B5C0, (uintptr_t)&func_00605530, 0x00000063u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078B5C0, (uintptr_t)&func_00605530, 0x00000063u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078B5A0, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

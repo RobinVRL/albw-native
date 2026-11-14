@@ -29,7 +29,7 @@ extern uint32_t data_0076F6D8;
 extern uint32_t data_0076F6DC;
 extern uint32_t data_0076F6E4;
 extern uint32_t data_0076F6E8;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00604CC8(void);
 
 static const char *const names_0076F678[7] = {
@@ -56,7 +56,7 @@ void func_005BDAA4(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"X^WApIN^";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203X\203^\203W\203A\203\200\227p\203I\203N\203^";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MiniGameRSMgr";
     fill_names((sead_SafeString *)&data_0076F678, names_0076F678, 7);
@@ -81,5 +81,5 @@ void func_005BDAA4(void) {
     data_0076F6DC = 0x00000000u /* 0.0 f */;
     data_0076F6E4 = 0x00000000u;
     data_0076F6E8 = 0x00000000u;
-    func_0019B51C((uintptr_t)&data_0076F430, (uintptr_t)&func_00604CC8, 0x00000021u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0076F430, (uintptr_t)&func_00604CC8, 0x00000021u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0076F410, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

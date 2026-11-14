@@ -17,7 +17,7 @@ extern uint32_t data_00793F70;
 extern uint32_t data_00793F74;
 extern uint32_t data_00793F88;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00604540(void);
 
 
@@ -37,10 +37,10 @@ void func_005B8844(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjSwordBeam";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"r[";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\214\225\203r\201[\203\200";
     data_0070FA64 = ret1;
     data_00793F68 = 0x00000000u;
     data_00793F6C = 0x00000005u;
     data_00793F70 = (uintptr_t)&data_00793F74;
-    func_0019B51C((uintptr_t)&data_00793F88, (uintptr_t)&func_00604540, 0x00000034u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00793F88, (uintptr_t)&func_00604540, 0x00000034u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00793F68, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

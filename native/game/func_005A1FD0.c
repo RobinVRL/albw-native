@@ -36,7 +36,7 @@ extern uint32_t data_0075D53C;
 extern uint32_t data_0075D540;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00116C38(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060B2CC(void);
 
 static const char *const names_0075D504[2] = {
@@ -87,12 +87,12 @@ void func_005A1FD0(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"V[\\[tg";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203V\201[\203\\\201[\203\212\203t\203g";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MojSeesaw";
     data_0070C1D0 = ret5;
     data_0075D29C = 0x00000000u;
     data_0075D2A0 = 0x00000005u;
     data_0075D2A4 = (uintptr_t)&data_0075D2A8;
-    func_0019B51C((uintptr_t)&data_0075D2BC, (uintptr_t)&func_0060B2CC, 0x000000D8u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0075D2BC, (uintptr_t)&func_0060B2CC, 0x000000D8u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0075D29C, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

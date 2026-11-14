@@ -20,7 +20,7 @@ extern uint32_t data_0075B020;
 extern uint32_t data_0075B024;
 extern uint32_t data_0075B038;
 extern uint32_t data_0075B280;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603354(void);
 
 static const char *const names_0075B280[2] = {
@@ -44,7 +44,7 @@ void func_005AB7E8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojPillarUp";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ßt­Æoé";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\213\337\225t\202\255\202\306\217o\202\351\222\214";
     data_0070C130 = 0xFFFFFFFFu;
     data_0070C134 = 0xFFFFFFFFu;
     data_0070C138 = 0x00000000u;
@@ -52,7 +52,7 @@ void func_005AB7E8(void) {
     data_0075ADB0 = 0x00000000u;
     data_0075ADB4 = 0x00000005u;
     data_0075ADB8 = (uintptr_t)&data_0075ADBC;
-    func_0019B51C((uintptr_t)&data_0075ADD0, (uintptr_t)&func_00603354, 0x000000D6u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0075ADD0, (uintptr_t)&func_00603354, 0x000000D6u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0075ADB0, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075B018;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -60,10 +60,10 @@ void func_005AB7E8(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MojPillarUpL";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"ßt­Æoéi2x2j";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\213\337\225t\202\255\202\306\217o\202\351\222\214\201i2x2\201j";
     data_0075B018 = 0x00000000u;
     data_0075B01C = 0x00000005u;
     data_0075B020 = (uintptr_t)&data_0075B024;
-    func_0019B51C((uintptr_t)&data_0075B038, (uintptr_t)&func_00603354, 0x000000D7u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0075B038, (uintptr_t)&func_00603354, 0x000000D7u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0075B018, (uintptr_t)((char *)stk + 40), 0x00000000u);
     fill_names((sead_SafeString *)&data_0075B280, names_0075B280, 2);
 }

@@ -20,7 +20,7 @@ extern uint32_t data_00760B14;
 extern uint32_t data_00760B18;
 extern uint32_t data_00760B2C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605CC0(void);
 
 
@@ -46,10 +46,10 @@ void func_005C4E14(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojTileTornado";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"Ô^C";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\225\227\216\324\203^\203C\203\213";
     data_0070C340 = ret4;
     data_00760B0C = 0x00000000u;
     data_00760B10 = 0x00000005u;
     data_00760B14 = (uintptr_t)&data_00760B18;
-    func_0019B51C((uintptr_t)&data_00760B2C, (uintptr_t)&func_00605CC0, 0x0000012Du, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00760B2C, (uintptr_t)&func_00605CC0, 0x0000012Du, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00760B0C, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

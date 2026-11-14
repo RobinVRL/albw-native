@@ -19,7 +19,7 @@ extern uint32_t data_0075024C;
 extern uint32_t data_00750260;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00117F94(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060B248(void);
 
 static const char *const names_0070BDD8[2] = {
@@ -43,7 +43,7 @@ void func_005A1AF4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojBeamos";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"r";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203r\203\200";
     data_0070BDC8 = 0xFFFFFFFFu;
     data_0070BDCC = 0xFFFFFFFFu;
     data_0070BDD0 = 0x00000000u;
@@ -51,7 +51,7 @@ void func_005A1AF4(void) {
     data_00750240 = 0x00000000u;
     data_00750244 = 0x00000005u;
     data_00750248 = (uintptr_t)&data_0075024C;
-    func_0019B51C((uintptr_t)&data_00750260, (uintptr_t)&func_0060B248, 0x00000123u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00750260, (uintptr_t)&func_0060B248, 0x00000123u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00750240, (uintptr_t)((char *)stk + 24), 0x00000000u);
     fill_names((sead_SafeString *)&data_0070BDD8, names_0070BDD8, 2);
     uintptr_t ret1 = func_00114608(0x4CE38E39u, (uintptr_t)&func_00117F94);
     data_0070BDC0 = ret1;

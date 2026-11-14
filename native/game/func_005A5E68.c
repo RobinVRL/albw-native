@@ -25,7 +25,7 @@ extern uint32_t data_0074FFD0;
 extern uint32_t data_0074FFD4;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011D7CC(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006029F0(void);
 
 static const char *const names_0074FFB0[2] = {
@@ -58,7 +58,7 @@ void func_005A5E68(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"E";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\214\213\212E";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MojBarrier";
     data_0070BD98 = ret1;
@@ -68,5 +68,5 @@ void func_005A5E68(void) {
     data_0074FFCC = 0x00000000u /* 0.0 f */;
     data_0074FFD0 = 0x40133333u /* 2.299999952316284 f */;
     data_0074FFD4 = 0x40200000u /* 2.5 f */;
-    func_0019B51C((uintptr_t)&data_0074FD68, (uintptr_t)&func_006029F0, 0x0000011Eu, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0074FD68, (uintptr_t)&func_006029F0, 0x0000011Eu, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0074FD48, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

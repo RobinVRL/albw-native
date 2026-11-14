@@ -17,7 +17,7 @@ extern uint32_t data_0078CEB4;
 extern uint32_t data_0078CEB8;
 extern uint32_t data_0078CECC;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00608944(void);
 
 
@@ -37,10 +37,10 @@ void func_005EA4D8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMoriblinShield";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"uEEºmÌ";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203\202\203\212\203u\203\212\203\223\201E\203\215\203E\203\211\203\213\225\272\216m\202\314\217\202";
     data_0070F83C = ret1;
     data_0078CEAC = 0x00000000u;
     data_0078CEB0 = 0x00000005u;
     data_0078CEB4 = (uintptr_t)&data_0078CEB8;
-    func_0019B51C((uintptr_t)&data_0078CECC, (uintptr_t)&func_00608944, 0x00000087u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078CECC, (uintptr_t)&func_00608944, 0x00000087u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078CEAC, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

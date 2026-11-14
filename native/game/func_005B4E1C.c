@@ -1,0 +1,125 @@
+/* USA 005B4E1C (EU 005B4DF4): static initialiser, decompiled by tools/decomp_initializer.py.
+ * 0 sead::SafeString name tables (0 names), 22 other stores, 6 calls. */
+#include <stdint.h>
+#include "sead.h"
+
+extern uint32_t data_006F5988;
+extern uint32_t data_006F5988;  /* sead::SafeString vtable */
+extern uint32_t data_0070C158;
+extern uint32_t data_0070C15C;
+extern uint32_t data_0070C160;
+extern uint32_t data_0070C164;
+extern uint32_t data_0075B760;
+extern uint32_t data_0075B764;
+extern uint32_t data_0075B768;
+extern uint32_t data_0075B76C;
+extern uint32_t data_0075B780;
+extern uint32_t data_0075B9C8;
+extern uint32_t data_0075B9CC;
+extern uint32_t data_0075B9D0;
+extern uint32_t data_0075B9D4;
+extern uint32_t data_0075B9E8;
+extern uint32_t data_0075BC30;
+extern uint32_t data_0075BC34;
+extern uint32_t data_0075BC38;
+extern uint32_t data_0075BC3C;
+extern uint32_t data_0075BC50;
+extern uint32_t data_0075BE98;
+extern uint32_t data_0075BE9C;
+extern uint32_t data_0075BEA0;
+extern uint32_t data_0075BEA4;
+extern uint32_t data_0075BEB8;
+extern uint32_t data_0075C100;
+extern uint32_t data_0075C104;
+extern uint32_t data_0075C108;
+extern uint32_t data_0075C10C;
+extern uint32_t data_0075C120;
+extern uint32_t data_0075C368;
+extern uint32_t data_0075C36C;
+extern uint32_t data_0075C370;
+extern uint32_t data_0075C374;
+extern uint32_t data_0075C388;
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_00603DE4(void);
+void func_00608C5C(void);
+
+
+void func_005B4E1C(void) {
+    uintptr_t stk[30];  /* stack temporaries (objects passed by address) */
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075B760;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 24);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojQuicksand";
+    *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\227\254\215\273";
+    data_0070C158 = 0xFFFFFFFFu;
+    data_0070C15C = 0xFFFFFFFFu;
+    data_0070C160 = 0x00000000u;
+    data_0070C164 = 0x00000000u;
+    data_0075B760 = 0x00000000u;
+    data_0075B764 = 0x00000005u;
+    data_0075B768 = (uintptr_t)&data_0075B76C;
+    func_0019B51C((uintptr_t)&data_0075B780, (uintptr_t)&func_00603DE4, 0x00000107u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0075B760, (uintptr_t)((char *)stk + 24), 0x00000000u);
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075B9C8;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MojQuicksandFall";
+    *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\227\254\215\273\221\352";
+    data_0075B9C8 = 0x00000000u;
+    data_0075B9CC = 0x00000005u;
+    data_0075B9D0 = (uintptr_t)&data_0075B9D4;
+    func_0019B51C((uintptr_t)&data_0075B9E8, (uintptr_t)&func_00608C5C, 0x00000108u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0075B9C8, (uintptr_t)((char *)stk + 40), 0x00000000u);
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075BC30;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 56);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 48) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 52) = (uintptr_t)"MojQuicksandFlow";
+    *(uintptr_t *)((char *)stk + 56) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 60) = (uintptr_t)"\227\254\215\273\220\354";
+    data_0075BC30 = 0x00000000u;
+    data_0075BC34 = 0x00000005u;
+    data_0075BC38 = (uintptr_t)&data_0075BC3C;
+    func_0019B51C((uintptr_t)&data_0075BC50, (uintptr_t)&func_00608C5C, 0x00000109u, (uintptr_t)((char *)stk + 48), (uintptr_t)&data_0075BC30, (uintptr_t)((char *)stk + 56), 0x00000000u);
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075BE98;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 72);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 64) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 68) = (uintptr_t)"MojQuicksandF3S";
+    *(uintptr_t *)((char *)stk + 72) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 76) = (uintptr_t)"F3\227\254\215\273\223\354";
+    data_0075BE98 = 0x00000000u;
+    data_0075BE9C = 0x00000005u;
+    data_0075BEA0 = (uintptr_t)&data_0075BEA4;
+    func_0019B51C((uintptr_t)&data_0075BEB8, (uintptr_t)&func_00603DE4, 0x0000010Au, (uintptr_t)((char *)stk + 64), (uintptr_t)&data_0075BE98, (uintptr_t)((char *)stk + 72), 0x00000000u);
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075C100;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 88);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 80) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 84) = (uintptr_t)"MojQuicksandF3W";
+    *(uintptr_t *)((char *)stk + 88) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 92) = (uintptr_t)"F3\227\254\215\273\220\274";
+    data_0075C100 = 0x00000000u;
+    data_0075C104 = 0x00000005u;
+    data_0075C108 = (uintptr_t)&data_0075C10C;
+    func_0019B51C((uintptr_t)&data_0075C120, (uintptr_t)&func_00608C5C, 0x0000010Bu, (uintptr_t)((char *)stk + 80), (uintptr_t)&data_0075C100, (uintptr_t)((char *)stk + 88), 0x00000000u);
+    *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0075C368;
+    *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 104);
+    *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
+    *(uintptr_t *)((char *)stk + 96) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 100) = (uintptr_t)"MojQuicksandBoss";
+    *(uintptr_t *)((char *)stk + 104) = (uintptr_t)&data_006F5988;
+    *(uintptr_t *)((char *)stk + 108) = (uintptr_t)"\203{\203X\203t\203B\201[\203\213\203h\227\254\215\273";
+    data_0075C368 = 0x00000000u;
+    data_0075C36C = 0x00000005u;
+    data_0075C370 = (uintptr_t)&data_0075C374;
+    func_0019B51C((uintptr_t)&data_0075C388, (uintptr_t)&func_00603DE4, 0x0000010Cu, (uintptr_t)((char *)stk + 96), (uintptr_t)&data_0075C368, (uintptr_t)((char *)stk + 104), 0x00000000u);
+}

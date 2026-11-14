@@ -31,42 +31,42 @@ extern uint32_t data_00788AC0;
 extern uint32_t data_00788AC4;
 extern uint32_t data_00788AC8;
 extern uint32_t data_00788ADC;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060B4F0(void);
 
 static const char *const names_007889BC[32] = {
-    "Èµ",
-    "",
-    "",
-    "|",
-    "u[",
-    "oN_",
-    "t@C[bh",
-    "ACXbh",
-    "Thbh",
-    "gl[hbh",
-    "n}[",
-    "tbNVbg",
-    "yKTXu[c",
-    " Ý",
-    "Je",
-    "qgKl",
-    "ó«r",
-    "Ô­·è",
-    "©NX",
-    "NX",
-    "ÂNX",
-    "d¸",
-    "n`",
-    "©àn`",
-    "_A",
-    "h",
-    "n[g",
-    "Ôèñ²",
-    "Âèñ²",
-    "bZ[W{g",
-    "û",
-    "n¬û",
+    "\202\310\202\265",
+    "\214\225",
+    "\217\202",
+    "\213|",
+    "\203u\201[\203\201\203\211\203\223",
+    "\203o\203N\203_\203\223",
+    "\203t\203@\203C\203\204\201[\203\215\203b\203h",
+    "\203A\203C\203X\203\215\203b\203h",
+    "\203T\203\223\203h\203\215\203b\203h",
+    "\203g\203\213\203l\201[\203h\203\215\203b\203h",
+    "\203n\203\223\203}\201[",
+    "\203t\203b\203N\203V\203\207\203b\203g",
+    "\203y\203K\203T\203X\203u\201[\203c",
+    "\222\216\202\240\202\335",
+    "\203J\203\223\203e\203\211",
+    "\203q\203\223\203g\203\201\203K\203l",
+    "\213\363\202\253\203r\203\223",
+    "\220\324\202\255\202\267\202\350",
+    "\211\251\203N\203X\203\212",
+    "\216\207\203N\203X\203\212",
+    "\220\302\203N\203X\203\212",
+    "\227d\220\270",
+    "\203n\203`",
+    "\211\251\213\340\203n\203`",
+    "\203_\203\212\203A\203\223",
+    "\203h\203\215\203\223",
+    "\203n\201[\203g",
+    "\220\324\202\350\202\361\202\262",
+    "\220\302\202\350\202\361\202\262",
+    "\203\201\203b\203Z\201[\203W\203{\203g\203\213",
+    "\213\215\223\373",
+    "\217n\220\254\213\215\223\373",
 };
 
 static void fill_names(sead_SafeString *t, const char *const *names, int n) {
@@ -83,7 +83,7 @@ void func_005A2CA4(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ACXbh";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203A\203C\203X\203\215\203b\203h";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjIceRod";
     fill_names((sead_SafeString *)&data_007889BC, names_007889BC, 32);
@@ -110,5 +110,5 @@ void func_005A2CA4(void) {
     data_00788ABC = 0x00000000u;
     data_00788AC0 = 0x00000005u;
     data_00788AC4 = (uintptr_t)&data_00788AC8;
-    func_0019B51C((uintptr_t)&data_00788ADC, (uintptr_t)&func_0060B4F0, 0x00000033u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_00788ADC, (uintptr_t)&func_0060B4F0, 0x00000033u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00788ABC, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

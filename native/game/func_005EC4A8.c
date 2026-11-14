@@ -17,7 +17,7 @@ extern uint32_t data_0078B834;
 extern uint32_t data_0078B838;
 extern uint32_t data_0078B84C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00608F80(void);
 
 
@@ -35,10 +35,10 @@ void func_005EC4A8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMediumGanonBall";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"KmÊ";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203K\203m\203\223\213\312";
     data_0070F780 = ret0;
     data_0078B82C = 0x00000000u;
     data_0078B830 = 0x00000005u;
     data_0078B834 = (uintptr_t)&data_0078B838;
-    func_0019B51C((uintptr_t)&data_0078B84C, (uintptr_t)&func_00608F80, 0x0000022Fu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078B84C, (uintptr_t)&func_00608F80, 0x0000022Fu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078B82C, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_006A1F64);
 }

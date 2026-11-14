@@ -24,7 +24,7 @@ extern uint32_t data_0076F998;
 extern uint32_t data_0076F99C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011B638(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00604CF4(void);
 
 static const char *const names_0076F974[4] = {
@@ -62,7 +62,7 @@ void func_005BDCDC(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"X^WAp{[";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203X\203^\203W\203A\203\200\227p\203{\201[\203\213";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MiniGameRSObj";
     data_0070D8C0 = ret4;
@@ -71,5 +71,5 @@ void func_005BDCDC(void) {
     data_0076F714 = (uintptr_t)&data_0076F718;
     data_0076F998 = 0x00000000u;
     data_0076F99C = 0x00000000u;
-    func_0019B51C((uintptr_t)&data_0076F72C, (uintptr_t)&func_00604CF4, 0x00000022u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0076F72C, (uintptr_t)&func_00604CF4, 0x00000022u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0076F70C, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

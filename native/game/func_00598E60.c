@@ -23,7 +23,7 @@ extern uint32_t data_0076B820;
 extern uint32_t data_0076B824;
 extern uint32_t data_0076B838;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060A4A8(void);
 
 
@@ -45,12 +45,12 @@ void func_00598E60(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MassPotLight";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"âiõ:Massj";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\232\342\201i\214\365:Mass\201j";
     data_0070D4F8 = ret2;
     data_0076B5B0 = 0x00000000u;
     data_0076B5B4 = 0x00000005u;
     data_0076B5B8 = (uintptr_t)&data_0076B5BC;
-    func_0019B51C((uintptr_t)&data_0076B5D0, (uintptr_t)&func_0060A4A8, 0x00000147u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0076B5D0, (uintptr_t)&func_0060A4A8, 0x00000147u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0076B5B0, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_0076B818;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -58,9 +58,9 @@ void func_00598E60(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"MassPotSkull";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"âihN:Massj";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\232\342\201i\203h\203N\203\215:Mass\201j";
     data_0076B818 = 0x00000000u;
     data_0076B81C = 0x00000005u;
     data_0076B820 = (uintptr_t)&data_0076B824;
-    func_0019B51C((uintptr_t)&data_0076B838, (uintptr_t)&func_0060A4A8, 0x00000148u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_0076B838, (uintptr_t)&func_0060A4A8, 0x00000148u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_0076B818, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

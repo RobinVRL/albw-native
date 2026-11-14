@@ -24,51 +24,51 @@ void func_005902C0(void);
 
 static const char *const names_00712FD4[2] = {
     "Gully",
-    "O          ",
+    "\203O\203\212          ",
 };
 static const char *const names_00712FF8[2] = {
     "Seres",
-    "ZX        ",
+    "\203Z\203\214\203X        ",
 };
 static const char *const names_0071301C[2] = {
     "Osfala",
-    "AXt@    ",
+    "\203A\203X\203t\203@\203\213    ",
 };
 static const char *const names_00713040[2] = {
     "Irene",
-    "AC      ",
+    "\203A\203C\203\212\203\223      ",
 };
 static const char *const names_00713064[2] = {
     "Oren",
-    "I[      ",
+    "\203I\201[\203\214\203\223      ",
 };
 static const char *const names_00713088[2] = {
     "Rosso",
-    "b\\        ",
+    "\203\215\203b\203\\        ",
 };
 static const char *const names_007130AC[2] = {
     "Impa",
-    "Cp        ",
+    "\203C\203\223\203p        ",
 };
 static const char *const names_007130D0[2] = {
     "Omote02",
-    "~No[   ",
+    "\203~\203\213\203N\203o\201[   ",
 };
 static const char *const names_007130F4[2] = {
     "Omote03",
-    "RbR®     ",
+    "\203R\203b\203R\211\256     ",
 };
 static const char *const names_00713118[2] = {
     "Omote04",
-    "JJRº   ",
+    "\203J\203J\203\212\203R\221\272   ",
 };
 static const char *const names_0071313C[2] = {
     "Omote01",
-    "}U[}C}C",
+    "\203}\203U\201[\203}\203C\203}\203C",
 };
 static const char *const names_00713160[2] = {
     "Zelda",
-    "[_        ",
+    "\203[\203\213\203_        ",
 };
 
 static void fill_names(sead_SafeString *t, const char *const *names, int n) {

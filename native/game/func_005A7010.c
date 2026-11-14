@@ -22,7 +22,7 @@ extern uint32_t data_0078DB04;
 extern uint32_t data_0078DB08;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011E230(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00602F50(void);
 
 static const char *const names_0078DAE0[4] = {
@@ -51,7 +51,7 @@ void func_005A7010(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjPendant";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"y_g";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203y\203\223\203_\203\223\203g";
     fill_names((sead_SafeString *)&data_0078DAE0, names_0078DAE0, 4);
     data_0070F880 = 0xFFFFFFFFu;
     data_0070F884 = 0xFFFFFFFFu;
@@ -60,7 +60,7 @@ void func_005A7010(void) {
     data_0078D878 = 0x00000000u;
     data_0078D87C = 0x00000005u;
     data_0078D880 = (uintptr_t)&data_0078D884;
-    func_0019B51C((uintptr_t)&data_0078D898, (uintptr_t)&func_00602F50, 0x0000006Cu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078D898, (uintptr_t)&func_00602F50, 0x0000006Cu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078D878, (uintptr_t)((char *)stk + 24), 0x00000000u);
     fill_names((sead_SafeString *)&data_0070F890, names_0070F890, 1);
     data_0078DB00 = 0x00000000u /* 0.0 f */;
     data_0078DB04 = 0x3F800000u /* 1.0 f */;

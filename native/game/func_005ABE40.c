@@ -39,7 +39,7 @@ extern uint32_t data_00771F98;
 extern uint32_t data_00771F9C;
 extern uint32_t data_00771FA0;
 extern uint32_t data_00771FA1;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603564(void);
 
 static const char *const names_0070DC70[2] = {
@@ -81,7 +81,7 @@ void func_005ABE40(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcFairyBig";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"åd¸";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\221\345\227d\220\270";
     fill_names((sead_SafeString *)&data_0070DC70, names_0070DC70, 2);
     fill_names((sead_SafeString *)&data_0070DC84, names_0070DC84, 1);
     fill_names((sead_SafeString *)&data_0070DC90, names_0070DC90, 1);
@@ -114,5 +114,5 @@ void func_005ABE40(void) {
     data_00771F9C = 0x00000000u;
     *(uint8_t *)&data_00771FA0 = 0x0u;
     *(uint8_t *)&data_00771FA1 = 0x1u;
-    func_0019B51C((uintptr_t)&data_00771D04, (uintptr_t)&func_00603564, 0x000001B1u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00771D04, (uintptr_t)&func_00603564, 0x000001B1u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00771CE4, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

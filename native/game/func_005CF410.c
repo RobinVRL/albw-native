@@ -35,7 +35,7 @@ extern uint32_t data_00780CF9;
 extern uint32_t data_00780CFA;
 extern uint32_t data_00780CFB;
 extern uint32_t data_00780CFC;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607218(void);
 
 static const char *const names_0070EFE8[2] = {
@@ -80,7 +80,7 @@ void func_005CF410(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcTurtleMother";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"^[g}U[";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203^\201[\203g\203\213\203}\203U\201[";
     fill_names((sead_SafeString *)&data_0070EFE8, names_0070EFE8, 2);
     fill_names((sead_SafeString *)&data_0070EFFC, names_0070EFFC, 1);
     fill_names((sead_SafeString *)&data_0070F008, names_0070F008, 1);
@@ -109,5 +109,5 @@ void func_005CF410(void) {
     *(uint8_t *)&data_00780CFA = 0xFu;
     *(uint8_t *)&data_00780CFB = 0x1u;
     *(uint8_t *)&data_00780CFC = 0x1Eu;
-    func_0019B51C((uintptr_t)&data_00780A70, (uintptr_t)&func_00607218, 0x00000010u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00780A70, (uintptr_t)&func_00607218, 0x00000010u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00780A50, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

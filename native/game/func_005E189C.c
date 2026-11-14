@@ -41,7 +41,7 @@ extern uint32_t data_00772270;
 extern uint32_t data_00772271;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_001165E0(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607C70(void);
 
 static const char *const names_0070DCD0[1] = {
@@ -91,7 +91,7 @@ void func_005E189C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcFairyBigRupee";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"s[åd¸";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203\213\203s\201[\221\345\227d\220\270";
     data_0070DCB8 = ret0;
     data_00771FA4 = 0x00000000u;
     data_00771FA8 = 0x00000005u;
@@ -115,5 +115,5 @@ void func_005E189C(void) {
     data_0077226C = 0x00000000u;
     *(uint8_t *)&data_00772270 = 0x0u;
     *(uint8_t *)&data_00772271 = 0x1u;
-    func_0019B51C((uintptr_t)&data_00771FC4, (uintptr_t)&func_00607C70, 0x000001B2u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00771FC4, (uintptr_t)&func_00607C70, 0x000001B2u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00771FA4, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

@@ -18,7 +18,7 @@ extern uint32_t data_00782814;
 extern uint32_t data_00782828;
 extern uint32_t data_00782A70;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060ADD0(void);
 
 static const char *const names_00782A70[6] = {
@@ -49,7 +49,7 @@ void func_0059DA00(void) {
     *(uintptr_t *)((char *)stk + 8) = (uintptr_t)&data_006A0BC0;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"åoN_";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\221\345\203o\203N\203_\203\223";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjBombL";
     fill_names((sead_SafeString *)&data_00782A70, names_00782A70, 6);
@@ -57,5 +57,5 @@ void func_0059DA00(void) {
     data_00782808 = 0x00000000u;
     data_0078280C = 0x00000005u;
     data_00782810 = (uintptr_t)&data_00782814;
-    func_0019B51C((uintptr_t)&data_00782828, (uintptr_t)&func_0060ADD0, 0x00000070u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_00782828, (uintptr_t)&func_0060ADD0, 0x00000070u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00782808, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_006A0BC0);
 }

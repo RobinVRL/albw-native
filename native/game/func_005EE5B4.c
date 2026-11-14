@@ -17,7 +17,7 @@ extern uint32_t data_007825A8;
 extern uint32_t data_007825AC;
 extern uint32_t data_007825C0;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006092BC(void);
 
 
@@ -37,10 +37,10 @@ void func_005EE5B4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjBlackShueyesBall";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"X{XÌe";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\225X\203{\203X\202\314\222e";
     data_0070F314 = ret1;
     data_007825A0 = 0x00000000u;
     data_007825A4 = 0x00000005u;
     data_007825A8 = (uintptr_t)&data_007825AC;
-    func_0019B51C((uintptr_t)&data_007825C0, (uintptr_t)&func_006092BC, 0x00000267u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007825C0, (uintptr_t)&func_006092BC, 0x00000267u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_007825A0, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

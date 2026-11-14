@@ -27,7 +27,7 @@ extern uint32_t data_00759C80;
 extern uint32_t data_00759C84;
 extern uint32_t data_00759C88;
 extern uint32_t data_00759C8C;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060B274(void);
 
 static const char *const names_00759C38[5] = {
@@ -52,7 +52,7 @@ void func_005A1C44(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"¬«ãªé}O}";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\225\254\202\253\217\343\202\252\202\351\203}\203O\203}";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MojLavaUp";
     fill_names((sead_SafeString *)&data_00759C38, names_00759C38, 5);
@@ -75,5 +75,5 @@ void func_005A1C44(void) {
     data_00759C84 = 0x00000000u /* 0.0 f */;
     data_00759C88 = 0xBF000000u /* -0.5 f */;
     data_00759C8C = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_007599F0, (uintptr_t)&func_0060B274, 0x000000DCu, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_007599F0, (uintptr_t)&func_0060B274, 0x000000DCu, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_007599D0, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

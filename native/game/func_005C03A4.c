@@ -18,7 +18,7 @@ extern uint32_t data_007838B0;
 extern uint32_t data_007838B4;
 extern uint32_t data_007838C8;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605408(void);
 
 
@@ -40,10 +40,10 @@ void func_005C03A4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjBowOfLight";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"õÌ|î";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\214\365\202\314\213|\226\356";
     data_0070F380 = ret2;
     data_007838A8 = 0x00000000u;
     data_007838AC = 0x00000005u;
     data_007838B0 = (uintptr_t)&data_007838B4;
-    func_0019B51C((uintptr_t)&data_007838C8, (uintptr_t)&func_00605408, 0x00000093u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007838C8, (uintptr_t)&func_00605408, 0x00000093u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_007838A8, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

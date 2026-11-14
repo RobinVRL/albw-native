@@ -19,7 +19,7 @@ extern uint32_t data_0078CC1C;
 extern uint32_t data_0078CC20;
 extern uint32_t data_0078CC24;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060B570(void);
 
 
@@ -40,10 +40,10 @@ void func_005A34C8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMedusa";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"f[Tâ";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203\201\203f\203\205\201[\203T\212\342";
     data_0070F808 = ret0;
     data_0078C9B4 = 0x00000000u;
     data_0078C9B8 = 0x00000005u;
     data_0078C9BC = (uintptr_t)&data_0078C9C0;
-    func_0019B51C((uintptr_t)&data_0078C9D4, (uintptr_t)&func_0060B570, 0x0000008Au, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078C9D4, (uintptr_t)&func_0060B570, 0x0000008Au, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078C9B4, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

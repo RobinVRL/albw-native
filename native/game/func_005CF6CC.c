@@ -32,7 +32,7 @@ extern uint32_t data_0078F20C;
 extern uint32_t data_0078F210;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00117BA4(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607270(void);
 
 static const char *const names_0070F908[1] = {
@@ -88,7 +88,7 @@ void func_005CF6CC(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"[_ÌG";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203[\203\213\203_\202\314\212G";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjPictureZelda";
     data_0070F8EC = ret3;
@@ -99,5 +99,5 @@ void func_005CF6CC(void) {
     data_0078F208 = 0x00000000u /* 0.0 f */;
     data_0078F20C = 0x00000000u /* 0.0 f */;
     data_0078F210 = 0x40400000u /* 3.0 f */;
-    func_0019B51C((uintptr_t)&data_0078EF38, (uintptr_t)&func_00607270, 0x00000085u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0078EF38, (uintptr_t)&func_00607270, 0x00000085u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0078EF18, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

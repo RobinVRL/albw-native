@@ -34,7 +34,7 @@ extern uint32_t data_0078B330;
 extern uint32_t data_0078B334;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_001169EC(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060AEC4(void);
 
 static const char *const names_0078B2C4[10] = {
@@ -86,7 +86,7 @@ void func_0059ED90(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"x[vCv";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203x\203\213\203\217\201[\203v\203\201\203C\203v\203\213";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjMaple";
     data_0070F72C = ret6;
@@ -99,5 +99,5 @@ void func_0059ED90(void) {
     data_0078B32C = 0xC0000000u /* -2.0 f */;
     data_0078B330 = 0x41A00000u /* 20.0 f */;
     data_0078B334 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_0078B07C, (uintptr_t)&func_0060AEC4, 0x00000015u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0078B07C, (uintptr_t)&func_0060AEC4, 0x00000015u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0078B05C, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

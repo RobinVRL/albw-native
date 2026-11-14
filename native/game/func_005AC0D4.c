@@ -48,7 +48,7 @@ extern uint32_t data_00772530;
 extern uint32_t data_00772531;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00117D48(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603590(void);
 
 static const char *const names_0070DD18[1] = {
@@ -124,7 +124,7 @@ void func_005AC0D4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcFollower";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPCø«Aê³ñ";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPC\210\370\202\253\230A\202\352\202\263\202\361";
     data_0070DD00 = ret0;
     data_00772274 = 0x00000000u;
     data_00772278 = 0x00000005u;
@@ -148,5 +148,5 @@ void func_005AC0D4(void) {
     data_0077252C = 0x00000000u;
     *(uint8_t *)&data_00772530 = 0x1u;
     *(uint8_t *)&data_00772531 = 0x1u;
-    func_0019B51C((uintptr_t)&data_00772294, (uintptr_t)&func_00603590, 0x000001E7u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00772294, (uintptr_t)&func_00603590, 0x000001E7u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00772274, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

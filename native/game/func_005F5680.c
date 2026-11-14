@@ -17,7 +17,7 @@ extern uint32_t data_0078BD04;
 extern uint32_t data_0078BD08;
 extern uint32_t data_0078BD1C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00609E74(void);
 
 
@@ -35,10 +35,10 @@ void func_005F5680(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjMediumGanonFireObj";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"KmIuWF";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203K\203m\203\223\211\212\203I\203u\203W\203F";
     data_0070F7A8 = ret0;
     data_0078BCFC = 0x00000000u;
     data_0078BD00 = 0x00000005u;
     data_0078BD04 = (uintptr_t)&data_0078BD08;
-    func_0019B51C((uintptr_t)&data_0078BD1C, (uintptr_t)&func_00609E74, 0x00000231u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0078BD1C, (uintptr_t)&func_00609E74, 0x00000231u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0078BCFC, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_006A2130);
 }

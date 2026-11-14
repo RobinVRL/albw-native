@@ -22,7 +22,7 @@ extern uint32_t data_00791D14;
 extern uint32_t data_00791D2C;
 extern uint32_t data_00791D30;
 extern uint32_t data_00791D34;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006044EC(void);
 
 static const char *const names_00791D14[3] = {
@@ -45,7 +45,7 @@ void func_005B860C(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"©©µ";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\202\251\202\251\202\265";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"ObjScarecrow";
     fill_names((sead_SafeString *)&data_00791D14, names_00791D14, 3);
@@ -63,5 +63,5 @@ void func_005B860C(void) {
     data_00791D2C = 0x00000000u /* 0.0 f */;
     data_00791D30 = 0x3FD9999Au /* 1.7000000476837158 f */;
     data_00791D34 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_00791ACC, (uintptr_t)&func_006044EC, 0x00000080u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_00791ACC, (uintptr_t)&func_006044EC, 0x00000080u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00791AAC, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

@@ -41,7 +41,7 @@ extern uint32_t data_00781804;
 extern uint32_t data_00781808;
 extern uint32_t data_0078180C;
 extern uint32_t data_0078180D;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607E88(void);
 
 static const char *const names_0070F208[2] = {
@@ -89,7 +89,7 @@ void func_005E2614(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcZoraAttendant";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"][ÌtY¢";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203]\201[\203\211\202\314\225t\223Y\202\242";
     fill_names((sead_SafeString *)&data_0070F208, names_0070F208, 2);
     fill_names((sead_SafeString *)&data_0070F21C, names_0070F21C, 1);
     fill_names((sead_SafeString *)&data_0070F228, names_0070F228, 1);
@@ -124,5 +124,5 @@ void func_005E2614(void) {
     data_00781808 = 0x00000000u;
     *(uint8_t *)&data_0078180C = 0x0u;
     *(uint8_t *)&data_0078180D = 0x1u;
-    func_0019B51C((uintptr_t)&data_00781570, (uintptr_t)&func_00607E88, 0x000001AAu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00781570, (uintptr_t)&func_00607E88, 0x000001AAu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00781550, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

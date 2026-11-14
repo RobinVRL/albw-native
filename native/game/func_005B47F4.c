@@ -31,7 +31,7 @@ extern uint32_t data_00758D7C;
 extern uint32_t data_00758D80;
 extern uint32_t data_00758D84;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603D90(void);
 
 
@@ -61,7 +61,7 @@ void func_005B47F4(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"MojIcePillar";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"X";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\225X\222\214";
     data_0070C06C = ret3;
     data_00758AF0 = 0x00000000u;
     data_00758AF4 = 0x00000005u;
@@ -72,5 +72,5 @@ void func_005B47F4(void) {
     data_00758D7C = 0x3FD9999Au /* 1.7000000476837158 f */;
     data_00758D80 = 0x408CCCCDu /* 4.400000095367432 f */;
     data_00758D84 = 0x3DCCCCCDu /* 0.10000000149011612 f */;
-    func_0019B51C((uintptr_t)&data_00758B10, (uintptr_t)&func_00603D90, 0x000000F4u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00758B10, (uintptr_t)&func_00603D90, 0x000000F4u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00758AF0, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

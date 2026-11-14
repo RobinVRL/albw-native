@@ -27,7 +27,7 @@ extern uint32_t data_0079B600;
 extern uint32_t data_0079B604;
 extern uint32_t data_0079B618;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0019B5EC(void);
 void func_00606680(void);
 
@@ -41,7 +41,7 @@ void func_005CA92C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"TagTowerCamera";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"J^O";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\223\203\203J\203\201\203\211\203^\203O";
     data_00712808 = 0xFFFFFFFFu;
     data_0071280C = 0xFFFFFFFFu;
     data_00712810 = 0x00000000u;
@@ -49,7 +49,7 @@ void func_005CA92C(void) {
     data_0079B5F8 = 0x00000000u;
     data_0079B5FC = 0x00000005u;
     data_0079B600 = (uintptr_t)&data_0079B604;
-    func_0019B51C((uintptr_t)&data_0079B618, (uintptr_t)&func_00606680, 0x00000182u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0079B618, (uintptr_t)&func_00606680, 0x00000182u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0079B5F8, (uintptr_t)((char *)stk + 24), 0x00000000u);
     uintptr_t ret1 = func_00114608(0x4DAAAAABu, (uintptr_t)&func_0019B5EC);
     data_00712818 = ret1;
     uintptr_t ret2 = func_00114608(0x4B888889u, 0x00000000u);

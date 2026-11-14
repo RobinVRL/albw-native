@@ -22,7 +22,7 @@ extern uint32_t data_00783D98;
 extern uint32_t data_00783FE0;
 extern uint32_t data_00783FE4;
 extern uint32_t data_00783FE8;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00606318(void);
 
 
@@ -35,7 +35,7 @@ void func_005C6538(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"ObjCreepeeBomb";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"N[s[Ìe";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203N\203\212\201[\203s\201[\202\314\224\232\222e";
     data_0070F398 = 0xFFFFFFFFu;
     data_0070F39C = 0xFFFFFFFFu;
     data_0070F3A0 = 0x00000000u;
@@ -46,7 +46,7 @@ void func_005C6538(void) {
     data_00783FE0 = 0x00000000u /* 0.0 f */;
     data_00783FE4 = 0x3E800000u /* 0.25 f */;
     data_00783FE8 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_00783B30, (uintptr_t)&func_00606318, 0x00000077u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00783B30, (uintptr_t)&func_00606318, 0x00000077u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00783B10, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00783D78;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -54,9 +54,9 @@ void func_005C6538(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"ObjIceCreepeeBomb";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"ACXN[s[Ìe";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203A\203C\203X\203N\203\212\201[\203s\201[\202\314\224\232\222e";
     data_00783D78 = 0x00000000u;
     data_00783D7C = 0x00000005u;
     data_00783D80 = (uintptr_t)&data_00783D84;
-    func_0019B51C((uintptr_t)&data_00783D98, (uintptr_t)&func_00606318, 0x00000078u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00783D98, (uintptr_t)&func_00606318, 0x00000078u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00783D78, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

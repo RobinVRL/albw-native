@@ -56,7 +56,7 @@ extern uint32_t data_00770BD1;
 extern uint32_t data_00770BD2;
 extern uint32_t data_00770BD3;
 extern uint32_t data_00770BD4;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_006033A4(void);
 void func_0060A56C(void);
 
@@ -107,7 +107,7 @@ void func_005995EC(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcBard";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPCáVl(cJ)";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"NPC\213\341\227V\216\215\220l(\217c\223J)";
     fill_names((sead_SafeString *)&data_0070D920, names_0070D920, 1);
     fill_names((sead_SafeString *)&data_0070D92C, names_0070D92C, 1);
     fill_names((sead_SafeString *)&data_0070D938, names_0070D938, 1);
@@ -152,7 +152,7 @@ void func_005995EC(void) {
     *(uint8_t *)&data_00770BD2 = 0xFu;
     *(uint8_t *)&data_00770BD3 = 0x1Eu;
     *(uint8_t *)&data_00770BD4 = 0x5u;
-    func_0019B51C((uintptr_t)&data_007706B8, (uintptr_t)&func_0060A56C, 0x000001ECu, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007706B8, (uintptr_t)&func_0060A56C, 0x000001ECu, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00770698, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00770900;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -160,9 +160,9 @@ void func_005995EC(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcBardLute";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"NPCáVl([g)";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"NPC\213\341\227V\216\215\220l(\203\212\203\205\201[\203g)";
     data_00770900 = 0x00000000u;
     data_00770904 = 0x00000005u;
     data_00770908 = (uintptr_t)&data_0077090C;
-    func_0019B51C((uintptr_t)&data_00770920, (uintptr_t)&func_006033A4, 0x000001EDu, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00770920, (uintptr_t)&func_006033A4, 0x000001EDu, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00770900, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

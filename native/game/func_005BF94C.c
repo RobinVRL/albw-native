@@ -33,7 +33,7 @@ extern uint32_t data_00774A2D;
 extern uint32_t data_00774A2E;
 extern uint32_t data_00774A2F;
 extern uint32_t data_00774A30;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060517C(void);
 
 static const char *const names_0070E050[2] = {
@@ -72,7 +72,7 @@ void func_005BF94C(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcGhostGanon";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"S[XgKm";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203S\201[\203X\203g\203K\203m\203\223";
     fill_names((sead_SafeString *)&data_0070E050, names_0070E050, 2);
     fill_names((sead_SafeString *)&data_0070E064, names_0070E064, 1);
     fill_names((sead_SafeString *)&data_0070E070, names_0070E070, 1);
@@ -99,5 +99,5 @@ void func_005BF94C(void) {
     *(uint8_t *)&data_00774A2E = 0xFu;
     *(uint8_t *)&data_00774A2F = 0x32u;
     *(uint8_t *)&data_00774A30 = 0x1Eu;
-    func_0019B51C((uintptr_t)&data_007747A4, (uintptr_t)&func_0060517C, 0x000001B9u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_007747A4, (uintptr_t)&func_0060517C, 0x000001B9u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00774784, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }

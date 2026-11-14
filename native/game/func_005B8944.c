@@ -18,7 +18,7 @@ extern uint32_t data_007963F8;
 extern uint32_t data_00796418;
 extern uint32_t data_0079641C;
 extern uint32_t data_00796420;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0060456C(void);
 
 static const char *const names_007963F8[4] = {
@@ -42,7 +42,7 @@ void func_005B8944(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"vC[IuWFNg";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\203v\203\214\203C\203\204\201[\203I\203u\203W\203F\203N\203g";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"PlayerObject";
     fill_names((sead_SafeString *)&data_007963F8, names_007963F8, 4);
@@ -56,5 +56,5 @@ void func_005B8944(void) {
     data_00796418 = 0x00000000u /* 0.0 f */;
     data_0079641C = 0x3FC00000u /* 1.5 f */;
     data_00796420 = 0x3F800000u /* 1.0 f */;
-    func_0019B51C((uintptr_t)&data_007961B0, (uintptr_t)&func_0060456C, 0x00000020u, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_007961B0, (uintptr_t)&func_0060456C, 0x00000020u, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00796190, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

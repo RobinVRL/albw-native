@@ -66,7 +66,7 @@ void func_005EB560(void) {
     data_0079CE04 = 0x00000000u;
     data_0079CE08 = 0x00000000u;
     data_0079CE0C = 0xFFFFFFFFu;
-    func_0010FC88((uintptr_t)&data_0079CDD4, 0x00000010u, (uintptr_t)&data_007046C0, 0x00000100u, 0x00000000u, 0x00000000u);
+    func_0010FC88((uintptr_t)&data_0079CDD4, 0x00000010u, (uintptr_t)&data_007046C0, 0x00000100u, 0x00000004u, 0x00000000u);
     func_0010DEB0((uintptr_t)&data_0079CE04);
     *(uintptr_t *)((char *)stk + 0) = 0x00000004u;
     *(uintptr_t *)((char *)stk + 4) = 0x00000000u;
@@ -80,7 +80,7 @@ void func_005EB560(void) {
     data_0079CE40 = 0x00000000u;
     data_0079CE44 = 0x00000000u;
     data_0079CE48 = 0xFFFFFFFFu;
-    func_0010FC88((uintptr_t)&data_0079CE10, 0x00000008u, (uintptr_t)&data_007047C0, 0x00000100u, 0x00000000u, 0x00000000u);
+    func_0010FC88((uintptr_t)&data_0079CE10, 0x00000008u, (uintptr_t)&data_007047C0, 0x00000100u, 0x00000004u, 0x00000000u);
     func_0010DEB0((uintptr_t)&data_0079CE40);
     *(uintptr_t *)((char *)stk + 0) = 0x00000004u;
     *(uintptr_t *)((char *)stk + 4) = 0x00000000u;
@@ -94,7 +94,7 @@ void func_005EB560(void) {
     data_0079CE7C = 0x00000000u;
     data_0079CE80 = 0x00000000u;
     data_0079CE84 = 0xFFFFFFFFu;
-    func_0010FC88((uintptr_t)&data_0079CE4C, 0x00000008u, (uintptr_t)&data_007048C0, 0x00000080u, 0x00000000u, 0x00000000u);
+    func_0010FC88((uintptr_t)&data_0079CE4C, 0x00000008u, (uintptr_t)&data_007048C0, 0x00000080u, 0x00000004u, 0x00000000u);
     func_0010DEB0((uintptr_t)&data_0079CE7C);
     func_005902C0();
 }

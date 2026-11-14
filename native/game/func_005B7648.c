@@ -58,7 +58,7 @@ extern uint32_t data_00781D49;
 extern uint32_t data_00781D4A;
 extern uint32_t data_00781D4B;
 extern uint32_t data_00781D4C;
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00607244(void);
 void func_0060887C(void);
 
@@ -115,7 +115,7 @@ void func_005B7648(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcZoraQueenBig";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"][¤(å)";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203]\201[\203\211\217\227\211\244(\221\345)";
     fill_names((sead_SafeString *)&data_0070F278, names_0070F278, 1);
     fill_names((sead_SafeString *)&data_0070F284, names_0070F284, 1);
     fill_names((sead_SafeString *)&data_0070F290, names_0070F290, 1);
@@ -162,7 +162,7 @@ void func_005B7648(void) {
     *(uint8_t *)&data_00781D4A = 0x14u;
     *(uint8_t *)&data_00781D4B = 0x14u;
     *(uint8_t *)&data_00781D4C = 0xAu;
-    func_0019B51C((uintptr_t)&data_00781830, (uintptr_t)&func_00607244, 0x000001A8u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_00781830, (uintptr_t)&func_00607244, 0x000001A8u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_00781810, (uintptr_t)((char *)stk + 24), 0x00000000u);
     *(uintptr_t *)((char *)stk + 0) = (uintptr_t)&data_00781A78;
     *(uintptr_t *)((char *)stk + 4) = (uintptr_t)((char *)stk + 40);
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
@@ -170,9 +170,9 @@ void func_005B7648(void) {
     *(uintptr_t *)((char *)stk + 32) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 36) = (uintptr_t)"NpcZoraQueenSmall";
     *(uintptr_t *)((char *)stk + 40) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"][¤(¬)";
+    *(uintptr_t *)((char *)stk + 44) = (uintptr_t)"\203]\201[\203\211\217\227\211\244(\217\254)";
     data_00781A78 = 0x00000000u;
     data_00781A7C = 0x00000005u;
     data_00781A80 = (uintptr_t)&data_00781A84;
-    func_0019B51C((uintptr_t)&data_00781A98, (uintptr_t)&func_0060887C, 0x000001A9u, (uintptr_t)((char *)stk + 32));
+    func_0019B51C((uintptr_t)&data_00781A98, (uintptr_t)&func_0060887C, 0x000001A9u, (uintptr_t)((char *)stk + 32), (uintptr_t)&data_00781A78, (uintptr_t)((char *)stk + 40), 0x00000000u);
 }

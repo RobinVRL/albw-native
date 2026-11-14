@@ -19,7 +19,7 @@ extern uint32_t data_00750994;
 extern uint32_t data_007509A8;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_00116944(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00603CB8(void);
 
 static const char *const names_0070BE28[1] = {
@@ -48,12 +48,12 @@ void func_005B3ED4(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"§ÄÂ";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\227\247\202\304\224\302";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"MojBoardFall";
     data_0070BE14 = ret1;
     data_00750988 = 0x00000000u;
     data_0075098C = 0x00000005u;
     data_00750990 = (uintptr_t)&data_00750994;
-    func_0019B51C((uintptr_t)&data_007509A8, (uintptr_t)&func_00603CB8, 0x000000DAu, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_007509A8, (uintptr_t)&func_00603CB8, 0x000000DAu, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_00750988, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

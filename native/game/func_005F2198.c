@@ -28,7 +28,7 @@ extern uint32_t data_0079AC50;
 extern uint32_t data_0079AC54;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
 void func_0011DFE4(void);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00609A10(void);
 
 static const char *const names_0079AC20[4] = {
@@ -67,7 +67,7 @@ void func_005F2198(void) {
     *(uintptr_t *)((char *)stk + 8) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 12) = 0x00000000u;
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"«ÒÌÔJ}l[W[^O";
+    *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"\214\253\216\322\202\314\212\324\203J\203\201\203\211\203}\203l\201[\203W\203\203\201[\203^\203O";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"TagSageRoomCameraMgr";
     data_0071278C = ret3;
@@ -78,5 +78,5 @@ void func_005F2198(void) {
     data_0079AC4C = 0x00000000u /* 0.0 f */;
     data_0079AC50 = 0xC0400000u /* -3.0 f */;
     data_0079AC54 = 0x00000000u /* 0.0 f */;
-    func_0019B51C((uintptr_t)&data_0079A9D8, (uintptr_t)&func_00609A10, 0x0000027Bu, (uintptr_t)((char *)stk + 24));
+    func_0019B51C((uintptr_t)&data_0079A9D8, (uintptr_t)&func_00609A10, 0x0000027Bu, (uintptr_t)((char *)stk + 24), (uintptr_t)&data_0079A9B8, (uintptr_t)((char *)stk + 16), 0x00000000u);
 }

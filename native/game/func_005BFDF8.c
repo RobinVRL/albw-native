@@ -46,7 +46,7 @@ extern uint32_t data_0077DF14;
 extern uint32_t data_0077DF18;
 extern uint32_t data_0077DF1C;
 uintptr_t func_00114608(uintptr_t, uintptr_t);
-void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+void func_0019B51C(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_00605350(void);
 
 static const char *const names_0070EB18[1] = {
@@ -118,7 +118,7 @@ void func_005BFDF8(void) {
     *(uintptr_t *)((char *)stk + 16) = (uintptr_t)&data_006F5988;
     *(uintptr_t *)((char *)stk + 20) = (uintptr_t)"NpcSahasrahla";
     *(uintptr_t *)((char *)stk + 24) = (uintptr_t)&data_006F5988;
-    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"TnX[";
+    *(uintptr_t *)((char *)stk + 28) = (uintptr_t)"\203T\203n\203X\203\211\201[\203\211";
     data_0070EAFC = ret1;
     data_0070EB00 = ret0;
     data_0070EB04 = ret1;
@@ -131,5 +131,5 @@ void func_005BFDF8(void) {
     data_0077DF14 = 0x00000000u /* 0.0 f */;
     data_0077DF18 = 0x00000000u /* 0.0 f */;
     data_0077DF1C = 0x40400000u /* 3.0 f */;
-    func_0019B51C((uintptr_t)&data_0077DC78, (uintptr_t)&func_00605350, 0x000001A1u, (uintptr_t)((char *)stk + 16));
+    func_0019B51C((uintptr_t)&data_0077DC78, (uintptr_t)&func_00605350, 0x000001A1u, (uintptr_t)((char *)stk + 16), (uintptr_t)&data_0077DC58, (uintptr_t)((char *)stk + 24), 0x00000000u);
 }
