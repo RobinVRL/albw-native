@@ -1,0 +1,4750 @@
+{
+ "00100024": {
+  "conf": "high",
+  "eu": "00100024",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00100BC4": {
+  "conf": "high",
+  "eu": "00100BC4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00100C18": {
+  "conf": "high",
+  "eu": "00100C18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00101354": {
+  "conf": "high",
+  "eu": "00101354",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00101F80": {
+  "conf": "high",
+  "eu": "00101F80",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001036D8": {
+  "conf": "high",
+  "eu": "001036D8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00105374": {
+  "conf": "high",
+  "eu": "00105374",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "001057CC": {
+  "conf": "high",
+  "eu": "001057CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00105820": {
+  "conf": "high",
+  "eu": "00105820",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00108DA8": {
+  "conf": "high",
+  "eu": "00108DA8",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00108F4C": {
+  "conf": "high",
+  "eu": "00108F4C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 28 sites (retreads.json)"
+ },
+ "0010BAB4": {
+  "conf": "high",
+  "eu": "0010BAB4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1652 of 1653 sites (retreads.json)"
+ },
+ "0010CEE0": {
+  "conf": "high",
+  "eu": "0010CEE0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 592 of 594 sites (retreads.json)"
+ },
+ "0010D0F4": {
+  "conf": "high",
+  "eu": "0010D0F4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0010EA08": {
+  "conf": "high",
+  "eu": "0010EA08",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0010FC68": {
+  "conf": "high",
+  "eu": "0010FC68",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001114C0": {
+  "conf": "high",
+  "eu": "001114C0",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00112D70": {
+  "conf": "high",
+  "eu": "00112D70",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001138EC": {
+  "conf": "high",
+  "eu": "001138EC",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "00115154": {
+  "conf": "high",
+  "eu": "00115154",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 (3 sites) and r0 (1); r0 is the untouched argument on every return path, s0 is written on every one"
+ },
+ "00115C14": {
+  "conf": "high",
+  "eu": "00115C14",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 4 sites (retreads.json)"
+ },
+ "00115DC8": {
+  "conf": "high",
+  "eu": "00115DC8",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 (24 sites) and r0 (1); r0 is the untouched argument on every return path, s0 is written on every one"
+ },
+ "0011F064": {
+  "conf": "high",
+  "eu": "0011F064",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0011F6B4": {
+  "conf": "high",
+  "eu": "0011F6B4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00120770": {
+  "conf": "high",
+  "eu": "00120770",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "00123DF8": {
+  "conf": "high",
+  "eu": "00123DF8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0012507C": {
+  "conf": "high",
+  "eu": "0012507C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00125828": {
+  "conf": "high",
+  "eu": "00125828",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00125A18": {
+  "conf": "high",
+  "eu": "00125A18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00125FE4": {
+  "conf": "high",
+  "eu": "00125FE4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00127134": {
+  "conf": "high",
+  "eu": "00127134",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0012713C": {
+  "conf": "high",
+  "eu": "0012713C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00127144": {
+  "conf": "high",
+  "eu": "00127144",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0012714C": {
+  "conf": "high",
+  "eu": "0012714C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00127154": {
+  "conf": "high",
+  "eu": "00127154",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0012715C": {
+  "conf": "high",
+  "eu": "0012715C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00127164": {
+  "conf": "high",
+  "eu": "00127164",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00129D60": {
+  "conf": "high",
+  "eu": "00129D60",
+  "ghidra": "undefined",
+  "paths": 7,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 7 return paths"
+ },
+ "0012BDAC": {
+  "conf": "high",
+  "eu": "0012BDAC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0012E7EC": {
+  "conf": "high",
+  "eu": "0012E7EC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0013B6FC": {
+  "conf": "high",
+  "eu": "0013B6FC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0013BF0C": {
+  "conf": "high",
+  "eu": "0013BF0C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0013E298": {
+  "conf": "high",
+  "eu": "0013E298",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0013F2C0": {
+  "conf": "high",
+  "eu": "0013F2C0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "001428D0": {
+  "conf": "high",
+  "eu": "001428D0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001488B8": {
+  "conf": "high",
+  "eu": "001488B8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0014921C": {
+  "conf": "high",
+  "eu": "0014921C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0014AFE8": {
+  "conf": "high",
+  "eu": "0014AFE8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0014B00C": {
+  "conf": "high",
+  "eu": "0014B00C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0014E428": {
+  "conf": "high",
+  "eu": "0014E428",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 154 of 156 sites (retreads.json)"
+ },
+ "0014E868": {
+  "conf": "high",
+  "eu": "0014E868",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0014FC2C": {
+  "conf": "high",
+  "eu": "0014FC2C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0014FD6C": {
+  "conf": "high",
+  "eu": "0014FD6C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0014FEBC": {
+  "conf": "high",
+  "eu": "0014FEBC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0014FF58": {
+  "conf": "high",
+  "eu": "0014FF58",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00150C80": {
+  "conf": "high",
+  "eu": "00150C80",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 4 sites (retreads.json)"
+ },
+ "00151148": {
+  "conf": "high",
+  "eu": "00151148",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 209 sites (retreads.json)"
+ },
+ "001546BC": {
+  "conf": "high",
+  "eu": "001546C0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "0015807C": {
+  "conf": "high",
+  "eu": "00158080",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00158CD4": {
+  "conf": "high",
+  "eu": "00158CD8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "00158D0C": {
+  "conf": "high",
+  "eu": "00158D10",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0015D0E0": {
+  "conf": "high",
+  "eu": "0015D0E4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0015FB24": {
+  "conf": "high",
+  "eu": "0015FB28",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0015FC8C": {
+  "conf": "high",
+  "eu": "0015FC90",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00169608": {
+  "conf": "high",
+  "eu": "00169608",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 160 sites (retreads.json)"
+ },
+ "001699A0": {
+  "conf": "high",
+  "eu": "001699A0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0016AF1C": {
+  "conf": "high",
+  "eu": "0016AF1C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00174264": {
+  "conf": "high",
+  "eu": "00174264",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001794DC": {
+  "conf": "high",
+  "eu": "001794DC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 4 sites (retreads.json)"
+ },
+ "0017D488": {
+  "conf": "high",
+  "eu": "0017D488",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0017E2C0": {
+  "conf": "high",
+  "eu": "0017E2C0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00181EF0": {
+  "conf": "high",
+  "eu": "00181EF0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00184D18": {
+  "conf": "high",
+  "eu": "00184D18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00185C54": {
+  "conf": "high",
+  "eu": "00185C54",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00186188": {
+  "conf": "high",
+  "eu": "00186188",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00186848": {
+  "conf": "high",
+  "eu": "00186848",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00186CB4": {
+  "conf": "high",
+  "eu": "00186CB4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00189580": {
+  "conf": "high",
+  "eu": "00189580",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "0018EF30": {
+  "conf": "high",
+  "eu": "0018EF30",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00191550": {
+  "conf": "high",
+  "eu": "00191550",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00197614": {
+  "conf": "high",
+  "eu": "00197614",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0019AA44": {
+  "conf": "high",
+  "eu": "0019AA44",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0019B51C": {
+  "conf": "high",
+  "eu": "0019B51C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 640 of 640 sites (retreads.json)"
+ },
+ "0019BE30": {
+  "conf": "high",
+  "eu": "0019BE30",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0019D5C4": {
+  "conf": "high",
+  "eu": "0019D5C4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "001A3260": {
+  "conf": "high",
+  "eu": "001A3260",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "001A5458": {
+  "conf": "high",
+  "eu": "001A5458",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "001A5884": {
+  "conf": "high",
+  "eu": "001A5884",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 5 of 5 return paths"
+ },
+ "001A6E30": {
+  "conf": "high",
+  "eu": "001A6E30",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001A786C": {
+  "conf": "high",
+  "eu": "001A786C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001A93F0": {
+  "conf": "high",
+  "eu": "001A93F0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "001A9468": {
+  "conf": "high",
+  "eu": "001A9468",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "001B0550": {
+  "conf": "high",
+  "eu": "001B0550",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "001B0DF4": {
+  "conf": "high",
+  "eu": "001B0DF4",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "001B0ED4": {
+  "conf": "high",
+  "eu": "001B0ED4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001B6DE0": {
+  "conf": "high",
+  "eu": "001B6DE0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "001B7380": {
+  "conf": "high",
+  "eu": "001B7380",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001B78E0": {
+  "conf": "high",
+  "eu": "001B78E0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "001B79E8": {
+  "conf": "high",
+  "eu": "001B79E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001BE498": {
+  "conf": "high",
+  "eu": "001BE498",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001BF6DC": {
+  "conf": "high",
+  "eu": "001BF6DC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001C1A04": {
+  "conf": "high",
+  "eu": "001C1A04",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001C47AC": {
+  "conf": "high",
+  "eu": "001C47AC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001C6CD0": {
+  "conf": "high",
+  "eu": "001C6CD0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001C7538": {
+  "conf": "high",
+  "eu": "001C7538",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CA158": {
+  "conf": "high",
+  "eu": "001CA158",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CA830": {
+  "conf": "high",
+  "eu": "001CA830",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CAEE8": {
+  "conf": "high",
+  "eu": "001CAEE8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CBA18": {
+  "conf": "high",
+  "eu": "001CBA18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CC250": {
+  "conf": "high",
+  "eu": "001CC250",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CCA48": {
+  "conf": "high",
+  "eu": "001CCA48",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CDDC8": {
+  "conf": "high",
+  "eu": "001CDDC8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "001CEA44": {
+  "conf": "high",
+  "eu": "001CEA44",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001CFA58": {
+  "conf": "high",
+  "eu": "001CFA58",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "001D4948": {
+  "conf": "high",
+  "eu": "001D4948",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "001D5B04": {
+  "conf": "high",
+  "eu": "001D5B04",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001D941C": {
+  "conf": "high",
+  "eu": "001D941C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001D9D40": {
+  "conf": "high",
+  "eu": "001D9D40",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "001DAC68": {
+  "conf": "high",
+  "eu": "001DAC68",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "001DD0C8": {
+  "conf": "high",
+  "eu": "001DD0C8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001DEA54": {
+  "conf": "high",
+  "eu": "001DEA54",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001DF690": {
+  "conf": "high",
+  "eu": "001DF690",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "001E252C": {
+  "conf": "high",
+  "eu": "001E252C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "001E29C0": {
+  "conf": "high",
+  "eu": "001E29C0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "001E4378": {
+  "conf": "high",
+  "eu": "001E4378",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "001E97D8": {
+  "conf": "high",
+  "eu": "001E97D8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "001FF22C": {
+  "conf": "high",
+  "eu": "001FF22C",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00200E34": {
+  "conf": "high",
+  "eu": "00200E34",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "00203918": {
+  "conf": "high",
+  "eu": "00203918",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00204464": {
+  "conf": "high",
+  "eu": "00204464",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "00208CD0": {
+  "conf": "high",
+  "eu": "00208CD0",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 5 of 5 return paths"
+ },
+ "0020ECD0": {
+  "conf": "high",
+  "eu": "0020ECD0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0021219C": {
+  "conf": "high",
+  "eu": "0021219C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00216CDC": {
+  "conf": "high",
+  "eu": "00216CDC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002246EC": {
+  "conf": "high",
+  "eu": "002246EC",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "002283D4": {
+  "conf": "high",
+  "eu": "002283D4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "002299D0": {
+  "conf": "high",
+  "eu": "002299D0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0022AA1C": {
+  "conf": "high",
+  "eu": "0022AA1C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0022CC80": {
+  "conf": "high",
+  "eu": "0022CC80",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0022E91C": {
+  "conf": "high",
+  "eu": "0022E91C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0022F32C": {
+  "conf": "high",
+  "eu": "0022F32C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00231524": {
+  "conf": "high",
+  "eu": "00231524",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "002316CC": {
+  "conf": "high",
+  "eu": "002316CC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00232320": {
+  "conf": "high",
+  "eu": "00232320",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0023328C": {
+  "conf": "high",
+  "eu": "0023328C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002353B8": {
+  "conf": "high",
+  "eu": "002353B8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "0023A9A8": {
+  "conf": "high",
+  "eu": "0023A9A8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0023B2F0": {
+  "conf": "high",
+  "eu": "0023B2F0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0023B910": {
+  "conf": "high",
+  "eu": "0023B910",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0024441C": {
+  "conf": "high",
+  "eu": "0024441C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002444CC": {
+  "conf": "high",
+  "eu": "002444CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00246A50": {
+  "conf": "high",
+  "eu": "00246A50",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00248370": {
+  "conf": "high",
+  "eu": "00248370",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00249920": {
+  "conf": "high",
+  "eu": "00249920",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00249AEC": {
+  "conf": "high",
+  "eu": "00249AEC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00252C84": {
+  "conf": "high",
+  "eu": "00252CAC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002543D0": {
+  "conf": "high",
+  "eu": "002543F8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00255494": {
+  "conf": "high",
+  "eu": "002554BC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00258E74": {
+  "conf": "high",
+  "eu": "00258E9C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0025B6A8": {
+  "conf": "high",
+  "eu": "0025B6D0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 4 of 24 sites (retreads.json)"
+ },
+ "0025C32C": {
+  "conf": "high",
+  "eu": "0025C354",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0025C4BC": {
+  "conf": "high",
+  "eu": "0025C4E4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0025C9CC": {
+  "conf": "high",
+  "eu": "0025C9F4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00265978": {
+  "conf": "high",
+  "eu": "002659A0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "002681EC": {
+  "conf": "high",
+  "eu": "00268214",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 5 of 5 return paths"
+ },
+ "00269288": {
+  "conf": "high",
+  "eu": "002692B0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0026AB80": {
+  "conf": "high",
+  "eu": "0026ABA8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0026F910": {
+  "conf": "high",
+  "eu": "0026F938",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "002707A4": {
+  "conf": "high",
+  "eu": "002707CC",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 (1 sites) and r0 (1); r0 is the untouched argument on every return path, s0 is written on every one"
+ },
+ "00270A78": {
+  "conf": "high",
+  "eu": "00270AA0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00275FF4": {
+  "conf": "high",
+  "eu": "0027601C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002760AC": {
+  "conf": "high",
+  "eu": "002760D4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0027E7E4": {
+  "conf": "high",
+  "eu": "0027E80C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0027FF60": {
+  "conf": "high",
+  "eu": "0027FF88",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002810A0": {
+  "conf": "high",
+  "eu": "002810C8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002836D0": {
+  "conf": "high",
+  "eu": "002836F8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00284F18": {
+  "conf": "high",
+  "eu": "00284F40",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00285BA4": {
+  "conf": "high",
+  "eu": "00285BCC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00288CAC": {
+  "conf": "high",
+  "eu": "00288CD4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0028D580": {
+  "conf": "high",
+  "eu": "0028D5A8",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 127 sites (retreads.json)"
+ },
+ "002917AC": {
+  "conf": "high",
+  "eu": "002917D4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002917DC": {
+  "conf": "high",
+  "eu": "00291804",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00291A0C": {
+  "conf": "high",
+  "eu": "00291A34",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00291A40": {
+  "conf": "high",
+  "eu": "00291A68",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00291FE8": {
+  "conf": "high",
+  "eu": "00292010",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00298158": {
+  "conf": "high",
+  "eu": "00298200",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0029ABC0": {
+  "conf": "high",
+  "eu": "0029AB9C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002A4678": {
+  "conf": "high",
+  "eu": "002A4654",
+  "ghidra": "undefined",
+  "paths": 6,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 6 of 6 return paths"
+ },
+ "002A87FC": {
+  "conf": "high",
+  "eu": "002A87D8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002A9D70": {
+  "conf": "high",
+  "eu": "002A9D4C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "002ABEC8": {
+  "conf": "high",
+  "eu": "002ABEA4",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "002B0D7C": {
+  "conf": "high",
+  "eu": "002B0D58",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 5 sites (retreads.json)"
+ },
+ "002B64F0": {
+  "conf": "high",
+  "eu": "002B64CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 4 of 7 sites (retreads.json)"
+ },
+ "002B7CAC": {
+  "conf": "high",
+  "eu": "002B7C88",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002BA9A0": {
+  "conf": "high",
+  "eu": "002BA97C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "002BE030": {
+  "conf": "high",
+  "eu": "002BE00C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002C41BC": {
+  "conf": "high",
+  "eu": "002C4198",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 26 sites (retreads.json)"
+ },
+ "002C4E00": {
+  "conf": "high",
+  "eu": "002C4DDC",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "002C66D4": {
+  "conf": "high",
+  "eu": "002C66B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002C900C": {
+  "conf": "high",
+  "eu": "002C8FE8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "002CAD88": {
+  "conf": "high",
+  "eu": "002CAD64",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "002CC800": {
+  "conf": "high",
+  "eu": "002CC7DC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002D28D0": {
+  "conf": "high",
+  "eu": "002D28AC",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "002D3194": {
+  "conf": "high",
+  "eu": "002D3170",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "002D34B4": {
+  "conf": "high",
+  "eu": "002D3490",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002D4C30": {
+  "conf": "high",
+  "eu": "002D4C0C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002D5ADC": {
+  "conf": "high",
+  "eu": "002D5AB8",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "002DA848": {
+  "conf": "high",
+  "eu": "002DA824",
+  "ghidra": "undefined",
+  "paths": 8,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 8 return paths"
+ },
+ "002E4AC4": {
+  "conf": "high",
+  "eu": "002E4AA0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "002E6A38": {
+  "conf": "high",
+  "eu": "002E6A14",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002EB18C": {
+  "conf": "high",
+  "eu": "002EB168",
+  "ghidra": "undefined",
+  "paths": 6,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 6 of 6 return paths"
+ },
+ "002EF93C": {
+  "conf": "high",
+  "eu": "002EF918",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 4 return paths"
+ },
+ "002F6A38": {
+  "conf": "high",
+  "eu": "002F6A14",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002F9008": {
+  "conf": "high",
+  "eu": "002F8FE4",
+  "ghidra": "undefined",
+  "paths": 7,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 7 return paths"
+ },
+ "002FA8BC": {
+  "conf": "high",
+  "eu": "002FA898",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "002FCFC8": {
+  "conf": "high",
+  "eu": "002FCFA4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "002FF8A4": {
+  "conf": "high",
+  "eu": "002FF880",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 5 sites (retreads.json)"
+ },
+ "00300E80": {
+  "conf": "high",
+  "eu": "00300E5C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003083F0": {
+  "conf": "high",
+  "eu": "003083CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00308B54": {
+  "conf": "high",
+  "eu": "00308B30",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0030AC74": {
+  "conf": "high",
+  "eu": "0030AC50",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0030F21C": {
+  "conf": "high",
+  "eu": "0030F1F8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00310F64": {
+  "conf": "high",
+  "eu": "00310F40",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003137A4": {
+  "conf": "high",
+  "eu": "00313780",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00314BBC": {
+  "conf": "high",
+  "eu": "00314B98",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003165F4": {
+  "conf": "high",
+  "eu": "003165D0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "0031A96C": {
+  "conf": "high",
+  "eu": "0031A948",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0031B6A0": {
+  "conf": "high",
+  "eu": "0031B67C",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 47 sites (retreads.json)"
+ },
+ "0031D4D4": {
+  "conf": "high",
+  "eu": "0031D4B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "0031DA18": {
+  "conf": "high",
+  "eu": "0031D9F4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00323A80": {
+  "conf": "high",
+  "eu": "00323A5C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00325CF4": {
+  "conf": "high",
+  "eu": "00325CD0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00328984": {
+  "conf": "high",
+  "eu": "00328960",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0032A0A8": {
+  "conf": "high",
+  "eu": "0032A084",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "0032A2C0": {
+  "conf": "high",
+  "eu": "0032A29C",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 4 return paths"
+ },
+ "0032A498": {
+  "conf": "high",
+  "eu": "0032A474",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0032C1EC": {
+  "conf": "high",
+  "eu": "0032C1C8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0032C7F8": {
+  "conf": "high",
+  "eu": "0032C7D4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0032DB20": {
+  "conf": "high",
+  "eu": "0032DAFC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00330D98": {
+  "conf": "high",
+  "eu": "00330D74",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00331084": {
+  "conf": "high",
+  "eu": "00331060",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003320F4": {
+  "conf": "high",
+  "eu": "003320D0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "00335748": {
+  "conf": "high",
+  "eu": "00335724",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003367F0": {
+  "conf": "high",
+  "eu": "003367CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003368B0": {
+  "conf": "high",
+  "eu": "0033688C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0033A340": {
+  "conf": "high",
+  "eu": "0033A31C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003405D8": {
+  "conf": "high",
+  "eu": "003405B4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0034C0E4": {
+  "conf": "high",
+  "eu": "0034C0C0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0034C4C0": {
+  "conf": "high",
+  "eu": "0034C49C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0034E3E4": {
+  "conf": "high",
+  "eu": "0034E3C0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00351FC0": {
+  "conf": "high",
+  "eu": "00351F9C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00354558": {
+  "conf": "high",
+  "eu": "00354534",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "00357D0C": {
+  "conf": "high",
+  "eu": "00357CE8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00358760": {
+  "conf": "high",
+  "eu": "0035873C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00368B1C": {
+  "conf": "high",
+  "eu": "00368AF8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00368B50": {
+  "conf": "high",
+  "eu": "00368B2C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00368B80": {
+  "conf": "high",
+  "eu": "00368B5C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0036C2DC": {
+  "conf": "high",
+  "eu": "0036C2B8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0036DEC8": {
+  "conf": "high",
+  "eu": "0036DEA4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00370E98": {
+  "conf": "high",
+  "eu": "00370E74",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00372964": {
+  "conf": "high",
+  "eu": "00372940",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0037823C": {
+  "conf": "high",
+  "eu": "00378218",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0037A358": {
+  "conf": "high",
+  "eu": "0037A334",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0037A860": {
+  "conf": "high",
+  "eu": "0037A83C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0037FAE0": {
+  "conf": "high",
+  "eu": "0037FABC",
+  "ghidra": "undefined",
+  "paths": 7,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 7 return paths"
+ },
+ "003803F4": {
+  "conf": "high",
+  "eu": "003803D0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "003844D4": {
+  "conf": "high",
+  "eu": "003844B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00388654": {
+  "conf": "high",
+  "eu": "00388630",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00391078": {
+  "conf": "high",
+  "eu": "00391054",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00391618": {
+  "conf": "high",
+  "eu": "003915F8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00394834": {
+  "conf": "high",
+  "eu": "00394810",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0039B7C0": {
+  "conf": "high",
+  "eu": "0039B79C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003A2FB0": {
+  "conf": "high",
+  "eu": "003A2F8C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "003A37D4": {
+  "conf": "high",
+  "eu": "003A37B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003AC354": {
+  "conf": "high",
+  "eu": "003AC330",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003AC504": {
+  "conf": "high",
+  "eu": "003AC4E0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003BC0AC": {
+  "conf": "high",
+  "eu": "003BC088",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003C4034": {
+  "conf": "high",
+  "eu": "003C4010",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003C7C28": {
+  "conf": "high",
+  "eu": "003C7C04",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003C7DEC": {
+  "conf": "high",
+  "eu": "003C7DC8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003C8AF8": {
+  "conf": "high",
+  "eu": "003C8AD4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003C8B84": {
+  "conf": "high",
+  "eu": "003C8B60",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003C8BB8": {
+  "conf": "high",
+  "eu": "003C8B94",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003C8E50": {
+  "conf": "high",
+  "eu": "003C8E2C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003C8EC0": {
+  "conf": "high",
+  "eu": "003C8E9C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003C9E8C": {
+  "conf": "high",
+  "eu": "003C9E68",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003CBCDC": {
+  "conf": "high",
+  "eu": "003CBCB8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "003CBE20": {
+  "conf": "high",
+  "eu": "003CBDFC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003CDD84": {
+  "conf": "high",
+  "eu": "003CDD60",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003CE6EC": {
+  "conf": "high",
+  "eu": "003CE6C8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003CF1AC": {
+  "conf": "high",
+  "eu": "003CF188",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003CF2D4": {
+  "conf": "high",
+  "eu": "003CF2B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003D0874": {
+  "conf": "high",
+  "eu": "003D0850",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003D0ACC": {
+  "conf": "high",
+  "eu": "003D0AA8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003D10C4": {
+  "conf": "high",
+  "eu": "003D10A0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003D112C": {
+  "conf": "high",
+  "eu": "003D1108",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D1168": {
+  "conf": "high",
+  "eu": "003D1144",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003D11D0": {
+  "conf": "high",
+  "eu": "003D11AC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003D127C": {
+  "conf": "high",
+  "eu": "003D1258",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003D12B8": {
+  "conf": "high",
+  "eu": "003D1294",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "003D1320": {
+  "conf": "high",
+  "eu": "003D12FC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D175C": {
+  "conf": "high",
+  "eu": "003D1738",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D1798": {
+  "conf": "high",
+  "eu": "003D1774",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D17D4": {
+  "conf": "high",
+  "eu": "003D17B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D1C10": {
+  "conf": "high",
+  "eu": "003D1BEC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "003D1C5C": {
+  "conf": "high",
+  "eu": "003D1C38",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D1C98": {
+  "conf": "high",
+  "eu": "003D1C74",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "003D3DB8": {
+  "conf": "high",
+  "eu": "003D3D94",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003D56F0": {
+  "conf": "high",
+  "eu": "003D56D0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D6290": {
+  "conf": "high",
+  "eu": "003D6270",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D62E0": {
+  "conf": "high",
+  "eu": "003D62C0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003D6464": {
+  "conf": "high",
+  "eu": "003D6444",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003DC834": {
+  "conf": "high",
+  "eu": "003DC814",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003DD4A4": {
+  "conf": "high",
+  "eu": "003DD484",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003DDB68": {
+  "conf": "high",
+  "eu": "003DDB48",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003DE064": {
+  "conf": "high",
+  "eu": "003DE044",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003DE2E0": {
+  "conf": "high",
+  "eu": "003DE2C0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "003DEA2C": {
+  "conf": "high",
+  "eu": "003DEA0C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 3 sites (retreads.json)"
+ },
+ "003E1634": {
+  "conf": "high",
+  "eu": "003E1614",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "003E21B4": {
+  "conf": "high",
+  "eu": "003E2194",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003E2230": {
+  "conf": "high",
+  "eu": "003E2210",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003E23F4": {
+  "conf": "high",
+  "eu": "003E23D4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003E3614": {
+  "conf": "high",
+  "eu": "003E35F4",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "003E49E4": {
+  "conf": "high",
+  "eu": "003E49C4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003E4A54": {
+  "conf": "high",
+  "eu": "003E4A34",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "003F42A4": {
+  "conf": "high",
+  "eu": "003F4284",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003FBEE8": {
+  "conf": "high",
+  "eu": "003FBEC8",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 5 of 5 return paths"
+ },
+ "003FC784": {
+  "conf": "high",
+  "eu": "003FC764",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "003FD888": {
+  "conf": "high",
+  "eu": "003FD868",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0040071C": {
+  "conf": "high",
+  "eu": "004006FC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00403154": {
+  "conf": "high",
+  "eu": "00403134",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00403FCC": {
+  "conf": "high",
+  "eu": "00403FAC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "00404500": {
+  "conf": "high",
+  "eu": "004044E0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00409940": {
+  "conf": "high",
+  "eu": "00409920",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0040C650": {
+  "conf": "high",
+  "eu": "0040C630",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 7 of 7 sites (retreads.json)"
+ },
+ "0040CBD4": {
+  "conf": "high",
+  "eu": "0040CBB4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0040D9A0": {
+  "conf": "high",
+  "eu": "0040D980",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00412A3C": {
+  "conf": "high",
+  "eu": "00412A1C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 36 of 36 sites (retreads.json)"
+ },
+ "004136CC": {
+  "conf": "high",
+  "eu": "004136AC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00413708": {
+  "conf": "high",
+  "eu": "004136E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004138A8": {
+  "conf": "high",
+  "eu": "00413888",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 5 of 5 sites (retreads.json)"
+ },
+ "004139B0": {
+  "conf": "high",
+  "eu": "00413990",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00414348": {
+  "conf": "high",
+  "eu": "00414328",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00414730": {
+  "conf": "high",
+  "eu": "00414710",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00414C3C": {
+  "conf": "high",
+  "eu": "00414C1C",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00414E2C": {
+  "conf": "high",
+  "eu": "00414E0C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00418498": {
+  "conf": "high",
+  "eu": "00418478",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0041C6E8": {
+  "conf": "high",
+  "eu": "0041C6C8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0041E2D8": {
+  "conf": "high",
+  "eu": "0041E2B8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00420110": {
+  "conf": "high",
+  "eu": "004200F0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00427EC4": {
+  "conf": "high",
+  "eu": "00427EA4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0042D5B0": {
+  "conf": "high",
+  "eu": "0042D590",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0043D1D4": {
+  "conf": "high",
+  "eu": "0043D1B4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0044A2D8": {
+  "conf": "high",
+  "eu": "0044A2B0",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00455FE8": {
+  "conf": "high",
+  "eu": "00455FC0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0045D9A8": {
+  "conf": "high",
+  "eu": "0045D980",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "0046CA88": {
+  "conf": "high",
+  "eu": "0046CA60",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "00474510": {
+  "conf": "high",
+  "eu": "004744E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00478EB0": {
+  "conf": "high",
+  "eu": "00478E88",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0047F02C": {
+  "conf": "high",
+  "eu": "0047F004",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00483614": {
+  "conf": "high",
+  "eu": "004835EC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00489CB0": {
+  "conf": "high",
+  "eu": "00489C88",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00489F08": {
+  "conf": "high",
+  "eu": "00489EE0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0048A1EC": {
+  "conf": "high",
+  "eu": "0048A1C4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0048B740": {
+  "conf": "high",
+  "eu": "0048B718",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0048BB30": {
+  "conf": "high",
+  "eu": "0048BB08",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0048BB48": {
+  "conf": "high",
+  "eu": "0048BB20",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0048F288": {
+  "conf": "high",
+  "eu": "0048F260",
+  "ghidra": "undefined",
+  "paths": 6,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00490628": {
+  "conf": "high",
+  "eu": "00490600",
+  "ghidra": "uint",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "00491338": {
+  "conf": "high",
+  "eu": "00491310",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 10 sites (retreads.json)"
+ },
+ "00491624": {
+  "conf": "high",
+  "eu": "004915FC",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 68 sites (retreads.json)"
+ },
+ "0049216C": {
+  "conf": "high",
+  "eu": "00492144",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 25 sites (retreads.json)"
+ },
+ "00494374": {
+  "conf": "high",
+  "eu": "0049434C",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 3 return paths"
+ },
+ "00495CCC": {
+  "conf": "high",
+  "eu": "00495CA4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00495DB8": {
+  "conf": "high",
+  "eu": "00495D90",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00499590": {
+  "conf": "high",
+  "eu": "00499568",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004997A0": {
+  "conf": "high",
+  "eu": "00499778",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0049C82C": {
+  "conf": "high",
+  "eu": "0049C804",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0049CE98": {
+  "conf": "high",
+  "eu": "0049CE70",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0049EE84": {
+  "conf": "high",
+  "eu": "0049EE5C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0049EEDC": {
+  "conf": "high",
+  "eu": "0049EEB4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "0049F2C4": {
+  "conf": "high",
+  "eu": "0049F29C",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004A028C": {
+  "conf": "high",
+  "eu": "004A0264",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004A034C": {
+  "conf": "high",
+  "eu": "004A0324",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004A3CC8": {
+  "conf": "high",
+  "eu": "004A3CA0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004A5290": {
+  "conf": "high",
+  "eu": "004A5268",
+  "ghidra": "undefined",
+  "paths": 8,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 8 return paths"
+ },
+ "004A7F00": {
+  "conf": "high",
+  "eu": "004A7ED8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004A9120": {
+  "conf": "high",
+  "eu": "004A90F8",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 36 sites (retreads.json)"
+ },
+ "004AAF44": {
+  "conf": "high",
+  "eu": "004AAF1C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004AC000": {
+  "conf": "high",
+  "eu": "004ABFD8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004AD9E8": {
+  "conf": "high",
+  "eu": "004AD9C0",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004AF3C4": {
+  "conf": "high",
+  "eu": "004AF39C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004B76D4": {
+  "conf": "high",
+  "eu": "004B76AC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004B8D94": {
+  "conf": "high",
+  "eu": "004B8D6C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004B9288": {
+  "conf": "high",
+  "eu": "004B9260",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004B9B18": {
+  "conf": "high",
+  "eu": "004B9AF0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004BBB88": {
+  "conf": "high",
+  "eu": "004BBB60",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "004BD9E0": {
+  "conf": "high",
+  "eu": "004BD9B8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "004BDB2C": {
+  "conf": "high",
+  "eu": "004BDB04",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 11 sites (retreads.json)"
+ },
+ "004BDDB0": {
+  "conf": "high",
+  "eu": "004BDD88",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004BFFC4": {
+  "conf": "high",
+  "eu": "004BFF9C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004C0FF8": {
+  "conf": "high",
+  "eu": "004C0FD0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "004C1388": {
+  "conf": "high",
+  "eu": "004C1360",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004C1DAC": {
+  "conf": "high",
+  "eu": "004C1D84",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004C1E5C": {
+  "conf": "high",
+  "eu": "004C1E34",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004C2328": {
+  "conf": "high",
+  "eu": "004C2300",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004C5B2C": {
+  "conf": "high",
+  "eu": "004C5B04",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004C6D7C": {
+  "conf": "high",
+  "eu": "004C6D54",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004C6D98": {
+  "conf": "high",
+  "eu": "004C6D70",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004C8510": {
+  "conf": "high",
+  "eu": "004C84E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004C9AFC": {
+  "conf": "high",
+  "eu": "004C9AD4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 6 sites (retreads.json)"
+ },
+ "004CA164": {
+  "conf": "high",
+  "eu": "004CA13C",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 4 return paths"
+ },
+ "004CBC0C": {
+  "conf": "high",
+  "eu": "004CBBE4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004CC35C": {
+  "conf": "high",
+  "eu": "004CC334",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004CE804": {
+  "conf": "high",
+  "eu": "004CE7DC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004CEA18": {
+  "conf": "high",
+  "eu": "004CE9F0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 147 sites (retreads.json)"
+ },
+ "004CF5DC": {
+  "conf": "high",
+  "eu": "004CF5B4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004CF864": {
+  "conf": "high",
+  "eu": "004CF83C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004D0268": {
+  "conf": "high",
+  "eu": "004D0240",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004D7E0C": {
+  "conf": "high",
+  "eu": "004D7DE4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004D7F70": {
+  "conf": "high",
+  "eu": "004D7F48",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004D7FBC": {
+  "conf": "high",
+  "eu": "004D7F94",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 22 sites (retreads.json)"
+ },
+ "004D89B8": {
+  "conf": "high",
+  "eu": "004D8990",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004D8AEC": {
+  "conf": "high",
+  "eu": "004D8AC4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004D9DF8": {
+  "conf": "high",
+  "eu": "004D9DD0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004DAC4C": {
+  "conf": "high",
+  "eu": "004DAC24",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004DD410": {
+  "conf": "high",
+  "eu": "004DD3E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004DFBCC": {
+  "conf": "high",
+  "eu": "004DFBA4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004E5710": {
+  "conf": "high",
+  "eu": "004E56E8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004E712C": {
+  "conf": "high",
+  "eu": "004E7104",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004E7B14": {
+  "conf": "high",
+  "eu": "004E7AEC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004E87A0": {
+  "conf": "high",
+  "eu": "004E8778",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004EA028": {
+  "conf": "high",
+  "eu": "004EA000",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004EA104": {
+  "conf": "high",
+  "eu": "004EA0DC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004ECEB0": {
+  "conf": "high",
+  "eu": "004ECE88",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "004ED18C": {
+  "conf": "high",
+  "eu": "004ED164",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004ED898": {
+  "conf": "high",
+  "eu": "004ED870",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004EDB1C": {
+  "conf": "high",
+  "eu": "004EDAF4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004F0678": {
+  "conf": "high",
+  "eu": "004F0650",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004F2E68": {
+  "conf": "high",
+  "eu": "004F2E40",
+  "ghidra": "undefined",
+  "paths": 5,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 5 of 5 return paths"
+ },
+ "004F3AC8": {
+  "conf": "high",
+  "eu": "004F3AA0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "004F48F0": {
+  "conf": "high",
+  "eu": "004F48C8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004F5588": {
+  "conf": "high",
+  "eu": "004F5560",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004F6DA0": {
+  "conf": "high",
+  "eu": "004F6D78",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004F93D8": {
+  "conf": "high",
+  "eu": "004F93B0",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 5 of 5 sites (retreads.json)"
+ },
+ "004F9728": {
+  "conf": "high",
+  "eu": "004F9700",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 4 return paths"
+ },
+ "004F9880": {
+  "conf": "high",
+  "eu": "004F9858",
+  "ghidra": "undefined",
+  "paths": 6,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 6 return paths"
+ },
+ "004FA13C": {
+  "conf": "high",
+  "eu": "004FA114",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "004FA174": {
+  "conf": "high",
+  "eu": "004FA14C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 5 sites (retreads.json)"
+ },
+ "004FAB0C": {
+  "conf": "high",
+  "eu": "004FAAE4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "004FAD90": {
+  "conf": "high",
+  "eu": "004FAD68",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004FB2F0": {
+  "conf": "high",
+  "eu": "004FB2C8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004FB408": {
+  "conf": "high",
+  "eu": "004FB3E0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004FBF58": {
+  "conf": "high",
+  "eu": "004FBF30",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "004FC218": {
+  "conf": "high",
+  "eu": "004FC1F0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004FC244": {
+  "conf": "high",
+  "eu": "004FC21C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "004FDE70": {
+  "conf": "high",
+  "eu": "004FDE48",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 4 return paths"
+ },
+ "004FF57C": {
+  "conf": "high",
+  "eu": "004FF554",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00502948": {
+  "conf": "high",
+  "eu": "00502920",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00503E54": {
+  "conf": "high",
+  "eu": "00503E2C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "005088A0": {
+  "conf": "high",
+  "eu": "00508878",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0050D6C0": {
+  "conf": "high",
+  "eu": "0050D698",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0050DD68": {
+  "conf": "high",
+  "eu": "0050DD40",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0050FDAC": {
+  "conf": "high",
+  "eu": "0050FD84",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00513CFC": {
+  "conf": "high",
+  "eu": "00513CD4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "00513D68": {
+  "conf": "high",
+  "eu": "00513D40",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "005189DC": {
+  "conf": "high",
+  "eu": "005189B4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 4 of 4 sites (retreads.json)"
+ },
+ "0051AAF8": {
+  "conf": "high",
+  "eu": "0051AAD0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 3 sites (retreads.json)"
+ },
+ "0051B0C8": {
+  "conf": "high",
+  "eu": "0051B0A0",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0051BC08": {
+  "conf": "high",
+  "eu": "0051BBE0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0051D034": {
+  "conf": "high",
+  "eu": "0051D00C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0051D0B0": {
+  "conf": "high",
+  "eu": "0051D088",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00520DF0": {
+  "conf": "high",
+  "eu": "00520DC8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00523718": {
+  "conf": "high",
+  "eu": "005236F0",
+  "ghidra": "int",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "005237CC": {
+  "conf": "high",
+  "eu": "005237A4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "00530844": {
+  "conf": "high",
+  "eu": "0053081C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0053084C": {
+  "conf": "high",
+  "eu": "00530824",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00530874": {
+  "conf": "high",
+  "eu": "0053084C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "00530CC8": {
+  "conf": "high",
+  "eu": "00530CA0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "00531080": {
+  "conf": "high",
+  "eu": "00531058",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0053283C": {
+  "conf": "high",
+  "eu": "00532814",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00537E40": {
+  "conf": "high",
+  "eu": "00537E18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "005380E0": {
+  "conf": "high",
+  "eu": "005380B8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "005381B4": {
+  "conf": "high",
+  "eu": "0053818C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0053EE30": {
+  "conf": "high",
+  "eu": "0053EE08",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0053F29C": {
+  "conf": "high",
+  "eu": "0053F274",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0053FA20": {
+  "conf": "high",
+  "eu": "0053F9F8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005401A0": {
+  "conf": "high",
+  "eu": "00540178",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00540270": {
+  "conf": "high",
+  "eu": "00540248",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00541604": {
+  "conf": "high",
+  "eu": "005415DC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00541674": {
+  "conf": "high",
+  "eu": "0054164C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005430B0": {
+  "conf": "high",
+  "eu": "00543088",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005438D8": {
+  "conf": "high",
+  "eu": "005438B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "00546494": {
+  "conf": "high",
+  "eu": "0054646C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0054668C": {
+  "conf": "high",
+  "eu": "00546664",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "005467E4": {
+  "conf": "high",
+  "eu": "005467BC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "005468EC": {
+  "conf": "high",
+  "eu": "005468C4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 4 of 7 sites (retreads.json)"
+ },
+ "005469FC": {
+  "conf": "high",
+  "eu": "005469D4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0054E460": {
+  "conf": "high",
+  "eu": "0054E438",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0054F764": {
+  "conf": "high",
+  "eu": "0054F73C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 10 sites (retreads.json)"
+ },
+ "005527F8": {
+  "conf": "high",
+  "eu": "005527D0",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00552C88": {
+  "conf": "high",
+  "eu": "00552C60",
+  "ghidra": "undefined4",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 5 sites (retreads.json)"
+ },
+ "00553288": {
+  "conf": "high",
+  "eu": "00553260",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0055497C": {
+  "conf": "high",
+  "eu": "00554954",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00554D80": {
+  "conf": "high",
+  "eu": "00554D58",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00556F08": {
+  "conf": "high",
+  "eu": "00556EB0",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 4 of 4 return paths"
+ },
+ "00558370": {
+  "conf": "high",
+  "eu": "00558348",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0055EC48": {
+  "conf": "high",
+  "eu": "0055EC20",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005605A0": {
+  "conf": "high",
+  "eu": "00560578",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00560668": {
+  "conf": "high",
+  "eu": "00560640",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00561F74": {
+  "conf": "high",
+  "eu": "00561F4C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00561FF0": {
+  "conf": "high",
+  "eu": "00561FC8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00562430": {
+  "conf": "high",
+  "eu": "00562408",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005648EC": {
+  "conf": "high",
+  "eu": "005648C4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00565904": {
+  "conf": "high",
+  "eu": "005658DC",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "005698CC": {
+  "conf": "high",
+  "eu": "005698A4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 2 return paths"
+ },
+ "0056A138": {
+  "conf": "high",
+  "eu": "0056A110",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056A1A4": {
+  "conf": "high",
+  "eu": "0056A17C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0056A51C": {
+  "conf": "high",
+  "eu": "0056A4F4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056A644": {
+  "conf": "high",
+  "eu": "0056A61C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056AD4C": {
+  "conf": "high",
+  "eu": "0056AD24",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0056B010": {
+  "conf": "high",
+  "eu": "0056AFE8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0056CDA0": {
+  "conf": "high",
+  "eu": "0056CD78",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "0056CE68": {
+  "conf": "high",
+  "eu": "0056CE40",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056D488": {
+  "conf": "high",
+  "eu": "0056D460",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056EF40": {
+  "conf": "high",
+  "eu": "0056EF18",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056F090": {
+  "conf": "high",
+  "eu": "0056F068",
+  "ghidra": "float *",
+  "ret": "float",
+  "why": "callers read s0 after the call at 3 of 3 sites (retreads.json)"
+ },
+ "0056F3E4": {
+  "conf": "high",
+  "eu": "0056F3BC",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 4 of 4 sites (retreads.json)"
+ },
+ "0056F410": {
+  "conf": "high",
+  "eu": "0056F3E8",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0056F43C": {
+  "conf": "high",
+  "eu": "0056F414",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005706B0": {
+  "conf": "high",
+  "eu": "00570688",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0057D2C4": {
+  "conf": "high",
+  "eu": "0057D29C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 4 sites (retreads.json)"
+ },
+ "0057E9F4": {
+  "conf": "high",
+  "eu": "0057E9CC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0057FEF0": {
+  "conf": "high",
+  "eu": "0057FEC8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0058077C": {
+  "conf": "high",
+  "eu": "00580754",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00581924": {
+  "conf": "high",
+  "eu": "005818FC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00581B58": {
+  "conf": "high",
+  "eu": "00581B30",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00582224": {
+  "conf": "high",
+  "eu": "005821FC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00582DA4": {
+  "conf": "high",
+  "eu": "00582D7C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00583E90": {
+  "conf": "high",
+  "eu": "00583E68",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "005841D8": {
+  "conf": "high",
+  "eu": "005841B0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 11 of 12 sites (retreads.json)"
+ },
+ "00584798": {
+  "conf": "high",
+  "eu": "00584770",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00584DF8": {
+  "conf": "high",
+  "eu": "00584DD0",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "00587970": {
+  "conf": "high",
+  "eu": "00587948",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00587BE0": {
+  "conf": "high",
+  "eu": "00587BB8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00587CE8": {
+  "conf": "high",
+  "eu": "00587CC0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00588194": {
+  "conf": "high",
+  "eu": "0058816C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00588A64": {
+  "conf": "high",
+  "eu": "00588A3C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0058AA1C": {
+  "conf": "high",
+  "eu": "0058A9F4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0058D860": {
+  "conf": "high",
+  "eu": "0058D838",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0058D874": {
+  "conf": "high",
+  "eu": "0058D84C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0058DC40": {
+  "conf": "high",
+  "eu": "0058DC18",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0058E1FC": {
+  "conf": "high",
+  "eu": "0058E1D4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0058E214": {
+  "conf": "high",
+  "eu": "0058E1EC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0058E22C": {
+  "conf": "high",
+  "eu": "0058E204",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0058E988": {
+  "conf": "high",
+  "eu": "0058E960",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0059090C": {
+  "conf": "high",
+  "eu": "005908E4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 8 of 8 sites (retreads.json)"
+ },
+ "00590B1C": {
+  "conf": "high",
+  "eu": "00590AF4",
+  "ghidra": "undefined",
+  "paths": 6,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 6 of 6 return paths"
+ },
+ "00590D4C": {
+  "conf": "high",
+  "eu": "00590D24",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 14 of 15 sites (retreads.json)"
+ },
+ "005919B4": {
+  "conf": "high",
+  "eu": "0059198C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 6 sites (retreads.json)"
+ },
+ "006017F0": {
+  "conf": "high",
+  "eu": "006017C8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "1 calling function uses r0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00607B84": {
+  "conf": "high",
+  "eu": "00607B5C",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "0063AEA8": {
+  "conf": "high",
+  "eu": "0063AE80",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 2 sites (retreads.json)"
+ },
+ "00652BF4": {
+  "conf": "high",
+  "eu": "00652BCC",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0065310C": {
+  "conf": "high",
+  "eu": "006530E4",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0065AF54": {
+  "conf": "high",
+  "eu": "0065AF2C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 18 sites (retreads.json)"
+ },
+ "0065D120": {
+  "conf": "high",
+  "eu": "0065D0F8",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 14 sites (retreads.json)"
+ },
+ "0065F560": {
+  "conf": "high",
+  "eu": "0065F538",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00663BDC": {
+  "conf": "high",
+  "eu": "00663BB4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 2 of 3 sites (retreads.json)"
+ },
+ "006640EC": {
+  "conf": "high",
+  "eu": "006640C4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00665CC4": {
+  "conf": "high",
+  "eu": "00665C9C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 4 sites (retreads.json)"
+ },
+ "0066CC58": {
+  "conf": "high",
+  "eu": "0066CC30",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 36 sites (retreads.json)"
+ },
+ "0066E07C": {
+  "conf": "high",
+  "eu": "0066E054",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00672EF0": {
+  "conf": "high",
+  "eu": "00672EC8",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00674A78": {
+  "conf": "high",
+  "eu": "00674A50",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "006769A8": {
+  "conf": "high",
+  "eu": "00676980",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "callers read r0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0067A5F0": {
+  "conf": "high",
+  "eu": "0067A5C8",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067A784": {
+  "conf": "high",
+  "eu": "0067A75C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067A894": {
+  "conf": "high",
+  "eu": "0067A86C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067AAB8": {
+  "conf": "high",
+  "eu": "0067AA90",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067AE04": {
+  "conf": "high",
+  "eu": "0067ADDC",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067B0DC": {
+  "conf": "high",
+  "eu": "0067B0B4",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "0067B458": {
+  "conf": "high",
+  "eu": "0067B430",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "0067B770": {
+  "conf": "high",
+  "eu": "0067B748",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 3 return paths"
+ },
+ "0067F944": {
+  "conf": "high",
+  "eu": "0067F91C",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "0067FB14": {
+  "conf": "high",
+  "eu": "0067FAEC",
+  "ghidra": "byte *",
+  "ret": "float",
+  "why": "callers read s0 after the call at 2 of 2 sites (retreads.json)"
+ },
+ "0068010C": {
+  "conf": "high",
+  "eu": "006800E4",
+  "ghidra": "undefined",
+  "ret": "float",
+  "why": "callers read s0 after the call at 1 of 1 sites (retreads.json)"
+ },
+ "006826A8": {
+  "conf": "high",
+  "eu": "00682680",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "006826CC": {
+  "conf": "high",
+  "eu": "006826A4",
+  "ghidra": "undefined",
+  "paths": 3,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 3 of 3 return paths"
+ },
+ "00682718": {
+  "conf": "high",
+  "eu": "006826F0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00689E18": {
+  "conf": "high",
+  "eu": "00689DF0",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00689E6C": {
+  "conf": "high",
+  "eu": "00689E44",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00689F5C": {
+  "conf": "high",
+  "eu": "00689F34",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 2 of 2 return paths"
+ },
+ "00689FCC": {
+  "conf": "high",
+  "eu": "00689FA4",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 4 return paths"
+ },
+ "0068A050": {
+  "conf": "high",
+  "eu": "0068A028",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0068A080": {
+  "conf": "high",
+  "eu": "0068A058",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 4 return paths"
+ },
+ "0068A19C": {
+  "conf": "high",
+  "eu": "0068A174",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 4 return paths"
+ },
+ "0068A244": {
+  "conf": "high",
+  "eu": "0068A21C",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 4 of 4 return paths"
+ },
+ "0068A374": {
+  "conf": "high",
+  "eu": "0068A34C",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "0068A3A0": {
+  "conf": "high",
+  "eu": "0068A378",
+  "ghidra": "undefined",
+  "paths": 1,
+  "ret": "float",
+  "why": "s0 written after the last call and returned unread on 1 of 1 return paths"
+ },
+ "00690C88": {
+  "conf": "high",
+  "eu": "00690C60",
+  "ghidra": "undefined",
+  "paths": 4,
+  "ret": "float",
+  "why": "1 calling function uses s0 after the call (round-1 medium), no contradiction in the code"
+ },
+ "00692084": {
+  "conf": "high",
+  "eu": "0069205C",
+  "ghidra": "undefined",
+  "paths": 2,
+  "ret": "int",
+  "why": "r0 written after the last call and returned unread on 2 of 2 return paths"
+ }
+}

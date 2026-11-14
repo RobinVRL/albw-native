@@ -1,0 +1,23 @@
+{
+ "params": {
+  "unreferenced_extra_not_raised": 1,
+  "drop_r": 1087,
+  "raise_r": 1430,
+  "r0_returned_unchanged": 1121,
+  "raise_s": 230,
+  "s0_returned_unchanged": 24,
+  "drop_s": 26
+ },
+ "returns": {
+  "own_int": 265,
+  "callers_int": 30,
+  "callers_contradicted": 19,
+  "retreads_int": 115,
+  "own_int_rejected_mixed_paths": 285,
+  "retreads_float": 65,
+  "retreads_float_leaf": 3,
+  "own_float": 88,
+  "own_float_rejected_mixed_paths": 89,
+  "callers_float": 36
+ }
+}
