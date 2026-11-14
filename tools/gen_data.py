@@ -29,6 +29,8 @@ BSS = DATA + DATA_SIZE
 END = BSS + BSS_SIZE
 SECTIONS = [("ro", RO, RO_SIZE, ".rodata.albw"), ("data", DATA, DATA_SIZE, ".data.albw")]
 POOL_NAME = re.compile(r"^(?:[a-z]*Ram|DAT_|PTR_)([0-9a-f]{8})$")
+# any other name that ends in an 8-digit address (str_00694EBC, gTable_006F0000, ...)
+ADDR_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]*_(?:0x)?([0-9A-Fa-f]{8})$")
 
 
 def section_ref(a):
@@ -39,6 +41,40 @@ def section_ref(a):
     if BSS <= a < END:
         return "albw_bss + 0x%X" % (a - BSS)
     return None
+
+
+def init_tables(code, rd, fn_of):
+    """The entry point (TEXT) calls, in order: 4 runtime inits, blx <ctor runner (Thumb)>,
+    bl <init-table runner>, ... The Thumb runner walks a table of self-relative offsets
+    (ldr r4,[pc]; add r4,pc; ldr r5,[pc]; add r5,pc); the ARM runner walks absolute pointers
+    (ldr r4,[pc,#x]; ldr r5,[pc,#y]). Returns the USA function names of both tables."""
+    h = lambda a: struct.unpack_from("<H", code, a - TEXT)[0]
+    blx = rd(TEXT + 0x10)
+    off = blx & 0xFFFFFF
+    off -= 0x1000000 if off & 0x800000 else 0
+    t = TEXT + 0x10 + 8 + off * 4 + ((blx >> 23) & 2)
+    lit = lambda a, hw: rd(((a + 4) & ~3) + (hw & 0xFF) * 4)
+    tb = (lit(t + 2, h(t + 2)) + t + 8) & 0xFFFFFFFF
+    te = (lit(t + 6, h(t + 6)) + t + 12) & 0xFFFFFFFF
+    ctors = []
+    for e in range(tb, te, 4):
+        f = (rd(e) + e) & 0xFFFFFFFF
+        if f not in fn_of:
+            raise SystemExit("static constructor %08X is not a known function" % f)
+        ctors.append(fn_of[f])
+    bl = rd(TEXT + 0x14)
+    off = bl & 0xFFFFFF
+    off -= 0x1000000 if off & 0x800000 else 0
+    r = TEXT + 0x14 + 8 + off * 4
+    pool = lambda a: rd(a + 8 + (rd(a) & 0xFFF))
+    ib, ie = pool(r + 4), pool(r + 8)
+    inits = []
+    for e in range(ib, ie, 4):
+        f = rd(e)
+        if f not in fn_of:
+            raise SystemExit("initialiser %08X is not a known function" % f)
+        inits.append(fn_of[f])
+    return ctors, inits
 
 
 def main():
@@ -98,6 +134,13 @@ def main():
             else:
                 nbad += 1
             continue
+        m = ADDR_NAME.match(sym)
+        if m and not POOL_NAME.match(sym) and not sym.startswith("func_"):
+            r = section_ref(int(m.group(1), 16))
+            if r:
+                out += ["    .globl %s" % sym, "    .set %s, %s" % (sym, r)]
+                ndata += 1
+            continue
         m = POOL_NAME.match(sym)
         if m:
             addr = int(m.group(1), 16)
@@ -111,6 +154,14 @@ def main():
                 nbad += 1
                 continue
             npool += 1
+    # startup initialiser tables, as pointer-sized tables of native functions (.dc.a: 64-bit clean)
+    ctors, inits = init_tables(code, rd, fn_of)
+    for name, lst in (("albw_ctors", ctors), ("albw_inits", inits)):
+        out += ["    .section .rodata.albw_init,\"a\"", "    .p2align 3", "    .globl %s" % name, "%s:" % name]
+        out += ["    .dc.a %s" % f for f in lst]
+        out += ["    .globl %s_count" % name, "%s_count:" % name, "    .long %d" % len(lst)]
+    print("startup tables: %d static constructors, %d initialisers" % (len(ctors), len(inits)))
+
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as fh:
         fh.write("\n".join(out) + "\n")

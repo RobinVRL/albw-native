@@ -70,7 +70,7 @@ def mirror(decomp):
 # ------------------------------------------------------------------ names
 ADDR_IN_NAME = re.compile(r"(?:^|[^0-9A-Fa-f])(?:0x)?([0-9A-Fa-f]{8})(?![0-9A-Fa-f])")
 FUNC_NAME = re.compile(r"^(?:func_|FUN_|f_|sub_|fn_|func_0x|FUN_0x)(?:0x)?([0-9A-Fa-f]{8})$")
-DATA_NAME = re.compile(r"^(?:data_|ro_|bss_|DAT_|G_|g_|PTR_|ptr_|gData_|rodata_)(?:0x)?([0-9A-Fa-f]{8})$")
+DATA_NAME = re.compile(r"^(?:data_|ro_|bss_|DAT_|G_|g_|PTR_|ptr_|gData_|rodata_|str_|s_|tbl_|vt_|vtbl_)(?:0x)?([0-9A-Fa-f]{8})$")
 TEXT_LO, TEXT_HI = 0x00100000, 0x00693000
 
 
@@ -194,11 +194,14 @@ def build_one(job):
                 args += ["--weaken-symbol=" + c]  # generated game data (step 3) is the strong definition
             else:
                 args += ["--localize-symbol=" + d]
+        # exports are weak: a native SDK replacement defining the same func_<ADDR> wins at link time
         for a, p in prim.items():
             want = "func_" + a.upper()
             if p != want:
                 sec = ".text." + p
-                args += ["--add-symbol", "%s=%s:0,global,function" % (want, sec), "--localize-symbol=" + p]
+                args += ["--add-symbol", "%s=%s:0,weak,function" % (want, sec), "--localize-symbol=" + p]
+            else:
+                args += ["--weaken-symbol=" + want]
         for u in und:
             c = canon_ref(u)
             if c and c != u:
@@ -210,6 +213,14 @@ def build_one(job):
         defs, und, kinds = nm(fin)
     return {"path": path, "addrs": addrs, "ok": True, "primary": prim,
             "missing_primary": [a for a in addrs if a not in prim], "defs": defs, "und": und}
+
+
+def load_decomp_tool(decomp, name):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(name, os.path.join(decomp, "tools", name + ".py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def main():
@@ -229,23 +240,70 @@ def main():
 
     matched = json.load(open(os.path.join(decomp, "functions.json")))
     ghidra = json.load(open(os.path.join(decomp, "nonmatching.json")))
+    import_ghidra = load_decomp_tool(decomp, "import_ghidra")
+    fallback_dir = os.path.join(ROOT, "build", "ghidra_all")
+
+    def ghidra_source(addr):
+        """Per-address Ghidra C (mirrored path relative to OUT), or None."""
+        if addr in ghidra:
+            return ghidra[addr]["path"]
+        raw = os.path.join(fallback_dir, "func_%s.c" % addr)
+        if not os.path.exists(raw):
+            return None
+        rel = os.path.join("ghidra_fallback", addr[:3], "func_%s.c" % addr)
+        dst = os.path.join(OUT, rel)
+        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            text = open(raw, encoding="utf-8", errors="replace").read()
+            with open(dst, "w") as fh:
+                fh.write(rewrite(import_ghidra.convert(text, addr)))
+        return rel
+
+    # A matched source is used only when it belongs to exactly one address: files shared by many
+    # addresses ("twins") match shape only, with different callees/data per address, so each of
+    # those addresses gets its own Ghidra decompilation instead.
+    users = collections.Counter(e["path"] for e in matched.values() if e["status"] in ("honest", "hack"))
     by_path = collections.defaultdict(list)
     source_of = {}
     for addr, e in matched.items():
-        if e["status"] in ("honest", "hack"):
+        if e["status"] in ("honest", "hack") and users[e["path"]] == 1:
             by_path[e["path"]].append(addr)
             source_of[addr] = "matched"
-    for addr, e in ghidra.items():
-        if addr not in source_of:
-            by_path[e["path"]].append(addr)
+    for addr in set(matched) | set(ghidra):
+        if addr in source_of:
+            continue
+        g = ghidra_source(addr)
+        if g:
+            by_path[g].append(addr)
             source_of[addr] = "ghidra"
     only = set(x.upper() for x in a.only.split(",") if x)
     jobs = [(p, sorted(ad), None) for p, ad in sorted(by_path.items()) if not only or only & set(ad)]
     with cf.ThreadPoolExecutor(a.jobs) as ex:
         res = list(ex.map(build_one, jobs))
 
+    # second round: matched sources whose function could not be identified, or that failed to
+    # compile, fall back to the address's Ghidra decompilation
+    retry = []
+    for r in res:
+        if source_of.get(r["addrs"][0]) != "matched":
+            continue
+        miss = r["addrs"] if not r["ok"] else r["missing_primary"]
+        for addr in miss:
+            g = ghidra_source(addr)
+            if g:
+                retry.append((g, [addr], None))
+                source_of[addr] = "ghidra"
+    if retry:
+        with cf.ThreadPoolExecutor(a.jobs) as ex:
+            res += list(ex.map(build_one, retry))
+        print("fallback to Ghidra for %d matched functions (unidentified or not compiling)" % len(retry))
+    print("sources: %d matched, %d Ghidra" % (sum(v == "matched" for v in source_of.values()),
+                                              sum(v == "ghidra" for v in source_of.values())))
+
+    # final outcome per address: a later (fallback) success supersedes an earlier failure
+    done = {a for r in res if r["ok"] for a in r["primary"]}
     ok = [r for r in res if r["ok"]]
-    failed = [r for r in res if not r["ok"]]
+    failed = [r for r in res if not r["ok"] and not set(r["addrs"]) <= done]
     defined = set()
     for r in ok:
         defined.update(r["defs"])
@@ -255,7 +313,7 @@ def main():
             if u not in defined:
                 und[u] += 1
     have_fn = {a for r in ok for a in r["primary"]}
-    no_primary = [(r["path"], a) for r in ok for a in r["missing_primary"]]
+    no_primary = [(r["path"], a) for r in ok for a in r["missing_primary"] if a not in done]
     kinds = collections.Counter()
     for u in und:
         kinds["function" if u.startswith("func_") else "data" if u.startswith("data_") else
