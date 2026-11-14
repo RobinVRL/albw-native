@@ -47,6 +47,43 @@ def rewrite(text):
     return text
 
 
+# A call statement on its own line: direct (func_<ADDR>(...)) or through a function pointer
+# ((**(code **)(...))(...)). [^;] spans Ghidra's wrapped argument lines.
+_CALL_STMT = r"((?:func_([0-9A-F]{8})|\(\*+\(code \*+\)[^;]*?\))\((?:[^;])*?\));"
+RE_CALL_THEN_RETURN = re.compile(r"(\n[ \t]+)" + _CALL_STMT + r"\s*\n[ \t]+return;")
+RE_CALL_AT_END = re.compile(r"(\n[ \t]+)" + _CALL_STMT + r"(\s*\n\}\s*)$")
+
+
+def void_tail_returns(text, addr, sigs):
+    """Ghidra types many forwarding functions `void` although r0 still holds the callee's result
+    when they return (the call is the last instruction before the epilogue, e.g. EU 0010FC68
+    `bl 0x110740; pop {r3, r4, r5, pc}`), and callers use that result. On ARM a function whose
+    last action is a call returns that call's r0 whatever its C type, so this is exact machine
+    semantics: such a `void` function returns the value of every call that directly precedes a
+    return. Calls returning float/double (VFP s0, not r0) are left alone."""
+    own = "func_" + addr
+    m = re.search(r"\n\n(void)\s+%s\s*\(" % own, text)
+    if not m:
+        return text
+
+    def ok(callee):
+        sig = (sigs or {}).get("func_" + callee) if callee else None
+        return not (sig and sig.split()[0] in ("float", "double"))
+
+    def sub_ret(mm):
+        return "%sreturn %s;" % (mm.group(1), mm.group(2)) if ok(mm.group(3)) else mm.group(0)
+
+    def sub_end(mm):
+        return "%sreturn %s;%s" % (mm.group(1), mm.group(2), mm.group(4)) if ok(mm.group(3)) else mm.group(0)
+
+    body_at = m.end()
+    body = RE_CALL_THEN_RETURN.sub(sub_ret, text[body_at:])
+    body = RE_CALL_AT_END.sub(sub_end, body)
+    if body == text[body_at:]:
+        return text
+    return text[:m.start(1)] + "undefined4" + text[m.end(1):body_at] + body
+
+
 def mirror(decomp):
     """Copy sources + headers with rewrites (only files that changed)."""
     n = 0
@@ -325,7 +362,7 @@ def main():
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
             with open(dst, "w") as fh:
-                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(text, addr, sigs))))
+                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(void_tail_returns(text, addr, sigs), addr, sigs))))
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
@@ -362,6 +399,7 @@ def main():
 
     def unresolvable(name):
         return not (name.startswith(("func_", "data_", "DAT_", "PTR_", "_DAT_", "__")) or "Ram" in name
+                    or name == "_GLOBAL_OFFSET_TABLE_"  # provided by the linker (PIC code)
                     or name in aliases or name in system or name in defined_all
                     or re.match(r"^[su]_.*_[0-9a-f]{8}$", name))
 
@@ -369,12 +407,15 @@ def main():
     # compile, or that reference names nothing can resolve (generic names like g/reg/dtor from
     # permuter-style matches) fall back to the address's Ghidra decompilation
     retry = []
+    why = collections.Counter()
+    matched_paths = {r["path"] for r in res if source_of.get(r["addrs"][0]) == "matched"}
     for r in res:
         if source_of.get(r["addrs"][0]) != "matched":
             continue
         miss = r["addrs"] if not r["ok"] else r["missing_primary"]
         if r["ok"] and any(unresolvable(u) for u in r["und"]):
             miss = r["addrs"]
+            why.update(u for u in r["und"] if unresolvable(u))
         for addr in miss:
             g = ghidra_source(addr)
             if g:
@@ -382,8 +423,15 @@ def main():
                 source_of[addr] = "ghidra"
     if retry:
         with cf.ThreadPoolExecutor(a.jobs) as ex:
-            res += list(ex.map(build_one, retry))
+            fb = list(ex.map(build_one, retry))
+        # a matched object whose address now has a working Ghidra fallback must leave the link:
+        # both export the same weak func_<ADDR>, and ld would keep whichever comes first (the
+        # matched one, with its unresolvable names turned into tripwire stubs)
+        replaced = {ad for r in fb if r["ok"] for ad in r["primary"]}
+        res = [r for r in res if not (r["path"] in matched_paths and set(r["addrs"]) <= replaced)]
+        res += fb
         print("fallback to Ghidra for %d matched functions (unidentified or not compiling)" % len(retry))
+        print("  most common unresolvable names: %s" % why.most_common(25))
     print("sources: %d matched, %d Ghidra" % (sum(v == "matched" for v in source_of.values()),
                                               sum(v == "ghidra" for v in source_of.values())))
 
