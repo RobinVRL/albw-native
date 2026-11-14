@@ -8,6 +8,7 @@
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
 #include "compilefix.h"
+extern float albw_3d_slider(float keep);
 
 extern int func_0010C1B8(undefined4 param_1,undefined4 param_2,undefined4 param_3);
 extern int func_003E1A70(float *param_1,int param_2);
@@ -112,9 +113,8 @@ undefined4 func_003E2B04(float *param_1,float *param_2,float *param_3,float *par
     fVar13 = *param_1 * fVar12;
     fVar12 = param_1[1] * fVar12;
     param_1[0x17] = fVar15;
-    if (*(char *)(iVar2 + 0x84) == '\0') {
-      fVar16 = *(float *)(iVar2 + 0x80);
-    }
+    (void)iVar2;   /* boot agent: shared page 0x1FF81000 (3D slider) does not exist natively */
+    fVar16 = albw_3d_slider(fVar16);
     fVar15 = fVar16 * fVar8 * fVar15;
     param_1[0x17] = fVar15;
     local_a0 = (fVar15 * fparam_4) / fVar10;
