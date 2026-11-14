@@ -209,7 +209,10 @@ typedef struct {
 typedef struct {
     GLuint prog;
     GLint c, b, tev_src, tev_cmb, tev_const, tev_buf, tev_bufcol, alpha, texcfg, tex[3], texcube, scale;
+    GLint fl_mode, fl_col;
 } Program;
+
+typedef struct { uintptr_t key; int prog, variant; } ProgAlias;
 
 static struct {
     bool ready, failed;
@@ -236,6 +239,11 @@ static struct {
     struct { uintptr_t ptr; int type, count, stride; bool array; float k[4]; } attr[RENDER_MAX_ATTRIBS];
 
     Program progs[RPROG_COUNT];
+    Program variants[RENDER_PROG_VARIANTS];  /* RPROG_H3D_DEFAULT variants (extension GLSL) */
+    int prog_variant;
+    RenderExt ext;
+    ProgAlias *alias; size_t nalias, capalias;
+    bool fl_enable; float fl_col[3][4];       /* fragment lighting stand-in */
     GLuint scan_prog, vao, vbo, ibo;
     size_t vbo_off, ibo_off;
     GLint scan_rot;
@@ -258,9 +266,12 @@ static const char FS_TEV[] =
     "uniform sampler2D tex0, tex1, tex2; uniform samplerCube texcube0;\n"
     "uniform ivec4 tev_src[6]; uniform ivec4 tev_cmb[6]; uniform vec4 tev_const[6];\n"
     "uniform ivec2 tev_buf; uniform vec4 tev_bufcol; uniform ivec4 alpha_test; uniform ivec4 texcfg;\n"
+    "uniform ivec4 fl_mode; uniform vec4 fl_col[3];\n"
     "vec4 t0 = vec4(0.0), t1 = vec4(0.0), t2 = vec4(0.0), prev = vec4(0.0), buf = vec4(0.0), k = vec4(0.0);\n"
+    "vec4 fprim = vec4(0.0), fsec = vec4(0.0);\n"
     "vec4 src(int s){\n"
     "  if (s == 0) return clamp(v_color, 0.0, 1.0);\n"
+    "  if (s == 1) return fprim; if (s == 2) return fsec;\n"
     "  if (s == 3) return t0; if (s == 4) return t1; if (s == 5) return t2;\n"
     "  if (s == 13) return buf; if (s == 14) return k; if (s == 15) return prev;\n"
     "  return vec4(0.0);\n"
@@ -297,6 +308,12 @@ static const char FS_TEV[] =
     "}\n"
     "void main(){\n"
     "  t0 = vec4(0.0); t1 = vec4(0.0); t2 = vec4(0.0);\n"
+    "  if (fl_mode.x != 0) {\n"
+    "    vec3 n = normalize(v_normal), l = normalize(vec3(-0.35, 0.6, 0.72));\n"
+    /* assumed light environment (the game's light colours are not mapped yet): scene ambient 0.4,
+       one directional light 0.35 */
+    "    fprim = vec4(clamp(fl_col[0].rgb + 0.4 * fl_col[1].rgb + 0.35 * fl_col[2].rgb * max(dot(n, l), 0.0), 0.0, 1.0), 1.0);\n"
+    "  }\n"
     "  if ((texcfg.x & 1) != 0) {\n"
     "    if (texcfg.z == 1) t0 = texture(texcube0, v_tc0.xyz);\n"
     "    else if (texcfg.z == 2) t0 = textureProj(tex0, v_tc0.xyw);\n"
@@ -349,7 +366,7 @@ static const char VS_MVP[] = VS_HEAD
     "  float cs = c[7].x != 0.0 ? c[7].x : 1.0; v_color = v1 * cs; v_tc0 = vec4(v2.xy, 0.0, 1.0);\n"
     "  v_tc1 = v3.xy; v_tc2 = v3.xy; v_normal = vec3(0.0, 0.0, 1.0); v_view = -p.xyz; }\n";
 
-static const char *VS_SRC[RPROG_COUNT] = {
+static const char *VS_SRC[RPROG_COUNT] = { /* RPROG_H3D_DEFAULT: extension GLSL when registered */
     [RPROG_CLIP] = VS_CLIP,
     [RPROG_GR_DEFAULT] = VS_MVP,
     [RPROG_FONT_RECT] = RENDER_VS_FONT_RECT,
@@ -359,10 +376,9 @@ static const char *VS_SRC[RPROG_COUNT] = {
 
 /* ================================================================== GL setup */
 
-static void program_build(int id) {
-    Program *p = &R.progs[id];
+static void program_init(Program *p, const char *vs) {
     /* gl_program aborts with the log on a compile error: these sources are fixed */
-    p->prog = gl_program(VS_SRC[id], FS_TEV);
+    p->prog = gl_program(vs, FS_TEV);
     GLuint g = p->prog;
     glUseProgram(g);
     p->c = glGetUniformLocation(g, "c");
@@ -382,6 +398,28 @@ static void program_build(int id) {
     }
     p->texcube = glGetUniformLocation(g, "texcube0");
     glUniform1i(p->texcube, 3);
+    p->fl_mode = glGetUniformLocation(g, "fl_mode");
+    p->fl_col = glGetUniformLocation(g, "fl_col");
+}
+
+static void program_build(int id) { program_init(&R.progs[id], VS_SRC[id]); }
+
+/* the program for the current prog id / variant (extension variants compiled on first use) */
+static Program *cur_program(void) {
+    if (R.prog_id != RPROG_H3D_DEFAULT || !R.ext.h3d_vs_body || !R.ext.h3d_defines) return &R.progs[R.prog_id];
+    int v = R.prog_variant >= 0 && R.prog_variant < RENDER_PROG_VARIANTS ? R.prog_variant : 0;
+    Program *p = &R.variants[v];
+    if (!p->prog) {
+        char def[512];
+        R.ext.h3d_defines(v, def, sizeof def);
+        size_t n = strlen(def) + strlen(R.ext.h3d_vs_body) + 32;
+        char *src = xrealloc(NULL, n);
+        snprintf(src, n, "#version 330 core\n%s\n%s", def, R.ext.h3d_vs_body);
+        program_init(p, src);
+        free(src);
+        if (g_trace) rlog("built h3d program variant %d", v);
+    }
+    return p;
 }
 
 static const char *SCAN_VS =
@@ -787,6 +825,7 @@ static uint64_t hash_bytes(const void *p, size_t n) {
 
 void render_mem_written(const void *addr, size_t size) {
     if (!addr || !size) return;
+    if (R.ext.mem) R.ext.mem((uintptr_t)addr, size);
     uintptr_t a = (uintptr_t)addr, e = a + size;
     lock();
     for (size_t i = 0; i < R.ntex; i++) {
@@ -947,6 +986,8 @@ static void reset_state(void) {
     R.tev_dirty = true;
     R.tex_enable = 0;
     R.prog_id = RPROG_CLIP;
+    R.prog_variant = 0;
+    R.fl_enable = false;
     for (int i = 0; i < RENDER_MAX_ATTRIBS; i++) {
         memset(&R.attr[i], 0, sizeof R.attr[i]);
         R.attr[i].k[3] = 1;
@@ -1075,9 +1116,74 @@ void render_set_tev_stages(int mask, const RTev *t, int flags) {
     if (flags & 2) memcpy(R.tev.buf_color, t->buf_color, 4);
     R.tev_dirty = true;
 }
-void render_set_program(int prog) {
+static void upload_uniforms(Program *p);
+
+void render_set_program(int prog) { render_set_program_variant(prog, 0); }
+void render_set_program_variant(int prog, int variant) {
     if (prog < 0 || prog >= RPROG_COUNT) prog = RPROG_CLIP;
-    if (prog != R.prog_id) { R.prog_id = prog; R.tev_dirty = R.vsf_dirty = true; }
+    if (prog != R.prog_id || variant != R.prog_variant) {
+        R.prog_id = prog;
+        R.prog_variant = variant;
+        R.tev_dirty = R.vsf_dirty = true;
+    }
+}
+
+int render_current_program(int *variant) {
+    if (variant) *variant = R.prog_variant;
+    return R.prog_id;
+}
+
+void render_program_alias(uintptr_t key, int prog, int variant) {
+    lock();
+    size_t i = 0;
+    for (; i < R.nalias; i++)
+        if (R.alias[i].key == key) break;
+    if (i == R.nalias) {
+        VEC_PUSH(R.alias, R.nalias, R.capalias);
+        R.nalias++;
+    }
+    R.alias[i] = (ProgAlias){key, prog, variant};
+    unlock();
+}
+
+static bool alias_get(uintptr_t key, int *prog, int *variant) {
+    if (!key) return false;
+    for (size_t i = 0; i < R.nalias; i++)
+        if (R.alias[i].key == key) { *prog = R.alias[i].prog; *variant = R.alias[i].variant; return true; }
+    return false;
+}
+
+void render_set_ext(const RenderExt *ext) {
+    lock();
+    R.ext = *ext;
+    unlock();
+}
+
+RTexUnit *render_texunit(int unit) { return &R.unit[unit < 0 || unit > 2 ? 0 : unit]; }
+
+void render_set_frag_light(int enable, const float col[3][4]) {
+    R.fl_enable = enable != 0;
+    if (col) memcpy(R.fl_col, col, sizeof R.fl_col);
+}
+
+int render_draw_bind(void) {
+    if (!render_ready()) return 0;
+    lock();
+    if (!R.cur_fbo) { WARN_ONCE("draw without a render target (dropped)"); unlock(); return 0; }
+    glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+    if (R.frag_dirty) apply_frag();
+    Program *p = cur_program();
+    glUseProgram(p->prog);
+    R.tev_dirty = R.vsf_dirty = true;
+    upload_uniforms(p);
+    for (int i = 0; i < 3; i++) bind_unit(i);
+    return 1; /* keeps the lock until render_draw_done */
+}
+
+void render_draw_done(void) {
+    glBindVertexArray(0);
+    R.st.draws++;
+    unlock();
 }
 void render_set_vs_float(int reg, const float *v, int count) {
     if (reg < 0 || reg >= RENDER_VS_FLOATS) return;
@@ -1134,6 +1240,9 @@ static void upload_uniforms(Program *p) {
     rglUniform4iv(p->alpha, 1, at);
     GLint tc[4] = {R.tex_enable, R.tex2_tc1, (R.unit[0].type == 1 || R.unit[0].type == 4) ? 1 : R.unit[0].type == 3 ? 2 : 0, 0};
     rglUniform4iv(p->texcfg, 1, tc);
+    GLint fl[4] = {R.fl_enable && R.prog_id == RPROG_H3D_DEFAULT, 0, 0, 0};
+    if (p->fl_mode >= 0) rglUniform4iv(p->fl_mode, 1, fl);
+    if (p->fl_col >= 0 && fl[0]) glUniform4fv(p->fl_col, 3, &R.fl_col[0][0]);
     R.vsf_dirty = R.tev_dirty = false;
 }
 
@@ -1159,7 +1268,7 @@ static bool draw_setup(uint32_t vmin, uint32_t vmax) {
     /* the platform layer / scan-out rebind other framebuffers and state between frames */
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     if (R.frag_dirty) apply_frag();
-    Program *p = &R.progs[R.prog_id];
+    Program *p = cur_program();
     glUseProgram(p->prog);
     R.tev_dirty = R.tev_dirty || true; /* uniforms are per program: always refresh (cheap) */
     R.vsf_dirty = true;
@@ -1425,7 +1534,15 @@ void render_exec_op(const ROp *op) {
     case ROP_TEV: render_set_tev(&op->u.tev); break;
     case ROP_TEV_CONST: render_set_tev_const(op->u.tev_const.stage_mask, op->u.tev_const.rgba); break;
     case ROP_TEV_STAGES: render_set_tev_stages(op->flags & 0x3F, &op->u.tev, op->unit); break;
-    case ROP_PROGRAM: render_set_program((int)op->u.program.id); break;
+    case ROP_PROGRAM: {
+        int prog = (int)op->u.program.id, variant = 0;
+        alias_get(op->u.program.key, &prog, &variant);
+        render_set_program_variant(prog, variant);
+        break;
+    }
+    case ROP_EXT:
+        if (R.ext.op) R.ext.op(op);
+        break;
     case ROP_VS_FLOAT: render_set_vs_float(op->u.vsf.reg, op->u.vsf.v, op->unit); break;
     case ROP_VS_BOOL: render_set_vs_bool(op->u.vsb.mask); break;
     case ROP_ATTRIB:
@@ -1444,7 +1561,10 @@ void render_exec_op(const ROp *op) {
     case ROP_CALL:
         if (exec_depth < 8) {
             exec_depth++;
-            render_exec_cmds((const void *)op->u.call.addr, op->u.call.size);
+            /* command blobs of loaded model files run their natively decoded ops (render/h3d.c);
+               any other range is scanned for our markers */
+            if (!R.ext.call || !R.ext.call(op->u.call.addr, op->u.call.size))
+                render_exec_cmds((const void *)op->u.call.addr, op->u.call.size);
             exec_depth--;
         }
         break;

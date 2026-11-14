@@ -192,6 +192,7 @@ typedef enum {
     ROP_CALL,        /* execute the markers of another command range (sub-list, prebuilt block) */
     ROP_TEV_STAGES,  /* some combiner stages (flags = stage mask bits 0-5); unit bit 0: also the
                         buffer-update bits, bit 1: also the buffer colour (u.tev) */
+    ROP_EXT,         /* executed by the registered extension (render_set_ext; nw::h3d: render/h3d.c) */
     ROP_COUNT
 } ROpType;
 
@@ -213,6 +214,7 @@ typedef struct {
         struct { uintptr_t ptr; uint16_t stride; uint8_t type, count; float konst[4]; } attrib;
         struct { uintptr_t indices; uint32_t first, count; uint8_t prim, index_u16, indexed; } draw;
         struct { uintptr_t addr; uint32_t size; } call;
+        struct { uint16_t kind; uintptr_t ptr; uint32_t a, b, c; float f[8]; } ext; /* ROP_EXT */
     } u;
 } ROp;
 
@@ -261,6 +263,54 @@ void render_set_attrib_const(int reg, const float v[4]);
 void render_disable_attribs(void);
 void render_draw(int prim, uint32_t first, uint32_t count);
 void render_draw_indexed(int prim, const void *indices, int index_u16, uint32_t count);
+
+/* ------------------------------------------------------------------ extensions (nw::h3d)
+ * A renderer extension (render/h3d.c) owns its own GL buffers and decoded resources. It plugs in
+ * through these hooks so render.c keeps no dependency on it (the standalone tests link render.c
+ * without it):
+ *   op:   executes ROP_EXT ops (GL thread);
+ *   call: consulted first for every ROP_CALL target: returns 1 if it ran native ops it holds for
+ *         that address (command blobs of model files decoded once at load), else the range is
+ *         scanned for markers as usual;
+ *   mem:  told about render_mem_written ranges (any thread).
+ * vs_src / defines: GLSL body (no #version line) of RPROG_H3D_DEFAULT and the #define block of a
+ * variant (render_set_program_variant); NULL keeps the generic placeholder program. */
+typedef struct {
+    void (*op)(const ROp *op);
+    int (*call)(uintptr_t addr, uint32_t size);
+    void (*mem)(uintptr_t addr, size_t size);
+    const char *h3d_vs_body;
+    void (*h3d_defines)(int variant, char *buf, size_t n);
+} RenderExt;
+void render_set_ext(const RenderExt *ext);
+
+#define RENDER_PROG_VARIANTS 128
+/* select a program and a compile-time variant of it (only RPROG_H3D_DEFAULT has variants; built
+ * lazily on first use). render_set_program(p) = variant 0. */
+void render_set_program_variant(int prog, int variant);
+/* current program id (and variant) */
+int render_current_program(int *variant);
+/* ROP_PROGRAM ops whose key (game program identity, e.g. a DVLE address) is registered here select
+ * this program / variant instead of the op's program id. Thread-safe. */
+void render_program_alias(uintptr_t key, int prog, int variant);
+
+/* current texture unit state (GL thread), for extensions that set a unit in several parts */
+RTexUnit *render_texunit(int unit);
+
+/* Fragment lighting stand-in (no LUTs yet): when enabled the combiner sources "fragment primary"
+ * / "fragment secondary" (1 / 2) read primary = clamp(emission + 0.4 ambient + 0.35 diffuse *
+ * max(N.L, 0)) (an assumed scene ambient / light colour: the game's light environment is not
+ * mapped yet) with N the interpolated view-space normal and a fixed view-space light direction,
+ * secondary = (0,0,0,0); disabled (default) both are 0 as before. colours: emission, ambient,
+ * diffuse (0..1). */
+void render_set_frag_light(int enable, const float col[3][4]);
+
+/* Draw with GL buffers owned by the caller (GL thread, inside an op): render_draw_bind() binds the
+ * render target and applies the pipeline state, program, uniforms and textures like render_draw;
+ * the caller then binds its VAO and issues the GL draw, and calls render_draw_done(). Returns 0
+ * (draw dropped) when there is no render target. */
+int render_draw_bind(void);
+void render_draw_done(void);
 
 /* ------------------------------------------------------------------ debugging / tests */
 
