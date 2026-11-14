@@ -10,7 +10,7 @@ Rules (sound, conservative): only straight-line code plus forward conditional br
 followed (each path separately, at most a few hundred paths); registers hold "r0_in + k" or
 unknown; calls (bl/blx imm) clobber r0-r3/ip, except that a call to a function already proven
 to return its first argument gives r0 = (r0 before the call); any other write to r0, a load into
-pc, a backward branch or an indirect call makes the function "unknown". Fixpoint over all
+pc or a backward branch makes the function "unknown"; an indirect call clobbers r0-r3/ip. Fixpoint over all
 functions (callee results feed callers).
 
   python3 tools/returns_this.py   -> native/returns_this.json  (sorted USA addresses)
@@ -109,7 +109,11 @@ def run(insns, proven):
                 return False
             if base in ("bl", "blx"):
                 if ops[0].type != A.ARM_OP_IMM:
-                    return False  # indirect call: result unknown
+                    # indirect call: r0-r3/ip clobbered, callee-saved r4-r11 preserved (AAPCS)
+                    for r in (0, 1, 2, 3, 12):
+                        regs.pop(r, None)
+                    idx += 1
+                    continue
                 tgt = ops[0].imm
                 r0 = regs.get(0)
                 for r in (0, 1, 2, 3, 12):

@@ -72,6 +72,34 @@ def virtual_this(text):
     return RE_VCALL0_NOARGS.sub(lambda m: "(**(code **)*%s)(%s)" % (m.group(1), m.group(1)), text)
 
 
+_EU_CODE = None
+RE_CODE_STR_ARG = re.compile(r"(?<=[(,])(\s*)(0x[0-9a-f]{5,6})(?=\s*[,)])")
+
+
+def code_strings(text):
+    """Ghidra prints `add rN, pc, #imm` references to strings stored among the code (task and
+    heap names such as "TaskRender", the mount name "rom:") as plain integers, the EU address.
+    A call argument that is such an address of a printable NUL-terminated string becomes the C
+    string literal (only the contents matter to the callers: names, formats, magic tags)."""
+    global _EU_CODE
+    if _EU_CODE is None:
+        p = os.path.join(ROOT, "..", "albw-decomp-ai", "rom", "eu_code.bin")
+        _EU_CODE = open(p, "rb").read() if os.path.exists(p) else b""
+    code = _EU_CODE
+
+    def fix(m):
+        a = int(m.group(2), 16)
+        o = a - 0x100000
+        if not (0x100000 <= a < 0x693000) or a % 4 or not code:
+            return m.group(0)
+        e = code.find(b"\0", o, o + 256)
+        if e < 0 or e - o < 2 or not all(0x20 <= b < 0x7F for b in code[o:e]):
+            return m.group(0)
+        lit = code[o:e].decode("ascii").replace("\\", "\\\\").replace('"', '\\"')
+        return '%s(int)"%s" /* EU %08X */' % (m.group(1), lit, a)
+    return RE_CODE_STR_ARG.sub(fix, text)
+
+
 def void_tail_returns(text, addr, sigs):
     """Ghidra types many forwarding functions `void` although r0 still holds the callee's result
     when they return (the call is the last instruction before the epilogue, e.g. EU 0010FC68
@@ -415,7 +443,7 @@ def main():
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
             with open(dst, "w") as fh:
-                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(virtual_this(void_tail_returns(text, addr, sigs)), addr, sigs))))
+                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(code_strings(virtual_this(void_tail_returns(text, addr, sigs))), addr, sigs))))
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
