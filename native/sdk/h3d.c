@@ -10,8 +10,11 @@
  *   material texture blob (material +0x10)       texture unit enables / sampler state
  *   material fragment blob (params +0xC8)        combiner, blend, alpha / stencil / depth tests,
  *                                                cull, material uniforms (c10-c21), + the material's
- *                                                DefaultShader variant (params +0x104 name) and the
- *                                                fragment-lighting stand-in (render.h)
+ *                                                DefaultShader variant (params +0x104 name)
+ *   material LUT input words (params +0xA8)      fragment-lighting LUT selectors / scales
+ *                                                (render/fraglight.h, used by sdk/light.c)
+ *   LUT samplers (contents section 4)            256-entry fragment-lighting tables
+ *                                                (fraglight_lut_set, by sampler blob address)
  *   mesh enable blob (mesh +0x08)                vertex layout (H3dVtx: formats, buffer, input
  *                                                registers, constant attributes), c6-c8
  *   sub-mesh blob (sub-mesh +0x2C)               bool uniforms (0x2B0), indexed draws
@@ -45,8 +48,8 @@
  * the Ghidra prototypes' kinds (int = 32-bit game address, pointer = pointer) so decompiled callers
  * pass them unchanged.
  *
- * Not handled yet: fragment lighting LUTs / light environment (00565A10, 0056497C, 00565D80,
- * 003FC2F8 write raw words that are dropped), fog, shadows, other uniform writers (00387E58,
+ * Fragment lighting (light environment, LUTs) is produced by native/sdk/light.c.
+ * Not handled yet: fog, shadows, other uniform writers (00387E58,
  * 00518694, 00171510, 002C3870), runtime patches of blob words (material animations that edit
  * blobs in place would not be seen: the blobs are decoded once). */
 #include <math.h>
@@ -56,6 +59,7 @@
 #include <string.h>
 
 #include "../include/gptr.h"
+#include "../render/fraglight.h"
 #include "../render/h3d.h"
 #include "../render/render.h"
 #include "../render/texdecode.h"
@@ -186,6 +190,9 @@ typedef struct {
     uint16_t fx_set;
     /* vertex layout emitted (before the first draw) */
     int vtx_done;
+    /* fragment-lighting LUT data words (0x1C8..0x1CF) */
+    int nlut;
+    float lut[256][2];
 } Dec;
 
 static void flush_uniforms(Dec *d) {
@@ -229,6 +236,15 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
         d->un = 0;
     } else if (reg >= 0x2C1 && reg <= 0x2C8) {
         uniform_word(d, v);
+    } else if (reg >= 0x1C8 && reg <= 0x1CF) {
+        /* LUT entry: value 0.12 unsigned (bits 0-11), delta to the next entry signed 1.11
+           (bits 12-23) */
+        if (d->nlut < 256) {
+            int32_t diff = (int32_t)(v << 8) >> 20;
+            d->lut[d->nlut][0] = (float)(v & 0xFFF) / 4095.0f;
+            d->lut[d->nlut][1] = (float)diff / 2047.0f;
+            d->nlut++;
+        }
     } else if (reg == 0x2B0) {
         flush_uniforms(d);
         ROp op = op_new(ROP_VS_BOOL);
@@ -490,15 +506,8 @@ static void convert_blob(uint32_t addr, uint32_t words, const ROp *prefix, int n
     free(d);
 }
 
-/* per-material extras: shader variant + fragment-lighting stand-in colours (kept alive for the
- * run: ops point at them) */
-typedef struct MatExtra {
-    float col[3][4];
-    struct MatExtra *next;
-} MatExtra;
-static MatExtra *g_extras;
-
-static void material_prefix(uint32_t params, uint32_t frag, uint32_t frag_words, ROp pre[2], int *npre) {
+/* per-material prefix: the material's DefaultShader variant */
+static void material_prefix(uint32_t params, ROp pre[1], int *npre) {
     *npre = 0;
     uint32_t name = G32(params, 0x104);
     int variant = name ? h3d_variant_of_name((const char *)GA(name)) : -1;
@@ -508,35 +517,49 @@ static void material_prefix(uint32_t params, uint32_t frag, uint32_t frag_words,
         op.u.ext.a = (uint32_t)variant;
         pre[(*npre)++] = op;
     }
-    /* does the combiner read fragment primary / secondary colour (fragment lighting)? decide from
-       the blob's own stage source registers */
-    Dec *d = calloc(1, sizeof *d);
-    if (!d) abort();
-    int lit = 0;
-    if (!dec_walk(d, frag, frag_words)) {
-        static const uint16_t sb[6] = {0xC0, 0xC8, 0xD0, 0xD8, 0xF0, 0xF8};
-        for (int s = 0; s < 6; s++)
-            for (int k = 0; k < 3; k++) {
-                uint32_t v = d->reg[sb[s]];
-                uint32_t r = (v >> (4 * k)) & 0xF, a = (v >> (16 + 4 * k)) & 0xF;
-                if (r == 1 || r == 2 || a == 1 || a == 2) lit = 1;
+}
+
+/* the material's fragment-lighting LUT input words (params +0xA8: three {value, header} pairs
+ * for registers 0x1D0 abs / 0x1D1 selectors / 0x1D2 scales; 4 bits per LUT in the order D0 D1
+ * SP FR RB RG RR) -> native selectors / scales, once at load */
+static void material_luts(uint32_t params) {
+    FLLutCfg c;
+    memset(&c, 0, sizeof c);
+    for (int k = 0; k < 3; k++) {
+        uint32_t v = G32(params, 0xA8 + 8 * (uint32_t)k), h = G32(params, 0xAC + 8 * (uint32_t)k);
+        uint32_t reg = h & 0xFFFF;
+        for (int i = 0; i < FLI_COUNT; i++) {
+            uint8_t f = (uint8_t)((v >> (4 * i)) & 7);
+            if (reg == 0x1D0) c.abs |= (uint8_t)((((v >> (4 * i + 1)) & 1) ? 0 : 1) << i);
+            else if (reg == 0x1D1) { c.sel[i] = f; c.set |= (uint8_t)(1 << i); }
+            else if (reg == 0x1D2) c.scale[i] = f;
+        }
+    }
+    fraglight_material_set(GA(params), &c);
+}
+
+/* LUT samplers of a file (contents section 4: LUT {samplers ptr, count}, sampler 0x10 bytes
+ * {flags (bit 0 absolute input), command blob ptr, words, name}) -> decoded tables */
+static int register_luts(uint32_t cont) {
+    uint32_t ltbl = G32(cont, 4 * 12), lcnt = G32(cont, 4 * 12 + 4);
+    int n = 0;
+    for (uint32_t i = 0; i < lcnt && i < 4096; i++) {
+        uint32_t lut = G32(ltbl, 4 * i);
+        if (!lut) continue;
+        uint32_t sm = G32(lut, 0), ns = G32(lut, 4);
+        for (uint32_t k = 0; k < ns && k < 1024; k++) {
+            uint32_t blob = G32(sm + 0x10 * k, 4), words = G32(sm + 0x10 * k, 8);
+            Dec *d = calloc(1, sizeof *d);
+            if (!d) abort();
+            if (!dec_walk(d, blob, words) && d->nlut == 256) {
+                fraglight_lut_set(GA(blob), (const float(*)[2])d->lut);
+                n++;
             }
+            free(d->ops.v);
+            free(d);
+        }
     }
-    free(d->ops.v);
-    free(d);
-    MatExtra *x = calloc(1, sizeof *x);
-    if (!x) abort();
-    for (int c = 0; c < 3; c++) { /* emission, ambient, diffuse: RGBA8, R in the low byte */
-        uint32_t v = G32(params, 0x58 + 4 * c);
-        for (int k = 0; k < 4; k++) x->col[c][k] = (float)((v >> (8 * k)) & 0xFF) / 255.0f;
-    }
-    x->next = g_extras;
-    g_extras = x;
-    ROp op = op_new(ROP_EXT);
-    op.u.ext.kind = H3D_FRAGLIGHT;
-    op.u.ext.a = (uint32_t)lit;
-    op.u.ext.ptr = (uintptr_t)x->col;
-    pre[(*npre)++] = op;
+    return n;
 }
 
 /* the DVLEs of a shader's DVLB select an RPROG_H3D_DEFAULT variant (ROP_PROGRAM aliases) */
@@ -575,11 +598,11 @@ void h3d_register_file(uint32_t resfile) {
             uint32_t mat = mats + k * msz, params = G32(mat, 0);
             convert_blob(G32(mat, 0x10), G32(mat, 0x14), NULL, 0);
             if (params) {
-                ROp pre[2];
+                ROp pre[1];
                 int npre;
-                uint32_t fb = G32(params, 0xC8), fw = G32(params, 0xCC);
-                material_prefix(params, fb, fw, pre, &npre);
-                convert_blob(fb, fw, pre, npre);
+                material_prefix(params, pre, &npre);
+                convert_blob(G32(params, 0xC8), G32(params, 0xCC), pre, npre);
+                material_luts(params);
             }
         }
         uint32_t meshes = G32(m, 0x40), nmesh = G32(m, 0x44);
@@ -600,9 +623,10 @@ void h3d_register_file(uint32_t resfile) {
         if (!t) continue;
         for (int u = 0; u < 3; u++) convert_blob(G32(t, 8 * u), G32(t, 8 * u + 4), NULL, 0);
     }
+    int nluts = register_luts(cont);
     if (getenv("ALBW_H3D_TRACE"))
-        fprintf(stderr, "h3d: file %#x (v%#x): %u models, %u shaders, %u textures, %d blobs converted (%d bad)\n",
-                (unsigned)hdr, version, (unsigned)mcnt, (unsigned)scnt, (unsigned)tcnt, g_blobs - blobs0, g_blob_errors);
+        fprintf(stderr, "h3d: file %#x (v%#x): %u models, %u shaders, %u textures, %d LUTs, %d blobs converted (%d bad)\n",
+                (unsigned)hdr, version, (unsigned)mcnt, (unsigned)scnt, (unsigned)tcnt, nluts, g_blobs - blobs0, g_blob_errors);
 }
 
 /* USA 003FCCF8  nw::h3d ResFile setup (ResFile *out, BCH header *hdr, u32 sections[10]) -> result

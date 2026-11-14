@@ -35,7 +35,8 @@
  * / rigid / none); H3D_LIGHT 0 any (b12 vertex lights, b5 hemisphere), 1 -nl (none), 2 -hs
  * (hemisphere always); H3D_PROG 0..3 (texcoord outputs 3..0).
  * Not reproduced: the normal / tangent quaternion output (o1, consumed only by fragment
- * lighting): the view-space normal and view vector are passed instead (v_normal, v_view).
+ * lighting): the view-space normal, tangent and view vector are passed instead (v_normal,
+ * v_tangent, v_view; render/fraglight.c rebuilds the tangent frame per fragment).
  * PICA clip space (z in [-w, 0]) -> GL as in render.c (pica_out).
  */
 #define _GNU_SOURCE
@@ -57,6 +58,7 @@ const char RENDER_VS_H3D[] =
     "layout(location = 6) in vec4 v6; layout(location = 7) in vec4 v7; layout(location = 8) in vec4 v8;\n"
     "uniform vec4 c[96]; uniform int b; uniform ivec4 i0;\n"
     "out vec4 v_color; out vec4 v_tc0; out vec2 v_tc1; out vec2 v_tc2; out vec3 v_normal; out vec3 v_view;\n"
+    "out vec3 v_tangent;\n"
     "bool B(int n){ return ((b >> n) & 1) != 0; }\n"
     "vec4 pica_out(vec4 p){ return vec4(p.x, p.y, -(2.0 * p.z + p.w), p.w); }\n"
     "vec4 p = vec4(0.0), r10 = vec4(0.0), r15 = vec4(0.0);\n"
@@ -149,6 +151,7 @@ const char RENDER_VS_H3D[] =
     "  gl_Position = pica_out(vec4(dot(c[86], r15), dot(c[87], r15), dot(c[88], r15), dot(c[89], r15)));\n"
     "  v_view = -r15.xyz;\n"
     "  v_normal = hasN ? r14 : vec3(0.0, 0.0, 1.0);\n"
+    "  v_tangent = (hasN && hasT) ? r13 : vec3(0.0);\n"
     /* colour */
     "  bool hasC = c[7].w != 0.0; vec4 vc = c[7].w * v3; lit = false;\n"
     "#if H3D_LIGHT == 1\n"
@@ -497,7 +500,6 @@ static void ext_op(const ROp *op) {
         g_mat_variant = (int)a;
         render_set_program_variant(RPROG_H3D_DEFAULT, (int)a);
         break;
-    case H3D_FRAGLIGHT: render_set_frag_light((int)a, (const float(*)[4])op->u.ext.ptr); break;
     case H3D_BLENDCOLOR: memcpy(render_frag_state()->blend_color, &a, 4); render_frag_dirty(); break;
     case H3D_TEXBORDER: memcpy(render_texunit(op->unit)->border, &a, 4); break;
     default: break;

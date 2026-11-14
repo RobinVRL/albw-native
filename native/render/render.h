@@ -112,7 +112,8 @@ enum {
     RPROG_GR_DEFAULT,    /* placeholder for Shader/gr_default_shader.shbin (see SHADERS.md) */
     RPROG_FONT_RECT,     /* nwfont2_RectDrawerShader.shbin (nw::font + nw::lyt): GLSL in font.c */
     RPROG_H3D_DEFAULT,   /* placeholder for nwh3d_DefaultShader.bch */
-    RPROG_PRIMITIVE,     /* placeholder for sead PrimitiveRenderer */
+    RPROG_PRIMITIVE,     /* sead PrimitiveRenderer (primitive_renderer_ctr.bsm): GLSL in prim.c */
+    RPROG_EFT,           /* nw::eft particle programs (JackAll.ptcl): GLSL in effects.c, variant in b */
     RPROG_COUNT
 };
 
@@ -193,6 +194,7 @@ typedef enum {
     ROP_TEV_STAGES,  /* some combiner stages (flags = stage mask bits 0-5); unit bit 0: also the
                         buffer-update bits, bit 1: also the buffer colour (u.tev) */
     ROP_EXT,         /* executed by the registered extension (render_set_ext; nw::h3d: render/h3d.c) */
+    ROP_FL,          /* 3DS fragment lighting state (render/fraglight.h: u.fl.kind FL_*) */
     ROP_COUNT
 } ROpType;
 
@@ -215,6 +217,9 @@ typedef struct {
         struct { uintptr_t indices; uint32_t first, count; uint8_t prim, index_u16, indexed; } draw;
         struct { uintptr_t addr; uint32_t size; } call;
         struct { uint16_t kind; uintptr_t ptr; uint32_t a, b, c; float f[8]; } ext; /* ROP_EXT */
+        struct { uint8_t kind; uint8_t pad[3]; uint8_t data[248]; } fl;   /* ROP_FL
+                                                                             payloads (fixed-layout
+                                                                             structs of those modules) */
     } u;
 } ROp;
 
@@ -297,13 +302,8 @@ void render_program_alias(uintptr_t key, int prog, int variant);
 /* current texture unit state (GL thread), for extensions that set a unit in several parts */
 RTexUnit *render_texunit(int unit);
 
-/* Fragment lighting stand-in (no LUTs yet): when enabled the combiner sources "fragment primary"
- * / "fragment secondary" (1 / 2) read primary = clamp(emission + 0.4 ambient + 0.35 diffuse *
- * max(N.L, 0)) (an assumed scene ambient / light colour: the game's light environment is not
- * mapped yet) with N the interpolated view-space normal and a fixed view-space light direction,
- * secondary = (0,0,0,0); disabled (default) both are 0 as before. colours: emission, ambient,
- * diffuse (0..1). */
-void render_set_frag_light(int enable, const float col[3][4]);
+/* 3DS fragment lighting: render/fraglight.h (state set through ROP_FL ops, hand-written GLSL
+ * evaluated in the fragment program of the nw::h3d programs). */
 
 /* Draw with GL buffers owned by the caller (GL thread, inside an op): render_draw_bind() binds the
  * render target and applies the pipeline state, program, uniforms and textures like render_draw;

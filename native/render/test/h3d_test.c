@@ -44,6 +44,10 @@ void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y);
 void func_00170378(uint32_t elem, uint32_t *ctx, uint32_t *cache, const float *normal);
 void func_00565204(uint32_t *mat, uint32_t *ctx, uint16_t *state, uint32_t *lut);
 uint32_t *func_003CC230(uint32_t *p, uint32_t *size_slot, uint32_t target, uint32_t size); /* sdk/gr.c */
+/* fragment lighting producers (native/sdk/light.c) */
+void func_005655D0(int32_t *mat, int32_t *cur, uint16_t *state, int32_t *envarr);
+void func_00567904(int32_t light, int32_t *envarr, uint32_t set, int32_t idx);
+void func_00567AFC(int32_t light, int32_t *envarr, uint32_t set, int32_t idx, float *view0, float *view1);
 
 static int fails;
 #define CHECK(c, ...) do { if (!(c)) { fails++; fprintf(stderr, "FAIL: " __VA_ARGS__); fputc('\n', stderr); } } while (0)
@@ -100,6 +104,45 @@ void func_003CC090(uint32_t *c, uint32_t addr, uint32_t size, uint32_t x) {
     c[2] = c[0];
     c[3] = slot;
     if (!c[4]) c[4] = (c[0] - c[1]) & ~3u;
+}
+/* 00564DA0: light colours of the material's light set = light colour x material colour (/ 256),
+   global ambient = emission + material ambient x set ambient (Ghidra body) */
+void func_00564DA0(int32_t *mat, int32_t *envarr, int32_t state) {
+    uint32_t st = (uint32_t)state, params = (uint32_t)mat[0];
+    uint32_t set = (uint32_t)envarr[0] + R16(st, 0x20) * 0x278;
+    uint8_t *E = (uint8_t *)(uintptr_t)(set + 4);
+    const uint8_t *ms = (const uint8_t *)(uintptr_t)st, *S = (const uint8_t *)(uintptr_t)set;
+    int direct1 = (*(const uint8_t *)(uintptr_t)(params + 6) & 0x10) != 0;
+    for (int i = 0; i < 8; i++) {
+        if (!E[0x164 + i]) continue;
+        const uint8_t *lc = S + 0x1B4 + 16 * i;
+        uint8_t *l = E + 4 + 0x2C * i;
+        for (int c = 0; c < 3; c++) {
+            l[7 + c] = (uint8_t)((lc[0 + c] * ms[0x40 + c]) >> 8);   /* ambient */
+            l[4 + c] = (uint8_t)((lc[4 + c] * ms[0x44 + c]) >> 8);   /* diffuse */
+            l[0xA + c] = (uint8_t)((lc[8 + c] * ms[0x48 + c]) >> 8); /* specular 0 */
+            l[0xD + c] = direct1 ? lc[12 + c] : (uint8_t)((lc[12 + c] * ms[0x4C + c]) >> 8);
+        }
+        l[2] = (*(const uint8_t *)(uintptr_t)(params + 6) >> 5) & 1;
+        l[3] = (*(const uint8_t *)(uintptr_t)(params + 6) >> 6) & 1;
+    }
+    for (int c = 0; c < 3; c++) {
+        unsigned v = ms[0x3C + c] + ((ms[0x40 + c] * S[0x234 + c]) >> 8);
+        E[c] = (uint8_t)(v > 255 ? 255 : v);
+    }
+}
+/* 003CBDDC float -> float16 word, 003CC140 float -> 1.11 fixed (Ghidra bodies, simplified) */
+uint32_t func_003CBDDC(float f) {
+    uint32_t u; memcpy(&u, &f, 4);
+    int e = 0;
+    if (fabsf(f) == 0.0f || (e = (int)((u << 1) >> 24) - 0x70) >= 0) return ((((u & 0xE07FFFFFu) >> 13) | (uint32_t)e << 10) & 0xFFFF) | (u >> 31) << 15;
+    return (u >> 31) << 15;
+}
+uint32_t func_003CC140(float f) {
+    int v = (int)lrintf(f * 2047.0f);
+    if (v > 2047) v = 2047;
+    if (v < -2048) v = -2048;
+    return (uint32_t)v & 0x1FFF;
 }
 /* 005681C0: CALL enable blob, sub-mesh 0 blob, disable blob (Ghidra body) */
 void func_005681C0(uint32_t mesh, uint32_t *c, uint32_t x, uint32_t y) {
@@ -252,6 +295,71 @@ static uint8_t vis[0xB850 + 0x1707 * 8] __attribute__((aligned(16)));
 static uint8_t visent[0x70] __attribute__((aligned(4)));
 static uint32_t norm_cache[2];
 
+/* light environment (51 light sets x 0x278 like the game's), per-eye position table, LUT file */
+static uint8_t envmem[51 * 0x278] __attribute__((aligned(4)));
+static uint8_t postbl[51 * 0x100] __attribute__((aligned(4)));
+static uint32_t postbl_obj[4];
+static int32_t envarr[0x20];
+static uint32_t scene_lights[3];      /* light resource per light set 0..2 (SceneEnv bg0, bg1, ch0) */
+static float scene_amb[3];
+static float point_pos[3];            /* where the bg point light is placed (follows the player) */
+static GameFile *g_lutfile;
+
+/* sampler of the LUT file by name (the game links materials / lights to LUT samplers by name) */
+static uint32_t lut_sampler(const char *name) {
+    if (!g_lutfile || !name) return 0;
+    uint32_t c = g_lutfile->cont, ltbl = R32(c, 4 * 12), lcnt = R32(c, 4 * 12 + 4);
+    for (uint32_t i = 0; i < lcnt; i++) {
+        uint32_t l = R32(ltbl, 4 * i), sm = R32(l, 0), ns = R32(l, 4);
+        for (uint32_t k = 0; k < ns; k++) {
+            uint32_t nm = R32(sm + 0x10 * k, 0xC);
+            if (nm && !strcmp((const char *)(uintptr_t)nm, name)) return sm + 0x10 * k;
+        }
+    }
+    return 0;
+}
+
+/* the game's environment set-up (003CBCDC defaults per set) + the lights of each set through
+   the replaced light updates (00567904 colours / flags / attenuation, 00567AFC view-space vectors) */
+static void lights_update(const float view[12]) {
+    envarr[0] = (int32_t)A32(envmem);
+    postbl_obj[0] = A32(postbl);
+    envarr[0x19] = (int32_t)A32(postbl_obj);
+    for (int s = 0; s < 51; s++) {
+        uint8_t *S = envmem + s * 0x278, *E = S + 4;
+        memset(S, 0, 0x278);
+        for (int i = 0; i < 8; i++) E[4 + 0x2C * i] = (uint8_t)i;
+        E[0x18E] = 1;
+        E[0x191] = 1;
+        for (int c = 0; c < 3; c++) S[0x234 + c] = (uint8_t)(scene_amb[c] * 255.0f);
+        S[0x237] = 255;
+    }
+    float v[12];
+    memcpy(v, view, sizeof v);
+    for (int s = 0; s < 3; s++) {
+        uint32_t L = scene_lights[s];
+        if (!L) continue;
+        if (*(const uint8_t *)(uintptr_t)(L + 0x28) == 10) memcpy((void *)(uintptr_t)(L + 0x1C), point_pos, 12);
+        func_00567904((int32_t)L, envarr, (uint32_t)s, 0);
+        func_00567AFC((int32_t)L, envarr, (uint32_t)s, 0, v, v);
+    }
+}
+
+static int load_light(GameFile *g, const char *path, uint32_t *out) {
+    if (game_load(g, path)) return -1;
+    uint32_t c = g->cont, tbl = R32(c, 5 * 12), cnt = R32(c, 5 * 12 + 4);
+    *out = cnt ? R32(tbl, 0) : 0;
+    if (*out) {
+        uint32_t L = *out;
+        /* distance attenuation sampler by name (+0x5C table, +0x60 sampler) */
+        uint32_t sn = R32(L, 0x60);
+        if (R32(L, 0x5C) && sn) W32((void *)(uintptr_t)L, 0x4C, lut_sampler((const char *)(uintptr_t)sn));
+        printf("  light %s: type %d, flags %#x, DA sampler %#x\n", (const char *)(uintptr_t)R32(L, 0),
+               *(const uint8_t *)(uintptr_t)(L + 0x28), *(const uint8_t *)(uintptr_t)(L + 0x2A), R32(L, 0x4C));
+    }
+    return 0;
+}
+
 static void scene_begin(const float view[12], const float proj[16]) {
     ctx[0] = ctx[1] = ctx[2] = A32(cmd);
     ctx[3] = ctx[4] = 0;
@@ -273,6 +381,7 @@ static void scene_begin(const float view[12], const float proj[16]) {
     memcpy(nrm, view, sizeof nrm);
     nrm[3] = nrm[7] = nrm[11] = 0;
     func_00170378(A32(elem), ctx, norm_cache, nrm);
+    lights_update(view);
 }
 
 static int g_draws_recorded;
@@ -316,17 +425,35 @@ static void draw_model(GameFile *g, int mi, GameFile *const *files, int nfiles, 
             const char *mname = (const char *)(uintptr_t)R32(mat, 0x28);
             if (skip_silhouette && mname && strstr(mname, "silhouette")) continue;
             if (getenv("H3D_TEST_ONLY") && strcmp(getenv("H3D_TEST_ONLY"), mname ? mname : "")) continue;
-            /* material state like 001708A0's cached path: fragment blob, texture blob, texture unit blobs */
-            func_003CC090(ctx, R32(params, 0xC8), R32(params, 0xCC) << 2, 0);
-            func_003CC090(ctx, R32(mat, 0x10), R32(mat, 0x14) << 2, 0);
+            /* runtime material state (the game's 0x154-byte state): bit 0 fragment lighting (params
+               flag bit 0), light set (params +0x54), colours (params +0x58..), the texture unit blobs
+               (+0x13C); LUT samplers linked by name (params +0x8C.. <- sampler names +0xEC..) */
+            memset(state, 0, sizeof state);
+            uint16_t sflags = (uint16_t)(((R32(params, 4) & 1) ? 1 : 0) | 0x200); /* + MatAmbi / MatDiff upload */
+            /* shader binding (params +8, set by the game's shader setup) -> +0x24 shader object with
+               the material uniform locations (DefaultShader registers: TexMtx0 c11, TexTran c19,
+               MatAmbi c20, MatDiff c21) */
+            static uint8_t binding[0x28] __attribute__((aligned(4))), shobj[0x100] __attribute__((aligned(4)));
+            W32(binding, 0x24, A32(shobj));
+            shobj[0xCE] = 11; shobj[0xE6] = 19; shobj[0xF6] = 20; shobj[0xFE] = 21;
+            W32((void *)(uintptr_t)params, 8, A32(binding));
+            memcpy(state, &sflags, 2);
+            memcpy(state + 0x20, (const void *)(uintptr_t)(params + 0x54), 2);
+            memcpy(state + 0x3C, (const void *)(uintptr_t)(params + 0x58), 20);
+            for (uint32_t i = 0; i < 6; i++) {
+                uint32_t sn = R32(params, 0xEC + 4 * i);
+                W32((void *)(uintptr_t)params, 0x8C + 4 * i, sn ? lut_sampler((const char *)(uintptr_t)sn) : 0);
+            }
             for (uint32_t u = 0; u < 3; u++) {
                 uint32_t nm = R32(mat, 0x1C + 4 * u);
                 if (!nm) continue;
                 uint32_t t = find_texture(files, nfiles, (const char *)(uintptr_t)nm);
                 CHECK(t != 0, "texture %s not found", (const char *)(uintptr_t)nm);
-                if (t) func_003CC090(ctx, R32(t, 8 * u), R32(t, 8 * u + 4) << 2, 0);
+                if (t) { W32(state, 0x13C + 8 * u, R32(t, 8 * u)); W32(state, 0x140 + 8 * u, R32(t, 8 * u + 4)); }
             }
-            memset(state, 0, sizeof state); /* runtime material state: no animation flags */
+            /* material bind with fragment lighting (replaced 005655D0: light environment, LUTs,
+               lights, then the fragment / texture blobs), then the material uniforms */
+            func_005655D0(GPTR_TO(int32_t, mat), (int32_t *)ctx, (uint16_t *)state, envarr);
             func_00565204(GPTR_TO(uint32_t, mat), ctx, (uint16_t *)state, NULL);
             /* the draw element */
             W32(inst, 0x164, R32(mesh, 0x14) ? 0 : 0x2000000u);
@@ -429,7 +556,23 @@ int main(int argc, char **argv) {
         CHECK(n == 60, "variants compiled: %d", n);
     }
 
-    /* ---- Link (skinned, bind pose; materials using the fragment-lighting stand-in, alpha) */
+    /* ---- fragment lighting: the boot LUT file (Lut_Jack: specular / rim / Fresnel / point light
+       tables) and the scene environment of the room's stage (World/Byaml/SceneEnv.byaml
+       "DungeonEast1": bg0 bg_dgn_East_out, bg1 bg_dgn_East, ch0 ch_common = light sets 0, 1, 2;
+       ambient: the "DungeonEast" entry's amb (0.25, 0.248, 0.109), DungeonEast1 has none) */
+    static GameFile lutfile, lset[3];
+    if (game_load(&lutfile, getenv("H3D_TEST_LUT") ? getenv("H3D_TEST_LUT") : "EU/RegionBoot.szs#fb3804ff")) return 1;
+    g_lutfile = &lutfile;
+    {
+        static const char *ls[3] = {"World/Environment/LightSet/bg_dgn_East_out.bch",
+                                    "World/Environment/LightSet/bg_dgn_East.bch",
+                                    "World/Environment/LightSet/ch_common.bch"};
+        for (int i = 0; i < 3; i++)
+            if (load_light(&lset[i], ls[i], &scene_lights[i])) return 1;
+        scene_amb[0] = 0.25f; scene_amb[1] = 0.248f; scene_amb[2] = 0.109f;
+    }
+
+    /* ---- Link (skinned, bind pose; fragment-lit materials (light set 2), alpha) */
     static GameFile link;
     if (game_load(&link, link_spec)) return 1;
     {
@@ -444,6 +587,7 @@ int main(int argc, char **argv) {
         look_at(view, eye, ctr);
         perspective(proj, 0.75f, 400.0f / 240.0f, rad * 0.05f, rad * 10);
         GameFile *files[1] = {&link};
+        point_pos[0] = ctr[0]; point_pos[1] = ctr[1] + 1.5f; point_pos[2] = ctr[2] + 1.0f;
         scene_begin(view, proj);
         draw_model(&link, 0, files, 1, bw, 1);
         snprintf(path, sizeof path, "%s/h3d_link.png", out);
@@ -468,6 +612,9 @@ int main(int argc, char **argv) {
             else { eye[0] = ctr[0] - rad * 0.35f; eye[1] = ctr[1] + rad * 0.35f; eye[2] = ctr[2] + rad * 0.5f; }
             look_at(view, eye, ctr);
             perspective(proj, 0.9f, 400.0f / 240.0f, rad * 0.02f, rad * 8);
+            /* the bg point light (bg_dgn_East "point_BG", 5 above its origin) follows the player:
+               placed above the room's middle */
+            point_pos[0] = ctr[0]; point_pos[1] = ctr[1] - 2.0f + 5.0f; point_pos[2] = ctr[2] + 4.0f;
             scene_begin(view, proj);
             draw_model(&room, room_model, files, 2, NULL, 0);
             snprintf(path, sizeof path, "%s/h3d_room%s.png", out, v ? "2" : "");

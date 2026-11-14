@@ -29,7 +29,7 @@ enum {
                         codes), b: border RGBA (R low byte), f[0]: LOD bias */
     H3D_TEXCFG,      /* a: unit enable mask, b: texture 2 uses texcoord 1 */
     H3D_PROGRAM,     /* a: DefaultShader variant (H3D_VARIANT) */
-    H3D_FRAGLIGHT,   /* a: enable; ptr: const float[3][4] colours (emission, ambient, diffuse) */
+    H3D_FRAGLIGHT_UNUSED, /* (was the fragment-lighting stand-in; see render/fraglight.h) */
     H3D_BLENDCOLOR,  /* a: blend constant colour RGBA (R low byte), rest of the blend state kept */
     H3D_TEXBORDER,   /* unit; a: border colour RGBA (R low byte) */
 };

@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 OUT="${1:-../build/render_test}"
 mkdir -p "$OUT"
-SRC=(platform/platform.c sdk/gr.c sdk/h3d.c render/render.c render/h3d.c render/font.c render/texdecode.c
+SRC=(platform/platform.c sdk/gr.c sdk/h3d.c sdk/light.c render/render.c render/h3d.c render/fraglight.c render/prim.c render/effects.c render/font.c render/texdecode.c
      render/test/h3d_test.c assets/romfs.c assets/yaz0.c assets/sarc.c assets/bch.c assets/texture.c assets/png.c)
 CF=(-std=gnu11 -O1 -g -Wall -Wextra -Wno-unused-parameter -fno-strict-aliasing -fms-extensions)
 for m in 64 32; do

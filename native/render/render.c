@@ -30,6 +30,9 @@
 #include <SDL3/SDL.h>
 
 #include "../platform/platform.h"
+#include "fraglight.h"
+#include "effects.h"
+#include "prim.h"
 #include "texdecode.h"
 
 /* ================================================================== GL functions beyond gl.h */
@@ -209,7 +212,8 @@ typedef struct {
 typedef struct {
     GLuint prog;
     GLint c, b, tev_src, tev_cmb, tev_const, tev_buf, tev_bufcol, alpha, texcfg, tex[3], texcube, scale;
-    GLint fl_mode, fl_col;
+    bool fl;           /* fragment lighting compiled in */
+    FLLoc fll;
 } Program;
 
 typedef struct { uintptr_t key; int prog, variant; } ProgAlias;
@@ -243,7 +247,6 @@ static struct {
     int prog_variant;
     RenderExt ext;
     ProgAlias *alias; size_t nalias, capalias;
-    bool fl_enable; float fl_col[3][4];       /* fragment lighting stand-in */
     GLuint scan_prog, vao, vbo, ibo;
     size_t vbo_off, ibo_off;
     GLint scan_rot;
@@ -257,16 +260,16 @@ static struct {
 /* ================================================================== GLSL */
 
 /* Common fragment program: PICA fixed-function fragment pipeline as uniforms
- * (6 texture-combiner stages + combiner buffer, alpha test). Fragment lighting is reduced to
- * "not lit" (fragment primary/secondary = 0) until the h3d material path needs it. */
-static const char FS_TEV[] =
-    "#version 330 core\n"
+ * (6 texture-combiner stages + combiner buffer, alpha test). Programs built with FL = 1 (the
+ * nw::h3d DefaultShader variants) also evaluate the 3DS fragment lighting (fraglight.c, hand-written
+ * GLSL) into the combiner sources fragment primary / secondary; in the others both are 0. */
+static const char FS_HEAD[] =
     "in vec4 v_color; in vec4 v_tc0; in vec2 v_tc1; in vec2 v_tc2; in vec3 v_normal; in vec3 v_view;\n"
     "out vec4 o_color;\n"
     "uniform sampler2D tex0, tex1, tex2; uniform samplerCube texcube0;\n"
     "uniform ivec4 tev_src[6]; uniform ivec4 tev_cmb[6]; uniform vec4 tev_const[6];\n"
-    "uniform ivec2 tev_buf; uniform vec4 tev_bufcol; uniform ivec4 alpha_test; uniform ivec4 texcfg;\n"
-    "uniform ivec4 fl_mode; uniform vec4 fl_col[3];\n"
+    "uniform ivec2 tev_buf; uniform vec4 tev_bufcol; uniform ivec4 alpha_test; uniform ivec4 texcfg;\n";
+static const char FS_TEV[] =
     "vec4 t0 = vec4(0.0), t1 = vec4(0.0), t2 = vec4(0.0), prev = vec4(0.0), buf = vec4(0.0), k = vec4(0.0);\n"
     "vec4 fprim = vec4(0.0), fsec = vec4(0.0);\n"
     "vec4 src(int s){\n"
@@ -308,12 +311,6 @@ static const char FS_TEV[] =
     "}\n"
     "void main(){\n"
     "  t0 = vec4(0.0); t1 = vec4(0.0); t2 = vec4(0.0);\n"
-    "  if (fl_mode.x != 0) {\n"
-    "    vec3 n = normalize(v_normal), l = normalize(vec3(-0.35, 0.6, 0.72));\n"
-    /* assumed light environment (the game's light colours are not mapped yet): scene ambient 0.4,
-       one directional light 0.35 */
-    "    fprim = vec4(clamp(fl_col[0].rgb + 0.4 * fl_col[1].rgb + 0.35 * fl_col[2].rgb * max(dot(n, l), 0.0), 0.0, 1.0), 1.0);\n"
-    "  }\n"
     "  if ((texcfg.x & 1) != 0) {\n"
     "    if (texcfg.z == 1) t0 = texture(texcube0, v_tc0.xyz);\n"
     "    else if (texcfg.z == 2) t0 = textureProj(tex0, v_tc0.xyw);\n"
@@ -321,6 +318,9 @@ static const char FS_TEV[] =
     "  }\n"
     "  if ((texcfg.x & 2) != 0) t1 = texture(tex1, v_tc1);\n"
     "  if ((texcfg.x & 4) != 0) t2 = texture(tex2, texcfg.y != 0 ? v_tc1 : v_tc2);\n"
+    "#if FL\n"
+    "  fl_compute(t0, t1, t2, fprim, fsec);\n"
+    "#endif\n"
     "  prev = vec4(0.0); buf = vec4(0.0); vec4 next = tev_bufcol;\n"
     "  for (int i = 0; i < 6; i++) {\n"
     "    ivec4 s = tev_src[i]; ivec4 m = tev_cmb[i]; k = tev_const[i];\n"
@@ -371,14 +371,28 @@ static const char *VS_SRC[RPROG_COUNT] = { /* RPROG_H3D_DEFAULT: extension GLSL 
     [RPROG_GR_DEFAULT] = VS_MVP,
     [RPROG_FONT_RECT] = RENDER_VS_FONT_RECT,
     [RPROG_H3D_DEFAULT] = VS_MVP,
-    [RPROG_PRIMITIVE] = VS_MVP,
+    [RPROG_PRIMITIVE] = RENDER_VS_PRIMITIVE,   /* prim.c */
+    [RPROG_EFT] = RENDER_VS_EFT,               /* effects.c */
 };
 
 /* ================================================================== GL setup */
 
-static void program_init(Program *p, const char *vs) {
+/* fragment program source (FL: with the fragment-lighting GLSL) */
+static char *fs_source(bool fl) {
+    size_t n = strlen(FS_HEAD) + strlen(FS_TEV) + strlen(RENDER_FS_FRAGLIGHT) + 64;
+    char *s = xrealloc(NULL, n);
+    snprintf(s, n, "#version 330 core\n#define FL %d\n%s%s%s", fl ? 1 : 0, FS_HEAD, fl ? RENDER_FS_FRAGLIGHT : "", FS_TEV);
+    return s;
+}
+
+#define FL_LUT_UNIT 4   /* texture unit of the fragment-lighting LUT texture */
+
+static void program_init(Program *p, const char *vs, bool fl) {
     /* gl_program aborts with the log on a compile error: these sources are fixed */
-    p->prog = gl_program(vs, FS_TEV);
+    char *fs = fs_source(fl);
+    p->prog = gl_program(vs, fs);
+    free(fs);
+    p->fl = fl;
     GLuint g = p->prog;
     glUseProgram(g);
     p->c = glGetUniformLocation(g, "c");
@@ -398,11 +412,13 @@ static void program_init(Program *p, const char *vs) {
     }
     p->texcube = glGetUniformLocation(g, "texcube0");
     glUniform1i(p->texcube, 3);
-    p->fl_mode = glGetUniformLocation(g, "fl_mode");
-    p->fl_col = glGetUniformLocation(g, "fl_col");
+    if (fl) {
+        fraglight_locations(g, &p->fll);
+        glUniform1i(p->fll.lut, FL_LUT_UNIT);
+    }
 }
 
-static void program_build(int id) { program_init(&R.progs[id], VS_SRC[id]); }
+static void program_build(int id) { program_init(&R.progs[id], VS_SRC[id], false); }
 
 /* the program for the current prog id / variant (extension variants compiled on first use) */
 static Program *cur_program(void) {
@@ -415,7 +431,7 @@ static Program *cur_program(void) {
         size_t n = strlen(def) + strlen(R.ext.h3d_vs_body) + 32;
         char *src = xrealloc(NULL, n);
         snprintf(src, n, "#version 330 core\n%s\n%s", def, R.ext.h3d_vs_body);
-        program_init(p, src);
+        program_init(p, src, true); /* the DefaultShader GLSL outputs v_tangent */
         free(src);
         if (g_trace) rlog("built h3d program variant %d", v);
     }
@@ -987,7 +1003,7 @@ static void reset_state(void) {
     R.tex_enable = 0;
     R.prog_id = RPROG_CLIP;
     R.prog_variant = 0;
-    R.fl_enable = false;
+    fraglight_reset();
     for (int i = 0; i < RENDER_MAX_ATTRIBS; i++) {
         memset(&R.attr[i], 0, sizeof R.attr[i]);
         R.attr[i].k[3] = 1;
@@ -1161,11 +1177,6 @@ void render_set_ext(const RenderExt *ext) {
 
 RTexUnit *render_texunit(int unit) { return &R.unit[unit < 0 || unit > 2 ? 0 : unit]; }
 
-void render_set_frag_light(int enable, const float col[3][4]) {
-    R.fl_enable = enable != 0;
-    if (col) memcpy(R.fl_col, col, sizeof R.fl_col);
-}
-
 int render_draw_bind(void) {
     if (!render_ready()) return 0;
     lock();
@@ -1240,9 +1251,7 @@ static void upload_uniforms(Program *p) {
     rglUniform4iv(p->alpha, 1, at);
     GLint tc[4] = {R.tex_enable, R.tex2_tc1, (R.unit[0].type == 1 || R.unit[0].type == 4) ? 1 : R.unit[0].type == 3 ? 2 : 0, 0};
     rglUniform4iv(p->texcfg, 1, tc);
-    GLint fl[4] = {R.fl_enable && R.prog_id == RPROG_H3D_DEFAULT, 0, 0, 0};
-    if (p->fl_mode >= 0) rglUniform4iv(p->fl_mode, 1, fl);
-    if (p->fl_col >= 0 && fl[0]) glUniform4fv(p->fl_col, 3, &R.fl_col[0][0]);
+    if (p->fl) fraglight_upload(&p->fll, FL_LUT_UNIT);
     R.vsf_dirty = R.tev_dirty = false;
 }
 
@@ -1543,6 +1552,7 @@ void render_exec_op(const ROp *op) {
     case ROP_EXT:
         if (R.ext.op) R.ext.op(op);
         break;
+    case ROP_FL: fraglight_exec(op); break;
     case ROP_VS_FLOAT: render_set_vs_float(op->u.vsf.reg, op->u.vsf.v, op->unit); break;
     case ROP_VS_BOOL: render_set_vs_bool(op->u.vsb.mask); break;
     case ROP_ATTRIB:

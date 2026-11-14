@@ -76,6 +76,12 @@ reaches it through `sdk/gr.c`.
   - `uv = uv_src + TexCoord0 · uv_size`
   - Lines (GS) need a CPU or VS expansion of each line into a quad, since GL 3.3 core has no wide lines.
 - **Use:** debug quads, boxes, spheres and lines. High.
+- **Done:** GLSL `RENDER_VS_PRIMITIVE` (render/prim.c; registers from the .bsm DVLE: c0-c3 user,
+  c4-c7 wvp, c8 color0, c9 color1, c10 uv_src, c11 uv_size, v0 Vertex, v1 TexCoord0, v2
+  ColorRate). Producers replaced in sdk/prim.c: 004979CC (mode / program / wvp / texture /
+  combiner), 004968B4 (vertex arrays + indexed draw), 00496A28 (quad), 00496ABC (textured quad),
+  00496F50 (sphere). The line program (GS, `dmp_Line.width` c67) has no surviving caller (state
+  recorded only). Test: render/test/prim_test.c.
 
 ### 3. `Shader/nwfont2_RectDrawerShader.shbin` (nw::font and nw::lyt) -> `RPROG_FONT_RECT` (done)
 
@@ -123,7 +129,23 @@ reaches it through `sdk/gr.c`.
   - texture-coordinate generation from `TexMtx*` and `TexcMap`.
 - **Use:** every 3D model. Names and registers: high.
 
-### 5. nw::eft particles (`%s.ptcl`, 002E32DC / 002E3494) -> not assigned yet
+### 5. nw::eft particles (`%s.ptcl`, 002E32DC / 002E3494) -> `RPROG_EFT` (GLSL done, producers not yet)
+
+- **The programs are not DVLB files:** JackAll.ptcl (EU/RegionBoot.szs, SPBD v3) stores 23
+  vertex programs as baked command streams (code 0x2CB/0x2CC, opdescs 0x2D5/0x2D6, entry 0x2BA,
+  output map 0x4F-0x56: o0 position, o1 colour, o2 texcoord 0, o3 texcoord 1; constants c0 =
+  (0, 0.5, 1, 2), c81 = (pi, 2 pi, 1, 256), c93-c95 sin/cos polynomial) in the section at file
+  offset 0x3A03A0. **Bind site:** 003F0080 copies the emitter's program stream (emitter +0x254
+  / +0x25C words) into the command list. Families (read by hand): billboard, Y billboard,
+  polygon XY, polygon XZ, directional (view z or emitter y axis), each with / without particle
+  rotation and instancing; stripe (entry 0x79, 3 programs) not written.
+- **Per-particle block** (003EF31C...): c1 colour, c2 (scale xy, texture rotation 0/1), c3 / c4
+  texture 0 / 1 offset + flip terms, c5 position, c6 velocity, c7 rotation, c8-c10 emitter rows;
+  c82 emitter colour, c83 texture repeat, c84 (pivot xy, depth offset). Vertex buffer (003F3854):
+  8 particles x 4 corners (x, y, 10 n). Draw kick: the draw-type function table called after
+  each particle in 003F5734 / 003F43DC / 003F4D34 / 003F5498, flush 003EF244.
+- **Done:** hand-written GLSL `RENDER_VS_EFT` (render/effects.c, variant in `b`), test
+  render/test/eft_test.c (synthetic particles through the game's register interface).
 
 - **Per pass, 003EF0F8** (from 002E39E8 and 0012E7EC) writes fixed registers:
   - c85 = eye position;
@@ -145,7 +167,26 @@ reaches it through `sdk/gr.c`.
 |---|---|---|
 | RPROG_CLIP (renderer tests / blits) | final | n/a |
 | RPROG_GR_DEFAULT | generic placeholder (`VS_MVP`) | binds yes (00562B24/00562F64); uniforms and draws no |
-| RPROG_PRIMITIVE | placeholder | binds yes; per-draw 004979CC no |
+| RPROG_PRIMITIVE | final (prim.c) | yes (sdk/prim.c): 004979CC, 004968B4, 00496A28, 00496ABC, 00496F50. Test: render/test/prim_test.c |
 | RPROG_FONT_RECT | final (font.c) | yes: loader 004205A4, uniforms 0041F3C0, draws 0041F54C/0041F43C, text 0041E948/0041F970, lyt materials 00401160.. (sdk/lyt.c) |
-| RPROG_H3D_DEFAULT | placeholder | binds yes (005613D4/00561808); uniforms 00565204/005683D0 and draws 00568224/00568798 no |
-| eft | none | no |
+| RPROG_H3D_DEFAULT | final, 15 DVLB variants x 4 programs as #defines (render/h3d.c `RENDER_VS_H3D`) | yes (sdk/h3d.c): model command blobs decoded once at ResFile setup (003FCCF8) and run on ROP_CALL; camera 00130C1C/00131244, element 00170558, meshes 005683D0/00568224/00568798, material uniforms 00565204, NormMtx 00170378; DVLE binds aliased. Fragment lighting: render/fraglight.c (hand-written GLSL, LUTs decoded at load) + sdk/light.c producers. Not yet: fog, 00387E58/00518694/00171510/002C3870. Test: render/test/h3d_test.c |
+| RPROG_EFT | final for 20 of 23 programs (effects.c; stripe family missing) | no: 003F0080 bind (program stream copy), per-particle writers 003EF31C / 003EF924 / 003F06D8.. and draw-kick table not replaced yet. Test: render/test/eft_test.c |
+
+## Fragment lighting (render/fraglight.c, sdk/light.c)
+
+Not a vertex program, but part of the fragment side of the nw::h3d programs: the materials take
+their colour from the 3DS fragment-lighting unit (combiner sources fragment primary / secondary).
+- **State** (ROP_FL ops): light environment (enable, light count / permutation, LUT config,
+  Fresnel selector, bump mode / texture / renormalise, clamp highlights, per-light spot /
+  distance-attenuation enables, global ambient), lights (colours, directional, two-sided,
+  geometric factors, view-space position, spot direction, distance attenuation scale / bias),
+  LUT input abs / selector / scale, LUT bindings (ids 0 D0, 1 D1, 3 FR, 4 RB, 5 RG, 6 RR, 8+i
+  SP, 16+i DA).
+- **LUTs:** BCH LUT sections (e.g. the boot's Lut_Jack in EU/RegionBoot.szs) are decoded when the
+  file is set up (sdk/h3d.c: 256 entries of value + delta) and referenced by sampler blob
+  address; the GL side keeps one 256 x 24 RG32F texture (row = LUT id).
+- **Producers replaced (sdk/light.c):** 005626C0, 00562930, 00562978, 00562A88, 003CBC1C,
+  0056497C, 00565A10, 00565904, 005655D0, 00564C14, 00565B8C, 003FC2F8, 00567734, 00567904,
+  00567AFC. Material LUT input words (params +0xA8) are decoded at load.
+- **GLSL:** `RENDER_FS_FRAGLIGHT`, compiled into the h3d programs only (they output v_tangent).
+  Shadows are not applied (no shadow maps on this path).
