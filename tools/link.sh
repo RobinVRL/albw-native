@@ -29,6 +29,12 @@ ld.lld -m elf_i386 -r -o $B/albw_game.o @$B/objs.txt
 # names the decomp calls by C++/ad-hoc names -> the function they are (tools/resolve_names.py +
 # hand-verified ones)
 cat native/symbol_aliases.txt native/symbol_aliases_manual.txt 2>/dev/null | grep -v '^#' | grep . > $B/aliases.txt || true
+# a "function" name whose address lies in the data sections is data (prefix-based guesses like g_)
+llvm-nm -u --format=just-symbols $B/albw_game.o | python3 -c "
+import sys,re
+for n in sys.stdin.read().split():
+    m=re.match(r'^func_([0-9A-F]{8})$',n)
+    if m and 0x693000<=int(m.group(1),16)<0x7AFE34: print(n,'data_'+m.group(1))" >> $B/aliases.txt
 [[ -s $B/aliases.txt ]] && llvm-objcopy --redefine-syms=$B/aliases.txt $B/albw_game.o
 # the game runs its static constructors itself (albw_ctors, in its own order): drop the native
 # constructor lists the C++ sources generated, so nothing game-side runs before main()

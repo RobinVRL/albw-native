@@ -94,6 +94,9 @@ def main():
     # code address in this binary -> USA function name
     if a.map:
         fn_of = {int(v["eu"], 16): "func_" + k for k, v in json.load(open(a.map)).items()}
+        extra = os.path.join(ROOT, "native", "extra_functions.json")
+        if os.path.exists(extra):  # functions only reached through pointers (USA -> EU)
+            fn_of.update({int(eu, 16): "func_" + usa for usa, eu in json.load(open(extra)).items()})
     else:
         starts = json.load(open(os.path.join(a.decomp, "funcs.json")))["starts"]
         fn_of = {s: "func_%08X" % s for s in starts}

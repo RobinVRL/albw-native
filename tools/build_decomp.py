@@ -94,6 +94,8 @@ def canon_ref(name):
     """Canonical name for a referenced symbol, or None to keep it."""
     name = base_name(name)
     m = FUNC_NAME.match(name) or re.match(r"^(?:g_|post_|pre_|call_|fn|f)_?(?:0x)?([0-9A-Fa-f]{8})$", name)
+    if m and DATA_LO <= int(m.group(1), 16) < DATA_HI:  # the address decides, not the prefix
+        return "data_%08X" % int(m.group(1), 16)
     if m:
         a = int(m.group(1), 16)
         return "func_%08X" % a
@@ -289,6 +291,10 @@ def main():
     fallback_dir = analyzed_dir if os.path.isdir(analyzed_dir) else os.path.join(ROOT, "build", "ghidra_all")
 
     eu2usa = {v["eu"].lower(): k for k, v in json.load(open(os.path.join(decomp, "shared", "eu_usa_map.json"))).items()}
+    extra_path = os.path.join(ROOT, "native", "extra_functions.json")
+    extra = json.load(open(extra_path)) if os.path.exists(extra_path) else {}  # USA -> EU
+    eu2usa.update({eu.lower(): usa for usa, eu in extra.items()})
+    extra_dir = os.path.join(ROOT, "build", "ghidra_extra")
 
     def eu_fun_to_usa(text):
         """Ghidra's own FUN_<EU address> names -> func_<USA address> (unknown starts stay FUN_)."""
@@ -307,6 +313,8 @@ def main():
     def ghidra_source(addr):
         """Per-address Ghidra C (mirrored path relative to OUT), or None."""
         raw = os.path.join(fallback_dir, "func_%s.c" % addr)
+        if not os.path.exists(raw):
+            raw = os.path.join(extra_dir, "func_%s.c" % addr)  # functions missing from the table
         if not os.path.exists(raw) and addr in ghidra:
             return ghidra[addr]["path"]
         if not os.path.exists(raw):
@@ -330,7 +338,7 @@ def main():
         if e["status"] in ("honest", "hack") and users[e["path"]] == 1:
             by_path[e["path"]].append(addr)
             source_of[addr] = "matched"
-    for addr in set(matched) | set(ghidra):
+    for addr in set(matched) | set(ghidra) | set(extra):
         if addr in source_of:
             continue
         g = ghidra_source(addr)
