@@ -88,10 +88,8 @@ if want prep; then
         "$PY" native/robust/tools/livein2.py > "$LOGS/livein2.log" 2>&1
         grep -v -e Warning -e iteration "$LOGS/livein2.log" | tail -4
     fi
-    if [[ -s $SY/params.json && $LI -nt $SY/params.json ]]; then
-        step "prep: livein2.json newer than params.json, recomputing params/returns"
-        rm -f "$SY/params.json"
-    fi
+    # (no automatic params/returns recompute: against an already-fixed project it yields an
+    #  almost empty table; round 3 snapshots the signatures before fixing instead)
     if [[ -s $SY/params.json && -s $SY/returns.json && -s $LI ]]; then
         step "prep: using native/robust/systemic2/*.json (delete params.json to recompute)"
     else
