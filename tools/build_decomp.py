@@ -218,7 +218,9 @@ def build_one(job):
             if kinds.get(d, "").upper() in ("D", "B", "R", "V", "C") and c and c.startswith("data_"):
                 if c != d:
                     args += ["--redefine-sym", "%s=%s" % (d, c)]
-                args += ["--weaken-symbol=" + c]  # generated game data (step 3) is the strong definition
+                # generated game data (step 3) is the strong definition; weaken under both names
+                # (objcopy may apply this before or after the rename)
+                args += ["--weaken-symbol=" + c, "--weaken-symbol=" + d]
             else:
                 args += ["--localize-symbol=" + d]
         # exports are weak: a native SDK replacement defining the same func_<ADDR> wins at link time
@@ -290,8 +292,14 @@ def main():
 
     def eu_fun_to_usa(text):
         """Ghidra's own FUN_<EU address> names -> func_<USA address> (unknown starts stay FUN_)."""
-        return re.sub(r"\bFUN_([0-9a-f]{8})\b",
-                      lambda m: "func_" + eu2usa[m.group(1)] if m.group(1) in eu2usa else m.group(0), text)
+        def fix(m):
+            a = m.group(1)
+            if a in eu2usa:
+                return "func_" + eu2usa[a]
+            if int(a, 16) < 0x110000:  # Thumb C runtime at the start of the code: same address in USA
+                return "func_%08X" % int(a, 16)
+            return m.group(0)
+        return re.sub(r"\b(?:thunk_)?FUN_([0-9a-f]{8})\b", fix, text)
 
     sigs = import_ghidra.signatures(fallback_dir) if fallback_dir else {}
     print("callee prototypes from Ghidra: %d" % len(sigs))
@@ -334,13 +342,31 @@ def main():
     with cf.ThreadPoolExecutor(a.jobs) as ex:
         res = list(ex.map(build_one, jobs))
 
-    # second round: matched sources whose function could not be identified, or that failed to
-    # compile, fall back to the address's Ghidra decompilation
+    # names nobody can resolve: not address-named, not aliased, not system library, not defined
+    import gen_stubs
+    system = gen_stubs.system_symbols()
+    aliases = set()
+    for f in ("symbol_aliases.txt", "symbol_aliases_manual.txt"):
+        path = os.path.join(ROOT, "native", f)
+        if os.path.exists(path):
+            aliases |= {l.split()[0] for l in open(path) if l.strip() and not l.startswith("#")}
+    defined_all = {d for r in res if r["ok"] for d in r["defs"]}
+
+    def unresolvable(name):
+        return not (name.startswith(("func_", "data_", "DAT_", "PTR_", "_DAT_", "__")) or "Ram" in name
+                    or name in aliases or name in system or name in defined_all
+                    or re.match(r"^[su]_.*_[0-9a-f]{8}$", name))
+
+    # second round: matched sources whose function could not be identified, that failed to
+    # compile, or that reference names nothing can resolve (generic names like g/reg/dtor from
+    # permuter-style matches) fall back to the address's Ghidra decompilation
     retry = []
     for r in res:
         if source_of.get(r["addrs"][0]) != "matched":
             continue
         miss = r["addrs"] if not r["ok"] else r["missing_primary"]
+        if r["ok"] and any(unresolvable(u) for u in r["und"]):
+            miss = r["addrs"]
         for addr in miss:
             g = ghidra_source(addr)
             if g:
@@ -372,7 +398,8 @@ def main():
         kinds["function" if u.startswith("func_") else "data" if u.startswith("data_") else
               "ghidra-pool(EU)" if "Ram" in u or u.startswith("DAT_") else "other"] += 1
     fails = collections.Counter(re.sub(r"'[^']*'", "'X'", r["error"])[:90] for r in failed)
-    rep = {"sources": len(res), "compiled": len(ok), "failed": [(r["path"], r["error"]) for r in failed],
+    objects = [os.path.join(OUT, "obj", r["path"] + ".final.o") for r in ok]
+    rep = {"objects": objects, "sources": len(res), "compiled": len(ok), "failed": [(r["path"], r["error"]) for r in failed],
            "functions_exported": len(have_fn), "functions_total": len(source_of),
            "no_primary": no_primary, "unresolved": dict(und.most_common())}
     json.dump(rep, open(os.path.join(OUT, "report.json"), "w"), indent=1)
