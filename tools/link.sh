@@ -25,6 +25,10 @@ clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o
 find $B/decomp/obj -name '*.final.o' > $B/objs.txt
 echo $B/data/gamedata.o >> $B/objs.txt
 ld.lld -m elf_i386 -r -o $B/albw_game.o @$B/objs.txt
+# names the decomp calls by C++/ad-hoc names -> the function they are (tools/resolve_names.py +
+# hand-verified ones)
+cat native/symbol_aliases.txt native/symbol_aliases_manual.txt 2>/dev/null | grep -v '^#' | grep . > $B/aliases.txt || true
+[[ -s $B/aliases.txt ]] && llvm-objcopy --redefine-syms=$B/aliases.txt $B/albw_game.o
 # the game runs its static constructors itself (albw_ctors, in its own order): drop the native
 # constructor lists the C++ sources generated, so nothing game-side runs before main()
 llvm-objcopy --remove-section=.init_array --remove-section=.rel.init_array \

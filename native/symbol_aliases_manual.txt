@@ -1,0 +1,6 @@
+# Hand-verified name -> function aliases (same format as symbol_aliases.txt). Each line was checked
+# against the original call site: argument registers/stack slots match the source's parameters.
+# Factory (actor factory family, 181 files): ctor 38 (USA 005C2B54) calls 0019B51C(this=0x72ACD0,
+# createFn, u32, SafeString&, PtrListBase*, SafeString&, const char*, int); dtor 0019B5EC.
+_ZN7FactoryC1EPFPvvEjRK10SafeStringP11PtrListBaseS5_PKci func_0019B51C
+_ZN7FactoryD1Ev func_0019B5EC
