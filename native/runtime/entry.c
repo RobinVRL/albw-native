@@ -21,6 +21,7 @@ void func_00100024(void);
 void func_00100E60(void);
 void func_00100C18(void);
 void func_00100C90(void);
+void albw_fp_set_3ds_mode(void);   /* native/sdk/os.c */
 
 struct MainArgs { int argc; char **argv; };
 static int game_main(void *p);
@@ -42,6 +43,10 @@ static int game_main(void *p) {
         else if (!strcmp(argv[i], "--no-vsync")) cfg.vsync = 0;
     }
     if (plat_init("The Legend of Zelda: A Link Between Worlds", &cfg)) return 1;
+    /* the game's main thread runs with the same VFP mode as its other threads (FZ: the kernel's
+     * initial FPSCR is not in the game code; 00106314 sets 0x03000000 on every thread it
+     * creates). After plat_init: host libraries (SDL, GL drivers) keep their IEEE mode at init. */
+    albw_fp_set_3ds_mode();
 
     fprintf(stderr, "startup: runtime init\n");
     func_00100024();  /* zero .bss (decompiled, harmless) */

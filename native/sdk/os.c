@@ -35,6 +35,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <xmmintrin.h>
+
+/* the 3DS game threads' VFP mode (FPSCR 0x03000000) on the host SSE unit: FTZ | DAZ */
+void albw_fp_set_3ds_mode(void) { _mm_setcsr(_mm_getcsr() | 0x8040u); }
 
 #include "../runtime/runtime.h"
 
@@ -565,10 +569,14 @@ void func_00104338(int64_t ns) { sleep_ns(ns); }
  * meaning on the host; kept as a no-op so the symbol resolves. Confidence: high. */
 void func_00106348(int32_t n) { (void)n; }
 
-/* USA 00106314  per-thread VFP init `vmsr fpscr, 0x03000000` (flush-to-zero + default NaN) run
- * by the thread trampoline 0010994C. No host equivalent is required (x87/SSE defaults are
- * IEEE); no-op. Confidence: high (behaviour), medium (FTZ differences, see os.md). */
-void func_00106314(void) {}
+/* USA 00106314  per-thread VFP init `vmsr fpscr, 0x03000000` (FZ flush-to-zero + DN default
+ * NaN, round to nearest) run by the thread trampoline 0010994C on every game thread.
+ * Native: the SSE equivalent of FZ, MXCSR FTZ (bit 15: denormal results -> 0) + DAZ (bit 6:
+ * denormal inputs read as 0); rounding stays round-to-nearest. DN (default NaN 0x7FC00000) has
+ * no x86 equivalent (x86 propagates the NaN operand, its own default is 0xFFC00000).
+ * Requires the SSE float model (tools/link.sh / build_decomp FPFLAGS): x87 ignores MXCSR.
+ * See native/gameplay/AUDIT.md "Float mode". Confidence: high. */
+void func_00106314(void) { albw_fp_set_3ds_mode(); }
 
 /* USA 0010F228  nn::svc::GetThreadPriority(s32 *out, Handle thread) (svc 0x0B).
  * Evidence: `str r0,[sp,#-4]!; svc #0xb; ldr r2,[sp]; str r1,[r2]`. Caller 0010EFDC passes
