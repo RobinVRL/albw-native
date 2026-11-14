@@ -176,3 +176,21 @@ int32_t func_001006FC(uint16_t *buf, uint32_t n, const uint16_t *fmt, void *args
     buf[w] = 0;
     return (uint32_t)len >= n ? -1 : len;
 }
+
+/* USA 003DB398 (EU 003DB378) current date/time in milliseconds since 2000-01-01 00:00:00 (the
+ * nn::fnd::DateTime epoch; the 3DS clock is local time). Original: reads the shared-page RTC
+ * block (0x1FF81020, double-buffered) and interpolates with svc 0x28 GetSystemTick. Used by
+ * 003D35F8 (DateTime::GetNow, which scales it by 1,000,000 into nanoseconds), e.g. for the
+ * Play Coin (gamecoin.dat) date. Native: host local time. Confidence: medium (unit read from
+ * the 1,000,000 factor and the 2000-01-01 DateTime(2000,1,1) constants in the function). */
+#include <time.h>
+uint64_t func_003DB398(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    time_t t = ts.tv_sec;
+    struct tm lt;
+    localtime_r(&t, &lt);
+    int64_t local = (int64_t)t + lt.tm_gmtoff;          /* seconds since 1970, local clock */
+    int64_t since2000 = local - 946684800;              /* 2000-01-01 00:00:00 */
+    return (uint64_t)(since2000 * 1000 + ts.tv_nsec / 1000000);
+}
