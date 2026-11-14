@@ -1,0 +1,3026 @@
+{
+ "00100F68": {
+  "eu": "00100F68",
+  "objs": [
+   [
+    -272,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00101538": {
+  "eu": "00101538",
+  "objs": [
+   [
+    -64,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00102C40": {
+  "eu": "00102C40",
+  "objs": [
+   [
+    -72,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00102E40": {
+  "eu": "00102E40",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00103E9C": {
+  "eu": "00103E9C",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00104AA0": {
+  "eu": "00104AA0",
+  "objs": [
+   [
+    -60,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00104F90": {
+  "eu": "00104F90",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0010DC6C": {
+  "eu": "0010DC6C",
+  "objs": [
+   [
+    -96,
+    24
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00122C78": {
+  "eu": "00122C78",
+  "objs": [
+   [
+    -60,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00123190": {
+  "eu": "00123190",
+  "objs": [
+   [
+    -152,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00123768": {
+  "eu": "00123768",
+  "objs": [
+   [
+    -80,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0012ABB8": {
+  "eu": "0012ABB8",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0012BC9C": {
+  "eu": "0012BC9C",
+  "objs": [
+   [
+    -24,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00135C24": {
+  "eu": "00135C24",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00137458": {
+  "eu": "00137458",
+  "objs": [
+   [
+    -216,
+    8
+   ],
+   [
+    -208,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00137F88": {
+  "eu": "00137F88",
+  "objs": [
+   [
+    -296,
+    4
+   ],
+   [
+    -292,
+    4
+   ],
+   [
+    -288,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00138FE8": {
+  "eu": "00138FE8",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001390A4": {
+  "eu": "001390A4",
+  "objs": [
+   [
+    -152,
+    4
+   ],
+   [
+    -148,
+    4
+   ],
+   [
+    -144,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0013A340": {
+  "eu": "0013A340",
+  "objs": [
+   [
+    -88,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0013AB5C": {
+  "eu": "0013AB5C",
+  "objs": [
+   [
+    -76,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0013EF04": {
+  "eu": "0013EF04",
+  "objs": [
+   [
+    -80,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00142BE8": {
+  "eu": "00142BE8",
+  "objs": [
+   [
+    -120,
+    60
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00144F4C": {
+  "eu": "00144F4C",
+  "objs": [
+   [
+    -208,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0014B788": {
+  "eu": "0014B788",
+  "objs": [
+   [
+    -72,
+    32
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0014C108": {
+  "eu": "0014C108",
+  "objs": [
+   [
+    -72,
+    32
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0014C804": {
+  "eu": "0014C804",
+  "objs": [
+   [
+    -72,
+    32
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00152D40": {
+  "eu": "00152D44",
+  "objs": [
+   [
+    -40,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00153094": {
+  "eu": "00153098",
+  "objs": [
+   [
+    -16,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001551C4": {
+  "eu": "001551C8",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0015CBD8": {
+  "eu": "0015CBDC",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0016169C": {
+  "eu": "001616A0",
+  "objs": [
+   [
+    -176,
+    4
+   ],
+   [
+    -172,
+    4
+   ],
+   [
+    -168,
+    8
+   ],
+   [
+    -160,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00168E9C": {
+  "eu": "00168E9C",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0016CF38": {
+  "eu": "0016CF38",
+  "objs": [
+   [
+    -136,
+    64
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001732B4": {
+  "eu": "001732B4",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00174264": {
+  "eu": "00174264",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00175108": {
+  "eu": "00175108",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00175B08": {
+  "eu": "00175B08",
+  "objs": [
+   [
+    -184,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001768A4": {
+  "eu": "001768A4",
+  "objs": [
+   [
+    -176,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001774B4": {
+  "eu": "001774B4",
+  "objs": [
+   [
+    -148,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001779DC": {
+  "eu": "001779DC",
+  "objs": [
+   [
+    -224,
+    4
+   ],
+   [
+    -220,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00179BC4": {
+  "eu": "00179BC4",
+  "objs": [
+   [
+    -80,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0017EBCC": {
+  "eu": "0017EBCC",
+  "objs": [
+   [
+    -24,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00180B48": {
+  "eu": "00180B48",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00181EF0": {
+  "eu": "00181EF0",
+  "objs": [
+   [
+    -80,
+    4
+   ],
+   [
+    -76,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00186CB4": {
+  "eu": "00186CB4",
+  "objs": [
+   [
+    -88,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00189944": {
+  "eu": "00189944",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00189FC8": {
+  "eu": "00189FC8",
+  "objs": [
+   [
+    -252,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0018C3C4": {
+  "eu": "0018C3C4",
+  "objs": [
+   [
+    -152,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0018F62C": {
+  "eu": "0018F62C",
+  "objs": [
+   [
+    -80,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0018FBA8": {
+  "eu": "0018FBA8",
+  "objs": [
+   [
+    -224,
+    4
+   ],
+   [
+    -220,
+    4
+   ],
+   [
+    -216,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00192FC4": {
+  "eu": "00192FC4",
+  "objs": [
+   [
+    -176,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001940B4": {
+  "eu": "001940B4",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00194EF8": {
+  "eu": "00194EF8",
+  "objs": [
+   [
+    -216,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00196914": {
+  "eu": "00196914",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00197614": {
+  "eu": "00197614",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0019C724": {
+  "eu": "0019C724",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001A0A68": {
+  "eu": "001A0A68",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001A37A0": {
+  "eu": "001A37A0",
+  "objs": [
+   [
+    -160,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001A993C": {
+  "eu": "001A993C",
+  "objs": [
+   [
+    -32,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001AD594": {
+  "eu": "001AD594",
+  "objs": [
+   [
+    -776,
+    20
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001AF0AC": {
+  "eu": "001AF0AC",
+  "objs": [
+   [
+    -192,
+    16
+   ],
+   [
+    -176,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001B11F8": {
+  "eu": "001B11F8",
+  "objs": [
+   [
+    -272,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001BC8C8": {
+  "eu": "001BC8C8",
+  "objs": [
+   [
+    -760,
+    40
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001BD460": {
+  "eu": "001BD460",
+  "objs": [
+   [
+    -208,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001BE498": {
+  "eu": "001BE498",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001BED8C": {
+  "eu": "001BED8C",
+  "objs": [
+   [
+    -152,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001BF7C0": {
+  "eu": "001BF7C0",
+  "objs": [
+   [
+    -40,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C0428": {
+  "eu": "001C0428",
+  "objs": [
+   [
+    -224,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C09D0": {
+  "eu": "001C09D0",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C0FD0": {
+  "eu": "001C0FD0",
+  "objs": [
+   [
+    -88,
+    4
+   ],
+   [
+    -84,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C2280": {
+  "eu": "001C2280",
+  "objs": [
+   [
+    -240,
+    8
+   ],
+   [
+    -232,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C2BC4": {
+  "eu": "001C2BC4",
+  "objs": [
+   [
+    -32,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C3D30": {
+  "eu": "001C3D30",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C47DC": {
+  "eu": "001C47DC",
+  "objs": [
+   [
+    -16,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C48F0": {
+  "eu": "001C48F0",
+  "objs": [
+   [
+    -168,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C57A0": {
+  "eu": "001C57A0",
+  "objs": [
+   [
+    -80,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C811C": {
+  "eu": "001C811C",
+  "objs": [
+   [
+    -240,
+    4
+   ],
+   [
+    -236,
+    4
+   ],
+   [
+    -232,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C9098": {
+  "eu": "001C9098",
+  "objs": [
+   [
+    -192,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001C9640": {
+  "eu": "001C9640",
+  "objs": [
+   [
+    -224,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001CBA18": {
+  "eu": "001CBA18",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001CF3D4": {
+  "eu": "001CF3D4",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001D2BC4": {
+  "eu": "001D2BC4",
+  "objs": [
+   [
+    -336,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001D42A8": {
+  "eu": "001D42A8",
+  "objs": [
+   [
+    -64,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001D7B04": {
+  "eu": "001D7B04",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001D9E98": {
+  "eu": "001D9E98",
+  "objs": [
+   [
+    -88,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001E06D0": {
+  "eu": "001E06D0",
+  "objs": [
+   [
+    -400,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001E5FC4": {
+  "eu": "001E5FC4",
+  "objs": [
+   [
+    -128,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "001FF22C": {
+  "eu": "001FF22C",
+  "objs": [
+   [
+    -192,
+    80
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00201388": {
+  "eu": "00201388",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00202014": {
+  "eu": "00202014",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00205310": {
+  "eu": "00205310",
+  "objs": [
+   [
+    -144,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00208EB4": {
+  "eu": "00208EB4",
+  "objs": [
+   [
+    -72,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0020DE84": {
+  "eu": "0020DE84",
+  "objs": [
+   [
+    -136,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0020ECD0": {
+  "eu": "0020ECD0",
+  "objs": [
+   [
+    -216,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00216CDC": {
+  "eu": "00216CDC",
+  "objs": [
+   [
+    -96,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002228F8": {
+  "eu": "002228F8",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00225FDC": {
+  "eu": "00225FDC",
+  "objs": [
+   [
+    -200,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00226D70": {
+  "eu": "00226D70",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00228D18": {
+  "eu": "00228D18",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0022C178": {
+  "eu": "0022C178",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00238DD4": {
+  "eu": "00238DD4",
+  "objs": [
+   [
+    -144,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023C710": {
+  "eu": "0023C710",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023CF98": {
+  "eu": "0023CF98",
+  "objs": [
+   [
+    -136,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023D4E8": {
+  "eu": "0023D4E8",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023D784": {
+  "eu": "0023D784",
+  "objs": [
+   [
+    -136,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023F414": {
+  "eu": "0023F414",
+  "objs": [
+   [
+    -224,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0023FAD4": {
+  "eu": "0023FAD4",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002403C4": {
+  "eu": "002403C4",
+  "objs": [
+   [
+    -168,
+    4
+   ],
+   [
+    -164,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00241554": {
+  "eu": "00241554",
+  "objs": [
+   [
+    -180,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00241E48": {
+  "eu": "00241E48",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00242C94": {
+  "eu": "00242C94",
+  "objs": [
+   [
+    -40,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0024D00C": {
+  "eu": "0024D00C",
+  "objs": [
+   [
+    -112,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0024D4D8": {
+  "eu": "0024D4D8",
+  "objs": [
+   [
+    -168,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002519D0": {
+  "eu": "002519F8",
+  "objs": [
+   [
+    -76,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002543D0": {
+  "eu": "002543F8",
+  "objs": [
+   [
+    -176,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0025CF08": {
+  "eu": "0025CF30",
+  "objs": [
+   [
+    -720,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0026463C": {
+  "eu": "00264664",
+  "objs": [
+   [
+    -72,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00264FB8": {
+  "eu": "00264FE0",
+  "objs": [
+   [
+    -40,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00265308": {
+  "eu": "00265330",
+  "objs": [
+   [
+    -16,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00266858": {
+  "eu": "00266880",
+  "objs": [
+   [
+    -160,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00269640": {
+  "eu": "00269668",
+  "objs": [
+   [
+    -64,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0026D488": {
+  "eu": "0026D4B0",
+  "objs": [
+   [
+    -188,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0027D79C": {
+  "eu": "0027D7C4",
+  "objs": [
+   [
+    -120,
+    4
+   ],
+   [
+    -116,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0027FF60": {
+  "eu": "0027FF88",
+  "objs": [
+   [
+    -184,
+    8
+   ],
+   [
+    -176,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002809C4": {
+  "eu": "002809EC",
+  "objs": [
+   [
+    -32,
+    24
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0028C954": {
+  "eu": "0028C97C",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0028E084": {
+  "eu": "0028E0AC",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0028EC10": {
+  "eu": "0028EC38",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002908B8": {
+  "eu": "002908E0",
+  "objs": [
+   [
+    -104,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002927A0": {
+  "eu": "002927C8",
+  "objs": [
+   [
+    -72,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002959E4": {
+  "eu": "00295A0C",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00295B74": {
+  "eu": "00295B9C",
+  "objs": [
+   [
+    -104,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002A19B0": {
+  "eu": "002A198C",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002A752C": {
+  "eu": "002A7508",
+  "objs": [
+   [
+    -152,
+    4
+   ],
+   [
+    -148,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002AAD94": {
+  "eu": "002AAD70",
+  "objs": [
+   [
+    -32,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002AB978": {
+  "eu": "002AB954",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002AC514": {
+  "eu": "002AC4F0",
+  "objs": [
+   [
+    -56,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002AE274": {
+  "eu": "002AE250",
+  "objs": [
+   [
+    -48,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002B4634": {
+  "eu": "002B4610",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002B5638": {
+  "eu": "002B5614",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002BE030": {
+  "eu": "002BE00C",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C1294": {
+  "eu": "002C1270",
+  "objs": [
+   [
+    -48,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C5E88": {
+  "eu": "002C5E64",
+  "objs": [
+   [
+    -96,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C734C": {
+  "eu": "002C7328",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C8598": {
+  "eu": "002C8574",
+  "objs": [
+   [
+    -188,
+    4
+   ],
+   [
+    -184,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C93B8": {
+  "eu": "002C9394",
+  "objs": [
+   [
+    -16,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002C948C": {
+  "eu": "002C9468",
+  "objs": [
+   [
+    -112,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002CA184": {
+  "eu": "002CA160",
+  "objs": [
+   [
+    -180,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002CA950": {
+  "eu": "002CA92C",
+  "objs": [
+   [
+    -80,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002CAD88": {
+  "eu": "002CAD64",
+  "objs": [
+   [
+    -32,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002CECA0": {
+  "eu": "002CEC7C",
+  "objs": [
+   [
+    -192,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002CF96C": {
+  "eu": "002CF948",
+  "objs": [
+   [
+    -164,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002D7168": {
+  "eu": "002D7144",
+  "objs": [
+   [
+    -72,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002DD5B0": {
+  "eu": "002DD58C",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002E0BE4": {
+  "eu": "002E0BC0",
+  "objs": [
+   [
+    -72,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002E39E8": {
+  "eu": "002E39C4",
+  "objs": [
+   [
+    -104,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002E5460": {
+  "eu": "002E543C",
+  "objs": [
+   [
+    -104,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002EBFB8": {
+  "eu": "002EBF94",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002EC700": {
+  "eu": "002EC6DC",
+  "objs": [
+   [
+    -100,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002F1B2C": {
+  "eu": "002F1B08",
+  "objs": [
+   [
+    -168,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002F36B4": {
+  "eu": "002F3690",
+  "objs": [
+   [
+    -224,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "002FC4CC": {
+  "eu": "002FC4A8",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00302200": {
+  "eu": "003021DC",
+  "objs": [
+   [
+    -32,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00306BBC": {
+  "eu": "00306B98",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00306CE0": {
+  "eu": "00306CBC",
+  "objs": [
+   [
+    -240,
+    8
+   ],
+   [
+    -232,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003083F0": {
+  "eu": "003083CC",
+  "objs": [
+   [
+    -80,
+    4
+   ],
+   [
+    -76,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00309850": {
+  "eu": "0030982C",
+  "objs": [
+   [
+    -224,
+    8
+   ],
+   [
+    -216,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0030A5B4": {
+  "eu": "0030A590",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00312CA0": {
+  "eu": "00312C7C",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003137A4": {
+  "eu": "00313780",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00316CD0": {
+  "eu": "00316CAC",
+  "objs": [
+   [
+    -140,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0031A96C": {
+  "eu": "0031A948",
+  "objs": [
+   [
+    -168,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0031E324": {
+  "eu": "0031E300",
+  "objs": [
+   [
+    -40,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0032259C": {
+  "eu": "00322578",
+  "objs": [
+   [
+    -32,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00322CF4": {
+  "eu": "00322CD0",
+  "objs": [
+   [
+    -64,
+    8
+   ],
+   [
+    -56,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00323570": {
+  "eu": "0032354C",
+  "objs": [
+   [
+    -96,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003313C4": {
+  "eu": "003313A0",
+  "objs": [
+   [
+    -104,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003319E4": {
+  "eu": "003319C0",
+  "objs": [
+   [
+    -208,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003320F4": {
+  "eu": "003320D0",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00334104": {
+  "eu": "003340E0",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00335798": {
+  "eu": "00335774",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00337E5C": {
+  "eu": "00337E38",
+  "objs": [
+   [
+    -112,
+    44
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00339324": {
+  "eu": "00339300",
+  "objs": [
+   [
+    -152,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0033A340": {
+  "eu": "0033A31C",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00342C24": {
+  "eu": "00342C00",
+  "objs": [
+   [
+    -352,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00346E10": {
+  "eu": "00346DEC",
+  "objs": [
+   [
+    -208,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00349214": {
+  "eu": "003491F0",
+  "objs": [
+   [
+    -224,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00359978": {
+  "eu": "00359954",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0035A3B8": {
+  "eu": "0035A394",
+  "objs": [
+   [
+    -208,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0035A62C": {
+  "eu": "0035A608",
+  "objs": [
+   [
+    -244,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0035B338": {
+  "eu": "0035B314",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0035BE50": {
+  "eu": "0035BE2C",
+  "objs": [
+   [
+    -240,
+    8
+   ],
+   [
+    -232,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0035CD60": {
+  "eu": "0035CD3C",
+  "objs": [
+   [
+    -24,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00360670": {
+  "eu": "0036064C",
+  "objs": [
+   [
+    -136,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0036972C": {
+  "eu": "00369708",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00370E98": {
+  "eu": "00370E74",
+  "objs": [
+   [
+    -112,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003734F8": {
+  "eu": "003734D4",
+  "objs": [
+   [
+    -112,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0037591C": {
+  "eu": "003758F8",
+  "objs": [
+   [
+    -40,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003783F4": {
+  "eu": "003783D0",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0037CDA8": {
+  "eu": "0037CD84",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0037F268": {
+  "eu": "0037F244",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00381E94": {
+  "eu": "00381E70",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00388654": {
+  "eu": "00388630",
+  "objs": [
+   [
+    -88,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0038B670": {
+  "eu": "0038B64C",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0038BF34": {
+  "eu": "0038BF10",
+  "objs": [
+   [
+    -208,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003939F8": {
+  "eu": "003939D4",
+  "objs": [
+   [
+    -88,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00396C1C": {
+  "eu": "00396BF8",
+  "objs": [
+   [
+    -40,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0039B7C0": {
+  "eu": "0039B79C",
+  "objs": [
+   [
+    -184,
+    8
+   ],
+   [
+    -176,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003A2460": {
+  "eu": "003A243C",
+  "objs": [
+   [
+    -88,
+    60
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003A5EA4": {
+  "eu": "003A5E80",
+  "objs": [
+   [
+    -264,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003AD40C": {
+  "eu": "003AD3E8",
+  "objs": [
+   [
+    -80,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003C7EEC": {
+  "eu": "003C7EC8",
+  "objs": [
+   [
+    -112,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003C8238": {
+  "eu": "003C8214",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003C9544": {
+  "eu": "003C9520",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003C95F8": {
+  "eu": "003C95D4",
+  "objs": [
+   [
+    -56,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003CE0B4": {
+  "eu": "003CE090",
+  "objs": [
+   [
+    -160,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003D4F20": {
+  "eu": "003D4F00",
+  "objs": [
+   [
+    -48,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003E376C": {
+  "eu": "003E374C",
+  "objs": [
+   [
+    -64,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003E43B0": {
+  "eu": "003E4390",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003E4700": {
+  "eu": "003E46E0",
+  "objs": [
+   [
+    -100,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003E489C": {
+  "eu": "003E487C",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003F0080": {
+  "eu": "003F0060",
+  "objs": [
+   [
+    -120,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003F1AB8": {
+  "eu": "003F1A98",
+  "objs": [
+   [
+    -128,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "003F9B70": {
+  "eu": "003F9B50",
+  "objs": [
+   [
+    -320,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00408C50": {
+  "eu": "00408C30",
+  "objs": [
+   [
+    -96,
+    4
+   ],
+   [
+    -92,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00409DE4": {
+  "eu": "00409DC4",
+  "objs": [
+   [
+    -104,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0040A588": {
+  "eu": "0040A568",
+  "objs": [
+   [
+    -120,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0040B7B8": {
+  "eu": "0040B798",
+  "objs": [
+   [
+    -208,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00410FB8": {
+  "eu": "00410F98",
+  "objs": [
+   [
+    -72,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0041166C": {
+  "eu": "0041164C",
+  "objs": [
+   [
+    -176,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0041F970": {
+  "eu": "0041F950",
+  "objs": [
+   [
+    -96,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0042BB2C": {
+  "eu": "0042BB0C",
+  "objs": [
+   [
+    -160,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0042C7B8": {
+  "eu": "0042C798",
+  "objs": [
+   [
+    -200,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0042D464": {
+  "eu": "0042D444",
+  "objs": [
+   [
+    -112,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0042EFB0": {
+  "eu": "0042EF90",
+  "objs": [
+   [
+    -240,
+    8
+   ],
+   [
+    -232,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004507C8": {
+  "eu": "004507A0",
+  "objs": [
+   [
+    -96,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00453E48": {
+  "eu": "00453E20",
+  "objs": [
+   [
+    -88,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00454394": {
+  "eu": "0045436C",
+  "objs": [
+   [
+    -80,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004647C8": {
+  "eu": "004647A0",
+  "objs": [
+   [
+    -1848,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00466C40": {
+  "eu": "00466C18",
+  "objs": [
+   [
+    -72,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00468DB8": {
+  "eu": "00468D90",
+  "objs": [
+   [
+    -48,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0046F3BC": {
+  "eu": "0046F394",
+  "objs": [
+   [
+    -1848,
+    8
+   ],
+   [
+    -1840,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00470A94": {
+  "eu": "00470A6C",
+  "objs": [
+   [
+    -1864,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0047DF20": {
+  "eu": "0047DEF8",
+  "objs": [
+   [
+    -1848,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0047ECD8": {
+  "eu": "0047ECB0",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0048D4B4": {
+  "eu": "0048D48C",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0049BD4C": {
+  "eu": "0049BD24",
+  "objs": [
+   [
+    -64,
+    16
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0049E064": {
+  "eu": "0049E03C",
+  "objs": [
+   [
+    -96,
+    20
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004A2934": {
+  "eu": "004A290C",
+  "objs": [
+   [
+    -72,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004A4388": {
+  "eu": "004A4360",
+  "objs": [
+   [
+    -136,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004ABA98": {
+  "eu": "004ABA70",
+  "objs": [
+   [
+    -144,
+    84
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004B0310": {
+  "eu": "004B02E8",
+  "objs": [
+   [
+    -136,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004C2328": {
+  "eu": "004C2300",
+  "objs": [
+   [
+    -48,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004C58F0": {
+  "eu": "004C58C8",
+  "objs": [
+   [
+    -108,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004C5F84": {
+  "eu": "004C5F5C",
+  "objs": [
+   [
+    -1160,
+    8
+   ],
+   [
+    -1152,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004C870C": {
+  "eu": "004C86E4",
+  "objs": [
+   [
+    -48,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004D3D14": {
+  "eu": "004D3CEC",
+  "objs": [
+   [
+    -80,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004D3F58": {
+  "eu": "004D3F30",
+  "objs": [
+   [
+    -120,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004DD038": {
+  "eu": "004DD010",
+  "objs": [
+   [
+    -64,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004DE944": {
+  "eu": "004DE91C",
+  "objs": [
+   [
+    -204,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004E3780": {
+  "eu": "004E3758",
+  "objs": [
+   [
+    -152,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004E5710": {
+  "eu": "004E56E8",
+  "objs": [
+   [
+    -768,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004E7B14": {
+  "eu": "004E7AEC",
+  "objs": [
+   [
+    -200,
+    8
+   ],
+   [
+    -192,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004F37A8": {
+  "eu": "004F3780",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004F3DBC": {
+  "eu": "004F3D94",
+  "objs": [
+   [
+    -200,
+    36
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004F5588": {
+  "eu": "004F5560",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004F70A8": {
+  "eu": "004F7080",
+  "objs": [
+   [
+    -40,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004F8774": {
+  "eu": "004F874C",
+  "objs": [
+   [
+    -32,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004FC244": {
+  "eu": "004FC21C",
+  "objs": [
+   [
+    -164,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004FD464": {
+  "eu": "004FD43C",
+  "objs": [
+   [
+    -56,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "004FF57C": {
+  "eu": "004FF554",
+  "objs": [
+   [
+    -80,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00500540": {
+  "eu": "00500518",
+  "objs": [
+   [
+    -72,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0050C29C": {
+  "eu": "0050C274",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0050C740": {
+  "eu": "0050C718",
+  "objs": [
+   [
+    -184,
+    4
+   ],
+   [
+    -180,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0050E868": {
+  "eu": "0050E840",
+  "objs": [
+   [
+    -32,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "005127AC": {
+  "eu": "00512784",
+  "objs": [
+   [
+    -88,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00512CB8": {
+  "eu": "00512C90",
+  "objs": [
+   [
+    -16,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00512D50": {
+  "eu": "00512D28",
+  "objs": [
+   [
+    -24,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00513588": {
+  "eu": "00513560",
+  "objs": [
+   [
+    -112,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00514D0C": {
+  "eu": "00514CE4",
+  "objs": [
+   [
+    -16,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "005164EC": {
+  "eu": "005164C4",
+  "objs": [
+   [
+    -200,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00516F44": {
+  "eu": "00516F1C",
+  "objs": [
+   [
+    -64,
+    8
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00517894": {
+  "eu": "0051786C",
+  "objs": [
+   [
+    -56,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "005287F4": {
+  "eu": "005287CC",
+  "objs": [
+   [
+    -104,
+    12
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00568BD8": {
+  "eu": "00568BB0",
+  "objs": [
+   [
+    -112,
+    4
+   ],
+   [
+    -108,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "00670D14": {
+  "eu": "00670CEC",
+  "objs": [
+   [
+    -600,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0068010C": {
+  "eu": "006800E4",
+  "objs": [
+   [
+    -320,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ },
+ "0068F5E8": {
+  "eu": "0068F5C0",
+  "objs": [
+   [
+    -168,
+    4
+   ],
+   [
+    -164,
+    4
+   ]
+  ],
+  "why": "sp-relative stores into the &stack0x object(s) with no C assignment"
+ }
+}

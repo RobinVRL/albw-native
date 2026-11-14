@@ -1,0 +1,966 @@
+{
+ "func_0010E74C": {
+  "reads": {
+   "r1": 4,
+   "s0_tail": 2,
+   "sites": 19
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_0010F1F8": {
+  "reads": {
+   "s0_tail": 14,
+   "sites": 227
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_001138EC": {
+  "reads": {
+   "s0": 1,
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_00125A18": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00129D60": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0013F2C0": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00151148": {
+  "reads": {
+   "r0_tail": 9,
+   "r1": 2,
+   "s0": 1,
+   "s0_tail": 25,
+   "sites": 209
+  },
+  "ret": "undefined4",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_00158D0C": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_0015D0E0": {
+  "reads": {
+   "s0_tail": 1,
+   "sites": 10
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001699A0": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001A5884": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001A9468": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_001B0DF4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001B6DE0": {
+  "reads": {
+   "s0_tail": 2,
+   "sites": 30
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_001CDDC8": {
+  "reads": {
+   "r0_tail": 2,
+   "s0_tail": 4,
+   "sites": 7
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001DF690": {
+  "reads": {
+   "sites": 3
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001E4378": {
+  "reads": {
+   "sites": 14
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001E97D8": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_001FE4C0": {
+  "reads": {
+   "s0_tail": 1,
+   "sites": 8
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_002133E8": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0021551C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002283D4": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002316CC": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 2,
+   "sites": 31
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00249920": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00255494": {
+  "reads": {
+   "sites": 65
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_00275FF4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002760AC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00288CAC": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0028D580": {
+  "reads": {
+   "r0_tail": 12,
+   "s0": 1,
+   "s0_tail": 18,
+   "sites": 127
+  },
+  "ret": "undefined4",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_002A9D70": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002AC858": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002B7DEC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002C1540": {
+  "reads": {
+   "sites": 7
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_002CAD88": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002D3194": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002DA848": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002E4AC4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002EB18C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002F9008": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_002FBFC4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00300E80": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00323A80": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0032C1EC": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 1,
+   "sites": 1
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0034C4C0": {
+  "reads": {
+   "sites": 5
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0036DEC8": {
+  "reads": {
+   "sites": 3
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0037FAE0": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00391078": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_003A2FB0": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_003AC504": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_003BC0AC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_003E1634": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_00409BC8": {
+  "reads": {
+   "s0": 1,
+   "sites": 19
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_0040C5C0": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_0040CBD4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004136EC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00414348": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_00414730": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00414C3C": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00414E2C": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00418498": {
+  "reads": {
+   "sites": 8
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_004278A0": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004382D0": {
+  "reads": {},
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_0043D1D4": {
+  "reads": {
+   "sites": 4
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0045D9A8": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0046CA88": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00472E64": {
+  "reads": {},
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_004747B4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_00475CC0": {
+  "reads": {},
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_004864E4": {
+  "reads": {},
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_0048B740": {
+  "reads": {
+   "sites": 5
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0048F288": {
+  "reads": {
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0049C154": {
+  "reads": {
+   "sites": 13
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004A5290": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004A7F00": {
+  "reads": {
+   "r0_tail": 10,
+   "r1": 1,
+   "s0_tail": 17,
+   "sites": 66
+  },
+  "ret": "undefined4",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004AD9E8": {
+  "reads": {
+   "s0_tail": 3,
+   "sites": 34
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004AF3C4": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 3,
+   "sites": 4
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004BDDB0": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_004BFFC4": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004C8510": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004CE804": {
+  "reads": {
+   "sites": 27
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004CF864": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 1,
+   "sites": 22
+  },
+  "ret": "undefined4",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004D08B8": {
+  "reads": {
+   "sites": 16
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004D7E0C": {
+  "reads": {
+   "sites": 14
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004F2E68": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004F48F0": {
+  "reads": {
+   "sites": 82
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004F5588": {
+  "reads": {
+   "sites": 81
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004FAB0C": {
+  "reads": {
+   "s0": 1,
+   "sites": 2
+  },
+  "ret": "void",
+  "s0": "pass",
+  "why": "s0 is the incoming s0 on every return path (never written)"
+ },
+ "func_004FB408": {
+  "reads": {
+   "sites": 34
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004FDE50": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_004FDE70": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00500E60": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0051D0B0": {
+  "reads": {
+   "sites": 14
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_00530844": {
+  "reads": {
+   "r0_tail": 1,
+   "s0": 1,
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_0053084C": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_00530874": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00531470": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00531490": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00531968": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_005430B0": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0054FC98": {
+  "reads": {
+   "r0": 1,
+   "sites": 1
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00554E74": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_005670A0": {
+  "reads": {
+   "r0_tail": 2,
+   "s0": 24,
+   "sites": 24
+  },
+  "ret": "void",
+  "s0": "nowrite",
+  "why": "no path writes s0 (entry value or an indirect callee's only)"
+ },
+ "func_00582C90": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00583BC8": {
+  "reads": {
+   "sites": 3
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00583E90": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00588004": {
+  "reads": {
+   "sites": 6
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0058AF2C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00590B1C": {
+  "reads": {
+   "sites": 4
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00601AA0": {
+  "reads": {
+   "r0": 1,
+   "sites": 1
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0065D120": {
+  "reads": {
+   "r0_tail": 7,
+   "s0": 1,
+   "s0_tail": 7,
+   "sites": 14
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "native definition native/robust/func_0065D120.c returns void and the ARM s0 is no clean float result (mixed)"
+ },
+ "func_0065E398": {
+  "reads": {
+   "r0_tail": 26,
+   "r1": 2,
+   "s0_tail": 26,
+   "sites": 39
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0065F560": {
+  "reads": {
+   "r0_tail": 6,
+   "s0_tail": 6,
+   "sites": 7
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_006640EC": {
+  "reads": {
+   "r0_tail": 43,
+   "s0_tail": 44,
+   "sites": 60
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0066E07C": {
+  "reads": {
+   "r0_tail": 4,
+   "s0_tail": 4,
+   "sites": 6
+  },
+  "ret": "undefined4",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0067AAB8": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0067AE04": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0067B0DC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0067B458": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0067B770": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00689E6C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00689F5C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00689FCC": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0068A080": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0068A19C": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0068A244": {
+  "reads": {},
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_0068A458": {
+  "reads": {
+   "sites": 7
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ },
+ "func_00690C88": {
+  "reads": {
+   "sites": 1
+  },
+  "ret": "void",
+  "s0": "mixed",
+  "why": "s0 (mixed) is consumed by nobody: no caller reads it, no consumer passes it on, no pointer to it"
+ }
+}

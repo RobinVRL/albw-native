@@ -1,0 +1,510 @@
+{
+ "001920E4": {
+  "eu": "001920E4",
+  "final": [
+   "r0",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4"
+  ],
+  "keep_r": 2,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "s0"
+  ],
+  "proven": true,
+  "r": 1,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 00192100 vmov.f32 s16, s0"
+  }
+ },
+ "002B0D7C": {
+  "eu": "002B0D58",
+  "final": [
+   "r0",
+   "r1",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 002B0D7C vmov.f32 s16, s0"
+  }
+ },
+ "002B6B0C": {
+  "eu": "002B6AE8",
+  "final": [
+   "r0",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 002B6B14 vmov.f32 s16, s0"
+  }
+ },
+ "002FE3E8": {
+  "eu": "002FE3C4",
+  "final": [
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4",
+   "Stack[0x4]:4",
+   "Stack[0x8]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 002FE3E4 vmov.f32 s17, s0"
+  }
+ },
+ "0040EF54": {
+  "eu": "0040EF34",
+  "final": [
+   "r0",
+   "r1",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4",
+   "Stack[0x4]:1",
+   "Stack[0x8]:1",
+   "Stack[0xc]:4",
+   "Stack[0x10]:4",
+   "Stack[0x14]:1",
+   "Stack[0x18]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 0040EF58 vmov.f32 s16, s0"
+  }
+ },
+ "004A7620": {
+  "eu": "004A75F8",
+  "final": [
+   "r1",
+   "s0",
+   "s1"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4"
+  ],
+  "keep_r": 3,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "s0",
+   "s1"
+  ],
+  "proven": true,
+  "r": 2,
+  "s": 2,
+  "why": {
+   "s0": "dregs: wide 004A7608 vmov.f64 d8, d0",
+   "s1": "dregs: wide 004A7608 vmov.f64 d8, d0"
+  }
+ },
+ "004A9F98": {
+  "eu": "004A9F70",
+  "final": [
+   "r1",
+   "s0",
+   "s1"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4"
+  ],
+  "keep_r": 3,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "s0",
+   "s1"
+  ],
+  "proven": true,
+  "r": 2,
+  "s": 2,
+  "why": {
+   "s0": "dregs: wide 004A9F80 vmov.f64 d8, d0",
+   "s1": "dregs: wide 004A9F80 vmov.f64 d8, d0"
+  }
+ },
+ "004AAD4C": {
+  "eu": "004AAD24",
+  "final": [
+   "r3",
+   "s0",
+   "s1"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4",
+   "Stack[0x4]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0",
+   "s1"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 2,
+  "why": {
+   "s0": "dregs: narrow 004AAD3C vmov.f32 s18, s0",
+   "s1": "dregs: narrow 004AAD34 vmov.f32 s16, s1"
+  }
+ },
+ "004AAF44": {
+  "eu": "004AAF1C",
+  "final": [
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 004AAF34 vmov.f32 s16, s0"
+  }
+ },
+ "00536CA4": {
+  "eu": "00536C7C",
+  "final": [
+   "r1",
+   "r2",
+   "s0",
+   "s1",
+   "s2",
+   "s3"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4"
+  ],
+  "keep_r": 3,
+  "keep_s": 4,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "s0",
+   "s1",
+   "s2",
+   "s3"
+  ],
+  "proven": true,
+  "r": 3,
+  "s": 4,
+  "why": {
+   "s0": "dregs: below s3 (positional)",
+   "s1": "dregs: below s3 (positional)",
+   "s2": "dregs: below s3 (positional)",
+   "s3": "dregs: narrow 00536C90 vmov.f32 s17, s3"
+  }
+ },
+ "00570D00": {
+  "eu": "00570CD8",
+  "final": [
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 0,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 00570CE8 vmov.f32 s16, s0"
+  }
+ },
+ "00589170": {
+  "eu": "00589148",
+  "final": [
+   "r0",
+   "r3",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4",
+   "Stack[0x0]:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 4,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 00589170 vmov.f32 s16, s0"
+  }
+ },
+ "0063AEA8": {
+  "eu": "0063AE80",
+  "final": [
+   "s0",
+   "s1"
+  ],
+  "ghidra": [],
+  "keep_r": 3,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "s0",
+   "s1"
+  ],
+  "proven": false,
+  "r": 0,
+  "s": 2,
+  "why": {
+   "s0": "dregs: narrow 0063AE90 vmov.f32 s17, s0",
+   "s1": "dregs: narrow 0063AE94 vmov.f32 s18, s1"
+  }
+ },
+ "0064268C": {
+  "eu": "00642664",
+  "final": [
+   "s0",
+   "s1"
+  ],
+  "ghidra": [],
+  "keep_r": 3,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "s0",
+   "s1"
+  ],
+  "proven": false,
+  "r": 0,
+  "s": 2,
+  "why": {
+   "s0": "dregs: narrow 00642674 vmov.f32 s17, s0",
+   "s1": "dregs: narrow 00642678 vmov.f32 s18, s1"
+  }
+ },
+ "0066FA50": {
+  "eu": "0066FA28",
+  "final": [
+   "r0",
+   "r2",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 3,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 0066FA44 vmov.f32 s19, s0"
+  }
+ },
+ "00670D14": {
+  "eu": "00670CEC",
+  "final": [
+   "r0",
+   "r2",
+   "s0"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 1,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0"
+  ],
+  "proven": true,
+  "r": 3,
+  "s": 1,
+  "why": {
+   "s0": "dregs: narrow 00670D08 vmov.f32 s19, s0"
+  }
+ },
+ "0069021C": {
+  "eu": "006901F4",
+  "final": [
+   "r2",
+   "s0",
+   "s1"
+  ],
+  "ghidra": [
+   "r0:4",
+   "r1:4",
+   "r2:4",
+   "r3:4"
+  ],
+  "keep_r": 4,
+  "keep_s": 2,
+  "may": [
+   "r0",
+   "r1",
+   "r2",
+   "r3",
+   "s0",
+   "s1"
+  ],
+  "proven": true,
+  "r": 3,
+  "s": 2,
+  "why": {
+   "s0": "dregs: narrow 0069020C vmov.f32 s16, s0",
+   "s1": "dregs: narrow 006904C4 vcvt.s32.f32 s0, s1"
+  }
+ }
+}

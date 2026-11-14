@@ -1,0 +1,145 @@
+{
+ "0011130C": {
+  "eu": "0011130C",
+  "fixed": 4,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp+0 (after 4 fixed arguments)"
+ },
+ "003E6AA8": {
+  "eu": "003E6A88",
+  "fixed": 4,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp+0 (after 4 fixed arguments)"
+ },
+ "003FB500": {
+  "eu": "003FB4E0",
+  "fixed": 4,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp+0 (after 4 fixed arguments)"
+ },
+ "0049940C": {
+  "eu": "004993E4",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "004994B0": {
+  "eu": "00499488",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "004994FC": {
+  "eu": "004994D4",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "00689578": {
+  "eu": "00689550",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "006895E4": {
+  "eu": "006895BC",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "00689650": {
+  "eu": "00689628",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "006896BC": {
+  "eu": "00689694",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "00689728": {
+  "eu": "00689700",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "00689794": {
+  "eu": "0068976C",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ },
+ "00689B00": {
+  "eu": "00689AD8",
+  "fixed": 2,
+  "spill": [
+   "r0",
+   "r1",
+   "r2",
+   "r3"
+  ],
+  "why": "push {r0, r1, r2, r3} at entry, va_list = entry_sp-8 (after 2 fixed arguments)"
+ }
+}

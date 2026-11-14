@@ -83,6 +83,90 @@ def virtual_this(text):
 
 
 RE_ARGCOUNT = re.compile(r"too (?:many|few) arguments to function call")
+RE_CF_ERR = re.compile(r"operand of type 'float' cannot be cast to a pointer type|pointer cannot be cast to type 'float'|"
+                       r"statement requires expression of integer type \('[^']*\*'")
+RE_DIAG = re.compile(r"^(.+?):(\d+):(\d+):((?:\{\d+:\d+-\d+:\d+\})*):?\s*(error|warning): (.*)$", re.M)
+
+
+def _cf_operand(text, i):
+    """(start, end) of the unary expression at text[i] (import_ghidra._operand)."""
+    import importlib
+    ig = importlib.import_module("import_ghidra")
+    return ig._operand(text, i)
+
+
+def cf_error_rewrite(text, stderr):
+    lines = text.split("\n")
+    starts = [0]
+    for ln in lines:
+        starts.append(starts[-1] + len(ln) + 1)
+    edits = []
+    for m in RE_DIAG.finditer(stderr):
+        if m.group(5) != "error":
+            continue
+        i = starts[int(m.group(2)) - 1] + int(m.group(3)) - 1
+        msg = m.group(6)
+        if msg.startswith("operand of type 'float' cannot be cast"):
+            r = _cf_operand(text, i)
+            if r:
+                edits.append((r[0], r[1], "ALBW_PTR_BITS(", ")"))
+        elif msg.startswith("pointer cannot be cast to type 'float'"):
+            j = i - len("(float)") if text[:i].endswith("(float)") else i
+            if text.startswith("(float)", j):
+                r = _cf_operand(text, j + len("(float)"))
+                if r:
+                    edits.append((j, r[1], "ALBW_AS_F32(", ")", r[0]))
+        elif msg.startswith("statement requires expression of integer type"):
+            k = text.find("(", i)
+            e = _cf_operand(text, k)
+            if e:
+                edits.append((e[0], e[1], "(int)(uintptr_t)", ""))
+    edits.sort(key=lambda e: e[0], reverse=True)
+    last = None
+    for e in edits:
+        if last is not None and e[1] > last:
+            continue
+        a, b, pre, suf = e[:4]
+        body = text[e[4]:b] if len(e) == 5 else text[a:b]
+        text = text[:a] + pre + body + suf + text[b:]
+        last = a
+    return text
+
+
+def fconv_rewrite(text, stderr, src):
+    """Wrap the converted expression of each -Wfloat-conversion / -Wimplicit-int-float-conversion
+    warning in a bit copy (warnings inside the ALBW_AS_* macro bodies are skipped)."""
+    lines = text.split("\n")
+    starts = [0]
+    for ln in lines:
+        starts.append(starts[-1] + len(ln) + 1)
+    out = stderr.splitlines()
+    edits = []
+    for n, l in enumerate(out):
+        m = RE_DIAG.match(l)
+        if not m or m.group(5) != "warning" or not os.path.samefile(m.group(1), src):
+            continue
+        rng = re.findall(r"\{(\d+):(\d+)-(\d+):(\d+)\}", m.group(4))
+        if not rng:
+            continue
+        nxt = out[n + 1] if n + 1 < len(out) else ""
+        col = int(m.group(3)) - 1
+        if re.search(r"expanded from macro '(ALBW_AS|albw)", nxt) and not lines[int(m.group(2)) - 1][col:].startswith("ALBW_AS_"):
+            continue
+        msg = m.group(6)
+        w = "ALBW_AS_U32(" if "floating-point number into integer: 'float'" in msg else \
+            "ALBW_AS_F32(" if "to 'float' may lose precision" in msg else None
+        if w:
+            l1, c1, l2, c2 = map(int, rng[0])
+            edits.append((starts[l1 - 1] + c1 - 1, starts[l2 - 1] + c2 - 1, w))
+    edits.sort(reverse=True)
+    last = None
+    for a, b, w in edits:
+        if last is not None and b > last:
+            continue
+        text = text[:a] + w + text[a:b] + ")" + text[b:]
+        last = a
+    return text
 RE_DECLARED_HERE = re.compile(r"note: '(\w+)' declared here")
 SIG_OVERRIDES = {
     "func_0010E74C": "void *func_0010E74C(uint *param_1,uint *param_2,uint param_3)",
@@ -146,6 +230,8 @@ def void_tail_returns(text, addr, sigs):
 
     def ok(callee):
         sig = (sigs or {}).get("func_" + callee) if callee else None
+        if sig and v4_enabled() and sig.split()[0] == "void" and "*" not in sig.split("(")[0]:
+            return False  # V4: a void callee (retfix / overrides) has no r0 result to forward
         return not (sig and sig.split()[0] in ("float", "double"))
 
     def sub_ret(mm):
@@ -255,6 +341,34 @@ ANY_ADDR_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]*_(?:0x)?([0-9A-Fa-f]{8})$")
 _rt = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "native", "returns_this.json")
 RETURNS_THIS = set(json.load(open(_rt))) if os.path.exists(_rt) else set()  # tools/returns_this.py
 CTORS = set()  # USA addresses of the game's static constructors (filled in main)
+
+
+# ------------------------------------------------------------------ round 3 (ALBW_CONVERT_V4=1)
+# Off by default: without the variable the build is what it was (native/ROUND3.md). With it:
+#   - import_ghidra.py V4 (64-bit returns kept, ARM return classes from ALBW_RETFIX, in_stack_
+#     frame aliasing, vldm pair loads, compile fixes) on a separate fallback directory;
+#   - FUN_<EU> callees renamed before the conversion, so they get declarations;
+#   - error-driven compile-fix retries; ALBW_FCONV bit copies (on unless ALBW_FCONV=0);
+#   - returns-this list native/returns_this3.json (float returners removed);
+#   - the switch-case fragments Ghidra listed as functions are not built (V4_NOT_FUNCTIONS).
+def v4_enabled():
+    return os.environ.get("ALBW_CONVERT_V4") == "1"
+
+
+def v4_stage():
+    """ALBW_V4_STAGE: 1 = return classes, stack objects, returns-this, FUN_ declarations;
+    2 (default) = everything (+ FCONV, compile-fix retries, switch-case fragments dropped)."""
+    return int(os.environ.get("ALBW_V4_STAGE", "2")) if v4_enabled() else 0
+
+
+def fconv_enabled():
+    v = os.environ.get("ALBW_FCONV")
+    return v == "1" or (v is None and v4_stage() >= 2)
+
+
+# mid-function blocks of a switch (`switchD_xxx::caseD_..`) that the function table lists as
+# functions: live registers / the parent's frame, not callable C functions (native/compilefix)
+V4_NOT_FUNCTIONS = {"003E5518", "003E5520", "0056B010", "0056B050", "0056B088", "0056B0C0", "0056B0F8"}
 
 
 MANGLED = re.compile(r"^_Z(\d+)")
@@ -370,6 +484,8 @@ def build_one(job):
            "-I", os.path.join(OUT, "shared", "include"), "-I", os.path.dirname(src)]
     if ARCH64:
         cmd += ["-fms-extensions", "-Wno-error=int-to-pointer-cast"]  # __ptr32 (ALBW_GP)
+    if v4_enabled():
+        cmd += ["-DALBW_V4"]  # ghidra_types.h round-3 helpers
     if cpp:
         cmd += ["-x", "c++", "-std=gnu++11", "-fno-threadsafe-statics"]
     else:
@@ -407,6 +523,31 @@ def build_one(job):
             with open(src, "w") as fh:
                 fh.write(new_text)
             r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
+        for _ in range(8 if v4_stage() >= 2 or os.environ.get("ALBW_CONVERT_CF") == "1" else 0):
+            # error-driven exact rewrites (native/compilefix/README.md): (T *)<float> -> bit copy
+            # (97 failures + 12 more hidden behind other errors); (float)<pointer> -> bit copy;
+            # switch on a pointer-typed variable (8)
+            if not r.returncode or not RE_CF_ERR.search(r.stderr):
+                break
+            text = open(src).read()
+            new_text = cf_error_rewrite(text, r.stderr)
+            if new_text == text:
+                break
+            with open(src, "w") as fh:
+                fh.write(new_text)
+            r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
+        if not r.returncode and not cpp and fconv_enabled() and "/ghidra_fallback/" in src:
+            # implicit float<->int conversions are Ghidra COPYs between a float and an int-typed
+            # variable / pool word: make them bit copies (whole build: 1647 sites in 471 files)
+            text = open(src).read()
+            w = subprocess.run(cmd + ["-fsyntax-only", "-Wno-everything", "-Wfloat-conversion",
+                                      "-Wimplicit-int-float-conversion", "-fdiagnostics-print-source-range-info",
+                                      "-fno-caret-diagnostics", src], capture_output=True, text=True).stderr
+            new_text = fconv_rewrite(text, w, src)
+            if new_text != text:
+                with open(src, "w") as fh:
+                    fh.write(new_text)
+                r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
         if r.returncode:
             err = next((l for l in r.stderr.splitlines() if "error:" in l or "error in backend" in l), r.stderr[:200])
             return {"path": path, "addrs": addrs, "ok": False, "error": err.split("error:", 1)[-1].strip()}
@@ -516,6 +657,15 @@ def main():
     matched = json.load(open(os.path.join(decomp, "functions.json")))
     ghidra = json.load(open(os.path.join(decomp, "nonmatching.json")))
     import_ghidra = load_decomp_tool(decomp, "import_ghidra")
+    sys.modules["import_ghidra"] = import_ghidra  # cf_error_rewrite imports it by name
+    global RETURNS_THIS
+    if v4_enabled():
+        os.environ.setdefault("ALBW_RETFIX", os.path.join(ROOT, "native", "robust", "systemic3", "retfix.json"))
+        rt3 = os.path.join(ROOT, "native", "returns_this3.json")
+        if os.path.exists(rt3):
+            RETURNS_THIS = set(json.load(open(rt3)))
+        print("V4 stage %d: retfix %s (%d), returns-this %d, FCONV %s" % (
+            v4_stage(), os.environ["ALBW_RETFIX"], len(import_ghidra.v4_retfix()), len(RETURNS_THIS), fconv_enabled()))
     # Ghidra with full auto-analysis (real parameter counts) is preferred over the earlier
     # no-analysis dumps (decomp's src/nonmatching and build/ghidra_all)
     analyzed_dir = next((d for d in (os.path.join(ROOT, "build", "ghidra_analyzed2"), os.path.join(ROOT, "build", "ghidra_analyzed")) if os.path.isdir(d)), "")
@@ -523,6 +673,8 @@ def main():
     # ghidra_fallback/<dump name>/..., so the default build's files are never overwritten.
     alt_dir = os.environ.get("ALBW_GHIDRA_DIR")
     fb_sub = os.environ.get("ALBW_FALLBACK_SUBDIR") or (os.path.basename(os.path.normpath(alt_dir)) if alt_dir else "")
+    if v4_enabled() and not os.environ.get("ALBW_FALLBACK_SUBDIR"):
+        fb_sub += "_v4"  # never reuse V2/V3 conversions of the same dump (mtime cache)
     if alt_dir:
         analyzed_dir = os.path.abspath(alt_dir)
         print("Ghidra dump: %s -> ghidra_fallback/%s (ALBW_CONVERT_V2=%s)"
@@ -556,6 +708,9 @@ def main():
     # the x87 stack, native/gameplay/AUDIT.md): memmove returns the destination pointer (Ghidra
     # typed it float because s0 survives the call); the state machine changeState returns nothing
     sigs.update(SIG_OVERRIDES)
+    if v4_enabled():
+        for k in SIG_OVERRIDES:  # the native definitions' classes win
+            import_ghidra.v4_retfix().pop(k, None)
     print("callee prototypes from Ghidra: %d" % len(sigs))
 
     def ghidra_source(addr):
@@ -572,7 +727,13 @@ def main():
         if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
-            text = rewrite(eu_fun_to_usa(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(text, addr, sigs)))), addr, sigs)))
+            # FUN_<EU> -> func_<USA> *before* convert(): convert() declares the callees it sees,
+            # so a callee still spelled FUN_ was called through an implicit `int f()` (float
+            # arguments promoted to double). 1054 Ghidra sources call a FUN_ name; 6 failures.
+            if v4_enabled():
+                text = rewrite(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(eu_fun_to_usa(text), addr, sigs)))), addr, sigs))
+            else:
+                text = rewrite(eu_fun_to_usa(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(text, addr, sigs)))), addr, sigs)))
             if ARCH64:
                 text = ptr32_rewrite(text)
             with open(dst, "w") as fh:
@@ -609,6 +770,8 @@ def main():
             source_of[addr] = "matched"
     for addr in set(matched) | set(ghidra) | set(extra):
         if addr in source_of:
+            continue
+        if v4_stage() >= 2 and addr in V4_NOT_FUNCTIONS:
             continue
         g = ghidra_source(addr)
         if g:

@@ -1,0 +1,434 @@
+{
+ "001119F4": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 6,
+   "sites": 134
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00111EA8": {
+  "reads": {
+   "r0_tail": 2,
+   "s0": 11,
+   "s0_tail": 1,
+   "sites": 12
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00114E74": {
+  "reads": {
+   "sites": 37
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115154": {
+  "reads": {
+   "r0": 1,
+   "r0_tail": 10,
+   "r1": 2,
+   "s0": 3,
+   "sites": 148
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "001151CC": {
+  "reads": {
+   "s0_tail": 4,
+   "sites": 42
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "001151EC": {
+  "reads": {
+   "s0_tail": 33,
+   "sites": 176
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115C14": {
+  "reads": {
+   "s0": 1,
+   "sites": 4
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115C54": {
+  "reads": {
+   "r0": 11,
+   "r0_tail": 36,
+   "r1": 5,
+   "s0": 2,
+   "s0_tail": 65,
+   "sites": 1414
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115C70": {
+  "reads": {
+   "r0": 3,
+   "r0_tail": 6,
+   "r1": 1,
+   "s0": 1,
+   "s0_tail": 12,
+   "sites": 1778
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115DC8": {
+  "reads": {
+   "r0": 1,
+   "r0_tail": 3,
+   "s0": 24,
+   "s0_tail": 7,
+   "sites": 345
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00115E10": {
+  "reads": {
+   "r0": 2,
+   "sites": 106
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0013D85C": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "002164B0": {
+  "reads": {},
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00245484": {
+  "reads": {
+   "r1": 9,
+   "s0": 10,
+   "sites": 10
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00299364": {
+  "reads": {},
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "002B04E8": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "002CEFDC": {
+  "reads": {
+   "r1": 9,
+   "s0": 10,
+   "sites": 10
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "002E0458": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "002E1A5C": {
+  "reads": {
+   "sites": 1
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00324610": {
+  "reads": {
+   "r0_tail": 1,
+   "s0_tail": 2,
+   "sites": 6
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00359D8C": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00394E3C": {
+  "reads": {
+   "sites": 2
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "003E19E8": {
+  "reads": {
+   "r0_tail": 3,
+   "s0": 14,
+   "sites": 25
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "003E1DC8": {
+  "reads": {
+   "s0_tail": 1,
+   "sites": 3
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0040C650": {
+  "reads": {
+   "s0": 7,
+   "sites": 7
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00435BE8": {
+  "reads": {
+   "sites": 5
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00460FE8": {
+  "reads": {},
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0049EEDC": {
+  "reads": {
+   "s0": 1,
+   "sites": 3
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004C86E8": {
+  "reads": {},
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004F898C": {
+  "reads": {
+   "s0": 38,
+   "sites": 119
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004F944C": {
+  "reads": {
+   "s0": 39,
+   "sites": 40
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004F9594": {
+  "reads": {
+   "s0": 10,
+   "sites": 10
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004FB1F8": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "004FBF4C": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00521238": {
+  "reads": {
+   "s0": 4,
+   "sites": 4
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00521274": {
+  "reads": {
+   "s0": 4,
+   "sites": 4
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00521298": {
+  "reads": {
+   "s0": 29,
+   "sites": 30
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00523700": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "005237CC": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00523848": {
+  "reads": {
+   "s0": 5,
+   "sites": 5
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00540A64": {
+  "reads": {
+   "s0": 1,
+   "sites": 1
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00542350": {
+  "reads": {
+   "s0": 1,
+   "sites": 3
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00548CB4": {
+  "reads": {
+   "r0_tail": 1,
+   "s0": 3,
+   "sites": 3
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "005500C0": {
+  "reads": {
+   "r0_tail": 1,
+   "s0": 12,
+   "sites": 12
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00553058": {
+  "reads": {
+   "s0": 5,
+   "sites": 5
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "005548EC": {
+  "reads": {
+   "s0": 7,
+   "sites": 7
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "00568B68": {
+  "reads": {
+   "s0": 6,
+   "sites": 6
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0056A148": {
+  "reads": {
+   "s0": 1,
+   "sites": 2
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0056D4D0": {
+  "reads": {
+   "s0": 2,
+   "sites": 2
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "005919B4": {
+  "reads": {
+   "r0_tail": 5,
+   "s0": 1,
+   "sites": 6
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "005919C4": {
+  "reads": {
+   "s0": 3,
+   "sites": 3
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0068906C": {
+  "reads": {
+   "s0": 2,
+   "sites": 74
+  },
+  "s0": "mixed",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ },
+ "0068C7E0": {
+  "reads": {
+   "s0": 9,
+   "sites": 9
+  },
+  "s0": "float",
+  "why": "returns r0 = this AND writes s0, which callers read: a float function"
+ }
+}

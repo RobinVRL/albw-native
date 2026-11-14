@@ -1,0 +1,52 @@
+{
+ "native_float_vs_retfix": [
+  "func_00151148 native/hot/func_00151148.c",
+  "func_0048F288 native/hot/func_0048F288.c",
+  "func_0049C154 native/core/math_vec.c",
+  "func_004F48F0 native/hot/func_004F48F0.c",
+  "func_004F5588 native/hot/func_004F5588.c",
+  "func_0054FC98 native/compilefix/func_0054FC98.c",
+  "func_00590B1C native/compilefix/func_00590B1C.c"
+ ],
+ "params": {
+  "from_dregs": 17,
+  "r0_returned_unchanged": 1121,
+  "raise_s": 17,
+  "s0_returned_unchanged": 24,
+  "unreferenced_extra_not_raised": 1
+ },
+ "retfix": {
+  "declared_float": 348,
+  "kept_float_float": 146,
+  "kept_float_mixed": 74,
+  "kept_float_unknown": 1,
+  "to_undefined4": 15,
+  "to_void": 112,
+  "to_void_mixed": 94,
+  "to_void_nowrite": 15,
+  "to_void_pass": 18
+ },
+ "returns64": {
+  "arm_pair_not_64bit_in_ghidra": 10,
+  "ghidra_64bit_returns": 476
+ },
+ "returns_this": {
+  "added_loops_etc": 155,
+  "before": 3037,
+  "dropped_float": 53,
+  "kept": 3139,
+  "project_void_to_this": 134
+ },
+ "stackobjs": {
+  "dropped_store_words": 863,
+  "functions": 288,
+  "functions_with_stack0x_objects": 338,
+  "objects_no_asm_store": 53,
+  "objects_with_dropped_stores": 324,
+  "sp_moves_after_prologue": 1
+ },
+ "varargs": {
+  "already_varargs_in_project": 0,
+  "functions": 13
+ }
+}

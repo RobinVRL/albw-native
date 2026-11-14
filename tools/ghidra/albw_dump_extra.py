@@ -78,6 +78,11 @@ for f, eu, usa in extra:
                 gl.append("// GLOBAL %s %s" % (hs.getName(), hs.getDataType().getDisplayName()))
             except Exception:
                 pass
+    if os.environ.get("ALBW_DUMP_V3") == "1":  # stack parameters for import_ghidra's V3 frame
+        for p in f.getParameters():
+            st = p.getVariableStorage()
+            if st.isStackStorage():
+                gl.append("// PARAM %s %s %s" % (p.getName(), st, p.getDataType().getDisplayName()))
     head = "\n".join(sorted(gl)) + ("\n" if gl else "")
     head += "// USA %08X <- EU %08X (Ghidra, function missing from the decomp table)\n" % (usa, eu)
     open(os.path.join(out_dir, "func_%08X.c" % usa), "w").write(head + src)

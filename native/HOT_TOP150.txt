@@ -1,0 +1,150 @@
+00100174 1758 4336 0 native  __cxa_guard_acquire (Thumb, called via blx)
+0010BAB4 1085 1663 19 native os-memory/heap operator new(u32 size, NoThrowTag) - ignores r1, current hea
+00115C70 868 1570 20 native math Vec3::setSub(const Vec3&,const Vec3&) this=out
+00115C54 762 1400 20 native math Vec3::setAdd(const Vec3&,const Vec3&) this=out
+00100118 575 772 0 ghidra  __aeabi_vec_ctor_nocookie_nodtor(arr, ctor, size, n) (Thumb,
+0052FBA0 567 726 15 native  ActorMgr::find(u32 handle) -> Actor*; mgr = (*data_00706E20)
+0010CEE0 549 608 20 native os-memory/heap operator new[](u32 size, Heap* heap, s32 align)
+00111A64 537 929 22 matched math sead::Random::getU32() (this = (*data_007124F0)+0x660)
+00520FC0 505 673 9 native  Vec3* getPlayerPos() (returns (*data_0070FB60)->m1C; member 
+004FABDC 428 499 33 native  
+00588BE4 404 690 8 native  s32 Actor::getActorId() { return m2D0->m8; } (non-inline)
+004CEAF0 400 469 159 native  
+00352210 390 396 29 matched  
+0010BA78 390 778 19 native os-memory/heap operator new[](u32 size) - current heap, align 4
+0019B51C 388 640 55 ghidra  
+0010A794 384 389 15 matched framework StateMgrBase::StateMgrBase()
+002317C0 377 582 93 ghidra  void func_002317C0(void* control, float value)
+0010E3C4 376 786 370 native crt/libc 
+0016898C 375 539 225 ghidra  
+0010BEB4 374 376 10 matched gfx-middleware 
+00115D70 369 929 16 native math Vec3::setMul(const Vec3&,float) this=out
+00150A84 367 515 93 native  ActorBase::playSE(const sead::SafeString&, s32)
+004CF478 345 476 38 ghidra  
+0068C690 335 437 52 native  s32 angleFromVec(const Vec3&)
+004356B4 310 438 21 native  
+00168E9C 287 430 209 native  
+00588BF0 282 372 13 native  
+0051D2F4 259 315 38 native  chaseAngle(s32* cur, s32 target, f32 rate, s32 a, s32 b) (ra
+00169A80 257 370 308 ghidra  
+00115DC8 256 372 27 native math Vec3::normalize() returns len in s0
+004D80A4 240 327 16 native  
+004FC07C 236 296 40 native  
+0058A8F0 232 268 25 matched  
+0010BEC4 231 2072 35 ghidra framework StateMgrBase::setStateName(s32 idx, const sead::SafeString& 
+0058A7D4 227 368 9 matched  Random* getRandom(Actor*) (result is 'this' of getU32 0x111A
+00547B20 220 223 16 matched  
+002C11E8 218 361 40 native  Req5C::Req5C(u16 id,u32 arg,bool) (0x5C anim request)
+0049F5FC 211 261 21 native framework 
+0010F1F8 209 281 16 ghidra framework sead::ListNode::erase_() {prev@0,next@4}
+004EE540 209 232 27 matched  
+0058E2B8 206 275 14 matched  
+004A1B9C 204 240 19 native  EffRet Anim344::start(const char* name) (sret 12B; first 8 =
+00114608 200 482 53 ghidra crt/libc __aeabi_f2lz (float->s64, softfp r0)
+0019A848 196 196 61 ghidra  
+00151148 195 238 11 matched  
+00231448 194 351 14 matched  
+00352A28 191 191 46 ghidra  
+004904CC 186 233 49 native math 
+005902C0 185 185 8 matched  
+00150E40 174 174 140 ghidra  
+0054D964 167 224 158 native  Obj4* Actor::getObj(int i) (pos at +4, update=0x4356B4)
+004C07D8 164 164 16 matched  
+0010983C 163 366 15 native os-memory/heap 
+0016A02C 162 260 138 native  
+004F5BD8 161 164 566 ghidra  
+004D8AEC 151 165 30 matched  
+0014E428 148 159 18 native  
+001151EC 146 206 43 native math 
+0010F1DC 138 236 17 native framework void listInsertBefore(void* node, void* inserted) (descripti
+0019B04C 138 174 15 matched  
+005841A8 136 275 16 matched  
+002313DC 133 178 22 ghidra  
+004A879C 133 144 80 native  
+002D55D0 129 336 17 native  StateData* StateBase::changeState(s32) [nonweak]
+00532C78 121 158 21 matched  
+0016A2FC 120 197 98 ghidra  
+004EDAD0 119 139 19 matched  
+004EDC9C 119 147 29 ghidra  Model::Model() (0x48-byte bcl model holder)
+005229AC 119 263 16 matched  
+0010EEE0 118 159 9 matched os-threads/sync 
+004F898C 117 119 9 matched  f32 getGravity() (returns 0.12f)
+004BC7BC 117 119 34 ghidra  
+00166C20 116 533 207 ghidra  
+00110D44 116 167 120 native crt/libc 
+00115154 115 160 25 native math sinCos(f32* sin, f32* cos, u32 angleIdx)
+0016773C 115 121 37 ghidra  
+0010C0B8 115 128 19 native os-threads/sync 
+002DFF7C 114 119 24 ghidra  void SpawnParam::reset()
+00547538 113 113 13 matched  
+0058AB74 112 150 18 native  
+0014E2A0 111 133 40 ghidra  
+0010CF28 109 136 20 native os-memory/heap 
+0010DA7C 108 109 43 ghidra framework 
+003521F0 107 129 15 matched  
+00169608 106 164 29 matched  
+00110848 103 129 30 native gfx-middleware 
+004C1388 103 103 29 native  
+004BC8D8 102 102 50 ghidra  
+004C03B8 101 104 50 ghidra  
+0010C160 101 187 17 native os-threads/sync 
+003931EC 101 123 30 matched  
+001512B4 101 115 19 ghidra  
+0010C0C0 100 120 18 native os-threads/sync 
+0036D0E0 100 218 13 matched  
+00564A78 99 185 50 matched  Res7A0::find(const sead::SafeString& name) -> handle (actor 
+001119F4 98 135 46 native math 
+004EE484 96 107 46 ghidra  
+004A8304 95 104 17 matched  
+004ED9C8 95 122 15 matched  
+004F88A0 93 97 23 matched  
+001507D8 93 117 51 ghidra  ActorBase::playSE2(const sead::SafeString&, s32)
+00588C14 92 108 13 matched  
+00584B94 88 196 11 matched  FlagMgr::check(s32 id) on *data_0070B728 (event/save flag)
+00491E80 87 117 33 native math 
+0012C790 87 118 34 ghidra  
+002C2D00 87 115 135 ghidra  
+0012C718 86 122 24 matched  
+004F5588 84 84 244 ghidra  
+004F8964 83 84 26 matched  void applyGravity(f32* vy, bool clamp, f32 g)
+0010B3EC 83 117 13 native framework PtrArrayImpl::setBuffer(s32 max, void* buf)
+004F48F0 82 82 31 ghidra  
+0055696C 82 203 8 matched  
+00581D60 81 81 21 ghidra  
+005826A4 81 99 90 ghidra  
+004905E0 81 632 19 native math 
+004F8998 80 80 155 ghidra  
+004F70A8 80 80 186 ghidra  
+0035D6D0 80 95 13 matched  
+00503368 80 85 14 ghidra  
+0068C794 80 143 20 native  bool chaseRateClamped(float* value,float target,float rate,f
+004FD464 80 80 500 ghidra  EnemyBase::EnemyBase(EnemyArg*, EnemyParam*) (2 vtables, sec
+0014EB8C 79 90 29 ghidra  
+002C00A8 78 90 10 matched  
+004D7F70 78 99 18 matched  
+004FACA4 78 107 10 matched  
+004CEA18 77 204 53 ghidra  
+00231524 77 110 32 ghidra  
+004B9AA0 77 79 22 matched  
+004FB468 77 78 15 matched  
+004FB344 77 77 12 matched  
+00169688 76 87 29 matched  
+001157FC 74 103 69 native math 
+004FB4E0 74 77 11 matched  
+00583B1C 74 76 25 matched  
+0054D89C 74 78 37 matched  
+0054DDF4 74 101 16 matched  
+00533078 72 116 10 matched  
+0010A464 71 81 27 ghidra framework 
+00110490 70 95 62 native crt/libc __aeabi_memclr4
+0025B874 69 82 0 ghidra  
+004B9A10 69 71 33 ghidra  Base450::Base450(bool), task base with19 primary slots/secon
+0054DE3C 69 93 57 native  
+004C43E0 68 70 87 ghidra  
+0052FBDC 67 72 20 matched  Actor* ActorMgr::find(s32 id(s16 from actor+0x5e), s32 zero)
+0014FAFC 66 70 20 matched  
+004D838C 66 95 36 ghidra  
+00556068 66 132 23 matched  
+00556E94 66 73 8 matched  
+004994B0 66 247 0 ghidra  
+004F8638 66 66 10 matched  

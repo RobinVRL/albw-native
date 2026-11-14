@@ -1,0 +1,940 @@
+{
+ "00101DE8": {
+  "conf": "high",
+  "eu": "00101DE8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "00103CA4": {
+  "conf": "high",
+  "eu": "00103CA4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00106030": {
+  "conf": "high",
+  "eu": "00106030",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "00106370": {
+  "conf": "high",
+  "eu": "00106370",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0010818C": {
+  "conf": "high",
+  "eu": "0010818C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "0010AD90": {
+  "conf": "high",
+  "eu": "0010AD90",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0010AE00": {
+  "conf": "high",
+  "eu": "0010AE00",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "0010F228": {
+  "conf": "high",
+  "eu": "0010F228",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "00110848": {
+  "conf": "high",
+  "eu": "00110848",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 122 sites"
+ },
+ "00110AEC": {
+  "conf": "high",
+  "eu": "00110AEC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 7 sites"
+ },
+ "00115EF8": {
+  "conf": "high",
+  "eu": "00115EF8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "00115F10": {
+  "conf": "high",
+  "eu": "00115F10",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "00165D84": {
+  "conf": "high",
+  "eu": "00165D88",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0016656C": {
+  "conf": "high",
+  "eu": "00166570",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 10 sites"
+ },
+ "00168D60": {
+  "conf": "high",
+  "eu": "00168D60",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 26 sites"
+ },
+ "0016A7E8": {
+  "conf": "high",
+  "eu": "0016A7E8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "0016AA24": {
+  "conf": "high",
+  "eu": "0016AA24",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "00178D58": {
+  "conf": "high",
+  "eu": "00178D58",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00188F3C": {
+  "conf": "high",
+  "eu": "00188F3C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 4 sites"
+ },
+ "001B8B1C": {
+  "conf": "high",
+  "eu": "001B8B1C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "001D6D04": {
+  "conf": "high",
+  "eu": "001D6D04",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "001DCF28": {
+  "conf": "high",
+  "eu": "001DCF28",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "001E5810": {
+  "conf": "high",
+  "eu": "001E5810",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00220AE0": {
+  "conf": "high",
+  "eu": "00220AE0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00229F58": {
+  "conf": "high",
+  "eu": "00229F58",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0023243C": {
+  "conf": "high",
+  "eu": "0023243C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "00232750": {
+  "conf": "high",
+  "eu": "00232750",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "00233370": {
+  "conf": "high",
+  "eu": "00233370",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0025538C": {
+  "conf": "high",
+  "eu": "002553B4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "002554A0": {
+  "conf": "high",
+  "eu": "002554C8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00255D9C": {
+  "conf": "high",
+  "eu": "00255D70",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "0025F374": {
+  "conf": "high",
+  "eu": "0025F39C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "00260700": {
+  "conf": "high",
+  "eu": "00260728",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "00270300": {
+  "conf": "high",
+  "eu": "00270328",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "002766D0": {
+  "conf": "high",
+  "eu": "002766F8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0027F4D8": {
+  "conf": "high",
+  "eu": "0027F500",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0029383C": {
+  "conf": "high",
+  "eu": "00293864",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00296A40": {
+  "conf": "high",
+  "eu": "00296A68",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "002AED24": {
+  "conf": "high",
+  "eu": "002AED00",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "002C15CC": {
+  "conf": "high",
+  "eu": "002C15A8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "002C3DA4": {
+  "conf": "high",
+  "eu": "002C3D80",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "002C3EB4": {
+  "conf": "high",
+  "eu": "002C3E90",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "002DF504": {
+  "conf": "high",
+  "eu": "002DF4E0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 7 sites"
+ },
+ "002FEC08": {
+  "conf": "high",
+  "eu": "002FEBE4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "002FF068": {
+  "conf": "high",
+  "eu": "002FF044",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "002FF74C": {
+  "conf": "high",
+  "eu": "002FF728",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 8 sites"
+ },
+ "00320CF8": {
+  "conf": "high",
+  "eu": "00320CD4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0032427C": {
+  "conf": "high",
+  "eu": "00324258",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "00340470": {
+  "conf": "high",
+  "eu": "0034044C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0034CA20": {
+  "conf": "high",
+  "eu": "0034C9FC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 19 sites"
+ },
+ "0035D668": {
+  "conf": "high",
+  "eu": "0035D644",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "00368C70": {
+  "conf": "high",
+  "eu": "00368C4C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0038789C": {
+  "conf": "high",
+  "eu": "00387878",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0038ADC0": {
+  "conf": "high",
+  "eu": "0038AD9C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "00394794": {
+  "conf": "high",
+  "eu": "00394770",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "00396AC0": {
+  "conf": "high",
+  "eu": "00396A9C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 15 sites"
+ },
+ "003A117C": {
+  "conf": "high",
+  "eu": "003A1158",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "003A42B0": {
+  "conf": "high",
+  "eu": "003A428C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 18 sites"
+ },
+ "003C33F0": {
+  "conf": "high",
+  "eu": "003C33CC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "003CA554": {
+  "conf": "high",
+  "eu": "003CA530",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003CB134": {
+  "conf": "high",
+  "eu": "003CB110",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003CB3DC": {
+  "conf": "high",
+  "eu": "003CB3B8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003CD0F0": {
+  "conf": "high",
+  "eu": "003CD0CC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "003CD2EC": {
+  "conf": "high",
+  "eu": "003CD2C8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "003D49C4": {
+  "conf": "high",
+  "eu": "003D49A4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003D534C": {
+  "conf": "high",
+  "eu": "003D532C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003D57CC": {
+  "conf": "high",
+  "eu": "003D57AC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "003D89CC": {
+  "conf": "high",
+  "eu": "003D89AC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 4 sites"
+ },
+ "003DA324": {
+  "conf": "high",
+  "eu": "003DA304",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "003DFDD8": {
+  "conf": "high",
+  "eu": "003DFDB8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003DFF20": {
+  "conf": "high",
+  "eu": "003DFF00",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "003E00A8": {
+  "conf": "high",
+  "eu": "003E0088",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "003E02D0": {
+  "conf": "high",
+  "eu": "003E02B0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003E180C": {
+  "conf": "high",
+  "eu": "003E17EC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "003E183C": {
+  "conf": "high",
+  "eu": "003E181C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 17 sites"
+ },
+ "003E2FBC": {
+  "conf": "high",
+  "eu": "003E2F9C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "003E3380": {
+  "conf": "high",
+  "eu": "003E3360",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003E5228": {
+  "conf": "high",
+  "eu": "003E5208",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "003E7050": {
+  "conf": "high",
+  "eu": "003E7030",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "003E8698": {
+  "conf": "high",
+  "eu": "003E8678",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "003FA3F4": {
+  "conf": "high",
+  "eu": "003FA3D4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "003FA4B8": {
+  "conf": "high",
+  "eu": "003FA498",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "003FAF74": {
+  "conf": "high",
+  "eu": "003FAF54",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "003FB198": {
+  "conf": "high",
+  "eu": "003FB178",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00401498": {
+  "conf": "high",
+  "eu": "00401478",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "00404CC8": {
+  "conf": "high",
+  "eu": "00404CA8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00404CF0": {
+  "conf": "high",
+  "eu": "00404CD0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "00404F24": {
+  "conf": "high",
+  "eu": "00404F04",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 6 sites"
+ },
+ "00404F88": {
+  "conf": "high",
+  "eu": "00404F68",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004073FC": {
+  "conf": "high",
+  "eu": "004073DC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "00407788": {
+  "conf": "high",
+  "eu": "00407768",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "0040C73C": {
+  "conf": "high",
+  "eu": "0040C71C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0040C894": {
+  "conf": "high",
+  "eu": "0040C874",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0040CA14": {
+  "conf": "high",
+  "eu": "0040C9F4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 1 of 1 sites"
+ },
+ "0040D0F0": {
+  "conf": "high",
+  "eu": "0040D0D0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0040E3AC": {
+  "conf": "high",
+  "eu": "0040E38C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0040ECC8": {
+  "conf": "high",
+  "eu": "0040ECA8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0041302C": {
+  "conf": "high",
+  "eu": "0041300C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "00413470": {
+  "conf": "high",
+  "eu": "00413450",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "004137D0": {
+  "conf": "high",
+  "eu": "004137B0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "00419AF4": {
+  "conf": "high",
+  "eu": "00419AD4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0041A294": {
+  "conf": "high",
+  "eu": "0041A274",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0041A6E8": {
+  "conf": "high",
+  "eu": "0041A6C8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0041AA08": {
+  "conf": "high",
+  "eu": "0041A9E8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0041AA48": {
+  "conf": "high",
+  "eu": "0041AA28",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004212DC": {
+  "conf": "high",
+  "eu": "004212BC",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0044F2BC": {
+  "conf": "high",
+  "eu": "0044F294",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0045F6B0": {
+  "conf": "high",
+  "eu": "0045F688",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "0048CE10": {
+  "conf": "high",
+  "eu": "0048CDE8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0048CF50": {
+  "conf": "high",
+  "eu": "0048CF28",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0048F3E0": {
+  "conf": "high",
+  "eu": "0048F3B8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "0048F4A4": {
+  "conf": "high",
+  "eu": "0048F47C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "0049AD40": {
+  "conf": "high",
+  "eu": "0049AD18",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "0049F5FC": {
+  "conf": "high",
+  "eu": "0049F5D4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 108 sites"
+ },
+ "0049FB60": {
+  "conf": "high",
+  "eu": "0049FB38",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 7 sites"
+ },
+ "004A05A0": {
+  "conf": "high",
+  "eu": "004A0578",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004A3BF8": {
+  "conf": "high",
+  "eu": "004A3BD0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "004CF230": {
+  "conf": "high",
+  "eu": "004CF208",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 0 sites"
+ },
+ "004CF6E0": {
+  "conf": "high",
+  "eu": "004CF6B8",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004D0134": {
+  "conf": "high",
+  "eu": "004D010C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 8 sites"
+ },
+ "004D02E8": {
+  "conf": "high",
+  "eu": "004D02C0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004E1DDC": {
+  "conf": "high",
+  "eu": "004E1DB4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004ED394": {
+  "conf": "high",
+  "eu": "004ED36C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004FCEDC": {
+  "conf": "high",
+  "eu": "004FCEB4",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "004FD038": {
+  "conf": "high",
+  "eu": "004FD010",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 32 sites"
+ },
+ "004FD068": {
+  "conf": "high",
+  "eu": "004FD040",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "004FD130": {
+  "conf": "high",
+  "eu": "004FD108",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 2 sites"
+ },
+ "004FD238": {
+  "conf": "high",
+  "eu": "004FD210",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 5 sites"
+ },
+ "0051BE94": {
+  "conf": "high",
+  "eu": "0051BE6C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "0056613C": {
+  "conf": "high",
+  "eu": "00566114",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ },
+ "005675BC": {
+  "conf": "high",
+  "eu": "00567594",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 3 sites"
+ },
+ "00580AE8": {
+  "conf": "high",
+  "eu": "00580AC0",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 4 sites"
+ },
+ "005902C4": {
+  "conf": "high",
+  "eu": "0059029C",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 7 sites"
+ },
+ "0067F578": {
+  "conf": "high",
+  "eu": "0067F550",
+  "ghidra": "undefined",
+  "ret": "this",
+  "why": "r0 is the incoming r0 on every return path (retclass3); callers read r0 at 0 of 1 sites"
+ }
+}
