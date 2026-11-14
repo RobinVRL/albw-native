@@ -54,6 +54,24 @@ RE_CALL_THEN_RETURN = re.compile(r"(\n[ \t]+)" + _CALL_STMT + r"\s*\n[ \t]+retur
 RE_CALL_AT_END = re.compile(r"(\n[ \t]+)" + _CALL_STMT + r"(\s*\n\}\s*)$")
 
 
+RE_VCALL_NOARGS = re.compile(r"\(\*\*\(code \*\*\)\(\*([^;{}]*?) \+ (0x[0-9a-f]+|\d+)\)\)\(\)")
+RE_VCALL0_NOARGS = re.compile(r"\(\*\*\(code \*\*\)\*([A-Za-z_]\w*)\)\(\)")
+
+
+def virtual_this(text):
+    """Virtual calls Ghidra printed with no arguments: `(**(code **)(*OBJ + K))()`. On ARM the
+    object whose vtable is read is passed as `this` in r0 (it was already in r0, e.g. the
+    previous call's result, so Ghidra did not list it). Pass OBJ explicitly; any further
+    register arguments stay lost (those calls need a hand rewrite)."""
+    def fix(m):
+        obj = m.group(1)
+        if obj.count("(") != obj.count(")"):
+            return m.group(0)
+        return "(**(code **)(*%s + %s))(%s)" % (obj, m.group(2), obj)
+    text = RE_VCALL_NOARGS.sub(fix, text)
+    return RE_VCALL0_NOARGS.sub(lambda m: "(**(code **)*%s)(%s)" % (m.group(1), m.group(1)), text)
+
+
 def void_tail_returns(text, addr, sigs):
     """Ghidra types many forwarding functions `void` although r0 still holds the callee's result
     when they return (the call is the last instruction before the epilogue, e.g. EU 0010FC68
@@ -72,7 +90,7 @@ def void_tail_returns(text, addr, sigs):
         body_at = text.index("{", m.end())
         body = text[body_at:]
         if pm and not re.search(r"\b(float|double)\b", pm.group(1)) and \
-                not re.search(r"\bparam_1\s*(?:[-+*/|&^]?=(?!=)|\+\+|--)|(?:\+\+|--)\s*param_1\b", body):
+                not re.search(r"(?<!\*)\bparam_1\s*(?:[-+*/|&^]?=(?!=)|\+\+|--)|(?:\+\+|--)\s*param_1\b", body):
             body = re.sub(r"\breturn;", "return (undefined4)param_1;", body)
             if not re.search(r"return \(undefined4\)param_1;\s*\}\s*$", body):
                 body = re.sub(r"\n\}\s*$", "\n  return (undefined4)param_1;\n}\n", body)
@@ -377,7 +395,7 @@ def main():
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
             with open(dst, "w") as fh:
-                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(void_tail_returns(text, addr, sigs), addr, sigs))))
+                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(virtual_this(void_tail_returns(text, addr, sigs)), addr, sigs))))
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
