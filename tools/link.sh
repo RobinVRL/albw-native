@@ -18,9 +18,10 @@ llvm-objcopy --remove-section=.init_array --remove-section=.rel.init_array \
              --remove-section=.ctors --remove-section=.rel.ctors $B/albw_game.o
 
 NATIVE=()
-for f in native/platform/platform.c native/runtime/*.c $(ls native/sdk/*.c 2>/dev/null); do
+for f in native/platform/platform.c native/runtime/*.c $(ls native/sdk/*.c native/game/*.c 2>/dev/null); do
     o=$B/native/$(basename "$f" .c).o
-    clang "${CFLAGS[@]}" $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
+    [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include -include native/albw_native.h \
+        $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")
 done
 python3 tools/gen_stubs.py $B/albw_game.o "${NATIVE[@]}" > $B/stubs.c

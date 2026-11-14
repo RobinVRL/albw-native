@@ -34,7 +34,11 @@ int main(int argc, char **argv) {
      * stdio). On Linux, libc did all of this before main(); the native replacement is to not run
      * the 3DS version. */
     fprintf(stderr, "startup: %u static constructors\n", albw_ctors_count);
-    for (uint32_t i = 0; i < albw_ctors_count; i++) albw_ctors[i]();
+    int verbose = getenv("ALBW_TRACE_CTORS") != NULL;
+    for (uint32_t i = 0; i < albw_ctors_count; i++) {
+        if (verbose || (i & 63) == 0) fprintf(stderr, "ctor %u/%u\n", i, albw_ctors_count);
+        albw_ctors[i]();
+    }
     for (uint32_t i = 0; i < albw_inits_count; i++) albw_inits[i]();
     fprintf(stderr, "startup: game main\n");
     func_00100C18();
