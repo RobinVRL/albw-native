@@ -1,5 +1,5 @@
 /* USA 005D0334 (EU 005D030C): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 1 sead::SafeString name tables (2 names) and 5 other globals. */
+ * 1 sead::SafeString name tables (2 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -9,10 +9,7 @@ extern uint32_t data_00713D0C;
 extern uint32_t data_00713D10;
 extern uint32_t data_00713D14;
 extern uint32_t data_00713D18;
-extern uint32_t data_00713D20;
-void func_00100000(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
-void func_00688D9C(void);
+void func_005902C0(void);
 
 static const char *const names_00713D18[2] = {
     "Gm_KMapLight",
@@ -32,5 +29,5 @@ void func_005D0334(void) {
     data_00713D0C = 0xFFFFFFFFu;
     data_00713D10 = 0x00000000u;
     data_00713D14 = 0x00000000u;
-    func_005902C0((uint32_t)(uintptr_t)&data_00713D20, (uint32_t)(uintptr_t)&func_00688D9C, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

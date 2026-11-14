@@ -1,5 +1,5 @@
 /* USA 005D0FF8 (EU 005D0FD0): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 2 sead::SafeString name tables (1285 names) and 5 other globals. */
+ * 2 sead::SafeString name tables (1285 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -10,9 +10,7 @@ extern uint32_t data_00707C74;
 extern uint32_t data_00707C78;
 extern uint32_t data_00707C7C;
 extern uint32_t data_00729028;
-void func_00100000(void);
-void func_0011C010(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_005902C0(void);
 
 static const char *const names_00706E78[447] = {
     "BlockColor",
@@ -1318,5 +1316,5 @@ void func_005D0FF8(void) {
     data_00707C74 = 0xFFFFFFFFu;
     data_00707C78 = 0x00000000u;
     data_00707C7C = 0x00000000u;
-    func_005902C0(0x00000000u, (uint32_t)(uintptr_t)&func_0011C010, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

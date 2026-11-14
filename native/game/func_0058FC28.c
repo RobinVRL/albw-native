@@ -1,5 +1,5 @@
 /* USA 0058FC28 (EU 0058FC00): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 2 sead::SafeString name tables (38 names) and 4 other globals. */
+ * 2 sead::SafeString name tables (38 names), 4 other stores, 0 calls. */
 #include <stdint.h>
 #include "sead.h"
 

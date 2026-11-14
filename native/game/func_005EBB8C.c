@@ -1,5 +1,5 @@
 /* USA 005EBB8C (EU 005EBB64): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 0 sead::SafeString name tables (0 names) and 1 other globals. */
+ * 0 sead::SafeString name tables (0 names), 1 other stores, 0 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -9,5 +9,5 @@ extern uint32_t data_00714CAC;
 
 
 void func_005EBB8C(void) {
-    data_00714CAC = (uint32_t)(uintptr_t)&data_00714CA8;
+    data_00714CAC = (uintptr_t)&data_00714CA8;
 }

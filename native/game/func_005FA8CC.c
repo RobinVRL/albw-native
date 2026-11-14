@@ -1,5 +1,5 @@
 /* USA 005FA8CC (EU 005FA8A4): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 30 sead::SafeString name tables (30 names) and 5 other globals. */
+ * 30 sead::SafeString name tables (30 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -38,9 +38,7 @@ extern uint32_t data_0070A15C;
 extern uint32_t data_0070A16C;
 extern uint32_t data_0070A17C;
 extern uint32_t data_0070A18C;
-void func_00100000(void);
-void func_0011ADE8(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_005902C0(void);
 
 static const char *const names_00709FC0[1] = {
     "CrossBoard",
@@ -175,5 +173,5 @@ void func_005FA8CC(void) {
     data_00709FB4 = 0xFFFFFFFFu;
     data_00709FB8 = 0x00000000u;
     data_00709FBC = 0x00000000u;
-    func_005902C0(0x00000000u, (uint32_t)(uintptr_t)&func_0011ADE8, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

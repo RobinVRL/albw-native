@@ -1,5 +1,5 @@
 /* USA 005CE944 (EU 005CE91C): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 0 sead::SafeString name tables (0 names) and 5 other globals. */
+ * 0 sead::SafeString name tables (0 names), 5 other stores, 0 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -13,7 +13,7 @@ extern uint32_t data_00725970;
 
 
 void func_005CE944(void) {
-    data_0070D820 = (uint32_t)(uintptr_t)&data_00725970;
+    data_0070D820 = (uintptr_t)&data_00725970;
     data_0070D828 = 0xFFFFFFFFu;
     data_0070D82C = 0xFFFFFFFFu;
     data_0070D830 = 0x00000000u;

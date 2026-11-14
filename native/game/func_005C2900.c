@@ -1,18 +1,15 @@
 /* USA 005C2900 (EU 005C28D8): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 1 sead::SafeString name tables (10 names) and 5 other globals. */
+ * 1 sead::SafeString name tables (10 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_00706D40;
-extern uint32_t data_00706D88;
 extern uint32_t data_00706D90;
 extern uint32_t data_00706D94;
 extern uint32_t data_00706D98;
 extern uint32_t data_00706D9C;
-void func_00100000(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
-void func_00688D9C(void);
+void func_005902C0(void);
 
 static const char *const names_00706D40[10] = {
     "ac_Break",
@@ -40,5 +37,5 @@ void func_005C2900(void) {
     data_00706D94 = 0xFFFFFFFFu;
     data_00706D98 = 0x00000000u;
     data_00706D9C = 0x00000000u;
-    func_005902C0((uint32_t)(uintptr_t)&data_00706D88, (uint32_t)(uintptr_t)&func_00688D9C, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

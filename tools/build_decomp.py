@@ -281,13 +281,16 @@ def main():
     matched = json.load(open(os.path.join(decomp, "functions.json")))
     ghidra = json.load(open(os.path.join(decomp, "nonmatching.json")))
     import_ghidra = load_decomp_tool(decomp, "import_ghidra")
-    fallback_dir = os.path.join(ROOT, "build", "ghidra_all")
+    # Ghidra with full auto-analysis (real parameter counts) is preferred over the earlier
+    # no-analysis dumps (decomp's src/nonmatching and build/ghidra_all)
+    analyzed_dir = os.path.join(ROOT, "build", "ghidra_analyzed")
+    fallback_dir = analyzed_dir if os.path.isdir(analyzed_dir) else os.path.join(ROOT, "build", "ghidra_all")
 
     def ghidra_source(addr):
         """Per-address Ghidra C (mirrored path relative to OUT), or None."""
-        if addr in ghidra:
-            return ghidra[addr]["path"]
         raw = os.path.join(fallback_dir, "func_%s.c" % addr)
+        if not os.path.exists(raw) and addr in ghidra:
+            return ghidra[addr]["path"]
         if not os.path.exists(raw):
             return None
         rel = os.path.join("ghidra_fallback", addr[:3], "func_%s.c" % addr)

@@ -1,5 +1,5 @@
 /* USA 005EB8B8 (EU 005EB890): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 2 sead::SafeString name tables (3 names) and 5 other globals. */
+ * 2 sead::SafeString name tables (3 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -10,9 +10,7 @@ extern uint32_t data_00714E18;
 extern uint32_t data_00714E1C;
 extern uint32_t data_00714E20;
 extern uint32_t data_0079D780;
-void func_00100000(void);
-void func_0011C4E0(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_005902C0(void);
 
 static const char *const names_00714E20[1] = {
     "AudioFxSocket",
@@ -36,5 +34,5 @@ void func_005EB8B8(void) {
     data_00714E14 = 0xFFFFFFFFu;
     data_00714E18 = 0x00000000u;
     data_00714E1C = 0x00000000u;
-    func_005902C0(0x00000000u, (uint32_t)(uintptr_t)&func_0011C4E0, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

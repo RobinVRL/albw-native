@@ -1,5 +1,5 @@
 /* USA 005C2118 (EU 005C20F0): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 23 sead::SafeString name tables (23 names) and 5 other globals. */
+ * 23 sead::SafeString name tables (23 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -31,9 +31,7 @@ extern uint32_t data_00714144;
 extern uint32_t data_00714150;
 extern uint32_t data_0071415C;
 extern uint32_t data_00714168;
-void func_00100000(void);
-void func_0011A3BC(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_005902C0(void);
 
 static const char *const names_00714060[1] = {
     "",
@@ -140,5 +138,5 @@ void func_005C2118(void) {
     data_00714054 = 0xFFFFFFFFu;
     data_00714058 = 0x00000000u;
     data_0071405C = 0x00000000u;
-    func_005902C0(0x00000000u, (uint32_t)(uintptr_t)&func_0011A3BC, (uint32_t)(uintptr_t)&func_00100000, (uint32_t)(uintptr_t)"itt_tutorial_golden_bee");
+    func_005902C0();
 }

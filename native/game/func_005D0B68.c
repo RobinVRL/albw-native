@@ -1,5 +1,5 @@
 /* USA 005D0B68 (EU 005D0B40): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 1 sead::SafeString name tables (2 names) and 5 other globals. */
+ * 1 sead::SafeString name tables (2 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -9,10 +9,7 @@ extern uint32_t data_007145D4;
 extern uint32_t data_007145D8;
 extern uint32_t data_007145DC;
 extern uint32_t data_007145E0;
-extern uint32_t data_007145E8;
-void func_00100000(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
-void func_00688D9C(void);
+void func_005902C0(void);
 
 static const char *const names_007145E0[2] = {
     "cl_LhandA",
@@ -32,5 +29,5 @@ void func_005D0B68(void) {
     data_007145D4 = 0xFFFFFFFFu;
     data_007145D8 = 0x00000000u;
     data_007145DC = 0x00000000u;
-    func_005902C0((uint32_t)(uintptr_t)&data_007145E8, (uint32_t)(uintptr_t)&func_00688D9C, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

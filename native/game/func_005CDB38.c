@@ -1,5 +1,5 @@
 /* USA 005CDB38 (EU 005CDB10): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 0 sead::SafeString name tables (0 names) and 5 other globals. */
+ * 0 sead::SafeString name tables (0 names), 5 other stores, 0 calls. */
 #include <stdint.h>
 #include "sead.h"
 

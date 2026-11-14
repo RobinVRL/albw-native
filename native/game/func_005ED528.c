@@ -1,5 +1,5 @@
 /* USA 005ED528 (EU 005ED500): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 1 sead::SafeString name tables (2 names) and 5 other globals. */
+ * 1 sead::SafeString name tables (2 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -9,10 +9,7 @@ extern uint32_t data_00713FBC;
 extern uint32_t data_00713FC0;
 extern uint32_t data_00713FC4;
 extern uint32_t data_00713FC8;
-extern uint32_t data_00713FD0;
-void func_00100000(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
-void func_00688D9C(void);
+void func_005902C0(void);
 
 static const char *const names_00713FC8[2] = {
     "Cm_SelectFrame",
@@ -32,5 +29,5 @@ void func_005ED528(void) {
     data_00713FBC = 0xFFFFFFFFu;
     data_00713FC0 = 0x00000000u;
     data_00713FC4 = 0x00000000u;
-    func_005902C0((uint32_t)(uintptr_t)&data_00713FD0, (uint32_t)(uintptr_t)&func_00688D9C, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

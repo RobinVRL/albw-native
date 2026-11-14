@@ -46,3 +46,5 @@ void *__aeabi_vec_ctor_nocookie_nodtor(void *array, VecCtor ctor, uint32_t size,
     return array;
 }
 void *func_00100118(void *, VecCtor, uint32_t, uint32_t) __attribute__((alias("__aeabi_vec_ctor_nocookie_nodtor")));
+/* USA 0x00100110: ARM->Thumb interworking stub (add ip, pc, #1; bx ip) to the same helper */
+void *func_00100110(void *, VecCtor, uint32_t, uint32_t) __attribute__((alias("__aeabi_vec_ctor_nocookie_nodtor")));

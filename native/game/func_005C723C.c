@@ -1,5 +1,5 @@
 /* USA 005C723C (EU 005C7214): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 2 sead::SafeString name tables (4 names) and 5 other globals. */
+ * 2 sead::SafeString name tables (4 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -10,9 +10,7 @@ extern uint32_t data_0070FC00;
 extern uint32_t data_0070FC04;
 extern uint32_t data_0070FC08;
 extern uint32_t data_00796068;
-void func_00100000(void);
-void func_0011BAEC(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
+void func_005902C0(void);
 
 static const char *const names_0070FC08[2] = {
     "stomach_jnt",
@@ -37,5 +35,5 @@ void func_005C723C(void) {
     data_0070FBFC = 0xFFFFFFFFu;
     data_0070FC00 = 0x00000000u;
     data_0070FC04 = 0x00000000u;
-    func_005902C0(0x00000000u, (uint32_t)(uintptr_t)&func_0011BAEC, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }

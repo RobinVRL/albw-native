@@ -1,5 +1,5 @@
 /* USA 0059A278 (EU 0059A250): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 0 sead::SafeString name tables (0 names) and 10 other globals. */
+ * 0 sead::SafeString name tables (0 names), 10 other stores, 0 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -25,7 +25,7 @@ void func_0059A278(void) {
     data_00715914 = 0x00000000u;
     data_007A0418 = 0x00000000u;
     data_007A041C = 0x00000000u;
-    data_007A0420 = (uint32_t)(uintptr_t)&func_003D2C98;
+    data_007A0420 = (uintptr_t)&func_003D2C98;
     data_007A0424 = 0x00000000u;
     data_007A0428 = 0x00008000u;
 }

@@ -1,5 +1,5 @@
 /* USA 005EACEC (EU 005EACC4): static initialiser, decompiled by tools/decomp_initializer.py.
- * Fills 1 sead::SafeString name tables (2 names) and 5 other globals. */
+ * 1 sead::SafeString name tables (2 names), 4 other stores, 1 calls. */
 #include <stdint.h>
 #include "sead.h"
 
@@ -9,10 +9,7 @@ extern uint32_t data_007135B4;
 extern uint32_t data_007135B8;
 extern uint32_t data_007135BC;
 extern uint32_t data_007135C0;
-extern uint32_t data_007135C8;
-void func_00100000(void);
-void func_005902C0(uint32_t, uint32_t, uint32_t);  /* tail call */
-void func_00688D9C(void);
+void func_005902C0(void);
 
 static const char *const names_007135C0[2] = {
     "Gm_WarpBalloon",
@@ -32,5 +29,5 @@ void func_005EACEC(void) {
     data_007135B4 = 0xFFFFFFFFu;
     data_007135B8 = 0x00000000u;
     data_007135BC = 0x00000000u;
-    func_005902C0((uint32_t)(uintptr_t)&data_007135C8, (uint32_t)(uintptr_t)&func_00688D9C, (uint32_t)(uintptr_t)&func_00100000);
+    func_005902C0();
 }
