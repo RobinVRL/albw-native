@@ -352,7 +352,7 @@ static const char VS_MVP[] = VS_HEAD
 static const char *VS_SRC[RPROG_COUNT] = {
     [RPROG_CLIP] = VS_CLIP,
     [RPROG_GR_DEFAULT] = VS_MVP,
-    [RPROG_FONT_RECT] = VS_MVP,
+    [RPROG_FONT_RECT] = RENDER_VS_FONT_RECT,
     [RPROG_H3D_DEFAULT] = VS_MVP,
     [RPROG_PRIMITIVE] = VS_MVP,
 };
@@ -1068,6 +1068,13 @@ void render_set_tev_const(int mask, const uint8_t rgba[4]) {
         if (mask >> i & 1) memcpy(R.tev.stage[i].konst, rgba, 4);
     R.tev_dirty = true;
 }
+void render_set_tev_stages(int mask, const RTev *t, int flags) {
+    for (int i = 0; i < 6; i++)
+        if (mask >> i & 1) R.tev.stage[i] = t->stage[i];
+    if (flags & 1) { R.tev.buf_update_rgb = t->buf_update_rgb; R.tev.buf_update_a = t->buf_update_a; }
+    if (flags & 2) memcpy(R.tev.buf_color, t->buf_color, 4);
+    R.tev_dirty = true;
+}
 void render_set_program(int prog) {
     if (prog < 0 || prog >= RPROG_COUNT) prog = RPROG_CLIP;
     if (prog != R.prog_id) { R.prog_id = prog; R.tev_dirty = R.vsf_dirty = true; }
@@ -1220,7 +1227,7 @@ typedef struct {
     ROp op;
     uint64_t hash;
     uint32_t last_frame;
-    uint8_t gen, live;
+    uint8_t gen, live, pinned;
 } PoolEnt;
 
 static PoolEnt *g_pool;
@@ -1249,7 +1256,7 @@ static void htab_rebuild(uint32_t cap) {
     }
 }
 
-static uint32_t pool_put(const ROp *op) {
+static uint32_t pool_put(const ROp *op, int pinned) {
     uint64_t h = op_hash(op);
     if (g_hcap && g_htab) {
         for (uint32_t i = (uint32_t)h & (g_hcap - 1);; i = (i + 1) & (g_hcap - 1)) {
@@ -1258,6 +1265,7 @@ static uint32_t pool_put(const ROp *op) {
             PoolEnt *p = &g_pool[e - 1];
             if (p->live && p->hash == h && !memcmp(&p->op, op, sizeof *op)) {
                 p->last_frame = R.frame;
+                if (pinned) p->pinned = 1;
                 return token_of(e - 1, p->gen);
             }
         }
@@ -1282,6 +1290,7 @@ static uint32_t pool_put(const ROp *op) {
     p->hash = h;
     p->last_frame = R.frame;
     p->live = 1;
+    p->pinned = (uint8_t)(pinned != 0);
     g_live++;
     if (!g_htab || g_live * 2 > g_hcap) {
         htab_rebuild(g_hcap ? g_hcap * 2 : 8192);
@@ -1304,9 +1313,9 @@ static const ROp *pool_get(uint32_t token) {
     return &p->op;
 }
 
-uint32_t *render_rec(uint32_t *p, const ROp *op) {
+static uint32_t *rec(uint32_t *p, const ROp *op, int pinned) {
     lock();
-    uint32_t tok = pool_put(op);
+    uint32_t tok = pool_put(op, pinned);
     R.st.ops_recorded++;
     unlock();
     if (!p) return NULL;
@@ -1314,6 +1323,9 @@ uint32_t *render_rec(uint32_t *p, const ROp *op) {
     p[1] = tok ? RENDER_MARK : 0;
     return p + RENDER_MARK_WORDS;
 }
+
+uint32_t *render_rec(uint32_t *p, const ROp *op) { return rec(p, op, 0); }
+uint32_t *render_rec_pinned(uint32_t *p, const ROp *op) { return rec(p, op, 1); }
 
 void render_frame_end(void) {
     lock();
@@ -1323,7 +1335,7 @@ void render_frame_end(void) {
         uint32_t freed = 0;
         for (uint32_t s = 0; s < g_npool; s++) {
             PoolEnt *p = &g_pool[s];
-            if (p->live && R.frame - p->last_frame > POOL_GC_AGE) {
+            if (p->live && !p->pinned && R.frame - p->last_frame > POOL_GC_AGE) {
                 p->live = 0;
                 p->gen++;
                 g_live--;
@@ -1412,6 +1424,7 @@ void render_exec_op(const ROp *op) {
     case ROP_TEXCONFIG: render_set_texconfig(op->u.texcfg.enable_mask, op->u.texcfg.tex2_from_tc1); break;
     case ROP_TEV: render_set_tev(&op->u.tev); break;
     case ROP_TEV_CONST: render_set_tev_const(op->u.tev_const.stage_mask, op->u.tev_const.rgba); break;
+    case ROP_TEV_STAGES: render_set_tev_stages(op->flags & 0x3F, &op->u.tev, op->unit); break;
     case ROP_PROGRAM: render_set_program((int)op->u.program.id); break;
     case ROP_VS_FLOAT: render_set_vs_float(op->u.vsf.reg, op->u.vsf.v, op->unit); break;
     case ROP_VS_BOOL: render_set_vs_bool(op->u.vsb.mask); break;

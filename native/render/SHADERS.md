@@ -77,26 +77,29 @@ reaches it through `sdk/gr.c`.
   - Lines (GS) need a CPU or VS expansion of each line into a quad, since GL 3.3 core has no wide lines.
 - **Use:** debug quads, boxes, spheres and lines. High.
 
-### 3. `Shader/nwfont2_RectDrawerShader.shbin` (nw::font and nw::lyt) -> `RPROG_FONT_RECT`
+### 3. `Shader/nwfont2_RectDrawerShader.shbin` (nw::font and nw::lyt) -> `RPROG_FONT_RECT` (done)
 
-- **Loader:** 00503A8C -> 003FDFF4 -> 004205A4. It parses the shbin itself, without nn::gr: it
-  uploads 0x2CC/0x2D6, the DVLE constants and the output maps. **Not replaced yet**, so binding
-  this program records nothing.
-- **Vertex buffer:** fixed, 23 rects × 6 vertices, each `vec4(rectIdx, vertIdx, cornerX, cornerY)`.
-- **Per draw:**
-  - c0..c3 = projection 4x4, c4 = an extra vec4 (0041F970 / 0041F734).
-  - c9.. = per-rect vec4 array (0041F6CC).
-  - c32.. = 3x4 modelview at c32..c34 plus extra terms (0041F970, 0041F5A8).
-  - c64.. = a second array (0041F6F8).
-  - i0 = loop count (0x2B1: 004010C8 / 00401D90); bool mask 0x7FFF0000/1/5 (0041F970, 004018A8).
-  - The draw uses 0x227/0x228, 6 vertices per rect (0041F54C).
-- **GLSL to write:**
-  - index the per-rect arrays with `int(v0.x)`;
-  - pick the corner with `v0.zw`;
-  - position = proj · modelview · rect corner; texcoord and colour come from the rect arrays.
-  - The meaning of each array is inferred: check it against a DVLE dump.
-- **Use:** every UI glyph and layout pane quad. This is the first program needed for title
-  screens and menus. Medium.
+- **Program:** DVLB in `EU/RegionBoot.szs` (DVLE symbol `nwfont2_rectdrawershader_version_3002`,
+  228 words, main at 109). Hand-written GLSL: `RENDER_VS_FONT_RECT` in `font.c` (the header comment
+  there has the full register map).
+- **Loader:** 00503A8C -> 003FDFF4 -> 00420574 -> 004205A4, replaced in `sdk/lyt.c`: same memory
+  layout (block A sized from the shbin, block B, 23 x 6 vertex buffer `vec4(rect, k, corner x,
+  corner y)`), block A = pinned markers (program + v0, default blend, alpha test off, combiner
+  stages 1-5, buffer updates off) replayed by DrawBegin 00420028 / 00420074.
+- **Uniforms** (all uploaded from memory, so every register holds (m3, m2, m1, m0) and the program
+  reads `.wzyx`): c0-c3 projection, c4 stereo parallax, c5 DVLE constant (0, 1, 2, 0.5), c6-c8
+  per-texture vec4 (00403360), c9-c31 rect records (x modelview index, y geometry index,
+  z texcoord index, w alpha or colour index; flag bits as binary fractions), c32-c95 pool
+  (modelview rows, geometry (size, pos), texcoord sets, corner colours, glyph italic / scale).
+  Writer 0041F3C0 (replaced -> ROP_VS_FLOAT). Bools: b0 glyph path, b1..b6 texcoord rotate / flip,
+  b2 also per-draw colours in the glyph path (004018A8, 0041F970). i0 (0x2B1, 004010C8) is not
+  read by the program.
+- **Paths:** pane (b0 = 0): geometry x modelview, stereo offset, white x alpha or bilinear corner
+  colours, three texcoords (corner set, texture window / fit flags, 2x4 matrix or projection);
+  glyph (b0 = 1): scale / offset / italic, (u0, v0, u1, v1) corners, top / bottom colour.
+- **Draw:** 0041F54C / 0041F43C -> ROP_DRAW (6 vertices per rect).
+- **Use:** every UI glyph and layout pane quad. Test: `render/test/font_test.c` (real MessageFont,
+  real BFLIM). High.
 
 ### 4. `Shader/nwh3d_DefaultShader.bch` and shaders embedded in any `.bch` (nw::h3d) -> `RPROG_H3D_DEFAULT`
 
@@ -143,6 +146,6 @@ reaches it through `sdk/gr.c`.
 | RPROG_CLIP (renderer tests / blits) | final | n/a |
 | RPROG_GR_DEFAULT | generic placeholder (`VS_MVP`) | binds yes (00562B24/00562F64); uniforms and draws no |
 | RPROG_PRIMITIVE | placeholder | binds yes; per-draw 004979CC no |
-| RPROG_FONT_RECT | placeholder | no (own loader 004205A4, draws 0041F54C) |
+| RPROG_FONT_RECT | final (font.c) | yes: loader 004205A4, uniforms 0041F3C0, draws 0041F54C/0041F43C, text 0041E948/0041F970, lyt materials 00401160.. (sdk/lyt.c) |
 | RPROG_H3D_DEFAULT | placeholder | binds yes (005613D4/00561808); uniforms 00565204/005683D0 and draws 00568224/00568798 no |
 | eft | none | no |

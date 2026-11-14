@@ -110,11 +110,14 @@ enum { RPRIM_TRIANGLES = 0, RPRIM_STRIP = 1, RPRIM_FAN = 2 };
 enum {
     RPROG_CLIP = 0,      /* v0 = clip-space position (PICA z convention), v1 colour, v2 uv0: tests/blits */
     RPROG_GR_DEFAULT,    /* placeholder for Shader/gr_default_shader.shbin (see SHADERS.md) */
-    RPROG_FONT_RECT,     /* placeholder for nwfont2_RectDrawerShader.shbin */
+    RPROG_FONT_RECT,     /* nwfont2_RectDrawerShader.shbin (nw::font + nw::lyt): GLSL in font.c */
     RPROG_H3D_DEFAULT,   /* placeholder for nwh3d_DefaultShader.bch */
     RPROG_PRIMITIVE,     /* placeholder for sead PrimitiveRenderer */
     RPROG_COUNT
 };
+
+/* hand-written GLSL of the game's vertex programs that live outside render.c */
+extern const char RENDER_VS_FONT_RECT[];   /* font.c: nwfont2_RectDrawerShader */
 
 /* ------------------------------------------------------------------ setup */
 
@@ -187,6 +190,8 @@ typedef enum {
     ROP_ATTRIB,      /* one vertex attribute array / constant */
     ROP_DRAW,
     ROP_CALL,        /* execute the markers of another command range (sub-list, prebuilt block) */
+    ROP_TEV_STAGES,  /* some combiner stages (flags = stage mask bits 0-5); unit bit 0: also the
+                        buffer-update bits, bit 1: also the buffer colour (u.tev) */
     ROP_COUNT
 } ROpType;
 
@@ -216,6 +221,11 @@ typedef struct {
  * the op is executed later only through render_exec_op. Identical ops share one pool entry. */
 uint32_t *render_rec(uint32_t *p, const ROp *op);
 
+/* Same, for markers written once into a block that is replayed for the rest of the run (shader /
+ * state blocks built at init and copied into every frame's list): the pooled op is never
+ * garbage-collected, even if the block is not executed for a long time. */
+uint32_t *render_rec_pinned(uint32_t *p, const ROp *op);
+
 /* Execute the native markers found in [addr, addr+size) in address order (gfx.c: a 3D command
  * chunk of a running list; ROP_CALL: a sub-range). GL thread; returns the number of ops run. */
 int render_exec_cmds(const void *addr, uint32_t size);
@@ -240,6 +250,9 @@ void render_set_texunit(int unit, const RTexUnit *t);
 void render_set_texconfig(int enable_mask, int tex2_from_tc1);
 void render_set_tev(const RTev *tev);
 void render_set_tev_const(int stage_mask, const uint8_t rgba[4]);
+/* replace the stages in stage_mask (bits 0-5) with t->stage[i]; flags bit 0: also buf_update_rgb/a,
+ * bit 1: also buf_color */
+void render_set_tev_stages(int stage_mask, const RTev *t, int flags);
 void render_set_program(int prog);
 void render_set_vs_float(int reg, const float *v, int count);   /* count vec4 registers */
 void render_set_vs_bool(uint16_t mask);
