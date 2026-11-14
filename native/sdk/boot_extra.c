@@ -40,3 +40,17 @@ uint32_t func_003D4F20(uint8_t *reader, int16_t *buf, int32_t *out_count, int32_
     *out_count = 1;
     return 1;
 }
+
+/* ---------------------------------------------------------------- sound (temporary: no audio)
+ * There is no native audio layer yet (SDK_AREAS.md: snd/dsp voice layer 0x003DB-0x003E1 should
+ * be replaced by a host mixer). Until then the SDK reports "no DSP": dsp::Initialize and
+ * the DSP component is never loaded (003D2A48 returns its error when the session is 0).
+ * nn::snd::Initialize itself still reaches the dsp::DSP IPC (tripwire): the snd layer needs a
+ * native replacement (failing it instead leaves the snd CriticalSections uninitialised and the
+ * first snd call from the game spins forever). */
+#define DSP_RESULT_NOT_AVAILABLE 0xC8A0A7FCu   /* the "no session" result 003D2A48 returns */
+
+/* USA 003D2810 (EU 003D27F0) dsp::Initialize: srv GetServiceHandle("dsp::DSP"), clear the
+ * pipe/interrupt tables, create the DSP event. Native: no DSP; the session stays 0.
+ * Confidence: high (meaning), temporary. */
+uint32_t func_003D2810(void) { return DSP_RESULT_NOT_AVAILABLE; }
