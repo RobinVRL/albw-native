@@ -28,6 +28,7 @@ import subprocess
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "decomp")
+TARGET = "i686-linux-gnu"
 COMPAT = os.path.join(ROOT, "native", "albw_native.h")
 
 # ------------------------------------------------------------------ rewrites
@@ -73,9 +74,22 @@ DATA_NAME = re.compile(r"^(?:data_|ro_|bss_|DAT_|G_|g_|PTR_|ptr_|gData_|rodata_)
 TEXT_LO, TEXT_HI = 0x00100000, 0x00693000
 
 
+MANGLED = re.compile(r"^_Z(\d+)")
+
+
+def base_name(name):
+    """Plain function name inside an Itanium-mangled free-function name (_Z<len><name>...)."""
+    m = MANGLED.match(name)
+    if not m:
+        return name
+    n = int(m.group(1))
+    return name[m.end():m.end() + n]
+
+
 def canon_ref(name):
     """Canonical name for a referenced symbol, or None to keep it."""
-    m = FUNC_NAME.match(name)
+    name = base_name(name)
+    m = FUNC_NAME.match(name) or re.match(r"^(?:g_|post_|pre_|call_|fn|f)_?(?:0x)?([0-9A-Fa-f]{8})$", name)
     if m:
         a = int(m.group(1), 16)
         return "func_%08X" % a
@@ -99,7 +113,25 @@ def nm(obj):
     return out, und, kinds
 
 
-def pick_primary(addr, defs, kinds):
+def call_roots(obj, funcs):
+    """Functions in obj that no other function in obj references (-ffunction-sections)."""
+    out = subprocess.run(["llvm-readelf", "-r", "--wide", obj], capture_output=True, text=True).stdout
+    called, cur = set(), None
+    for l in out.splitlines():
+        m = re.match(r"Relocation section '\.rel\.text\.(\S+)'", l)
+        if m:
+            cur = m.group(1)
+            continue
+        if l.startswith("Relocation section"):
+            cur = None
+            continue
+        p = l.split()
+        if cur and len(p) >= 5 and p[4] != cur:
+            called.add(p[4])
+    return [f for f in funcs if f not in called]
+
+
+def pick_primary(addr, defs, kinds, obj=None):
     funcs = [d for d in defs if kinds.get(d, "").upper() in ("T", "W")]
     hexa = addr.upper()
     exact = [d for d in funcs if d == "func_" + hexa]
@@ -112,6 +144,10 @@ def pick_primary(addr, defs, kinds):
         return min(named, key=len)
     if len(funcs) == 1:
         return funcs[0]
+    if obj and funcs:
+        roots = call_roots(obj, funcs)
+        if len(roots) == 1:
+            return roots[0]
     return None
 
 
@@ -122,7 +158,7 @@ def build_one(job):
     fin = os.path.join(OUT, "obj", path + ".final.o")
     os.makedirs(os.path.dirname(obj), exist_ok=True)
     cpp = path.endswith((".cpp", ".cc"))
-    cmd = ["clang", "--target=i686-linux-gnu", "-c", "-O1", "-g0", "-w", "-ffunction-sections",
+    cmd = ["clang", "--target=" + TARGET, "-c", "-O1", "-g0", "-w", "-ffunction-sections",
            "-fdata-sections", "-fno-common", "-fno-strict-aliasing", "-fwrapv", "-fno-exceptions",
            "-ferror-limit=3", "-include", COMPAT,
            "-I", os.path.join(OUT, "shared", "include"), "-I", os.path.dirname(src)]
@@ -142,7 +178,7 @@ def build_one(job):
     defs, und, kinds = nm(obj)
     prim = {}
     for a in addrs:
-        p = pick_primary(a, defs, kinds)
+        p = pick_primary(a, defs, kinds, obj)
         if p:
             prim[a] = p
     if obj != fin:
@@ -181,7 +217,12 @@ def main():
     ap.add_argument("--decomp", default=os.path.join(ROOT, "..", "albw-decomp-ai"))
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     ap.add_argument("--only", default="")
+    ap.add_argument("--arch", choices=("x86", "x86_64"), default="x86",
+                    help="x86 = 32-bit intermediate build; x86_64 = the release target (tracks 64-bit health)")
     a = ap.parse_args()
+    global OUT, TARGET
+    if a.arch == "x86_64":
+        OUT, TARGET = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu"
     decomp = os.path.abspath(a.decomp)
     os.makedirs(OUT, exist_ok=True)
     print("mirrored %d files" % mirror(decomp))
