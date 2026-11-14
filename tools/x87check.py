@@ -77,9 +77,9 @@ def thunk_asm(names):
     for f in sorted(names):
         t = f + '__x87pop'
         out += ['.globl %s' % t, '.type %s,@function' % t, '.p2align 4', '%s:' % t,
-                '  push %esi', '  push %edi', '  sub $64, %esp', '  lea 76(%esp), %esi',
+                '  push %esi', '  push %edi', '  sub $84, %esp', '  lea 96(%esp), %esi',  # entry esp = 12 mod 16: 2 pushes + 84 -> call at 0 mod 16
                 '  mov %esp, %edi', '  mov $16, %ecx', '  cld', '  rep movsl',
-                '  call %s' % f, '  fstp %st(0)', '  add $64, %esp', '  pop %edi', '  pop %esi', '  ret']
+                '  call %s' % f, '  fstp %st(0)', '  add $84, %esp', '  pop %edi', '  pop %esi', '  ret']
     out.append('.section .note.GNU-stack,"",@progbits')
     return '\n'.join(out)
 

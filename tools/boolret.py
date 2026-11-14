@@ -73,9 +73,9 @@ with open(out_list, 'w') as fh:
 out = ['.text']
 for f in sorted(owner):
     out += ['.weak %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f,
-            '  push %esi', '  push %edi', '  sub $64, %esp', '  lea 76(%esp), %esi',
+            '  push %esi', '  push %edi', '  sub $84, %esp', '  lea 96(%esp), %esi',  # entry esp = 12 mod 16: 2 pushes + 84 -> call at 0 mod 16
             '  mov %esp, %edi', '  mov $16, %ecx', '  cld', '  rep movsl',
-            '  call %s__bool' % f, '  movzbl %al, %eax', '  add $64, %esp', '  pop %edi', '  pop %esi', '  ret']
+            '  call %s__bool' % f, '  movzbl %al, %eax', '  add $84, %esp', '  pop %edi', '  pop %esi', '  ret']
 out.append('.section .note.GNU-stack,"",@progbits')
 open(out_s, 'w').write('\n'.join(out) + '\n')
 print('boolret: %d bool-returning functions get zero-extending adapters (%d objects)' % (len(owner), len(by_obj)))
