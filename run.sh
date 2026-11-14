@@ -4,6 +4,7 @@
 #   ./run.sh                 run the last built game
 #   ./run.sh --link          relink first (after code changes; ~10 s), then run
 #   ./run.sh --gdb           run under gdb (shows where it stops)
+#   ./run.sh --viewer [model [index]]   asset viewer: draws a model + texture decoded from your ROM
 #   ./run.sh --scale 3       window size multiplier (default 2), other args are passed through
 #
 # Environment (defaults shown):
@@ -22,6 +23,13 @@ cd "$(dirname "$0")"
 export ALBW_ROM
 
 LINK=0 GDB=0 ARGS=()
+if [[ "${1:-}" == "--viewer" ]]; then
+    shift
+    : "${ALBW_ROM:=/path/to/your/game.3ds}"
+    export ALBW_ROM
+    native/assets/build.sh build/assets >/dev/null
+    exec build/assets/viewer "$@"
+fi
 for a in "$@"; do
     case "$a" in
         --link) LINK=1 ;;
