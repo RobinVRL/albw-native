@@ -27,13 +27,13 @@ for `-m32` and `-m64 -fms-extensions`.
 - `tools/sigcheck_hot.py [--all] [--native]`: (1) our definitions vs the converted callers,
   (2) our callee declarations vs the winning definitions, (3) other native code declaring our
   functions. Current result: (1) all OK, (2) all OK, (3) see link notes.
-- `test/run_tests.sh`: anim_test (92 checks) and actor_test (93 checks), each built and run
-  for -m32 and -m64 with the build's float flags; all pass. Expected values come from the
+- `test/run_tests.sh`: anim_test (92 checks), actor_test (93) and misc2_test (47), each built
+  and run for -m32 and -m64 with the build's float flags; all pass. Expected values come from the
   ARM semantics, including the NaN / saturation cases where the Ghidra C differs.
 - Independent re-check (separate reviewer, from the disassembly only): 004F5588, 0016898C,
-  00169A80: no discrepancy.
+  00169A80, 00166C20, 004F8998: no discrepancy (one evaluation-order nit in 004F8998, fixed).
 
-## Functions (29)
+## Functions, pass 1 (29)
 
 Caller files = distinct files in build/ghidra_analyzed4 that call the function.
 
@@ -74,7 +74,53 @@ ground probes, 004F70A8 enemy damage, 004C03B8 angle conversion), 5 with NaN / r
 differences (002317C0, 0016898C, 00169A80, 004D838C, 004CF478 return), the rest verified
 correct and rewritten typed (32-bit game words, -m64 clean).
 
-## Link notes
+## Functions, pass 2 (16)
+
+Order: the ten "matched" functions whose matched source the matched-ABI check rejects (so the
+Ghidra C runs), then the extended ranking. Priority on bug classes the round-3 converter does
+NOT cover (logic, saturation/NaN, lost virtual-call `this`/arguments, dropped returns-this).
+
+| USA | EU | identity | callers | bug fixed vs round-2 conversion | conf. |
+|---|---|---|---|---|---|
+| 004FABDC | 004FABB4 | EnemyBase::playAnim(id, frames, force) -> bool (HOT listed it native; no definition exists) | 428 | **override virtual vt[0] of self[0x81C] called with no arguments (this, id, frames, force dropped)**; AnimReq pointer taken from the `void` native 002C11E8 (garbage) | high / medium |
+| 00352210 | 003521EC | EffectSlot::setParam(arg, f32) (matched source rejected) | 390 | `(int)` float cast (x86 0x80000000 on NaN / overflow; ARM saturates, NaN -> 0); early r0 | high / medium |
+| 004356B4 | 00435694 | Obj4::update() (HOT listed it native; no definition exists) | 310 | none | high |
+| 004FC07C | 004FC054 | EnemyBase::changeAnim(id, frames, force) -> bool (HOT "native"; none exists) | 236 | same as 004FABDC | high / medium |
+| 00151148 | 00151148 | Obj410::setListed(on) (matched source rejected) | 195 | none (float class kept: s0 is the caller's own value on ARM) | high / low |
+| 005902C0 | 00590298 | empty member function, returns this (matched source rejected) | 185 | none | high |
+| 004C07D8 | 004C07B0 | Actor::resetTargetIds() (matched source rejected) | 164 | none | high / low |
+| 005841A8 | 00584180 | Game::findNext(kind, Actor **it) (matched source rejected) | 136 | none | high |
+| 00166C20 | 00166C24 | LytAnimSet::bind(idx, name, target): "%s_%s.bflan" layout animation binding | 116 | **SafeString::assureTermination virtual called with no `this`**; new 0x48-byte element taken from the `void` converted 00407788 (garbage pointer stored in the PtrArray) | high / medium |
+| 003931EC | 003931C8 | NamedStateTable::change(idx) (matched source rejected) | 101 | none | high / medium |
+| 0035D6D0 | 0035D6AC | Obj6E3FAC dtor (matched source rejected) | 80 | none | high / low |
+| 004F8998 | 004F8970 | EnemyBase::checkReaction(query, u8 *reacted) -> bool | 80 | none (the r2 = 1 the ARM passes to 004FB4FC is not read) | high / medium |
+| 004FB468 | 004FB440 | EnemyBase::resetAnim() (matched source rejected) | 77 | AnimReq pointer from the `void` native 002C11E8 | high / medium |
+| 0054DDF4 | 0054DDCC | Actor::getAttachSlot(i) (falls through into 0054DE00; matched source rejected) | 74 | none | high / low |
+| 00521078 | 00521038 | Actor::hasGroundFlags() (outside the function table; matched source rejected) | 63 | none | high / low |
+| 004C01E4 | 004C01BC | Actor::updateLookTarget() | 58 | **look-at height `+= 1.0f` stored into an `undefined4` slot = float -> int VALUE conversion** | high / medium |
+
+Triaged, Ghidra C correct, not rewritten yet: 004C1418 (r1 passed to 004BD784 is register
+garbage on ARM too: only merged into padding), 004FAD90, 004A8030, 004A7F00 (only the
+in_s0/erase class), 004FC6FC, 004A2F38 (stack-object class).
+
+### Pass 2 link notes / reports
+
+- **native/robust/func_002C11E8.c (Req5C ctor) is `void`**, and link.sh generates no
+  returns-this thunk when a native definition exists: **194 converted callers** use its return
+  value as the AnimReq pointer (`puVar = func_002C11E8(stack, ...)` then 0016898C(anim, puVar))
+  -> every such animation request reads garbage. The hot rewrites here (004FABDC, 004FC07C,
+  004FB468) pass the buffer directly. Fix: make the robust definition return `self`.
+- converted 00407788 (and other ctors) typed `void` while callers use r0 = this: same class
+  (round 3 "callee return class" should cover it if it consults returns_this).
+- **Systemic: float -> int value stores into `undefined4` slots** (`p[i] = ALBW_AS_F32(p[i]) + f`):
+  49 converted files (e.g. every `param_2[1] = ALBW_AS_F32(param_2[1]) + *(float *)(self + 0x838)`).
+  Not a paired-load bit-cast; needs its own converter rule (wrap the RHS in ALBW_AS_U32).
+- native/robust/func_00606CC0.c declares 00151148 `void (ptr, int)`; the definition (and its
+  136 converted callers) return float: on i386 that caller leaves one x87 value per call.
+- HOT_TOP150 lists 004FABDC, 004356B4, 004FC07C as "native": no definition exists anywhere
+  under native/ (now here).
+
+## Link notes (pass 1)
 
 - Duplicates: none. No address here is defined by another native directory; the only other
   definition is the weak Ghidra export (build/decomp ghidra_fallback objects).
@@ -107,20 +153,14 @@ correct and rewritten typed (32-bit game words, -m64 clean).
   `(int *, int, int *)`: the model pointer arrives as an `int` (M64PTR).
 - Function-table splits: 0025B88C / 0025B894 are bogus starts inside 0025B874; 00110DB8 falls
   through into 00110DDC (both have matched sources, so no stub).
-- Functions with a matched source that is rejected by the matched-ABI check, so the Ghidra C
-  runs today although HOT_TOP150 says "matched": 00352210 (390 caller files), 00151148 (195),
-  005902C0 (185), 004C07D8 (164), 005841A8 (136), 003931EC (101), 0035D6D0 (80), 004FB468 (77),
-  0054DDF4 (74), 00521078 (63). They are Ghidra C in the link and belong in this queue.
+- The ten functions whose matched source is rejected by the matched-ABI check (Ghidra C in
+  the link although HOT_TOP150 says "matched") are now all in pass 2.
 
 ## Next in line (by caller files)
 
 | USA | callers | note |
 |---|---|---|
-| 00166C20 | 116 (533 sites) | Layout `%s_%s.bflan` animation binder (207 lines, vcalls, list allocation): next big one |
-| 004F8998 | 80 | EnemyBase damage-reaction decision (type propagation did not settle in Ghidra; deep branch tree) |
 | 004C43E0 | 68 | ActorMgr::requestCreate (0x2C4-byte ring copy) - framework scope |
 | 004994B0 | 66 | sead FixedSafeString::format (vsnprintf) - core scope |
-| 004A7F00 | 64 | broad-phase collider register (see gameplay AUDIT) |
-| 004A8030 | 62 | broad-phase |
-| 004FC6FC, 004A2F38, 004FAD90, 004C1418, 004C01E4, 004FBA18, 001E6B34, 004EA104, 004C1300, 004C0350, 004BFE7C, 004BFF60, 0034C8F0, 003842C0 | 61-51 | not yet triaged |
-| matched-ABI fallbacks above | 390-63 | Ghidra C in the link despite a matched source |
+| 004FBA18, 001E6B34, 004EA104, 004C1300, 004C0350, 004BFE7C, 004BFF60, 0034C8F0, 003842C0, 004C1D28, 004C18E0 (217 lines), 0014E138, 004A9120 | 57-50 | not yet triaged |
+| 004C1418, 004FAD90, 004A8030, 004A7F00, 004FC6FC, 004A2F38 | 64-58 | triaged correct (only round-3 classes): low priority |
