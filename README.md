@@ -14,6 +14,8 @@ built **only from decompiled source**.
 - Graphics: the game's GPU-command producers are replaced by native OpenGL code. Model files whose
   material state is stored as prebuilt GPU command blobs are decoded **once, at load time**, into
   OpenGL state (asset conversion); GPU commands are never interpreted at runtime.
+- Shaders are hand-written GLSL translations of the game's GPU shader programs; shader bytecode is
+  never machine-translated (neither at load time nor at runtime).
 - The game's data and assets come from your own ROM at build/run time and are never committed.
 
 ## Rule: the finished game is 64-bit
