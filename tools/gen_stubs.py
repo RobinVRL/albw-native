@@ -7,6 +7,7 @@ Each unresolved function gets a definition that aborts with its name and caller,
 game reports exactly which missing piece is needed next. Unresolved data gets a zeroed 4 KiB
 block (also listed in the output). Generated into build/: the list changes as work lands.
 """
+import os
 import re
 import subprocess
 import sys
@@ -17,7 +18,9 @@ def syms(obj, *flags):
     return set(out.stdout.split())
 
 
-SYSTEM_LIBS = ["/usr/lib32/libc.so.6", "/usr/lib32/libm.so.6", "/usr/lib32/libSDL3.so.0"]
+# ALBW_ARCH=x86_64 (tools/link64.sh, build_decomp.py --arch x86_64): the 64-bit libraries
+_LIB = "/usr/lib" if os.environ.get("ALBW_ARCH") == "x86_64" else "/usr/lib32"
+SYSTEM_LIBS = [_LIB + "/libc.so.6", _LIB + "/libm.so.6", _LIB + "/libSDL3.so.0"]
 
 
 def system_symbols():
@@ -30,9 +33,14 @@ def system_symbols():
 
 
 def main():
-    objs = sys.argv[1:]
+    # --defs=LIB: only contributes definitions (a prebuilt library linked as well, e.g. the Qt
+    # frontend; its own undefined references are resolved by its libraries, never stubbed)
+    objs = [x for x in sys.argv[1:] if not x.startswith("--defs=")]
     system = system_symbols()
     defined, undefined = set(), set()
+    for x in sys.argv[1:]:
+        if x.startswith("--defs="):
+            defined |= syms(x[len("--defs="):], "--defined-only", "--extern-only")
     for o in objs:
         defined |= syms(o, "--defined-only", "--extern-only")  # exported definitions only
         undefined |= syms(o, "-u")

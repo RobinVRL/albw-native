@@ -30,12 +30,14 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "decomp")
 TARGET = "i686-linux-gnu"
+ARCH64 = False  # --arch x86_64 (build/decomp64): low-4GB mode, see native/64BIT.md
 COMPAT = os.path.join(ROOT, "native", "albw_native.h")
 
 # ------------------------------------------------------------------ rewrites
 RE_TLS = re.compile(r"__asm\s*\{\s*mrc\s+p15\s*,\s*0\s*,\s*(\w+)\s*,\s*c13\s*,\s*c0\s*,\s*3\s*\}")
 RE_ASM_BLOCK = re.compile(r"__asm\s*\{[^{}]*\}")
 RE_REG_PIN = re.compile(r"__asm\s*\(\s*\"r\d+\"\s*\)")
+RE_OP_NEW = re.compile(r"(\boperator\s+new(?:\[\])?\s*\(\s*)unsigned(?:\s+int)?\b")
 RE_HEX_E = re.compile(r"(0[xX][0-9a-fA-F]*[eE])([+-])")
 
 
@@ -50,6 +52,8 @@ def rewrite(text):
     text = RE_ASM_BLOCK.sub("", text)
     text = RE_REG_PIN.sub("", text)
     text = RE_HEX_E.sub(r"\1 \2 ", text)
+    # armcc's size_t is unsigned int; operator new must take the host size_t (same type on i386)
+    text = RE_OP_NEW.sub(r"\1__SIZE_TYPE__", text)
     return text
 
 
@@ -77,6 +81,13 @@ def virtual_this(text):
     text = RE_VCALL_NOARGS.sub(fix, text)
     return RE_VCALL0_NOARGS.sub(lambda m: "(**(code **)*%s)(%s)" % (m.group(1), m.group(1)), text)
 
+
+SIG_OVERRIDES = {
+    "func_0010E74C": "void *func_0010E74C(uint *param_1,uint *param_2,uint param_3)",
+    "func_0065E398": "void func_0065E398(undefined4 *param_1,undefined1 param_2)",
+}
+# Ghidra writes `fX = func_0010E74C(...)` where s0 merely survived memmove: drop the assignment
+RE_MEMMOVE_FLOAT = re.compile(r"\b\w+ = (func_0010E74C\()")
 
 _EU_CODE = None
 RE_CODE_STR_ARG = re.compile(r"(?<=[(,])(\s*)(0x[0-9a-f]{5,6})(?=\s*[,)])")
@@ -149,6 +160,44 @@ def void_tail_returns(text, addr, sigs):
     return text[:m.start(1)] + "undefined4" + text[m.end(1):body_at] + body
 
 
+# ------------------------------------------------------------------ 64-bit (low-4GB mode)
+# Ghidra C keeps addresses in 32-bit ints, which is layout-correct on x86-64 as long as every
+# game address is below 2 GiB (native/64BIT.md). What breaks is a pointer *type* used for a
+# word in game memory: `*(undefined4 **)(p + 0x7c)` loads 8 bytes on x86-64. In the 64-bit build
+# every pointer-to-pointer type gets 32-bit inner pointers (clang's __ptr32 __uptr, spelled
+# ALBW_GP; empty on 32-bit): `undefined4 **` -> `undefined4 * ALBW_GP *`. A 32-bit pointer
+# converts implicitly (zero-extended) to a normal one. Calls through a __ptr32 function pointer
+# crash LLVM's x86 backend, so the callee is converted to a normal pointer first.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ptr32 import rewrite_ghidra as ptr32_rewrite, RE_BAD_CONST, launder_symbol  # noqa: E402  (tools/ptr32.py)
+
+
+RE_IR_PTR_MEM = re.compile(r"(?:= load ptr, ptr|store ptr [^,]+, ptr)")
+RE_IR_VCALL = re.compile(r"%vtable\d* = load ptr|%vfn")
+RE_IR_PTRSTRUCT = re.compile(r"^%(?:struct|class|union)\.\S+ = type \{[^}]*\bptr\b", re.M)
+
+
+def layout_check(cmd, src, out_ll):
+    """Matched sources in the 64-bit build: compile to LLVM IR and look for pointer-sized
+    memory words (pointer loads/stores, C++ virtual calls through the compiler's 8-byte vtable
+    slots, structs with pointer members). Such a function reads or writes game memory with
+    8-byte pointers and is layout-critical. Returns the list of reasons (empty = layout-safe)."""
+    r = subprocess.run([c for c in cmd if c not in ("-c",)] + ["-S", "-emit-llvm", "-o", out_ll, src],
+                       capture_output=True, text=True)
+    if r.returncode:
+        return ["ir-failed"]
+    ir = open(out_ll).read()
+    os.remove(out_ll)
+    why = []
+    if RE_IR_VCALL.search(ir):
+        why.append("vcall")
+    if RE_IR_PTR_MEM.search(ir):
+        why.append("ptr-mem")
+    if RE_IR_PTRSTRUCT.search(ir):
+        why.append("ptr-struct")
+    return why
+
+
 def mirror(decomp):
     """Copy sources + headers with rewrites (only files that changed)."""
     n = 0
@@ -164,8 +213,11 @@ def mirror(decomp):
                 os.makedirs(os.path.dirname(d), exist_ok=True)
                 with open(s, encoding="utf-8", errors="replace") as fh:
                     text = fh.read()
+                text = rewrite(text)
+                if ARCH64 and "nonmatching" in dp and f.endswith(".c"):
+                    text = ptr32_rewrite(text)
                 with open(d, "w", encoding="utf-8") as fh:
-                    fh.write(rewrite(text))
+                    fh.write(text)
                 n += 1
     return n
 
@@ -231,7 +283,7 @@ def call_roots(obj, funcs):
     out = subprocess.run(["llvm-readelf", "-r", "--wide", obj], capture_output=True, text=True).stdout
     called, cur = set(), None
     for l in out.splitlines():
-        m = re.match(r"Relocation section '\.rel\.text\.(\S+)'", l)
+        m = re.match(r"Relocation section '\.rela?\.text\.(\S+)'", l)
         if m:
             cur = m.group(1)
             continue
@@ -289,20 +341,44 @@ def build_one(job):
     cmd = ["clang", "--target=" + TARGET, "-c", "-O1", "-g0", "-w", "-ffunction-sections",
            "-fdata-sections", "-fno-common", "-fno-strict-aliasing", "-fwrapv", "-fno-exceptions",
            "-ferror-limit=3", "-include", COMPAT,
+           # float model = the 3DS VFP (native/gameplay/AUDIT.md): single precision in SSE
+           # registers on i686 too (no x87 excess precision), no FMA contraction (vmla is unfused)
+           "-msse2", "-mfpmath=sse", "-ffp-contract=off",
            "-I", os.path.join(OUT, "shared", "include"), "-I", os.path.dirname(src)]
+    if ARCH64:
+        cmd += ["-fms-extensions", "-Wno-error=int-to-pointer-cast"]  # __ptr32 (ALBW_GP)
     if cpp:
         cmd += ["-x", "c++", "-std=gnu++11", "-fno-threadsafe-statics"]
     else:
         cmd += ["-std=gnu11", "-Wno-error=implicit-function-declaration", "-Wno-error=int-conversion",
                 "-Wno-error=incompatible-pointer-types", "-Wno-error=incompatible-function-pointer-types",
                 "-Wno-error=return-type"]
+    matched_src = not path.startswith("ghidra_fallback/") and "/nonmatching/" not in path
+    lay_file = fin + ".layout64"
+    layout = []
     if not (os.path.exists(fin) and os.path.getmtime(fin) >= os.path.getmtime(src)):
         r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
+        for _ in range(8):  # 64-bit: symbol addresses stored into 4-byte pointers (tools/ptr32.py)
+            bad = set(RE_BAD_CONST.findall(r.stderr)) if ARCH64 and r.returncode else set()
+            if not bad:
+                break
+            text = open(src).read()
+            for sym in bad:
+                text = launder_symbol(text, sym)
+            with open(src, "w") as fh:
+                fh.write(text)
+            r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
         if r.returncode:
-            err = next((l for l in r.stderr.splitlines() if "error:" in l), r.stderr[:200])
+            err = next((l for l in r.stderr.splitlines() if "error:" in l or "error in backend" in l), r.stderr[:200])
             return {"path": path, "addrs": addrs, "ok": False, "error": err.split("error:", 1)[-1].strip()}
+        if ARCH64 and matched_src:
+            layout = layout_check(cmd, src, obj + ".ll")
+            with open(lay_file, "w") as fh:
+                fh.write(" ".join(layout))
     else:
         obj = fin  # already normalised: re-derive the report from it
+        if ARCH64 and matched_src and os.path.exists(lay_file):
+            layout = open(lay_file).read().split()
     defs, und, kinds = nm(obj)
     prim, sinit = {}, {}
     for a in addrs:
@@ -335,7 +411,6 @@ def build_one(job):
         # matched sources of functions that return their first argument on ARM (returns_this.json)
         # but are void in C: export them as func_<ADDR>__impl; link.sh adds a thunk func_<ADDR>
         # that calls the impl and returns the first argument (exact ARM r0 semantics)
-        matched_src = not path.startswith("ghidra_fallback/") and "/nonmatching/" not in path
         for a, p in prim.items():
             want = "func_" + a.upper()
             if a in sinit:
@@ -362,7 +437,7 @@ def build_one(job):
             return {"path": path, "addrs": addrs, "ok": False, "error": "objcopy: " + r.stderr.strip()[:200]}
         os.remove(obj)
         defs, und, kinds = nm(fin)
-    return {"path": path, "addrs": addrs, "ok": True, "primary": prim,
+    return {"path": path, "addrs": addrs, "ok": True, "primary": prim, "layout64": layout,
             "missing_primary": [a for a in addrs if a not in prim], "defs": defs, "und": und}
 
 
@@ -382,9 +457,10 @@ def main():
     ap.add_argument("--arch", choices=("x86", "x86_64"), default="x86",
                     help="x86 = 32-bit intermediate build; x86_64 = the release target (tracks 64-bit health)")
     a = ap.parse_args()
-    global OUT, TARGET, CTORS
+    global OUT, TARGET, CTORS, ARCH64
     if a.arch == "x86_64":
-        OUT, TARGET = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu"
+        OUT, TARGET, ARCH64 = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu", True
+        os.environ["ALBW_ARCH"] = "x86_64"  # gen_stubs.system_symbols(): 64-bit libraries
     decomp = os.path.abspath(a.decomp)
     os.makedirs(OUT, exist_ok=True)
     # the game's static constructors (their source's _GLOBAL__sub_I_* is the function)
@@ -432,6 +508,15 @@ def main():
         return re.sub(r"\b(?:thunk_)?FUN_([0-9a-f]{8})\b", fix, text)
 
     sigs = import_ghidra.signatures(fallback_dir) if fallback_dir else {}
+    if os.environ.get("ALBW_CONVERT_V3") == "1" and os.path.isdir(extra_dir):
+        # V3: one signature table: functions outside the decomp table (ghidra_extra*) are
+        # prototyped too (before: `extern int f();`, float arguments passed as doubles)
+        for k, v in import_ghidra.signatures(extra_dir).items():
+            sigs.setdefault(k, v)
+    # return classes the native definitions have (on i386 a float/int return mismatch corrupts
+    # the x87 stack, native/gameplay/AUDIT.md): memmove returns the destination pointer (Ghidra
+    # typed it float because s0 survives the call); the state machine changeState returns nothing
+    sigs.update(SIG_OVERRIDES)
     print("callee prototypes from Ghidra: %d" % len(sigs))
 
     def ghidra_source(addr):
@@ -448,18 +533,39 @@ def main():
         if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
+            text = rewrite(eu_fun_to_usa(import_ghidra.convert(RE_MEMMOVE_FLOAT.sub(r'\1', code_strings(virtual_this(void_tail_returns(text, addr, sigs)))), addr, sigs)))
+            if ARCH64:
+                text = ptr32_rewrite(text)
             with open(dst, "w") as fh:
-                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(code_strings(virtual_this(void_tail_returns(text, addr, sigs))), addr, sigs))))
+                fh.write(text)
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
     # addresses ("twins") match shape only, with different callees/data per address, so each of
     # those addresses gets its own Ghidra decompilation instead.
     users = collections.Counter(e["path"] for e in matched.values() if e["status"] in ("honest", "hack"))
+    # round-2 systemic checks (default off, tools/matched_abi.py): matched sources that pass fewer
+    # register arguments than the callee reads (ALBW_MATCHED_ARGCHECK=1), or whose prototypes map
+    # ARM argument registers to other i386 slots than the Ghidra side / return structs by value
+    # (ALBW_MATCHED_ABICHECK=1: long long in r2:r3, float/int order, sret) are built from their
+    # Ghidra decompilation instead
+    abi_flagged = {}
+    chk_args = os.environ.get("ALBW_MATCHED_ARGCHECK") == "1"
+    chk_abi = os.environ.get("ALBW_MATCHED_ABICHECK") == "1"
+    if chk_args or chk_abi:
+        import matched_abi
+        cand = {ad: e["path"] for ad, e in matched.items() if e["status"] in ("honest", "hack") and users[e["path"]] == 1}
+        abi_flagged, st = matched_abi.check(cand, OUT, os.path.join(OUT, "abi_ir"), sigs, args=chk_args, abi=chk_abi,
+                                            jobs=a.jobs)
+        abi_flagged = {ad: why for ad, why in abi_flagged.items() if ghidra_source(ad)}
+        json.dump({"stats": st, "flagged": abi_flagged}, open(os.path.join(OUT, "matched_abi.json"), "w"), indent=1,
+                  sort_keys=True)
+        print("matched ABI check (args=%s abi=%s): %d matched functions built from Ghidra instead %s"
+              % (chk_args, chk_abi, len(abi_flagged), dict(st)))
     by_path = collections.defaultdict(list)
     source_of = {}
     for addr, e in matched.items():
-        if e["status"] in ("honest", "hack") and users[e["path"]] == 1:
+        if e["status"] in ("honest", "hack") and users[e["path"]] == 1 and addr not in abi_flagged:
             by_path[e["path"]].append(addr)
             source_of[addr] = "matched"
     for addr in set(matched) | set(ghidra) | set(extra):
@@ -495,6 +601,7 @@ def main():
     # permuter-style matches) fall back to the address's Ghidra decompilation
     retry = []
     why = collections.Counter()
+    layout_why, layout_n = collections.Counter(), 0
     matched_paths = {r["path"] for r in res if source_of.get(r["addrs"][0]) == "matched"}
     for r in res:
         if source_of.get(r["addrs"][0]) != "matched":
@@ -503,6 +610,11 @@ def main():
         if r["ok"] and any(unresolvable(u) for u in r["und"]):
             miss = r["addrs"]
             why.update(u for u in r["und"] if unresolvable(u))
+        if r["ok"] and r.get("layout64"):
+            # 64-bit: pointer-sized words in game memory -> the Ghidra version (4-byte words)
+            miss = r["addrs"]
+            layout_why.update(r["layout64"])
+            layout_n += 1
         for addr in miss:
             g = ghidra_source(addr)
             if g:
@@ -519,6 +631,9 @@ def main():
         res += fb
         print("fallback to Ghidra for %d matched functions (unidentified or not compiling)" % len(retry))
         print("  most common unresolvable names: %s" % why.most_common(25))
+    if ARCH64:
+        print("64-bit layout-critical matched sources (pointer-sized game-memory words): %d %s"
+              % (layout_n, dict(layout_why)))
     print("sources: %d matched, %d Ghidra" % (sum(v == "matched" for v in source_of.values()),
                                               sum(v == "ghidra" for v in source_of.values())))
 
