@@ -8,3 +8,6 @@ _ZN7FactoryD1Ev func_0019B5EC
 # (USA 0058FA08, native in sdk/memory.c). Without it _ZdlPv became an exported tripwire stub
 # that also replaced libstdc++'s operator delete for host libraries (EGL driver crashed).
 _ZdlPv func_0058FA08
+# PtrArrayImpl::setBuffer as a C name (matched 001066DC.cpp; the C++ users 00688BA4/BD4/C04 call
+# the same address): every call site is `bl 0x10B3EC`
+setBuffer func_0010B3EC
