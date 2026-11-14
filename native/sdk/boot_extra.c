@@ -13,3 +13,7 @@ void func_0010AC24(uint32_t result, uint32_t pc) {
                   "summary %u, level %u)", result, pc, result & 0x3FF, (result >> 10) & 0xFF,
                   (result >> 21) & 0x3F, (result >> 27) & 0x1F);
 }
+
+/* armcc intrinsic __memory_changed(): a compiler memory barrier (no code), used by some matched
+ * sources (e.g. 0010A574) to reproduce instruction order. Natively a compiler barrier too. */
+void __memory_changed(void) { __asm__ volatile("" ::: "memory"); }
