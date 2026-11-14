@@ -177,6 +177,14 @@ RE_IR_VCALL = re.compile(r"%vtable\d* = load ptr|%vfn")
 RE_IR_PTRSTRUCT = re.compile(r"^%(?:struct|class|union)\.\S+ = type \{[^}]*\bptr\b", re.M)
 
 
+RE_IR_GEP_OFF = re.compile(r"getelementptr (?:inbounds )?(?:nuw )?(?:nusw )?i8, ptr(?: addrspace\(\d+\))? %[\w.]+, i(?:32|64) (-?\d+)")
+RE_IR_MEMLEN = re.compile(r"@llvm\.mem(?:cpy|set|move)\.[^(]*\([^)]*?, i(?:32|64) (\d+), i1")
+
+
+def ir_offsets(ir):
+    return sorted(RE_IR_GEP_OFF.findall(ir)) + ["len" + x for x in sorted(RE_IR_MEMLEN.findall(ir))]
+
+
 def layout_check(cmd, src, out_ll):
     """Matched sources in the 64-bit build: compile to LLVM IR and look for pointer-sized
     memory words (pointer loads/stores, C++ virtual calls through the compiler's 8-byte vtable
@@ -188,7 +196,17 @@ def layout_check(cmd, src, out_ll):
         return ["ir-failed"]
     ir = open(out_ll).read()
     os.remove(out_ll)
+    # the same source for i686: struct layouts that differ (a pointer member before the field
+    # that is accessed) show as different constant byte offsets / copy sizes
+    cmd32 = [c if not c.startswith("--target=") else "--target=i686-linux-gnu" for c in cmd]
+    r32 = subprocess.run([c for c in cmd32 if c not in ("-c",)] + ["-S", "-emit-llvm", "-o", out_ll, src],
+                         capture_output=True, text=True)
     why = []
+    if r32.returncode == 0:
+        ir32 = open(out_ll).read()
+        os.remove(out_ll)
+        if ir_offsets(ir) != ir_offsets(ir32):
+            why.append("offsets")
     if RE_IR_VCALL.search(ir):
         why.append("vcall")
     if RE_IR_PTR_MEM.search(ir):

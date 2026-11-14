@@ -32,7 +32,7 @@ GAME_FLAGS = ["-I", os.path.join(ROOT, "native", "robust"), "-include", os.path.
               "-I", os.path.join(ROOT, "..", "albw-decomp-ai", "shared", "include")]
 RE_FN = re.compile(r"^define .*?@([\w.$]+)\(", re.M)
 RE_LOADP = re.compile(r"= load ptr, ptr")
-RE_STOREP = re.compile(r"store ptr [^,]+, ptr")
+RE_STOREP = re.compile(r"store ptr (?!addrspace)[^,]+, ptr")
 RE_PSTRUCT = re.compile(r"^(%(?:struct|union)\.\S+) = type \{[^}]*\bptr\b", re.M)
 
 

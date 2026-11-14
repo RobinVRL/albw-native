@@ -32,7 +32,8 @@ RE_PPVAR_DECL = re.compile(r"\b(?:code|_func_\w+) \* ALBW_GP (?:\* ALBW_GP )*\*\
 # (const struct Foo *const *) and the like, in casts only
 RE_CAST_PP = re.compile(r"\(((?:const\s+|volatile\s+)*(?:struct\s+|union\s+)?[A-Za-z_]\w*(?:\s+const)?)\s*"
                         r"((?:\*\s*(?:const\s*)?){2,})\)")
-RE_FLD_PTR = re.compile(r"\b(FLD\s*\([^;]*?,\s*)([A-Za-z_][\w ]*?)\s*\*\s*\)")
+RE_FLD_PTR = re.compile(r"\b(FLD\s*\([^;]*?,\s*)([A-Za-z_][\w ]*?(?:\s*\*\s*ALBW_GP)*)\s*\*\s*\)")
+RE_FN_TYPEDEF = re.compile(r"typedef\s+[^;()]*\(\s*\*\s*(\w+)\s*\)\s*\(")
 
 
 def _stars(base, stars):
@@ -80,8 +81,23 @@ def fix_calls(text):
 RE_SYM_ASSIGN = re.compile(r"^([ \t]+[^\n;]*?[^=!<>]=\s*)(&(?:data|func|DAT|PTR)_\w+)(\s*;)", re.M)
 
 
+def fn_typedefs(text):
+    """function-pointer typedef names of the file and of the robust headers it includes"""
+    names = set(RE_FN_TYPEDEF.findall(text))
+    import os
+    here = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "native", "robust")
+    for h in re.findall(r'#include "(robust\w*\.h)"', text):
+        if os.path.exists(os.path.join(here, h)):
+            names |= set(RE_FN_TYPEDEF.findall(open(os.path.join(here, h)).read()))
+    return names
+
+
 def rewrite_native(text):
     text = rewrite_ghidra(text)
+    # FLD(p, off, fn_typedef): a 4-byte game function pointer word, read as the callable type
+    for fn in fn_typedefs(text):
+        text = re.sub(r"\bFLD\s*\(([^;]*?),\s*%s\s*\)" % re.escape(fn),
+                      lambda m: "((%s)(uintptr_t)FLD(%s, uint32_t))" % (fn, m.group(1)), text)
     text = RE_SYM_ASSIGN.sub(lambda m: "%sALBW_LAUNDER(%s)%s" % m.groups(), text)
     text = RE_CAST_PP.sub(lambda m: "(" + _stars(m.group(1), m.group(2)).rstrip() + ")"
                           if "ALBW_GP" not in m.group(0) else m.group(0), text)
