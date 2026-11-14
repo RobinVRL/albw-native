@@ -12,7 +12,7 @@ NATIVE=()
 for f in native/platform/platform.c native/runtime/*.c $(ls native/sdk/*.c native/game/*.c 2>/dev/null); do
     o=$B/native/$(basename "$f" .c).o
     EXTRA=()
-    [[ "$f" == native/game/* ]] && EXTRA=(-include native/albw_native.h)  # decompiled code only
+    [[ "$f" == native/game/* ]] && EXTRA=(-include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
     [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
         $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")
@@ -22,7 +22,8 @@ llvm-nm -u --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_syms.txt
 python3 tools/gen_data.py --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
     --map ../albw-decomp-ai/shared/eu_usa_map.json --extra $B/native_syms.txt >/dev/null
 clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o
-find $B/decomp/obj -name '*.final.o' > $B/objs.txt
+# exactly the objects of the current source selection (stale ones from older selections excluded)
+python3 -c "import json;print('\n'.join(json.load(open('$B/decomp/report.json'))['objects']))" > $B/objs.txt
 echo $B/data/gamedata.o >> $B/objs.txt
 ld.lld -m elf_i386 -r -o $B/albw_game.o @$B/objs.txt
 # names the decomp calls by C++/ad-hoc names -> the function they are (tools/resolve_names.py +
