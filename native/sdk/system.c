@@ -19,3 +19,11 @@ uint32_t func_001023F8(uint32_t a, uint32_t b, uint32_t c) {
     (void)a; (void)b; (void)c;
     return 0;
 }
+
+/* 3D slider (shared page 0x1FF81080 float, 0x1FF81084 u8 3D-LED state), read inline by the stereo
+ * camera code (003E27CC: if LED byte == 0 the slider value replaces `keep`). A PC shows one image:
+ * slider at 0 (no parallax), as a 3DS with the slider down. */
+float albw_3d_slider(float keep) {
+    (void)keep;
+    return 0.0f;
+}

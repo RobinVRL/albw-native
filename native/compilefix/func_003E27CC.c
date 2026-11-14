@@ -17,6 +17,7 @@ extern float DAT_003e2ad4;
 extern int DAT_003e2ad8;
 extern int DAT_003e2adc;
 extern float DAT_003e2ae0;
+extern float albw_3d_slider(float keep);
 
 // USA 003E27CC <- EU 003E27AC (Ghidra, non-matching)
 // PARAM param_5 Stack[0x0]:4 float *
@@ -95,9 +96,9 @@ undefined4 func_003E27CC(float *param_1,float *param_2,float *param_3,float *par
     fVar3 = DAT_003e2ae0;
     iVar1 = DAT_003e2adc;
     param_1[0x17] = fVar4 * fparam_1;
-    if (*(char *)(iVar1 + 0x84) == '\0') {
-      fVar13 = *(float *)(iVar1 + 0x80);
-    }
+    (void)iVar1;   /* boot agent: shared page 0x1FF81000 (3D slider +0x80, 3D LED +0x84) does not
+                      exist natively; native/sdk/system.c albw_3d_slider() = the slider value */
+    fVar13 = albw_3d_slider(fVar13);
     fVar13 = fVar13 * fVar3 * fVar4 * fparam_1;
     param_1[0x17] = fVar13;
     local_80 = (fVar13 * param_1[4]) / fparam_0 + *param_1;
