@@ -149,8 +149,14 @@ def main():
             if r:  # string/data in the data sections: same address in USA and EU
                 out += ["    .globl %s" % sym, "    .set %s, %s" % (sym, r)]
             elif TEXT <= addr < text_end and sym[0] in "su":  # string placed among the code
-                end = code.index(b"\0", addr - TEXT)
-                raw = code[addr - TEXT:end + 1]
+                if sym.startswith("u_"):  # UTF-16 string: up to the 16-bit NUL
+                    o = addr - TEXT
+                    while code[o:o + 2] != b"\0\0":
+                        o += 2
+                    raw = code[addr - TEXT:o + 2]
+                else:
+                    end = code.index(b"\0", addr - TEXT)
+                    raw = code[addr - TEXT:end + 1]
                 out += ["    .section .rodata.albw_str,\"a\"", "    .globl %s" % sym, "%s:" % sym,
                         "    .byte " + ",".join(str(b) for b in raw)]
             else:

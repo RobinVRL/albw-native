@@ -155,3 +155,24 @@ void func_00104560(const uint8_t *info) {
     runtime_fatal("nn::err::ThrowFatalErr (err:f) type %u: %08X %08X %08X %08X %08X %08X", info[0],
                   w[0], w[1], w[2], w[3], w[4], w[5]);
 }
+
+/* USA 001006FC (EU 001006FC) the C library vswprintf(wchar16 *buf, size_t n, const wchar16
+ * *fmt, va_list args) -> length, or -1 if it did not fit (C semantics; 004994FC clamps).
+ * wchar_t is 16 bits; %s takes a narrow char* (C standard; the game's wide paths are built
+ * as L"%s:%s" from narrow SafeStrings, e.g. 00499AF0). `args` is the word array described
+ * at 0010013C. The Thumb decompilation jumps to raw Thumb addresses. Native: the format is
+ * narrowed (all format characters are ASCII), formatted by 0010013C, and widened byte-wise
+ * (C locale). %ls is not supported (not seen). Confidence: high (for ASCII formats). */
+int32_t func_001006FC(uint16_t *buf, uint32_t n, const uint16_t *fmt, void *args) {
+    char nfmt[512];
+    uint32_t i = 0;
+    for (; fmt[i] && i < sizeof nfmt - 1; i++) nfmt[i] = (char)(fmt[i] < 0x100 ? fmt[i] : '?');
+    nfmt[i] = 0;
+    char out[2048];
+    int32_t len = func_0010013C(out, sizeof out, nfmt, args);
+    if (n == 0) return -1;
+    uint32_t w = 0;
+    for (; w < n - 1 && w < (uint32_t)len && w < sizeof out - 1; w++) buf[w] = (uint8_t)out[w];
+    buf[w] = 0;
+    return (uint32_t)len >= n ? -1 : len;
+}
