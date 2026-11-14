@@ -78,6 +78,39 @@ def init_tables(code, rd, fn_of):
     return ctors, inits
 
 
+def _pr(b):
+    return 0x20 <= b < 0x7F
+
+
+def text_words(ws):
+    """Words that are string text, never pointers. UTF-16 text such as u"$coin:/gamecoin.dat"
+    has words like 0x006F0063 ("co") that fall into the data range and were relocated, which
+    corrupted the string. A word counts as text when it looks like text (UTF-16: both units
+    0x00xx printable/NUL with at least one printable, next to another such word; narrow: all 4
+    bytes printable/NUL with the first printable, next to a word of 4 printable characters).
+    Pointer tables (e.g. 0x00694518, 0x0069451C...) are not text by these rules."""
+    def u16(w):
+        if w & 0xFF00FF00:
+            return False
+        a, b = w & 0xFF, (w >> 16) & 0xFF
+        return (_pr(a) or a == 0) and (_pr(b) or b == 0) and (_pr(a) or _pr(b))
+    def narrow(w):
+        bs = [(w >> (8 * i)) & 0xFF for i in range(4)]
+        return _pr(bs[0]) and all(_pr(x) or x == 0 for x in bs)
+    def full(w):  # four printable characters: certainly inside a narrow string
+        return all(_pr((w >> (8 * i)) & 0xFF) for i in range(4))
+    n = len(ws)
+    out = [False] * n
+    k = [u16(w) for w in ws]
+    f = [full(w) for w in ws]
+    for i in range(n):
+        if k[i] and ((i > 0 and k[i - 1]) or (i + 1 < n and k[i + 1])):
+            out[i] = True
+        elif narrow(ws[i]) and ((i > 0 and f[i - 1]) or (i + 1 < n and f[i + 1])):
+            out[i] = True
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--code", required=True)
@@ -120,9 +153,12 @@ def main():
     for name, base, size, sec in SECTIONS:
         if name == "data":
             out += ["    .section .data.albw,\"aw\"", "    .p2align 4", "    .globl albw_data", "albw_data:"]
+        n = (size - size % 4) // 4
+        ws = [rd(base + 4 * i) for i in range(n)]
+        text = text_words(ws)
         for off in range(0, size - size % 4, 4):
-            w = rd(base + off)
-            s = word(base + off, w)
+            w = ws[off // 4]
+            s = ".long 0x%08X" % w if text[off // 4] else word(base + off, w)
             nptr += not s.startswith(".long 0x")
             out.append("    " + s)
         for off in range(size - size % 4, size):
