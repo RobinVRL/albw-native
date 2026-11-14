@@ -99,6 +99,13 @@ def summarize_fixed(usa):
             # summarize drops a push's reads (armcc pushes r3 alone only to keep sp 8-aligned);
             # a varargs-style spill of argument registers is a read for the upper bound
             PUSHREADS[a] = frozenset("r%d" % k for k in range(4) if w & (1 << k))
+        elif (w & 0x0E100000) == 0x08100000 and ((w >> 16) & 15) != 13:  # ldm rN(!), {list}
+            # the base register is always read first, even when it is also loaded
+            # (`ldm r1, {r1, r2}` reads r1; capstone reports it as written only)
+            base = "r%d" % ((w >> 16) & 15)
+            if base in L.ARGSET:
+                rd_ = rd_ | {base}
+                insns[a] = (kind, cond, rd_, wr_, t, callee, cc, flags)
         elif (w & 0x0FA000F0) == 0x00A00090:  # umlal / smlal
             rd_ = rd_ | ({"r%d" % ((w >> 16) & 15), "r%d" % ((w >> 12) & 15)} & L.ARGSET)
             insns[a] = (kind, cond, rd_, wr_, t, callee, cc, flags)
