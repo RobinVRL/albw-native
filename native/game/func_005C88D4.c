@@ -187,7 +187,7 @@ extern uint32_t data_00711CA0;
 extern uint32_t data_00711CB0;
 extern uint32_t data_00711CC0;
 extern uint32_t data_0079654C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007111B0[1] = {
     "State_Wait",
@@ -921,5 +921,5 @@ void func_005C88D4(void) {
     data_0071119C = 0xFFFFFFFFu;
     data_007111A0 = 0x00000000u;
     data_007111A4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

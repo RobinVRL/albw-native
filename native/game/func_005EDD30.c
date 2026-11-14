@@ -9,7 +9,7 @@ extern uint32_t data_00714DD4;
 extern uint32_t data_00714DD8;
 extern uint32_t data_00714DDC;
 extern uint32_t data_00714DE0;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714DE0[1] = {
     "AudioSystem",
@@ -28,5 +28,5 @@ void func_005EDD30(void) {
     data_00714DD4 = 0xFFFFFFFFu;
     data_00714DD8 = 0x00000000u;
     data_00714DDC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714DE0);
 }

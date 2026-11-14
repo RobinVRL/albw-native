@@ -184,7 +184,7 @@ extern uint32_t data_00710C50;
 extern uint32_t data_00710C68;
 extern uint32_t data_00710C80;
 extern uint32_t data_00710C98;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0070FC28[2] = {
     "???",
@@ -904,5 +904,5 @@ void func_005C7318(void) {
     data_0070FC1C = 0xFFFFFFFFu;
     data_0070FC20 = 0x00000000u;
     data_0070FC24 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

@@ -13,7 +13,7 @@ extern uint32_t data_00715374;
 extern uint32_t data_00725974;
 extern uint32_t data_0072597C;
 extern uint32_t data_00725980;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00725974[1] = {
     "",
@@ -34,5 +34,5 @@ void func_005CB7A0(void) {
     data_00715374 = 0x00000000u;
     data_0072597C = (uintptr_t)&data_006F599C;
     data_00725980 = (uintptr_t)&data_006A8B52;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_0072597C);
 }

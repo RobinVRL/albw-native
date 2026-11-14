@@ -10,7 +10,7 @@ extern uint32_t data_007138E8;
 extern uint32_t data_007138EC;
 extern uint32_t data_007138F0;
 extern uint32_t data_0079C324;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007138F0[1] = {
     "Gm_AreaMapArrow",
@@ -44,5 +44,5 @@ void func_005FB9A0(void) {
     data_007138E4 = 0xFFFFFFFFu;
     data_007138E8 = 0x00000000u;
     data_007138EC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

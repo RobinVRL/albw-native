@@ -9,7 +9,7 @@ extern uint32_t data_007134CC;
 extern uint32_t data_007134D0;
 extern uint32_t data_007134D4;
 extern uint32_t data_007134D8;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007134D8[1] = {
     "Gm_DungeonIconB",
@@ -28,5 +28,5 @@ void func_005EAC88(void) {
     data_007134CC = 0xFFFFFFFFu;
     data_007134D0 = 0x00000000u;
     data_007134D4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007134D8);
 }

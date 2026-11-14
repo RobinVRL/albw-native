@@ -10,7 +10,7 @@ extern uint32_t data_00713E20;
 extern uint32_t data_00713E24;
 extern uint32_t data_00713E28;
 extern uint32_t data_0079C6BC;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713E28[3] = {
     "Gm_PauseT",
@@ -42,5 +42,5 @@ void func_005EB01C(void) {
     data_00713E1C = 0xFFFFFFFFu;
     data_00713E20 = 0x00000000u;
     data_00713E24 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

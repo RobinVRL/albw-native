@@ -9,8 +9,9 @@ extern uint32_t data_00713ADC;
 extern uint32_t data_00713AE0;
 extern uint32_t data_00713AE4;
 extern uint32_t data_00713AE8;
+extern uint32_t data_00713B08;
 extern uint32_t data_0079C49C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713AE8[5] = {
     "Gm_GiriGiriResultT",
@@ -46,5 +47,5 @@ void func_005FD578(void) {
     data_00713ADC = 0xFFFFFFFFu;
     data_00713AE0 = 0x00000000u;
     data_00713AE4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713B08);
 }

@@ -4,9 +4,10 @@
 #include "sead.h"
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
-void func_005902C0(void);
+extern uint32_t data_007256F4;
+void func_005902C0(uintptr_t);
 
 
 void func_005E4A50(void) {
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007256F4);
 }

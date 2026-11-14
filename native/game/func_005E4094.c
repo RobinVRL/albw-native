@@ -9,7 +9,8 @@ extern uint32_t data_0071364C;
 extern uint32_t data_00713650;
 extern uint32_t data_00713654;
 extern uint32_t data_00713658;
-void func_005902C0(void);
+extern uint32_t data_00713668;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713658[3] = {
     "Gm_MainSystemCollectTutorialT",
@@ -30,5 +31,5 @@ void func_005E4094(void) {
     data_0071364C = 0xFFFFFFFFu;
     data_00713650 = 0x00000000u;
     data_00713654 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713668);
 }

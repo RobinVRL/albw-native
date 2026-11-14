@@ -9,7 +9,7 @@ extern uint32_t data_00713D44;
 extern uint32_t data_00713D48;
 extern uint32_t data_00713D4C;
 extern uint32_t data_00713D50;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713D50[1] = {
     "Cm_LoadIconT",
@@ -28,5 +28,5 @@ void func_005EAE58(void) {
     data_00713D44 = 0xFFFFFFFFu;
     data_00713D48 = 0x00000000u;
     data_00713D4C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713D50);
 }

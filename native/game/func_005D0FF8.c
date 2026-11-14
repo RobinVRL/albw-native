@@ -10,7 +10,7 @@ extern uint32_t data_00707C74;
 extern uint32_t data_00707C78;
 extern uint32_t data_00707C7C;
 extern uint32_t data_00729028;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00706E78[447] = {
     "BlockColor",
@@ -1316,5 +1316,5 @@ void func_005D0FF8(void) {
     data_00707C74 = 0xFFFFFFFFu;
     data_00707C78 = 0x00000000u;
     data_00707C7C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

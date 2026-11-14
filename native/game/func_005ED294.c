@@ -10,7 +10,7 @@ extern uint32_t data_00713948;
 extern uint32_t data_0071394C;
 extern uint32_t data_00713950;
 extern uint32_t data_0079C3C4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713950[1] = {
     "Gm_Pin",
@@ -36,5 +36,5 @@ void func_005ED294(void) {
     data_00713944 = 0xFFFFFFFFu;
     data_00713948 = 0x00000000u;
     data_0071394C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713950);
 }

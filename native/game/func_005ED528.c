@@ -9,7 +9,8 @@ extern uint32_t data_00713FBC;
 extern uint32_t data_00713FC0;
 extern uint32_t data_00713FC4;
 extern uint32_t data_00713FC8;
-void func_005902C0(void);
+extern uint32_t data_00713FD0;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713FC8[2] = {
     "Cm_SelectFrame",
@@ -29,5 +30,5 @@ void func_005ED528(void) {
     data_00713FBC = 0xFFFFFFFFu;
     data_00713FC0 = 0x00000000u;
     data_00713FC4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713FD0);
 }

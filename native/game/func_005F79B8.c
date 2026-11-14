@@ -9,7 +9,8 @@ extern uint32_t data_00713844;
 extern uint32_t data_00713848;
 extern uint32_t data_0071384C;
 extern uint32_t data_00713850;
-void func_005902C0(void);
+extern uint32_t data_00713858;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713850[2] = {
     "Gm_FloorNumberT",
@@ -29,5 +30,5 @@ void func_005F79B8(void) {
     data_00713844 = 0xFFFFFFFFu;
     data_00713848 = 0x00000000u;
     data_0071384C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713858);
 }

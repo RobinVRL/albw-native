@@ -9,7 +9,7 @@ extern uint32_t data_00713B94;
 extern uint32_t data_00713B98;
 extern uint32_t data_00713B9C;
 extern uint32_t data_00713BA0;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713BA0[1] = {
     "Cm_HomeBtnB",
@@ -28,5 +28,5 @@ void func_005E4354(void) {
     data_00713B94 = 0xFFFFFFFFu;
     data_00713B98 = 0x00000000u;
     data_00713B9C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713BA0);
 }

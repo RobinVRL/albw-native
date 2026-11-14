@@ -10,7 +10,7 @@ extern uint32_t data_00713E68;
 extern uint32_t data_00713E6C;
 extern uint32_t data_00713E70;
 extern uint32_t data_0079C71C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713E70[3] = {
     "Gm_SRCResultT",
@@ -46,5 +46,5 @@ void func_005EB218(void) {
     data_00713E64 = 0xFFFFFFFFu;
     data_00713E68 = 0x00000000u;
     data_00713E6C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

@@ -10,7 +10,7 @@ extern uint32_t data_00713AC0;
 extern uint32_t data_00713AC4;
 extern uint32_t data_00713AC8;
 extern uint32_t data_0079C484;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713AC8[1] = {
     "Gm_DigitalTimerT",
@@ -35,5 +35,5 @@ void func_005FBB54(void) {
     data_00713ABC = 0xFFFFFFFFu;
     data_00713AC0 = 0x00000000u;
     data_00713AC4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

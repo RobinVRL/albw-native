@@ -9,7 +9,8 @@ extern uint32_t data_00714D5C;
 extern uint32_t data_00714D60;
 extern uint32_t data_00714D64;
 extern uint32_t data_00714D68;
-void func_005902C0(void);
+extern uint32_t data_00714D90;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714D68[6] = {
     "ReverbParam(NW)",
@@ -33,5 +34,5 @@ void func_005EFDE4(void) {
     data_00714D5C = 0xFFFFFFFFu;
     data_00714D60 = 0x00000000u;
     data_00714D64 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714D90);
 }

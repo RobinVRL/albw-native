@@ -10,7 +10,7 @@ extern uint32_t data_00714580;
 extern uint32_t data_00714584;
 extern uint32_t data_00714588;
 extern uint32_t data_0079C964;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714588[1] = {
     "L_Kimo_00",
@@ -40,5 +40,5 @@ void func_005D09B4(void) {
     data_0071457C = 0xFFFFFFFFu;
     data_00714580 = 0x00000000u;
     data_00714584 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

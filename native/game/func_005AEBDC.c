@@ -21,10 +21,10 @@ extern uint32_t data_0079E080;
 extern uint32_t data_0079E084;
 extern uint32_t data_0079E088;
 extern uint32_t data_0079E08C;
+uintptr_t func_0010B830(uintptr_t);
 void func_0010B3EC(uintptr_t, uintptr_t, uintptr_t);
-void func_0010B830(uintptr_t);
 void func_0049BA90(uintptr_t);
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 
 void func_005AEBDC(void) {
@@ -43,6 +43,6 @@ void func_005AEBDC(void) {
     data_0079E084 = 0x00000000u;
     data_0079E088 = 0x00000000u;
     func_0010B3EC((uintptr_t)&data_0079E080, 0x00000004u, (uintptr_t)&data_0079E08C);
-    func_0010B830((uintptr_t)&data_0079E064);
-    func_005902C0();
+    uintptr_t ret3 = func_0010B830((uintptr_t)&data_0079E064);
+    func_005902C0(ret3);
 }

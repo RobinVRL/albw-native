@@ -9,7 +9,8 @@ extern uint32_t data_007135B4;
 extern uint32_t data_007135B8;
 extern uint32_t data_007135BC;
 extern uint32_t data_007135C0;
-void func_005902C0(void);
+extern uint32_t data_007135C8;
+void func_005902C0(uintptr_t);
 
 static const char *const names_007135C0[2] = {
     "Gm_WarpBalloon",
@@ -29,5 +30,5 @@ void func_005EACEC(void) {
     data_007135B4 = 0xFFFFFFFFu;
     data_007135B8 = 0x00000000u;
     data_007135BC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007135C8);
 }

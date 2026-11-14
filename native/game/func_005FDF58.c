@@ -10,7 +10,7 @@ extern uint32_t data_007136C0;
 extern uint32_t data_007136C4;
 extern uint32_t data_007136C8;
 extern uint32_t data_0079BF1C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007136C8[1] = {
     "Gm_SRCResultTimeUpT",
@@ -56,5 +56,5 @@ void func_005FDF58(void) {
     data_007136BC = 0xFFFFFFFFu;
     data_007136C0 = 0x00000000u;
     data_007136C4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

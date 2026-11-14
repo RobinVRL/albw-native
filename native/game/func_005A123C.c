@@ -9,7 +9,7 @@ extern uint32_t data_0070B8A4;
 extern uint32_t data_0070B8A8;
 extern uint32_t data_0070B8AC;
 extern uint32_t data_0074F5C0;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0074F5C0[17] = {
     "Lyt_Boot",
@@ -44,5 +44,5 @@ void func_005A123C(void) {
     data_0070B8A4 = 0xFFFFFFFFu;
     data_0070B8A8 = 0x00000000u;
     data_0070B8AC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

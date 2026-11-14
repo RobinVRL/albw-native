@@ -10,7 +10,7 @@ extern uint32_t data_00713AA8;
 extern uint32_t data_00713AAC;
 extern uint32_t data_00713AB0;
 extern uint32_t data_0079C444;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713AB0[1] = {
     "Gm_AnalogTimerT",
@@ -40,5 +40,5 @@ void func_005FA5F0(void) {
     data_00713AA4 = 0xFFFFFFFFu;
     data_00713AA8 = 0x00000000u;
     data_00713AAC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

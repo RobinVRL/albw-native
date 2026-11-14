@@ -11,7 +11,7 @@ extern uint32_t data_00714944;
 extern uint32_t data_0079CC80;
 extern uint32_t data_0079CC8C;
 void func_0010DEB0(uintptr_t);
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 
 void func_005CB510(void) {
@@ -23,5 +23,5 @@ void func_005CB510(void) {
     func_0010DEB0((uintptr_t)&data_0079CC80);
     data_0079CC8C = 0x00000000u;
     func_0010DEB0((uintptr_t)&data_0079CC8C);
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_0079CC8C);
 }

@@ -9,7 +9,8 @@ extern uint32_t data_007134EC;
 extern uint32_t data_007134F0;
 extern uint32_t data_007134F4;
 extern uint32_t data_007134F8;
-void func_005902C0(void);
+extern uint32_t data_00713520;
+void func_005902C0(uintptr_t);
 
 static const char *const names_007134F8[6] = {
     "Gm_MainSystemDungeonMapB",
@@ -33,5 +34,5 @@ void func_005E394C(void) {
     data_007134EC = 0xFFFFFFFFu;
     data_007134F0 = 0x00000000u;
     data_007134F4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713520);
 }

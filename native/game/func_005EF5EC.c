@@ -9,7 +9,8 @@ extern uint32_t data_00713A3C;
 extern uint32_t data_00713A40;
 extern uint32_t data_00713A44;
 extern uint32_t data_00713A48;
-void func_005902C0(void);
+extern uint32_t data_00713A98;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713A48[11] = {
     "Mn_FileSelectT",
@@ -38,5 +39,5 @@ void func_005EF5EC(void) {
     data_00713A3C = 0xFFFFFFFFu;
     data_00713A40 = 0x00000000u;
     data_00713A44 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713A98);
 }

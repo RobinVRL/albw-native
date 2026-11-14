@@ -10,7 +10,7 @@ extern uint32_t data_0070B668;
 extern uint32_t data_0070B66C;
 extern uint32_t data_0070B670;
 extern uint32_t data_0074F064;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0070B670[1] = {
     "CrossBattleResult",
@@ -68,5 +68,5 @@ void func_005E5D34(void) {
     data_0070B664 = 0xFFFFFFFFu;
     data_0070B668 = 0x00000000u;
     data_0070B66C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_0070B670);
 }

@@ -9,7 +9,7 @@ extern uint32_t data_0071655C;
 extern uint32_t data_00716560;
 extern uint32_t data_00716564;
 extern uint32_t data_00716568;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00716568[1] = {
     "SoundHeap",
@@ -28,5 +28,5 @@ void func_005F698C(void) {
     data_0071655C = 0xFFFFFFFFu;
     data_00716560 = 0x00000000u;
     data_00716564 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00716568);
 }

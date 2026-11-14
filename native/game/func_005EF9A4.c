@@ -9,7 +9,7 @@ extern uint32_t data_007141FC;
 extern uint32_t data_00714200;
 extern uint32_t data_00714204;
 extern uint32_t data_00714208;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714208[1] = {
     "Cm_Wipe",
@@ -28,5 +28,5 @@ void func_005EF9A4(void) {
     data_007141FC = 0xFFFFFFFFu;
     data_00714200 = 0x00000000u;
     data_00714204 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714208);
 }

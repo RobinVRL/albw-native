@@ -9,8 +9,9 @@ extern uint32_t data_00714004;
 extern uint32_t data_00714008;
 extern uint32_t data_0071400C;
 extern uint32_t data_00714010;
+extern uint32_t data_00714018;
 extern uint32_t data_0079C77C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714010[2] = {
     "Gm_SellKimoT",
@@ -46,5 +47,5 @@ void func_005ED5C8(void) {
     data_00714004 = 0xFFFFFFFFu;
     data_00714008 = 0x00000000u;
     data_0071400C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714018);
 }

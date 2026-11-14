@@ -5,11 +5,11 @@
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_0079D15C;
-void func_0010C4E4(uintptr_t);
-void func_005902C0(void);
+uintptr_t func_0010C4E4(uintptr_t);
+void func_005902C0(uintptr_t);
 
 
 void func_005EDF1C(void) {
-    func_0010C4E4((uintptr_t)&data_0079D15C);
-    func_005902C0();
+    uintptr_t ret0 = func_0010C4E4((uintptr_t)&data_0079D15C);
+    func_005902C0(ret0);
 }

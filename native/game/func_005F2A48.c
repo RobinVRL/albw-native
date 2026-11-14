@@ -10,7 +10,7 @@ extern uint32_t data_00713B68;
 extern uint32_t data_00713B6C;
 extern uint32_t data_00713B70;
 extern uint32_t data_0079C554;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713B70[1] = {
     "Gm_StadiumB",
@@ -36,5 +36,5 @@ void func_005F2A48(void) {
     data_00713B64 = 0xFFFFFFFFu;
     data_00713B68 = 0x00000000u;
     data_00713B6C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713B70);
 }

@@ -10,7 +10,7 @@ extern uint32_t data_00713E50;
 extern uint32_t data_00713E54;
 extern uint32_t data_00713E58;
 extern uint32_t data_0079C6FC;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713E58[1] = {
     "Ed_PlayRecordT",
@@ -36,5 +36,5 @@ void func_005F6790(void) {
     data_00713E4C = 0xFFFFFFFFu;
     data_00713E50 = 0x00000000u;
     data_00713E54 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

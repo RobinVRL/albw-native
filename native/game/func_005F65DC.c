@@ -9,7 +9,8 @@ extern uint32_t data_00713804;
 extern uint32_t data_00713808;
 extern uint32_t data_0071380C;
 extern uint32_t data_00713810;
-void func_005902C0(void);
+extern uint32_t data_00713818;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713810[2] = {
     "Gm_DemoAButton",
@@ -29,5 +30,5 @@ void func_005F65DC(void) {
     data_00713804 = 0xFFFFFFFFu;
     data_00713808 = 0x00000000u;
     data_0071380C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713818);
 }

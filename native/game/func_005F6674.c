@@ -10,7 +10,7 @@ extern uint32_t data_00713930;
 extern uint32_t data_00713934;
 extern uint32_t data_00713938;
 extern uint32_t data_0079C3A4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713938[1] = {
     "Gm_PinMenuWindow",
@@ -36,5 +36,5 @@ void func_005F6674(void) {
     data_0071392C = 0xFFFFFFFFu;
     data_00713930 = 0x00000000u;
     data_00713934 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713938);
 }

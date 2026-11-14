@@ -9,7 +9,7 @@ extern uint32_t data_0070A50C;
 extern uint32_t data_0070A510;
 extern uint32_t data_0070A514;
 extern uint32_t data_00735DE4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00735DE4[10] = {
     "Option_0",
@@ -37,5 +37,5 @@ void func_0059A5F8(void) {
     data_0070A50C = 0xFFFFFFFFu;
     data_0070A510 = 0x00000000u;
     data_0070A514 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

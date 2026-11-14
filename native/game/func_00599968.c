@@ -20,7 +20,7 @@ extern uint32_t data_00770C04;
 extern uint32_t data_00770C08;
 extern uint32_t data_00770C0C;
 extern uint32_t data_00770C10;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0070D9A8[1] = {
     "wait",
@@ -65,5 +65,5 @@ void func_00599968(void) {
     data_00770C08 = 0x000001ACu;
     data_00770C0C = 0x000001C2u;
     data_00770C10 = 0x000001A9u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

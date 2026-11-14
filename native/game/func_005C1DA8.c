@@ -20,7 +20,7 @@ extern uint32_t data_007130F4;
 extern uint32_t data_00713118;
 extern uint32_t data_0071313C;
 extern uint32_t data_00713160;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00712FD4[2] = {
     "Gully",
@@ -95,5 +95,5 @@ void func_005C1DA8(void) {
     data_00712FB4 = 0xFFFFFFFFu;
     data_00712FB8 = 0x00000000u;
     data_00712FBC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

@@ -9,7 +9,7 @@ extern uint32_t data_00714D34;
 extern uint32_t data_00714D38;
 extern uint32_t data_00714D3C;
 extern uint32_t data_00714D40;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714D40[1] = {
     "Audio3DMgr",
@@ -28,5 +28,5 @@ void func_005EB7F4(void) {
     data_00714D34 = 0xFFFFFFFFu;
     data_00714D38 = 0x00000000u;
     data_00714D3C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714D40);
 }

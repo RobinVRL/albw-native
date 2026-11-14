@@ -10,7 +10,7 @@ extern uint32_t data_0070FC00;
 extern uint32_t data_0070FC04;
 extern uint32_t data_0070FC08;
 extern uint32_t data_00796068;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0070FC08[2] = {
     "stomach_jnt",
@@ -35,5 +35,5 @@ void func_005C723C(void) {
     data_0070FBFC = 0xFFFFFFFFu;
     data_0070FC00 = 0x00000000u;
     data_0070FC04 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

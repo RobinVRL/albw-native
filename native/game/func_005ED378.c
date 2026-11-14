@@ -10,7 +10,7 @@ extern uint32_t data_00713B18;
 extern uint32_t data_00713B1C;
 extern uint32_t data_00713B20;
 extern uint32_t data_0079C4EC;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713B20[1] = {
     "Gm_MGCommonText",
@@ -41,5 +41,5 @@ void func_005ED378(void) {
     data_00713B14 = 0xFFFFFFFFu;
     data_00713B18 = 0x00000000u;
     data_00713B1C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

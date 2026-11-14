@@ -9,7 +9,7 @@ extern uint32_t data_00714524;
 extern uint32_t data_00714528;
 extern uint32_t data_0071452C;
 extern uint32_t data_0079C8DC;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0079C8DC[12] = {
     "Life0-1",
@@ -39,5 +39,5 @@ void func_005B90D8(void) {
     data_00714524 = 0xFFFFFFFFu;
     data_00714528 = 0x00000000u;
     data_0071452C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

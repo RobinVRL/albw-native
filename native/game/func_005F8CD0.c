@@ -10,7 +10,7 @@ extern uint32_t data_00714040;
 extern uint32_t data_00714044;
 extern uint32_t data_00714048;
 extern uint32_t data_0079C7E4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714048[1] = {
     "Gm_SRCShadowLinkInfoB",
@@ -43,5 +43,5 @@ void func_005F8CD0(void) {
     data_0071403C = 0xFFFFFFFFu;
     data_00714040 = 0x00000000u;
     data_00714044 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

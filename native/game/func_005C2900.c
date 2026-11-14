@@ -5,11 +5,12 @@
 
 extern uint32_t data_006F5988;  /* sead::SafeString vtable */
 extern uint32_t data_00706D40;
+extern uint32_t data_00706D88;
 extern uint32_t data_00706D90;
 extern uint32_t data_00706D94;
 extern uint32_t data_00706D98;
 extern uint32_t data_00706D9C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00706D40[10] = {
     "ac_Break",
@@ -37,5 +38,5 @@ void func_005C2900(void) {
     data_00706D94 = 0xFFFFFFFFu;
     data_00706D98 = 0x00000000u;
     data_00706D9C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00706D88);
 }

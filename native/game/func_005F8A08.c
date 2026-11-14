@@ -10,7 +10,7 @@ extern uint32_t data_00713720;
 extern uint32_t data_00713724;
 extern uint32_t data_00713728;
 extern uint32_t data_0079C06C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713728[1] = {
     "Gm_SRCStartT",
@@ -53,5 +53,5 @@ void func_005F8A08(void) {
     data_0071371C = 0xFFFFFFFFu;
     data_00713720 = 0x00000000u;
     data_00713724 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

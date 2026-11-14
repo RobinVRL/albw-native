@@ -10,7 +10,7 @@ extern uint32_t data_00713750;
 extern uint32_t data_00713754;
 extern uint32_t data_00713758;
 extern uint32_t data_0079C144;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713758[2] = {
     "Gm_SRCRecordListT",
@@ -39,5 +39,5 @@ void func_005FA48C(void) {
     data_0071374C = 0xFFFFFFFFu;
     data_00713750 = 0x00000000u;
     data_00713754 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

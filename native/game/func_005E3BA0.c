@@ -10,7 +10,7 @@ extern uint32_t data_00713600;
 extern uint32_t data_00713604;
 extern uint32_t data_00713608;
 extern uint32_t data_0079BC8C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713608[8] = {
     "Gm_MainSystemCollectB",
@@ -69,5 +69,5 @@ void func_005E3BA0(void) {
     data_007135FC = 0xFFFFFFFFu;
     data_00713600 = 0x00000000u;
     data_00713604 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

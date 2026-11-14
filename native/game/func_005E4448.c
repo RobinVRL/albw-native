@@ -9,8 +9,9 @@ extern uint32_t data_007141C4;
 extern uint32_t data_007141C8;
 extern uint32_t data_007141CC;
 extern uint32_t data_007141D0;
+extern uint32_t data_007141F0;
 extern uint32_t data_0079C85C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007141D0[5] = {
     "Gm_WarpChoices",
@@ -40,5 +41,5 @@ void func_005E4448(void) {
     data_007141C4 = 0xFFFFFFFFu;
     data_007141C8 = 0x00000000u;
     data_007141CC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007141F0);
 }

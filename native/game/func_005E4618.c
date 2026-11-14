@@ -9,8 +9,9 @@ extern uint32_t data_0071453C;
 extern uint32_t data_00714540;
 extern uint32_t data_00714544;
 extern uint32_t data_00714548;
+extern uint32_t data_00714558;
 extern uint32_t data_0079C93C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714548[3] = {
     "CrossRecordList",
@@ -39,5 +40,5 @@ void func_005E4618(void) {
     data_0071453C = 0xFFFFFFFFu;
     data_00714540 = 0x00000000u;
     data_00714544 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714558);
 }

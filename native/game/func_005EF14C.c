@@ -9,8 +9,9 @@ extern uint32_t data_0071341C;
 extern uint32_t data_00713420;
 extern uint32_t data_00713424;
 extern uint32_t data_00713428;
+extern uint32_t data_00713438;
 extern uint32_t data_0079BA28;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713428[3] = {
     "L_NumKinsuta_00",
@@ -38,5 +39,5 @@ void func_005EF14C(void) {
     data_0071341C = 0xFFFFFFFFu;
     data_00713420 = 0x00000000u;
     data_00713424 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713438);
 }

@@ -9,7 +9,7 @@ extern uint32_t data_00709E54;
 extern uint32_t data_00709E58;
 extern uint32_t data_00709E5C;
 extern uint32_t data_00735244;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00735244[36] = {
     "\202\310\202\265",
@@ -63,5 +63,5 @@ void func_005DE4E8(void) {
     data_00709E54 = 0xFFFFFFFFu;
     data_00709E58 = 0x00000000u;
     data_00709E5C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

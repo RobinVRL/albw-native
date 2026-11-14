@@ -10,7 +10,7 @@ extern uint32_t data_007136A8;
 extern uint32_t data_007136AC;
 extern uint32_t data_007136B0;
 extern uint32_t data_0079BE24;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007136B0[1] = {
     "Gm_SRCMainSystemBaseB",
@@ -63,5 +63,5 @@ void func_005F24F0(void) {
     data_007136A4 = 0xFFFFFFFFu;
     data_007136A8 = 0x00000000u;
     data_007136AC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

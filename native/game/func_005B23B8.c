@@ -9,7 +9,7 @@ extern uint32_t data_0070B70C;
 extern uint32_t data_0070B710;
 extern uint32_t data_0070B714;
 extern uint32_t data_0074F1E4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0074F1E4[97] = {
     "none",
@@ -124,5 +124,5 @@ void func_005B23B8(void) {
     data_0070B70C = 0xFFFFFFFFu;
     data_0070B710 = 0x00000000u;
     data_0070B714 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

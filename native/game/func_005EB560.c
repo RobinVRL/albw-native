@@ -45,7 +45,7 @@ void func_00100118(uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_0010DEB0(uintptr_t);
 void func_0010FC88(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t);
 void func_003C8E3C(void);
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 
 void func_005EB560(void) {
@@ -96,5 +96,5 @@ void func_005EB560(void) {
     data_0079CE84 = 0xFFFFFFFFu;
     func_0010FC88((uintptr_t)&data_0079CE4C, 0x00000008u, (uintptr_t)&data_007048C0, 0x00000080u, 0x00000004u, 0x00000000u);
     func_0010DEB0((uintptr_t)&data_0079CE7C);
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_0079CE4C);
 }

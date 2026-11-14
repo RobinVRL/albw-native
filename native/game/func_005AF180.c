@@ -9,7 +9,8 @@ extern uint32_t data_00709EFC;
 extern uint32_t data_00709F00;
 extern uint32_t data_00709F04;
 extern uint32_t data_00709F08;
-void func_005902C0(void);
+extern uint32_t data_00709F18;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00709F08[3] = {
     "World/Cross",
@@ -30,5 +31,5 @@ void func_005AF180(void) {
     data_00709EFC = 0xFFFFFFFFu;
     data_00709F00 = 0x00000000u;
     data_00709F04 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00709F18);
 }

@@ -9,7 +9,7 @@ extern uint32_t data_00713824;
 extern uint32_t data_00713828;
 extern uint32_t data_0071382C;
 extern uint32_t data_00713830;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713830[1] = {
     "Cm_SkipB",
@@ -28,5 +28,5 @@ void func_005C208C(void) {
     data_00713824 = 0xFFFFFFFFu;
     data_00713828 = 0x00000000u;
     data_0071382C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713830);
 }

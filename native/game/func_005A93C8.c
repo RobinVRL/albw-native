@@ -9,7 +9,8 @@ extern uint32_t data_00709E74;
 extern uint32_t data_00709E78;
 extern uint32_t data_00709E7C;
 extern uint32_t data_00709E80;
-void func_005902C0(void);
+extern uint32_t data_00709E90;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00709E80[3] = {
     "Common",
@@ -30,5 +31,5 @@ void func_005A93C8(void) {
     data_00709E74 = 0xFFFFFFFFu;
     data_00709E78 = 0x00000000u;
     data_00709E7C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00709E90);
 }

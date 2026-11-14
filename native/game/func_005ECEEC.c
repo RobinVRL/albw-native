@@ -10,7 +10,7 @@ extern uint32_t data_00713690;
 extern uint32_t data_00713694;
 extern uint32_t data_00713698;
 extern uint32_t data_0079BD94;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713698[1] = {
     "Gm_TimeUpT",
@@ -50,5 +50,5 @@ void func_005ECEEC(void) {
     data_0071368C = 0xFFFFFFFFu;
     data_00713690 = 0x00000000u;
     data_00713694 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

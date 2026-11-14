@@ -9,7 +9,8 @@ extern uint32_t data_007145D4;
 extern uint32_t data_007145D8;
 extern uint32_t data_007145DC;
 extern uint32_t data_007145E0;
-void func_005902C0(void);
+extern uint32_t data_007145E8;
+void func_005902C0(uintptr_t);
 
 static const char *const names_007145E0[2] = {
     "cl_LhandA",
@@ -29,5 +30,5 @@ void func_005D0B68(void) {
     data_007145D4 = 0xFFFFFFFFu;
     data_007145D8 = 0x00000000u;
     data_007145DC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007145E8);
 }

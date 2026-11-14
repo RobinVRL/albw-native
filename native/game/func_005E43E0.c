@@ -9,7 +9,7 @@ extern uint32_t data_00713D2C;
 extern uint32_t data_00713D30;
 extern uint32_t data_00713D34;
 extern uint32_t data_00713D38;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713D38[1] = {
     "Gm_MaskKinstaBtn",
@@ -28,5 +28,5 @@ void func_005E43E0(void) {
     data_00713D2C = 0xFFFFFFFFu;
     data_00713D30 = 0x00000000u;
     data_00713D34 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713D38);
 }

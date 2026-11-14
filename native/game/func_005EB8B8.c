@@ -10,7 +10,7 @@ extern uint32_t data_00714E18;
 extern uint32_t data_00714E1C;
 extern uint32_t data_00714E20;
 extern uint32_t data_0079D780;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714E20[1] = {
     "AudioFxSocket",
@@ -34,5 +34,5 @@ void func_005EB8B8(void) {
     data_00714E14 = 0xFFFFFFFFu;
     data_00714E18 = 0x00000000u;
     data_00714E1C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

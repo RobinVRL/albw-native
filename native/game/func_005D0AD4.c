@@ -9,7 +9,7 @@ extern uint32_t data_007145C4;
 extern uint32_t data_007145C8;
 extern uint32_t data_007145CC;
 extern uint32_t data_0079C9A4;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0079C9A4[4] = {
     "InOut",
@@ -31,5 +31,5 @@ void func_005D0AD4(void) {
     data_007145C4 = 0xFFFFFFFFu;
     data_007145C8 = 0x00000000u;
     data_007145CC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

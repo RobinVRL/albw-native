@@ -9,7 +9,7 @@ extern uint32_t data_0071423C;
 extern uint32_t data_00714240;
 extern uint32_t data_00714244;
 extern uint32_t data_0079C89C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0079C89C[4] = {
     "N_ArrowT_00",
@@ -31,5 +31,5 @@ void func_005A7FF8(void) {
     data_0071423C = 0xFFFFFFFFu;
     data_00714240 = 0x00000000u;
     data_00714244 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

@@ -9,7 +9,7 @@ extern uint32_t data_007135D4;
 extern uint32_t data_007135D8;
 extern uint32_t data_007135DC;
 extern uint32_t data_007135E0;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007135E0[1] = {
     "Mn_LoadIconT",
@@ -28,5 +28,5 @@ void func_005ECE88(void) {
     data_007135D4 = 0xFFFFFFFFu;
     data_007135D8 = 0x00000000u;
     data_007135DC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007135E0);
 }

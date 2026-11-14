@@ -10,7 +10,7 @@ extern uint32_t data_00713E08;
 extern uint32_t data_00713E0C;
 extern uint32_t data_00713E10;
 extern uint32_t data_0079C69C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713E10[1] = {
     "Cm_ScreenB",
@@ -36,5 +36,5 @@ void func_005CB2B8(void) {
     data_00713E04 = 0xFFFFFFFFu;
     data_00713E08 = 0x00000000u;
     data_00713E0C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713E10);
 }

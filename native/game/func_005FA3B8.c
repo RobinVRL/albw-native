@@ -9,7 +9,7 @@ extern uint32_t data_007133D4;
 extern uint32_t data_007133D8;
 extern uint32_t data_007133DC;
 extern uint32_t data_0079B9D0;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_0079B9D0[7] = {
     "Loop",
@@ -34,5 +34,5 @@ void func_005FA3B8(void) {
     data_007133D4 = 0xFFFFFFFFu;
     data_007133D8 = 0x00000000u;
     data_007133DC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

@@ -9,8 +9,9 @@ extern uint32_t data_00713B44;
 extern uint32_t data_00713B48;
 extern uint32_t data_00713B4C;
 extern uint32_t data_00713B50;
+extern uint32_t data_00713B58;
 extern uint32_t data_0079C534;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713B50[2] = {
     "Gm_GameOverT",
@@ -37,5 +38,5 @@ void func_005F292C(void) {
     data_00713B44 = 0xFFFFFFFFu;
     data_00713B48 = 0x00000000u;
     data_00713B4C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713B58);
 }

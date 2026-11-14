@@ -9,7 +9,8 @@ extern uint32_t data_00714254;
 extern uint32_t data_00714258;
 extern uint32_t data_0071425C;
 extern uint32_t data_00714260;
-void func_005902C0(void);
+extern uint32_t data_007142A8;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714260[10] = {
     "cmn_fileselect_preparing",
@@ -37,5 +38,5 @@ void func_005D0708(void) {
     data_00714254 = 0xFFFFFFFFu;
     data_00714258 = 0x00000000u;
     data_0071425C = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007142A8);
 }

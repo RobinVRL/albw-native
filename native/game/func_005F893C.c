@@ -10,7 +10,7 @@ extern uint32_t data_00713678;
 extern uint32_t data_0071367C;
 extern uint32_t data_00713680;
 extern uint32_t data_0079BD7C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713680[1] = {
     "Gm_CongratulationWindowT",
@@ -35,5 +35,5 @@ void func_005F893C(void) {
     data_00713674 = 0xFFFFFFFFu;
     data_00713678 = 0x00000000u;
     data_0071367C = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

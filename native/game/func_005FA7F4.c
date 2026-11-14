@@ -9,7 +9,8 @@ extern uint32_t data_00709F4C;
 extern uint32_t data_00709F50;
 extern uint32_t data_00709F54;
 extern uint32_t data_00709F58;
-void func_005902C0(void);
+extern uint32_t data_00709F68;
+void func_005902C0(uintptr_t);
 
 static const char *const names_00709F58[3] = {
     "DefaultShadowLink",
@@ -30,5 +31,5 @@ void func_005FA7F4(void) {
     data_00709F4C = 0xFFFFFFFFu;
     data_00709F50 = 0x00000000u;
     data_00709F54 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00709F68);
 }

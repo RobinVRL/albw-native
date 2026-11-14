@@ -38,7 +38,7 @@ extern uint32_t data_0070A15C;
 extern uint32_t data_0070A16C;
 extern uint32_t data_0070A17C;
 extern uint32_t data_0070A18C;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00709FC0[1] = {
     "CrossBoard",
@@ -173,5 +173,5 @@ void func_005FA8CC(void) {
     data_00709FB4 = 0xFFFFFFFFu;
     data_00709FB8 = 0x00000000u;
     data_00709FBC = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

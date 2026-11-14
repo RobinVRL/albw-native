@@ -9,7 +9,7 @@ extern uint32_t data_00714DFC;
 extern uint32_t data_00714E00;
 extern uint32_t data_00714E04;
 extern uint32_t data_00714E08;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714E08[1] = {
     "AudioFxObject",
@@ -28,5 +28,5 @@ void func_005EB854(void) {
     data_00714DFC = 0xFFFFFFFFu;
     data_00714E00 = 0x00000000u;
     data_00714E04 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714E08);
 }

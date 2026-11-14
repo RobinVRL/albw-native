@@ -9,8 +9,9 @@ extern uint32_t data_007133F4;
 extern uint32_t data_007133F8;
 extern uint32_t data_007133FC;
 extern uint32_t data_00713400;
+extern uint32_t data_00713410;
 extern uint32_t data_0079BA08;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713400[3] = {
     "L_NumGameCoin_00",
@@ -38,5 +39,5 @@ void func_005F5C50(void) {
     data_007133F4 = 0xFFFFFFFFu;
     data_007133F8 = 0x00000000u;
     data_007133FC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00713410);
 }

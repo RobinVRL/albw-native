@@ -10,7 +10,7 @@ extern uint32_t data_007134A8;
 extern uint32_t data_007134AC;
 extern uint32_t data_007134B0;
 extern uint32_t data_0079BA74;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007134B0[1] = {
     "L_Num_00",
@@ -36,5 +36,5 @@ void func_005ECD74(void) {
     data_007134A4 = 0xFFFFFFFFu;
     data_007134A8 = 0x00000000u;
     data_007134AC = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_007134B0);
 }

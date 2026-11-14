@@ -9,7 +9,7 @@ extern uint32_t data_00714D9C;
 extern uint32_t data_00714DA0;
 extern uint32_t data_00714DA4;
 extern uint32_t data_00714DA8;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00714DA8[1] = {
     "AudioPlayer",
@@ -28,5 +28,5 @@ void func_005EDCD0(void) {
     data_00714D9C = 0xFFFFFFFFu;
     data_00714DA0 = 0x00000000u;
     data_00714DA4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00714DA8);
 }

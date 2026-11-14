@@ -31,7 +31,7 @@ extern uint32_t data_00713F84;
 extern uint32_t data_00713F90;
 extern uint32_t data_00713F9C;
 extern uint32_t data_00713FA8;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00713E98[2] = {
     "T_Txt_00",
@@ -139,5 +139,5 @@ void func_005D047C(void) {
     data_00713E8C = 0xFFFFFFFFu;
     data_00713E90 = 0x00000000u;
     data_00713E94 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }

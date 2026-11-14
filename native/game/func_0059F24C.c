@@ -10,7 +10,7 @@ extern uint32_t data_00711F80;
 extern uint32_t data_00711F84;
 extern uint32_t data_00711F88;
 extern uint32_t data_00796674;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_00711F88[1] = {
     "Sound/Jack.bcsar",
@@ -64,5 +64,5 @@ void func_0059F24C(void) {
     data_00711F7C = 0xFFFFFFFFu;
     data_00711F80 = 0x00000000u;
     data_00711F84 = 0x00000000u;
-    func_005902C0();
+    func_005902C0((uintptr_t)&data_00711F88);
 }

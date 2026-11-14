@@ -10,7 +10,7 @@ extern uint32_t data_007136E0;
 extern uint32_t data_007136E4;
 extern uint32_t data_007136E8;
 extern uint32_t data_0079BFDC;
-void func_005902C0(void);
+void func_005902C0(uintptr_t);
 
 static const char *const names_007136E8[2] = {
     "Gm_SRCSignBoardT",
@@ -45,5 +45,5 @@ void func_005EF438(void) {
     data_007136DC = 0xFFFFFFFFu;
     data_007136E0 = 0x00000000u;
     data_007136E4 = 0x00000000u;
-    func_005902C0();
+    func_005902C0(0x00000000u);
 }
