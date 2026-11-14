@@ -214,8 +214,18 @@ def main():
             if r:  # Ghidra name for a data location
                 out += ["    .globl %s" % sym, "    .set %s, %s" % (sym, r)]
             elif TEXT <= addr < text_end:  # literal-pool word in the code section
-                out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
-                        "%s:" % sym, "    " + word(addr, rd(addr))]
+                w = word(addr, rd(addr))
+                o = addr - TEXT
+                e = code.find(b"\0", o, o + 256)
+                if w.startswith(".long 0x") and e - o >= 2 and all(0x20 <= b < 0x7F for b in code[o:e]):
+                    # a string stored among the code, used through its address (`&DAT_001b9364`
+                    # = "%s_f%s_b"): emit the whole string (its first word is unchanged)
+                    raw = code[o:e + 1]
+                    out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
+                            "%s:" % sym, "    .byte " + ",".join(str(b) for b in raw), "    .p2align 2"]
+                else:
+                    out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
+                            "%s:" % sym, "    " + w]
             else:
                 nbad += 1
                 continue
