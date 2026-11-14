@@ -21,6 +21,11 @@ cd "$(dirname "$0")"
 
 : "${ALBW_ROM:=/path/to/your/game.3ds}"
 export ALBW_ROM
+# prefer native Wayland when available (the 32-bit SDL needs lib32-libxkbcommon + lib32-libdecor);
+# fall back to X11 otherwise
+if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && -e /usr/lib32/libxkbcommon.so.0 ]]; then
+    export SDL_VIDEO_DRIVER=wayland
+fi
 
 LINK=0 GDB=0 ARGS=()
 if [[ "${1:-}" == "--viewer" ]]; then
