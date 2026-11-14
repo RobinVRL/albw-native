@@ -235,7 +235,7 @@ _SIG = {}
 def signature(name):
     """(param count, returns value) from the fully analysed Ghidra dump, or None."""
     if name not in _SIG:
-        path = os.path.join(ROOT, "build", "ghidra_analyzed", name + ".c")
+        path = next((p for p in (os.path.join(ROOT, "build", d, name + ".c") for d in ("ghidra_analyzed2", "ghidra_analyzed")) if os.path.exists(p)), "")
         sig = None
         if os.path.exists(path):
             import re

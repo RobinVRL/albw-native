@@ -48,3 +48,11 @@ void *__aeabi_vec_ctor_nocookie_nodtor(void *array, VecCtor ctor, uint32_t size,
 void *func_00100118(void *, VecCtor, uint32_t, uint32_t) __attribute__((alias("__aeabi_vec_ctor_nocookie_nodtor")));
 /* USA 0x00100110: ARM->Thumb interworking stub (add ip, pc, #1; bx ip) to the same helper */
 void *func_00100110(void *, VecCtor, uint32_t, uint32_t) __attribute__((alias("__aeabi_vec_ctor_nocookie_nodtor")));
+
+/* USA 0x00100174 (Thumb, the game's C++ runtime): static-local guard as the game implements it:
+ * claim the 4-byte guard at acquire time (its release is a no-op the compiler removed).
+ * Made thread-safe with compare-and-swap. Returns 1 if the caller must run the initialiser. */
+int func_00100174(uint32_t *g) {
+    uint32_t expected = 0;
+    return __atomic_compare_exchange_n(g, &expected, 1, 0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE);
+}

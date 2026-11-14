@@ -100,8 +100,8 @@ def canon_ref(name):
     m = DATA_NAME.match(name) or ANY_ADDR_NAME.match(name)
     if m:
         a = int(m.group(1), 16)
-        if TEXT_LO <= a < TEXT_HI:
-            return "func_%08X" % a
+        # only data names are canonicalised here: a DAT_/PTR_ name inside the code section is a
+        # literal-pool word (defined by gen_data under its own name), never a function
         if DATA_LO <= a < DATA_HI:
             return "data_%08X" % a
     return None
@@ -283,8 +283,15 @@ def main():
     import_ghidra = load_decomp_tool(decomp, "import_ghidra")
     # Ghidra with full auto-analysis (real parameter counts) is preferred over the earlier
     # no-analysis dumps (decomp's src/nonmatching and build/ghidra_all)
-    analyzed_dir = os.path.join(ROOT, "build", "ghidra_analyzed")
+    analyzed_dir = next((d for d in (os.path.join(ROOT, "build", "ghidra_analyzed2"), os.path.join(ROOT, "build", "ghidra_analyzed")) if os.path.isdir(d)), "")
     fallback_dir = analyzed_dir if os.path.isdir(analyzed_dir) else os.path.join(ROOT, "build", "ghidra_all")
+
+    eu2usa = {v["eu"].lower(): k for k, v in json.load(open(os.path.join(decomp, "shared", "eu_usa_map.json"))).items()}
+
+    def eu_fun_to_usa(text):
+        """Ghidra's own FUN_<EU address> names -> func_<USA address> (unknown starts stay FUN_)."""
+        return re.sub(r"\bFUN_([0-9a-f]{8})\b",
+                      lambda m: "func_" + eu2usa[m.group(1)] if m.group(1) in eu2usa else m.group(0), text)
 
     def ghidra_source(addr):
         """Per-address Ghidra C (mirrored path relative to OUT), or None."""
@@ -299,7 +306,7 @@ def main():
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             text = open(raw, encoding="utf-8", errors="replace").read()
             with open(dst, "w") as fh:
-                fh.write(rewrite(import_ghidra.convert(text, addr)))
+                fh.write(rewrite(eu_fun_to_usa(import_ghidra.convert(text, addr))))
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
