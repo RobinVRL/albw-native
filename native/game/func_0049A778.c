@@ -1,7 +1,8 @@
 /* USA 0049A778 (EU 0049A750): sead::ResourceMgr load: builds a FileDevice::LoadArg on the stack
  * (local_38) and loads through the given device (00489F08 tryLoad) or the FileDeviceMgr
- * (0048E4B4). Native fix of the generated Ghidra text: the device call lost its LoadArg
- * argument (r1 = sp at EU 0049A810). Rest unchanged. Confidence: high. */
+ * (0048E4B4), then resource->doCreate_(data, size, heap) (vtable +0x18). Native fix of the
+ * generated Ghidra text: the device call lost its LoadArg argument (r1 = sp at EU 0049A810) and
+ * the doCreate_ call lost r1-r3. Rest unchanged. Confidence: high. */
 #include "ghidra_types.h"
 
 extern int func_00489F08();
@@ -76,7 +77,7 @@ int * func_0049A778(int *param_1,int param_2)
           uVar4 = piVar1[8] | 1;
         }
         piVar1[8] = uVar4;
-        (**(code **)(*piVar1 + 0x18))(piVar1);
+        (**(code **)(*piVar1 + 0x18))(piVar1,iVar3,local_1c,*(undefined4 *)(param_2 + 8));  /* doCreate_(data, size, heap): r1-r3 at EU 0049A838..0049A848 */
       }
       return piVar1;
     }
