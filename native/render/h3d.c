@@ -557,10 +557,12 @@ static void snap_maybe(void) {
     static long from = -2;
     static int last_var = -1, nsaved;
     if (from == -2) { const char *e = getenv("ALBW_H3D_SNAPFROM"); from = e ? atol(e) : -1; }
-    if (from >= 0 && (long)g_st.draws >= from && nsaved < 24) { /* save at every variant change */
+    static int every = -1;
+    if (every < 0) every = getenv("ALBW_H3D_SNAPEVERY") != NULL;
+    if (from >= 0 && (long)g_st.draws >= from && nsaved < (every ? 200 : 24)) { /* save at every variant change */
         int wv = 0;
         render_current_program(&wv);
-        if (wv != last_var) {
+        if (wv != last_var || every) {
             last_var = wv;
             nsaved++;
             char buf[32];
@@ -671,12 +673,34 @@ static void draw(const ROp *op) {
     static int nod = -2, noa = -2;
     if (nod == -2) { const char *e = getenv("ALBW_H3D_NODEPTH"); nod = e ? atoi(e) : -1; }
     if (noa == -2) { const char *e = getenv("ALBW_H3D_NOBLENDVAR"); noa = e ? atoi(e) : -1; }
+    {
+        static int nc = -2;
+        if (nc == -2) { const char *e = getenv("ALBW_H3D_NOCULL"); nc = e && strcmp(e, "1") ? atoi(e) : -1; }
+        if (nc >= 0) {
+            int wv = 0;
+            render_current_program(&wv);
+            if (wv == nc) { glDisable(GL_CULL_FACE); render_frag_dirty(); }
+        }
+    }
+    {
+        static int dv = -2; static unsigned df;
+        if (dv == -2) { const char *e = getenv("ALBW_H3D_DFUNC_VAR"); dv = e ? atoi(e) : -1; const char *f = getenv("ALBW_H3D_DFUNC"); df = f ? (unsigned)strtoul(f, NULL, 0) : 0x0204; }
+        if (dv >= 0) {
+            int wv = 0;
+            render_current_program(&wv);
+            if (wv == dv) {
+                static void (*dfn)(GLenum);
+                if (!dfn) dfn = (void (*)(GLenum))SDL_GL_GetProcAddress("glDepthFunc");
+                dfn(df); render_frag_dirty();
+            }
+        }
+    }
     if (nod >= 0 || noa >= 0) { /* debug: no depth test / no blending for one variant */
         int wv = 0;
         render_current_program(&wv);
         if (wv == nod) glDisable(GL_DEPTH_TEST);
         if (wv == noa) glDisable(GL_BLEND);
-        if (wv == nod && getenv("ALBW_H3D_NOCULL")) glDisable(GL_CULL_FACE);
+        if (wv == nod && getenv("ALBW_H3D_NOCULL") && !strcmp(getenv("ALBW_H3D_NOCULL"), "1")) glDisable(GL_CULL_FACE);
         if (wv == nod && getenv("ALBW_H3D_NOSTENCIL")) glDisable(0x0B90 /* GL_STENCIL_TEST */);
         if (wv == nod && getenv("ALBW_H3D_NOLOGIC")) glDisable(0x0BF2);
         if (wv == nod && getenv("ALBW_H3D_FULLMASK")) {
@@ -691,7 +715,85 @@ static void draw(const ROp *op) {
         glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_CULL_FACE);
         glEnable(0x0BF2 /* GL_COLOR_LOGIC_OP */); if (logic) logic(getenv("ALBW_H3D_LOGICCOPY") ? 0x1503 /* GL_COPY */ : 0x150F /* GL_SET */);
     }
+    static int qvar = -2;
+    static unsigned qn;
+    static GLuint qid;
+    static void (*pGenQ)(GLsizei, GLuint *), (*pBeginQ)(GLenum, GLuint), (*pEndQ)(GLenum), (*pGetQ)(GLuint, GLenum, GLuint *);
+    int qon = 0;
+    const uint8_t *q_before = NULL;
+    if (qvar == -2) { const char *e = getenv("ALBW_H3D_QUERY"); qvar = e ? atoi(e) : -1; }
+    if (qvar >= 0 && qn < 4000) {
+        int wv = 0;
+        render_current_program(&wv);
+        if (wv == qvar) {
+            if (!pGenQ) {
+                pGenQ = (void (*)(GLsizei, GLuint *))SDL_GL_GetProcAddress("glGenQueries");
+                pBeginQ = (void (*)(GLenum, GLuint))SDL_GL_GetProcAddress("glBeginQuery");
+                pEndQ = (void (*)(GLenum))SDL_GL_GetProcAddress("glEndQuery");
+                pGetQ = (void (*)(GLuint, GLenum, GLuint *))SDL_GL_GetProcAddress("glGetQueryObjectuiv");
+                pGenQ(1, &qid);
+            }
+            pBeginQ(0x8914 /* GL_SAMPLES_PASSED */, qid);
+            qon = 1;
+            static void (*rp)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *);
+            if (!rp) rp = (void (*)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *))SDL_GL_GetProcAddress("glReadPixels");
+            static uint8_t before[240 * 400 * 4];
+            rp(0, 0, 240, 400, 0x1908, 0x1401, before);
+            q_before = before;
+        }
+    }
     glDrawElements(PRIM[op->u.ext.c % 3], (GLsizei)op->u.ext.b, u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE, 0);
+    if (qon) {
+        pEndQ(0x8914);
+        GLuint r = 0;
+        pGetQ(qid, 0x8866 /* GL_QUERY_RESULT */, &r);
+        uint16_t bb;
+        const float *cc = render_vs_floats(&bb);
+        const RFragState *ff = render_frag_state();
+        fprintf(stderr, "h3d-query: draw %u count %u samples %u atest %u/%u/%u depth %u/%u stencil %u cull %u blend %u logic %u cmask %x\n",
+                g_st.draws, op->u.ext.b, r, ff->alpha_test, ff->alpha_func, ff->alpha_ref, ff->depth_test, ff->depth_func,
+                ff->stencil_test, ff->cull, ff->blend_enable, ff->logic_enable, ff->color_mask);
+        (void)cc;
+        {
+            static void (*rpd)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *);
+            if (!rpd) rpd = (void (*)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *))SDL_GL_GetProcAddress("glReadPixels");
+            float dz[5];
+            static const int px[5][2] = {{120, 200}, {60, 100}, {180, 300}, {60, 300}, {180, 100}};
+            for (int k = 0; k < 5; k++) rpd(px[k][0], px[k][1], 1, 1, 0x1902 /* DEPTH_COMPONENT */, 0x1406, &dz[k]);
+            fprintf(stderr, "h3d-query:   depth %.6f %.6f %.6f %.6f %.6f\n", dz[0], dz[1], dz[2], dz[3], dz[4]);
+        }
+        if (q_before) {
+            const uint8_t *before = q_before;
+            static void (*rp)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *);
+            if (!rp) rp = (void (*)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *))SDL_GL_GetProcAddress("glReadPixels");
+            static uint8_t after[240 * 400 * 4];
+            rp(0, 0, 240, 400, 0x1908, 0x1401, after);
+            unsigned ch = 0, fx = 0, fy = 0;
+            for (unsigned i = 0; i < 240 * 400; i++)
+                if (memcmp(before + 4 * i, after + 4 * i, 4)) { if (!ch) { fx = i % 240; fy = i / 240; } ch++; }
+            float fd = -1;
+            if (ch) {
+                static void (*rpd2)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *);
+                if (!rpd2) rpd2 = (void (*)(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *))SDL_GL_GetProcAddress("glReadPixels");
+                rpd2((GLint)fx, (GLint)fy, 1, 1, 0x1902, 0x1406, &fd);
+            }
+            fprintf(stderr, "h3d-query:   depth-at-first %.6f\n", fd);
+            fprintf(stderr, "h3d-query:   readback changed %u first (%u,%u) before %u %u %u %u after %u %u %u %u\n", ch, fx, fy,
+                    before[4 * (fy * 240 + fx)], before[4 * (fy * 240 + fx) + 1], before[4 * (fy * 240 + fx) + 2], before[4 * (fy * 240 + fx) + 3],
+                    after[4 * (fy * 240 + fx)], after[4 * (fy * 240 + fx) + 1], after[4 * (fy * 240 + fx) + 2], after[4 * (fy * 240 + fx) + 3]);
+        }
+        {
+            static void (*gb)(GLenum, GLboolean *), (*gi)(GLenum, GLint *);
+            if (!gb) { gb = (void (*)(GLenum, GLboolean *))SDL_GL_GetProcAddress("glGetBooleanv"); gi = (void (*)(GLenum, GLint *))SDL_GL_GetProcAddress("glGetIntegerv"); }
+            GLboolean m[4] = {0}; GLint fbo = 0, bl = 0, bs = 0, bd = 0, lo = 0, dt = 0, st = 0, prog = 0, db = 0;
+            gb(0x0C23 /* COLOR_WRITEMASK */, m); gi(0x8CA6 /* DRAW_FRAMEBUFFER_BINDING */, &fbo);
+            gi(0x0BE2, &bl); gi(0x80C9 /* BLEND_SRC_RGB */, &bs); gi(0x80C8 /* BLEND_DST_RGB */, &bd); gi(0x0BF2, &lo);
+            gi(0x0B71, &dt); gi(0x0B90, &st); gi(0x8B8D /* CURRENT_PROGRAM */, &prog); gi(0x0C01 /* DRAW_BUFFER */, &db);
+            fprintf(stderr, "h3d-query:   gl mask %d%d%d%d fbo %d blend %d %x/%x logic %d depth %d stencil %d prog %d drawbuf %x\n",
+                    m[0], m[1], m[2], m[3], fbo, bl, bs, bd, lo, dt, st, prog, db);
+        }
+        qn++;
+    }
     if (white && white_now) glDisable(0x0BF2);
     if (white || nod >= 0 || noa >= 0) render_frag_dirty();
     render_draw_done();
