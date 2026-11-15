@@ -595,6 +595,19 @@ def build_one(job):
         # matched sources of functions that return their first argument on ARM (returns_this.json)
         # but are void in C: export them as func_<ADDR>__impl; link.sh adds a thunk func_<ADDR>
         # that calls the impl and returns the first argument (exact ARM r0 semantics)
+        secs = None
+        def sec_of(sym):
+            # the section a symbol lives in: not always ".text.<sym>" (a C1 constructor is an
+            # alias inside the C2 constructor's section; that guess put func_00377354__impl at 0)
+            nonlocal secs
+            if secs is None:
+                secs = {}
+                out = subprocess.run(["llvm-objdump", "-t", obj], capture_output=True, text=True).stdout
+                for line in out.splitlines():
+                    f = line.split()
+                    if len(f) >= 4 and f[-1] and f[-3].startswith(".text"):
+                        secs[f[-1]] = f[-3]
+            return secs.get(sym, ".text." + sym)
         for a, p in prim.items():
             want = "func_" + a.upper()
             if a in sinit:
@@ -602,13 +615,13 @@ def build_one(job):
             if matched_src and a.upper() in RETURNS_THIS:
                 impl = want + "__impl"
                 if p != want:
-                    args += ["--add-symbol", "%s=%s:0,weak,function" % (impl, ".text." + p), "--localize-symbol=" + p]
+                    args += ["--add-symbol", "%s=%s:0,weak,function" % (impl, sec_of(p)), "--localize-symbol=" + p]
                 else:
                     args += ["--redefine-sym", "%s=%s" % (want, impl), "--weaken-symbol=" + want,
                              "--weaken-symbol=" + impl]
                 continue
             if p != want:
-                sec = ".text." + p
+                sec = sec_of(p)
                 args += ["--add-symbol", "%s=%s:0,weak,function" % (want, sec), "--localize-symbol=" + p]
             else:
                 args += ["--weaken-symbol=" + want]
