@@ -42,12 +42,17 @@ RE_HEX_E = re.compile(r"(0[xX][0-9a-fA-F]*[eE])([+-])")
 
 
 RE_GARBLED_RETURN = re.compile(r"#define (\w+) \(\*\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
+# the same for an array local: `return local_8[0];` -> `#define local_8 ((return *)(albw_frame + K))`
+# (4 functions, all `[0]` in the Ghidra dump: 0048A16C file GetSize returned garbage, so the
+# attract demo's Demo10 table was allocated with a bogus size, boot stop 97)
+RE_GARBLED_RETURN_ARRAY = re.compile(r"#define (\w+) \(\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
 
 
 def rewrite(text):
     # the stack-layout pass of the converter turns `return local_c;` into a bogus macro
     # `#define local_c (*(return *)(albw_frame + K))` (21 functions): restore the return
     text = RE_GARBLED_RETURN.sub(r"return \1;", text)
+    text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", text)
     text = RE_TLS.sub(r"\1 = albw_tls();", text)
     text = RE_ASM_BLOCK.sub("", text)
     text = RE_REG_PIN.sub("", text)
@@ -611,6 +616,7 @@ def build_one(job):
         if not cpp and pmf_this_enabled() and "/ghidra_fallback/" in src:
             text = open(src).read()
             new_text = stack_arg_rewrite(pmf_this_rewrite(text))
+            new_text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", new_text)
             if new_text != text:
                 with open(src, "w") as fh:
                     fh.write(new_text)
