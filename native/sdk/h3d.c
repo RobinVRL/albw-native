@@ -770,6 +770,9 @@ void h3d_register_file(uint32_t resfile) {
     }
     int nluts = register_luts(cont);
     g_stage_src = 0;
+    if (getenv("ALBW_H3D_MODELS"))
+        for (uint32_t i = 0; i < mcnt && i < 64; i++)
+            fprintf(stderr, "h3d-models: file %#x model %u = %#x\n", (unsigned)hdr, (unsigned)i, (unsigned)G32(mtbl, 4 * i));
     if (getenv("ALBW_H3D_TRACE")) {
         uint32_t m0 = mcnt ? G32(mtbl, 0) : 0;
         if (m0 && G32(m0, 0x38)) {
@@ -853,6 +856,20 @@ static void ctx_call(uint32_t *ctx, uint32_t target, uint32_t bytes) {
 }
 uint32_t *func_00130C1C(uint32_t rnd, const float *view, const float *proj, uint32_t *ctx) {
     uint32_t env = G32(data_00712F70, 0x1B8);
+    if (getenv("ALBW_H3D_CAMTRACE")) {
+        static unsigned n;
+        if (n++ % 150 == 0)
+            fprintf(stderr, "h3d-cam: pass %u from %p view %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f proj00 %.3f %.3f\n", n,
+                    __builtin_return_address(0), view[0], view[1], view[2], view[3], view[4], view[5], view[6], view[7], view[8], view[9],
+                    view[10], view[11], proj[1], proj[4]);
+        if (getenv("ALBW_H3D_CAMTRACE") && n % 150 == 1) {
+            const float *cam = view - 1; /* camera object: +4 view Mtx34 */
+            uint32_t cw = GPTR_OF(cam);
+            fprintf(stderr, "h3d-cam:   cam %#x vt %#x words:", cw, G32(cw, 0));
+            for (int k = 13; k < 40; k++) { float f = GF(cw, 4 * (uint32_t)k); fprintf(stderr, " %g", f); }
+            fprintf(stderr, "\n");
+        }
+    }
     if (getenv("ALBW_H3D_TRACE")) { /* every 120 passes: is the 3D path being fed? */
         static unsigned n;
         if (n++ % 97 == 0) {
@@ -1013,7 +1030,30 @@ static uint32_t *element_list(uint32_t elem, uint32_t model) {
  * skinned: 00568224 (lists) / 005683D0; unskinned: 00568798 (lists) / 005681C0. Caller 00170328
  * (and 003308E0 / 00330B40). Control flow from the EU machine code; native: the two matrix
  * writes are recorded ops. High. */
+/* ALBW_H3D_MODELS=1: once every 300 element draws, the distinct ResModels (and their files)
+ * drawn since the last report (debug) */
+static void model_trace(uint32_t elem) {
+    static int on = -1;
+    if (on < 0) on = getenv("ALBW_H3D_MODELS") != NULL;
+    if (!on) return;
+    static uint32_t seen[256], cnt[256];
+    static int nseen;
+    static unsigned calls;
+    uint32_t res = G32(G32(elem, 0x90), 0x2C);
+    int i;
+    for (i = 0; i < nseen; i++) if (seen[i] == res) break;
+    if (i == nseen && nseen < 256) { seen[nseen] = res; cnt[nseen] = 0; nseen++; }
+    if (i < 256) cnt[i]++;
+    if (++calls % 3000 == 0) {
+        fprintf(stderr, "h3d-models: %d models:", nseen);
+        for (int k = 0; k < nseen; k++) fprintf(stderr, " %#x(%u)", seen[k], cnt[k]);
+        fprintf(stderr, "\n");
+        nseen = 0;
+    }
+}
+
 void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
+    model_trace(elem);
     uint32_t prev = G32(data_0070B960, 0x1C);
     if (!(data_00725BCC & 1) && func_00100174(&data_00725BCC)) data_00725BD0 = 0x006F61D0;
     if (prev) {
