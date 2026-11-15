@@ -258,6 +258,19 @@ def main():
                     raw = code[addr - TEXT:end + 1]
                 out += ["    .section .rodata.albw_str,\"a\"", "    .globl %s" % sym, "%s:" % sym,
                         "    .byte " + ",".join(str(b) for b in raw)]
+            elif TEXT <= addr < text_end and sym.startswith("_DAT_"):
+                # a literal-pool word read with another size than Ghidra typed it (`_DAT_0012cc18`,
+                # a float 1.0 read as `ALBW_AS_F32(_DAT_0012cc18)`); it fell through as unplaceable
+                # and the link stub in .text was read instead (an animation rate of 1.4e-33: the
+                # name-entry button animation never finished, boot stop 101). Emit the words as the
+                # literal-pool names are (word at addr, relocated like any pool word, then the next
+                # word raw for 8-byte reads)
+                lines = ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym, "%s:" % sym]
+                if addr % 4 == 0:
+                    lines += ["    " + word(addr, rd(addr)), "    .long 0x%08X" % rd(addr + 4)]
+                else:
+                    lines += ["    .byte " + ",".join(str(b) for b in code[addr - TEXT:addr - TEXT + 8])]
+                out += lines
             else:
                 nbad += 1
                 continue
