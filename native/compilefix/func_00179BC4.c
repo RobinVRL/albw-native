@@ -1,16 +1,14 @@
-/* compilefix: USA 00179BC4 (EU 00179BC4), Ghidra-derived (build/ghidra_analyzed4).
- * Failed to compile: member reference base type 'uint' (aka 'unsigned int') is not a structure or union
- * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
- *  - arr[i]._O_S_ -> typed byte access at (char *)&arr[i] + O [1]
- *  - explicit (T)(uintptr_t) casts at int<->pointer mismatches (identity on the 32-bit ARM) [5]
- * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
- * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
- * functions retyped non-void return 0, as the converter does). */
+/* USA 00179BC4 (EU 00179BC4): converted Ghidra text of the round-3 stage-2 rebuild with one fix
+ * (BOOT_LOG stop 107; the earlier compilefix copy from build/ghidra_analyzed4 was dropped in stop 104).
+ * Fix: case 0 builds a fixed-buffer wide string at sp (WFixedSafeString<11>: vtable, c-string
+ * pointer, capacity, buffer at sp+0xc) and passes it to 00584084; the ARM fills the pointer and the
+ * capacity with one `stm` (EU 179C68..179C74: add r3, sp, #4; add r1, sp, #12; mov r2, #11;
+ * stm r3, {r1, r2}), which Ghidra dropped (lost stack stores, PLAN): 00584084 copied into a NULL
+ * buffer. Both words are put back where the ARM writes them. */
 #include "ghidra_types.h"
-#include "compilefix.h"
 
 extern int func_00100174(int *param_1);
-extern int func_0010E3C4(uint *param_1,uint *param_2,uint param_3);
+extern undefined8 func_0010E3C4(uint *param_1,uint *param_2,uint param_3);
 extern int func_00178AE8(int param_1,uint *param_2,uint *param_3,uint param_4);
 extern int func_00179104(int param_1,uint *param_2,uint *param_3);
 extern int func_00179190(int param_1,uint *param_2,int param_3,int param_4);
@@ -22,13 +20,13 @@ extern int func_005847C0(int param_1);
 extern int func_005847DC(int param_1);
 extern int func_005847EC(int param_1);
 extern uint *DAT_00179f28;
-extern int DAT_00179f2c;
-extern int *DAT_00179f30;
-extern int *DAT_00179f34;
+extern uint DAT_00179f2c;
+extern uint *DAT_00179f30;
+extern uint *DAT_00179f34;
 extern undefined4 DAT_00179f38;
 extern undefined4 DAT_00179f3c;
 extern undefined2 DAT_00179f40;
-extern int DAT_00179f4c;
+extern uint DAT_00179f4c;
 extern int *DAT_00179f50;
 extern int *DAT_00179f54;
 extern int *DAT_00179f58;
@@ -38,132 +36,134 @@ extern undefined2 DAT_0017a17c;
 // USA 00179BC4 <- EU 00179BC4 (Ghidra, non-matching)
 // PARAM param_5 Stack[0x0]:4 int
 // GLOBAL DAT_00179f28 uint *
-// GLOBAL DAT_00179f2c int
-// GLOBAL DAT_00179f30 int *
-// GLOBAL DAT_00179f34 int *
+// GLOBAL DAT_00179f2c uint
+// GLOBAL DAT_00179f30 uint *
+// GLOBAL DAT_00179f34 uint *
 // GLOBAL DAT_00179f38 undefined4
 // GLOBAL DAT_00179f3c undefined4
 // GLOBAL DAT_00179f40 undefined2
-// GLOBAL DAT_00179f4c int
+// GLOBAL DAT_00179f4c uint
 // GLOBAL DAT_00179f50 int *
 // GLOBAL DAT_00179f54 int *
 // GLOBAL DAT_00179f58 int *
 // GLOBAL DAT_00179f5c undefined2
 // GLOBAL DAT_0017a17c undefined2
 
+/* WARNING: Variable defined which should be unmapped: objStack_50 */
+
 uint * func_00179BC4(int param_1,uint *param_2,uint *param_3,undefined4 param_4,int param_5)
 
 {
-  _Alignas(8) unsigned char albw_frame[0x60]; /* entry_sp - 0x50 .. entry_sp + 0x10 */
-#define stack0xffffffb0 (*(undefined4 *)(albw_frame + 0x0))
-  __builtin_memcpy(albw_frame + 0x50, &param_5, 4);
-#define param_5 (*(int *)(albw_frame + 0x50))
   byte bVar1;
   byte bVar2;
-  byte bVar3;
-  int *piVar4;
-  int iVar5;
-  uint *puVar6;
-  int iVar7;
-  undefined4 uVar8;
-  uint uVar9;
+  int iVar3;
+  uint *puVar4;
+  undefined4 uVar5;
+  uint uVar6;
+  uint uVar7;
+  _Alignas(8) unsigned char albw_frame[0x50];
+  #define objStack_50 ((uint *)(albw_frame + 0x0))
   #define local_4c (*(uint * *)(albw_frame + 0x4))
   #define local_44 ((uint *)(albw_frame + 0xc))
   #define local_30 (*(undefined2 *)(albw_frame + 0x20))
-  #define local_28 (*(int *)(albw_frame + 0x28))
+  #define local_28 (*(uint *)(albw_frame + 0x28))
   #define local_24 (*(uint * *)(albw_frame + 0x2c))
-  iVar7 = DAT_00179f2c;
+  uVar6 = DAT_00179f2c;
   if (((*DAT_00179f28 & 1) == 0) &&
-     (iVar5 = func_00100174((int *)DAT_00179f28), piVar4 = DAT_00179f30, iVar5 != 0)) {
+     (iVar3 = func_00100174((int *)DAT_00179f28), puVar4 = DAT_00179f30, iVar3 != 0)) {
     DAT_00179f30[1] = *DAT_00179f34;
-    *piVar4 = iVar7;
+    *puVar4 = uVar6;
   }
-  piVar4 = DAT_00179f30;
+  puVar4 = DAT_00179f30;
   switch(param_4) {
   case 0:
     local_30 = 0;
+    local_4c = local_44;                       /* stm r3, {r1, r2}: c-string = the buffer at sp+0xc */
+    *(uint *)(albw_frame + 0x8) = 0xb;         /* capacity 11 */
+    objStack_50[0] = DAT_00179f4c;
     (*(undefined2 *)((char *)&local_44[0] + 0)) = 0;
     local_24 = (uint *)&DAT_00179f40;
-    local_28 = iVar7;
-    iVar5 = DAT_00179f4c;
-    (**(code **)(iVar7 + 8))(&local_28);
-    iVar7 = 0;
+    local_28 = uVar6;
+    (**(code **)(uVar6 + 8))(&local_28);
+    iVar3 = 0;
     do {
-      if (*(short *)((int)local_24 + iVar7 * 2) == 0) {
-        if (iVar7 < 0x40001) goto LAB_00179ce0;
+      if (*(short *)((int)local_24 + iVar3 * 2) == 0) {
+        if (iVar3 < 0x40001) goto LAB_00179ce0;
         break;
       }
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < 0x40001);
-    iVar7 = 0;
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < 0x40001);
+    iVar3 = 0;
 LAB_00179ce0:
-    if (10 < iVar7) {
-      iVar7 = 10;
+    if (10 < iVar3) {
+      iVar3 = 10;
     }
     (**(code **)(local_28 + 8))(&local_28);
-    func_0010E3C4(local_44,local_24,iVar7 << 1);
-    *(undefined2 *)((int)local_44 + iVar7 * 2) = 0;
-    func_00584084(*DAT_00179f50,(int)&stack0xffffffb0);
-    (**(code **)(iVar5 + 8))(&stack0xffffffb0);
-    (**(code **)(iVar5 + 8))(&stack0xffffffb0);
-    iVar7 = 0;
+    func_0010E3C4(local_44,local_24,iVar3 << 1);
+    *(undefined2 *)((int)local_44 + iVar3 * 2) = 0;
+    func_00584084(*DAT_00179f50,(int)objStack_50);
+    (**(code **)(objStack_50[0] + 8))(objStack_50);
+    (**(code **)(objStack_50[0] + 8))(objStack_50);
+    iVar3 = 0;
     do {
-      if (*(short *)((int)local_44 + iVar7 * 2) == 0) {
-        if (iVar7 < 0x40001) goto LAB_00179d80;
+      if (*(short *)((int)local_44 + iVar3 * 2) == 0) {
+        if (iVar3 < 0x40001) goto LAB_00179d80;
         break;
       }
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < 0x40001);
-    iVar7 = 0;
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < 0x40001);
+    iVar3 = 0;
 LAB_00179d80:
-    param_3 = (uint *)(uintptr_t)(func_00178AE8(param_1,param_3,local_44,iVar7 << 1));
+    param_3 = func_00178AE8(param_1,param_3,local_44,iVar3 << 1);
     break;
   case 1:
     local_4c = (uint *)(*DAT_00179f54 + 0x1098);
     if (*(char *)(*DAT_00179f54 + 0x10ae) == '\0') {
-      (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-      (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-      iVar7 = 0;
+      objStack_50[0] = uVar6;
+      (**(code **)(uVar6 + 8))(objStack_50);
+      (**(code **)(objStack_50[0] + 8))(objStack_50);
+      iVar3 = 0;
       do {
-        if (*(short *)((int)local_4c + iVar7 * 2) == 0) goto joined_r0x0017a020;
-        iVar7 = iVar7 + 1;
-      } while (iVar7 < 0x40001);
+        if (*(short *)((int)local_4c + iVar3 * 2) == 0) goto joined_r0x0017a020;
+        iVar3 = iVar3 + 1;
+      } while (iVar3 < 0x40001);
       goto LAB_0017a024;
     }
     (**(code **)(*DAT_00179f30 + 8))(DAT_00179f30);
-    local_4c = (uint *)piVar4[1];
-    (**(code **)(*piVar4 + 8))(piVar4);
-    iVar7 = 0;
+    local_4c = (uint *)puVar4[1];
+    (**(code **)(*puVar4 + 8))(puVar4);
+    iVar3 = 0;
     do {
-      if (*(short *)(piVar4[1] + iVar7 * 2) == 0) {
-        if (iVar7 < 0x40001) goto LAB_00179e20;
+      if (*(short *)(puVar4[1] + iVar3 * 2) == 0) {
+        if (iVar3 < 0x40001) goto LAB_00179e20;
         break;
       }
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < 0x40001);
-    iVar7 = 0;
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < 0x40001);
+    iVar3 = 0;
 LAB_00179e20:
-    uVar9 = iVar7 << 1;
+    uVar6 = iVar3 << 1;
     goto LAB_0017a02c;
   case 2:
     if (*DAT_00179f58 != 0) {
       local_4c = (uint *)func_005847EC(*DAT_00179f58);
+      objStack_50[0] = uVar6;
       if ((short)*local_4c == 0) {
         local_4c = (uint *)&DAT_00179f5c;
       }
-      (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-      (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-      iVar7 = 0;
+      (**(code **)(uVar6 + 8))(objStack_50);
+      (**(code **)(objStack_50[0] + 8))(objStack_50);
+      iVar3 = 0;
       do {
-        if (*(short *)((int)local_4c + iVar7 * 2) == 0) {
-          if (iVar7 < 0x40001) goto LAB_00179f80;
+        if (*(short *)((int)local_4c + iVar3 * 2) == 0) {
+          if (iVar3 < 0x40001) goto LAB_00179f80;
           break;
         }
-        iVar7 = iVar7 + 1;
-      } while (iVar7 < 0x40001);
-      iVar7 = 0;
+        iVar3 = iVar3 + 1;
+      } while (iVar3 < 0x40001);
+      iVar3 = 0;
 LAB_00179f80:
-      param_3 = (uint *)(uintptr_t)(func_00178AE8(param_1,param_3,local_4c,iVar7 << 1));
+      param_3 = func_00178AE8(param_1,param_3,local_4c,iVar3 << 1);
     }
     break;
   case 3:
@@ -171,63 +171,68 @@ LAB_00179f80:
       return param_3;
     }
     local_4c = (uint *)func_005847C0(*DAT_00179f58);
+    objStack_50[0] = uVar6;
     if ((short)*local_4c == 0) {
       local_4c = (uint *)&DAT_0017a17c;
     }
-    (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-    (**(code **)(iVar7 + 8))(&stack0xffffffb0);
-    iVar7 = 0;
+    (**(code **)(uVar6 + 8))(objStack_50);
+    (**(code **)(objStack_50[0] + 8))(objStack_50);
+    iVar3 = 0;
     do {
-      if (*(short *)((int)local_4c + iVar7 * 2) == 0) goto joined_r0x0017a020;
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < 0x40001);
+      if (*(short *)((int)local_4c + iVar3 * 2) == 0) goto joined_r0x0017a020;
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < 0x40001);
 LAB_0017a024:
-    iVar7 = 0;
+    iVar3 = 0;
     goto LAB_00179e94;
   case 4:
-    uVar9 = *(uint *)(param_1 + 0x70);
-    if ((int)uVar9 < 1) {
+    uVar6 = *(uint *)(param_1 + 0x70);
+    if ((int)uVar6 < 1) {
       return param_3;
     }
     local_4c = *(uint **)(param_1 + 0x68);
 LAB_0017a02c:
-    param_3 = (uint *)(uintptr_t)(func_00178AE8(param_1,param_3,local_4c,uVar9));
+    param_3 = func_00178AE8(param_1,param_3,local_4c,uVar6);
     break;
   case 5:
     bVar1 = *(byte *)(param_5 + 8);
-    bVar2 = *(byte *)(param_5 + 9);
-    bVar3 = *(byte *)(param_5 + 0xc);
-    uVar9 = (uint)(short)((ushort)*(byte *)(param_5 + 10) + (ushort)*(byte *)(param_5 + 0xb) * 0x100
+    uVar6 = (uint)*(byte *)(param_5 + 9);
+    bVar2 = *(byte *)(param_5 + 0xc);
+    uVar7 = (uint)(short)((ushort)*(byte *)(param_5 + 10) + (ushort)*(byte *)(param_5 + 0xb) * 0x100
                          );
-    puVar6 = (uint *)(uintptr_t)(func_00179104(param_1,param_2,param_3));
-    param_3 = (uint *)func_001794DC(param_1,puVar6,(uint)bVar1,uVar9,(uint)bVar2);
-    if ((int)uVar9 < 0) {
-      param_3 = (uint *)(uintptr_t)(func_00179190(param_1,param_3,(uint)bVar3,(uint)bVar2));
+    puVar4 = func_00179104(param_1,param_2,param_3);
+    objStack_50[0] = uVar6;
+    param_3 = (uint *)func_001794DC(param_1,puVar4,(uint)bVar1,uVar7,uVar6);
+    if ((int)uVar7 < 0) {
+      param_3 = func_00179190(param_1,param_3,(uint)bVar2,uVar6);
     }
     break;
   case 9:
     if (*DAT_00179f58 != 0) {
-      iVar7 = func_00584438(*DAT_00179f58);
-      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)iVar7,0);
+      iVar3 = func_00584438(*DAT_00179f58);
+      objStack_50[0] = 0;
+      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)iVar3,0);
     }
     break;
   case 10:
     if (*DAT_00179f58 != 0) {
-      iVar7 = func_005847DC(*DAT_00179f58);
-      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)iVar7,0);
+      iVar3 = func_005847DC(*DAT_00179f58);
+      objStack_50[0] = 0;
+      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)iVar3,0);
     }
     break;
   case 0xb:
     if (*DAT_00179f58 != 0) {
-      uVar8 = func_005844EC(*DAT_00179f58);
-      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)uVar8,0);
+      uVar5 = func_005844EC(*DAT_00179f58);
+      objStack_50[0] = 0;
+      param_3 = (uint *)func_001794DC(param_1,param_3,0,(int)(short)uVar5,0);
     }
   }
   return param_3;
 joined_r0x0017a020:
-  if (0x40000 < iVar7) goto LAB_0017a024;
+  if (0x40000 < iVar3) goto LAB_0017a024;
 LAB_00179e94:
-  uVar9 = iVar7 << 1;
+  uVar6 = iVar3 << 1;
   goto LAB_0017a02c;
 }
 
