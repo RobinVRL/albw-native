@@ -527,6 +527,11 @@ def build_one(job):
         cmd += ["-fms-extensions", "-Wno-error=int-to-pointer-cast"]  # __ptr32 (ALBW_GP)
     if v4_enabled():
         cmd += ["-DALBW_V4"]  # ghidra_types.h round-3 helpers
+        if v4_stage() >= 2:
+            # uninitialised locals start at 0 (as the ARM stack/registers usually happen to be
+            # read in Ghidra's perm_local branches): without it clang folds functions that branch
+            # on an uninitialised local into nothing (BOOT_LOG stop 59)
+            cmd += ["-ftrivial-auto-var-init=zero"]
     if cpp:
         cmd += ["-x", "c++", "-std=gnu++11", "-fno-threadsafe-statics"]
     else:
