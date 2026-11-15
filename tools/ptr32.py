@@ -61,7 +61,19 @@ RE_GLOBAL_FN = re.compile(r"\b(?:code|_func_\w+) \*\s*ALBW_GP\s+(" + GAME_SYM + 
 RE_NEG_UNSIGNED = re.compile(r"(\+ -(?=u[A-Za-z]*Var\d+\b)|\[-(?=[A-Za-z_(*])(?!\(long long\)))")
 
 
+# extern arrays of game data: the x86-64 System V ABI lets the compiler assume a global array of
+# >= 16 bytes is 16-byte aligned (movaps / movdqa); game symbols keep their 3DS offsets (any
+# alignment): data_0069C792 (2 mod 16) faulted in 00498700 (BOOT_LOG64 stop 8). Declare them
+# aligned(1) (i386 has no such rule; this pass runs for x86-64 only)
+RE_EXTERN_ARRAY = re.compile(r"^(\s*extern\b[^;()=]*?\b\w*_[0-9A-Fa-f]{8}(?:\s*\[[^\]\n]*\])+)(\s*;)", re.M)
+
+
+def align1_arrays(text):
+    return RE_EXTERN_ARRAY.sub(lambda m: m.group(1) + " __attribute__((aligned(1)))" + m.group(2), text)
+
+
 def rewrite_ghidra(text):
+    text = align1_arrays(text)
     text = RE_NEG_UNSIGNED.sub(lambda m: m.group(1) + "(long long)", text)
     text = RE_PTRPTR.sub(lambda m: _stars(m.group(1), m.group(3)), text)
     text = RE_EXTERN_PTR.sub(lambda m: "%s ALBW_GP %s%s" % (m.group(1), m.group(3), m.group(4)), text)

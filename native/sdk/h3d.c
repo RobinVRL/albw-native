@@ -818,7 +818,7 @@ extern uint32_t data_0070B960;   /* -> h3d draw environment, +0x1C: previous dra
 extern uint32_t data_00725BCC;   /* guard of data_00725BD0 */
 extern uint32_t data_00725BD0;   /* type identity used by the element type check */
 extern uint32_t data_007270F4;   /* guard of the identity matrix */
-extern float data_007AF2A4[12];  /* static identity Mtx34 */
+extern float data_007AF2A4[12] ALBW_DATA_ALIGN;  /* static identity Mtx34 (game data: 4 mod 16) */
 extern uint32_t data_0070B928;   /* -> visibility buffers (double-buffered, 0x1707 words each) */
 
 /* visible index list of a culled mesh element (Ghidra: the double-buffered visibility block) */
