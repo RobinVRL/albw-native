@@ -12,6 +12,7 @@
  * *(+0xF4)+0x90, tail call 001E30D0(this)).  Confidence: high. */
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include "route.h"
 
 extern uint32_t data_00712450[], data_007124F0[], data_00711F50[], data_0070B960[];
@@ -51,18 +52,21 @@ static int x87_depth_now(void) {
     return 0;
 #endif
 }
+static long g_calc_no; /* TaskFileSelect calc count (ALBW_X87_TRACE / ALBW_X87_TRAP) */
 static void x87_step(const char *what, int *last) {
     static int on = -1;
     if (on < 0) on = getenv("ALBW_X87_TRACE") != NULL;
     if (!on) return;
     int d = x87_depth_now();
-    if (*last >= 0 && d != *last) fprintf(stderr, "x87: TaskFileSelect calc: %s changed depth %d -> %d\n", what, *last, d);
+    if (*last >= 0 && d != *last)
+        fprintf(stderr, "x87: TaskFileSelect calc %ld: %s changed depth %d -> %d\n", g_calc_no, what, *last, d);
     *last = d;
 }
 
 void func_0029B698(char *self)
 {
     int x87 = -1;
+    g_calc_no++;
     x87_step("start", &x87);
     title_trace(self);
     if (func_00520B48((int)data_00712450[0]) == 0) {
@@ -99,6 +103,12 @@ void func_0029B698(char *self)
     if (RF(RP(self, 0xEC), 0x194, uint8_t) != 0) {
         RF(RP(self, 0xF4), 0x94, uint8_t) = 0;
         RF(GPTR_TO(char, data_0070B960[0]), 0x2C1B, uint8_t) = 0;
+    }
+    {   /* ALBW_X87_TRAP=<calc>: SIGTRAP before that calc's 001E30D0 (debug aid: under gdb, set
+         * breakpoints on the float-returning virtual functions for one frame only) */
+        static long trap = -2;
+        if (trap == -2) { const char *e = getenv("ALBW_X87_TRAP"); trap = e ? atol(e) : -1; }
+        if (trap == g_calc_no) raise(SIGTRAP);
     }
     func_001E30D0(self);
     x87_step("001E30D0", &x87);

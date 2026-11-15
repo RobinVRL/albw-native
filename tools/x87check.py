@@ -32,9 +32,29 @@ def analyse(binary):
     funcs = collections.OrderedDict(); cur = None
     for line in dis.splitlines():
         m = re.match(r'^[0-9a-f]+ <(.+)>:$', line)
-        if m: cur = m.group(1); funcs[cur] = []; continue
+        if m:
+            cur = m.group(1)
+            # a name defined twice (a weak decomp copy and a native override, two static
+            # `target`s): keep the first body, which is the one the binary's calls bind to in
+            # objdump order; the later copy is analysed under a suffixed name (a later
+            # same-name body made func_00115B3C look float-returning, so every caller of a
+            # function ending in a call to it was reported as leaking)
+            if cur in funcs: cur = cur + '@dup%x' % len(funcs)
+            funcs[cur] = []; continue
         m = re.match(r'^\s+([0-9a-f]+):\s+(\S+)\s*(.*)$', line)
         if m and cur: funcs[cur].append((int(m.group(1), 16), m.group(2), m.group(3)))
+    # bound each body by its symbol size: code after it without a symbol of its own (local
+    # functions of stripped objects) would otherwise be read as part of it (func_00115B3C, a
+    # 46-byte void function, looked float-returning because of the code that follows it)
+    sizes = {}
+    for l in subprocess.run(['nm', '-S', '--defined-only', binary], capture_output=True, text=True).stdout.splitlines():
+        p = l.split()
+        if len(p) == 4 and p[2] in 'tTwW':
+            sizes.setdefault(p[3], (int(p[0], 16), int(p[1], 16)))
+    for name, ins in funcs.items():
+        b = sizes.get(name.split('@dup')[0])
+        if b and ins and ins[0][0] == b[0] and b[1]:
+            funcs[name] = [x for x in ins if x[0] < b[0] + b[1]]
 
     # (a call to a float-returning function whose st(0) is left for the ret counts as a load:
     # the returns-this thunks pass their __impl's float through; iterate to a fixpoint)
