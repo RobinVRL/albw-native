@@ -1,0 +1,2087 @@
+{
+ "about": "Companion of ghidra_name_fixes.json (written by the EU/USA map audit, albw-decomp-ai tools/eu_map_audit.py, decomp commit 7b09bf84). The Ghidra projects (build/ghidra_all, ghidra_analyzed..5) named every EU function func_<USA> by the OLD map (first USA in sorted order claims an EU address; checked against all six dumps' definition lines). ghidra_name_fixes.json maps each wrong Ghidra-project name to the USA name the corrected map gives that EU function. Apply it to raw Ghidra text only, BEFORE eu_fun_to_usa(): with the corrected map, FUN_<EU> of fun_collision_keys' EU functions resolve to the key names, which are then correct and must not be renamed (0 such FUN_ references in ghidra_analyzed5 today). Never apply it to matched sources (src/work*): they use real USA names (matched_sources_using_key_names). Substitution must be simultaneous (one regex pass): values_that_are_keys entries chain.",
+ "fixes": {
+  "func_001058EC": {
+   "right": "func_001058A8",
+   "eu": "001058A8",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00105928": {
+   "right": "func_001058EC",
+   "eu": "001058EC",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00105960": {
+   "right": "func_00105928",
+   "eu": "00105928",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00109014": {
+   "right": "func_00108FF0",
+   "eu": "00108FF0",
+   "ghidra_callers_in_build": 1
+  },
+  "func_002559B4": {
+   "right": "func_002558DC",
+   "eu": "00255904",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255A18": {
+   "right": "func_00255980",
+   "eu": "002559A8",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255AAC": {
+   "right": "func_00255A18",
+   "eu": "00255A40",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255B88": {
+   "right": "func_00255AC4",
+   "eu": "00255AEC",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255C14": {
+   "right": "func_00255B88",
+   "eu": "00255BB0",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255C24": {
+   "right": "func_00255B98",
+   "eu": "00255BC0",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00255C40": {
+   "right": "func_00255BB8",
+   "eu": "00255BE0",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00255C50": {
+   "right": "func_00255BC8",
+   "eu": "00255BF0",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00255C84": {
+   "right": "func_00255C14",
+   "eu": "00255C3C",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255C94": {
+   "right": "func_00255C24",
+   "eu": "00255C4C",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00255CC8": {
+   "right": "func_00255C40",
+   "eu": "00255C68",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255CD8": {
+   "right": "func_00255C50",
+   "eu": "00255C78",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255CF4": {
+   "right": "func_00255C84",
+   "eu": "00255CAC",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255D04": {
+   "right": "func_00255C94",
+   "eu": "00255CBC",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255D20": {
+   "right": "func_00255CC8",
+   "eu": "00255CF0",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00255D30": {
+   "right": "func_00255CD8",
+   "eu": "00255D00",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00255D48": {
+   "right": "func_00255CF4",
+   "eu": "00255D1C",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0025B760": {
+   "right": "func_0025B74C",
+   "eu": "0025B774",
+   "ghidra_callers_in_build": 2
+  },
+  "func_0025B788": {
+   "right": "func_0025B760",
+   "eu": "0025B788",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0025B7B0": {
+   "right": "func_0025B788",
+   "eu": "0025B7B0",
+   "ghidra_callers_in_build": 5
+  },
+  "func_0025B7C4": {
+   "right": "func_0025B79C",
+   "eu": "0025B7C4",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0025B7D8": {
+   "right": "func_0025B7B0",
+   "eu": "0025B7D8",
+   "ghidra_callers_in_build": 14
+  },
+  "func_0025B810": {
+   "right": "func_0025B7D8",
+   "eu": "0025B800",
+   "ghidra_callers_in_build": 9
+  },
+  "func_0025B838": {
+   "right": "func_0025B810",
+   "eu": "0025B838",
+   "ghidra_callers_in_build": 13
+  },
+  "func_0025B84C": {
+   "right": "func_0025B824",
+   "eu": "0025B84C",
+   "ghidra_callers_in_build": 11
+  },
+  "func_0029822C": {
+   "right": "func_002982F4",
+   "eu": "002982D0",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0036166C": {
+   "right": "func_00361634",
+   "eu": "00361610",
+   "ghidra_callers_in_build": 0
+  },
+  "func_0036167C": {
+   "right": "func_00361640",
+   "eu": "0036161C",
+   "ghidra_callers_in_build": 0
+  },
+  "func_003616C4": {
+   "right": "func_00361658",
+   "eu": "00361634",
+   "ghidra_callers_in_build": 9
+  },
+  "func_003616D4": {
+   "right": "func_0036166C",
+   "eu": "00361648",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0036174C": {
+   "right": "func_003616D4",
+   "eu": "003616B0",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00361790": {
+   "right": "func_0036174C",
+   "eu": "00361728",
+   "ghidra_callers_in_build": 9
+  },
+  "func_003617B0": {
+   "right": "func_0036176C",
+   "eu": "00361748",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00391F90": {
+   "right": "func_00391F94",
+   "eu": "00391F70",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00458AFC": {
+   "right": "func_00458B00",
+   "eu": "00458AD8",
+   "ghidra_callers_in_build": 0
+  },
+  "func_0050B600": {
+   "right": "func_0050B604",
+   "eu": "0050B5DC",
+   "ghidra_callers_in_build": 0
+  },
+  "func_0050B788": {
+   "right": "func_0050B78C",
+   "eu": "0050B764",
+   "ghidra_callers_in_build": 2
+  },
+  "func_005210AC": {
+   "right": "func_00521054",
+   "eu": "0052102C",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00521100": {
+   "right": "func_005210AC",
+   "eu": "00521084",
+   "ghidra_callers_in_build": 1
+  },
+  "func_0052114C": {
+   "right": "func_00521100",
+   "eu": "005210D8",
+   "ghidra_callers_in_build": 7
+  },
+  "func_00521184": {
+   "right": "func_0052114C",
+   "eu": "00521124",
+   "ghidra_callers_in_build": 5
+  },
+  "func_005211BC": {
+   "right": "func_00521184",
+   "eu": "0052115C",
+   "ghidra_callers_in_build": 23
+  },
+  "func_0053EDAC": {
+   "right": "func_0053ED90",
+   "eu": "0053ED68",
+   "ghidra_callers_in_build": 1
+  },
+  "func_005569BC": {
+   "right": "func_00556984",
+   "eu": "0055695C",
+   "ghidra_callers_in_build": 3
+  },
+  "func_005569D4": {
+   "right": "func_005569A4",
+   "eu": "0055697C",
+   "ghidra_callers_in_build": 7
+  },
+  "func_005569EC": {
+   "right": "func_005569BC",
+   "eu": "00556994",
+   "ghidra_callers_in_build": 2
+  },
+  "func_00556A04": {
+   "right": "func_005569D4",
+   "eu": "005569AC",
+   "ghidra_callers_in_build": 5
+  },
+  "func_00556A2C": {
+   "right": "func_005569F8",
+   "eu": "005569D0",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556A38": {
+   "right": "func_00556A04",
+   "eu": "005569DC",
+   "ghidra_callers_in_build": 5
+  },
+  "func_00556A74": {
+   "right": "func_00556A2C",
+   "eu": "00556A04",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00556A80": {
+   "right": "func_00556A38",
+   "eu": "00556A10",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00556A90": {
+   "right": "func_00556A44",
+   "eu": "00556A1C",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00556AA8": {
+   "right": "func_00556A5C",
+   "eu": "00556A34",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00556AC4": {
+   "right": "func_00556A74",
+   "eu": "00556A4C",
+   "ghidra_callers_in_build": 2
+  },
+  "func_00556AE0": {
+   "right": "func_00556A90",
+   "eu": "00556A68",
+   "ghidra_callers_in_build": 12
+  },
+  "func_00556AEC": {
+   "right": "func_00556A9C",
+   "eu": "00556A74",
+   "ghidra_callers_in_build": 5
+  },
+  "func_00556AF8": {
+   "right": "func_00556AA8",
+   "eu": "00556A80",
+   "ghidra_callers_in_build": 6
+  },
+  "func_00556B2C": {
+   "right": "func_00556AE0",
+   "eu": "00556AB8",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00556B3C": {
+   "right": "func_00556AEC",
+   "eu": "00556AC4",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00556B54": {
+   "right": "func_00556AF8",
+   "eu": "00556AD0",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556B70": {
+   "right": "func_00556B2C",
+   "eu": "00556B04",
+   "ghidra_callers_in_build": 2
+  },
+  "func_00556B7C": {
+   "right": "func_00556B3C",
+   "eu": "00556B14",
+   "ghidra_callers_in_build": 7
+  },
+  "func_00556B94": {
+   "right": "func_00556B54",
+   "eu": "00556B2C",
+   "ghidra_callers_in_build": 7
+  },
+  "func_00556BC8": {
+   "right": "func_00556B7C",
+   "eu": "00556B54",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556C48": {
+   "right": "func_00556BD4",
+   "eu": "00556BAC",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00556C94": {
+   "right": "func_00556C48",
+   "eu": "00556C20",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00556CB8": {
+   "right": "func_00556C7C",
+   "eu": "00556C54",
+   "ghidra_callers_in_build": 1
+  },
+  "func_00556CD0": {
+   "right": "func_00556C94",
+   "eu": "00556C6C",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556D04": {
+   "right": "func_00556CD0",
+   "eu": "00556CA8",
+   "ghidra_callers_in_build": 0
+  },
+  "func_00556D48": {
+   "right": "func_00556D04",
+   "eu": "00556CDC",
+   "ghidra_callers_in_build": 4
+  },
+  "func_00556D7C": {
+   "right": "func_00556D48",
+   "eu": "00556D20",
+   "ghidra_callers_in_build": 5
+  },
+  "func_00556DC0": {
+   "right": "func_00556D7C",
+   "eu": "00556D54",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556E00": {
+   "right": "func_00556DC0",
+   "eu": "00556D98",
+   "ghidra_callers_in_build": 9
+  },
+  "func_00556E64": {
+   "right": "func_00556E20",
+   "eu": "00556DF8",
+   "ghidra_callers_in_build": 3
+  },
+  "func_00556E94": {
+   "right": "func_00556E64",
+   "eu": "00556E3C",
+   "ghidra_callers_in_build": 60
+  },
+  "func_0056B500": {
+   "right": "func_0056B4C8",
+   "eu": "0056B4A0",
+   "ghidra_callers_in_build": 1
+  }
+ },
+ "fun_collision_keys": [
+  "func_00105960",
+  "func_00109014",
+  "func_002559B4",
+  "func_00255AAC",
+  "func_00255D04",
+  "func_00255D20",
+  "func_00255D30",
+  "func_00255D48",
+  "func_0025B7C4",
+  "func_0025B838",
+  "func_0025B84C",
+  "func_0029822C",
+  "func_0036167C",
+  "func_003616C4",
+  "func_00361790",
+  "func_003617B0",
+  "func_00391F90",
+  "func_00458AFC",
+  "func_0050B600",
+  "func_0050B788",
+  "func_005211BC",
+  "func_0053EDAC",
+  "func_005569EC",
+  "func_00556A80",
+  "func_00556AC4",
+  "func_00556B70",
+  "func_00556B94",
+  "func_00556BC8",
+  "func_00556CB8",
+  "func_00556E00",
+  "func_00556E94",
+  "func_0056B500"
+ ],
+ "values_that_are_keys": [
+  "func_001058EC",
+  "func_00105928",
+  "func_00255A18",
+  "func_00255B88",
+  "func_00255C14",
+  "func_00255C24",
+  "func_00255C40",
+  "func_00255C50",
+  "func_00255C84",
+  "func_00255C94",
+  "func_00255CC8",
+  "func_00255CD8",
+  "func_00255CF4",
+  "func_0025B760",
+  "func_0025B788",
+  "func_0025B7B0",
+  "func_0025B7D8",
+  "func_0025B810",
+  "func_0036166C",
+  "func_003616D4",
+  "func_0036174C",
+  "func_005210AC",
+  "func_00521100",
+  "func_0052114C",
+  "func_00521184",
+  "func_005569BC",
+  "func_005569D4",
+  "func_00556A04",
+  "func_00556A2C",
+  "func_00556A38",
+  "func_00556A74",
+  "func_00556A90",
+  "func_00556AA8",
+  "func_00556AE0",
+  "func_00556AEC",
+  "func_00556AF8",
+  "func_00556B2C",
+  "func_00556B3C",
+  "func_00556B54",
+  "func_00556B7C",
+  "func_00556C48",
+  "func_00556C94",
+  "func_00556CD0",
+  "func_00556D04",
+  "func_00556D48",
+  "func_00556D7C",
+  "func_00556DC0",
+  "func_00556E64"
+ ],
+ "ghidra_sources_with_wrong_callees": {
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00102E40.c": [
+   "func_001058EC",
+   "func_00105928"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00104AA0.c": [
+   "func_00109014"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00126D4C.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001358B4.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0013D550.c": [
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001437A0.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00148354.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0014835C.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00148978.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00152D40.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0015379C.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0015593C.c": [
+   "func_00556B7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00157BF0.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001639D4.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00163C5C.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00163DD4.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00164FFC.c": [
+   "func_005569D4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0016AAAC.c": [
+   "func_005569EC",
+   "func_00556A38",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0016F814.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001717B0.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00171B54.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00171D98.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00172778.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001774B4.c": [
+   "func_00556D7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0017EBCC.c": [
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0017ED08.c": [
+   "func_00556D48",
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0017F020.c": [
+   "func_00556B7C",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0017FF90.c": [
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0018096C.c": [
+   "func_00556B7C",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00180B48.c": [
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00181D5C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00182B4C.c": [
+   "func_00556B54"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00184440.c": [
+   "func_005569D4",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00187DA4.c": [
+   "func_00556D48",
+   "func_00556D7C",
+   "func_00556DC0",
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0018CFAC.c": [
+   "func_005569D4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0018F62C.c": [
+   "func_00556A04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00190994.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00190D4C.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00192E2C.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_00199088.c": [
+   "func_00556AC4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001991F0.c": [
+   "func_00556AC4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0019D3C8.c": [
+   "func_00556B7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0019D808.c": [
+   "func_00556B7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_0019DB78.c": [
+   "func_00556B7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001A367C.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001A36F0.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001A486C.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001A4B68.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001AD140.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001AD3DC.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001AD404.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001AFA80.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B044C.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B296C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B2AF8.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B33FC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B9AAC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001BC72C.c": [
+   "func_00556A38"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001CD15C.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001CD2E4.c": [
+   "func_00255CC8",
+   "func_00255CF4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001CE008.c": [
+   "func_0025B7D8",
+   "func_005210AC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001D0150.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001D2078.c": [
+   "func_00556D48",
+   "func_00556D7C",
+   "func_00556DC0",
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001E2778.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001E47F4.c": [
+   "func_003617B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/001/func_001E4D1C.c": [
+   "func_00556B94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00203F34.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00204F00.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00204F78.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00205038.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002050BC.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00211328.c": [
+   "func_00521184"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0021E104.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0021EF8C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0021F088.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0022B768.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0022C748.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00235B30.c": [
+   "func_00556A38"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00235ED4.c": [
+   "func_00556B94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00238DD4.c": [
+   "func_00556B94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0023D438.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0023F9EC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002402C4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00247434.c": [
+   "func_00556D48"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0024BD00.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002500F4.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002507E0.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00259460.c": [
+   "func_0025B7B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00259850.c": [
+   "func_0025B7B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025A56C.c": [
+   "func_0025B7B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025A878.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025AC00.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025AF44.c": [
+   "func_00556D7C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00262004.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00263620.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00264FB8.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002659D8.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0027CCD4.c": [
+   "func_00556D7C",
+   "func_00556DC0",
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00289734.c": [
+   "func_005210AC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00293DC0.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00293F60.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002982CC.c": [
+   "func_0029822C",
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002982F4.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_00299C04.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029A460.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029E5E0.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029E798.c": [
+   "func_00556E64"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029E7B0.c": [
+   "func_00556E64"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029FBDC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002A0BE8.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002A18C8.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002A2A34.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002C734C.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002D8484.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002E1CA4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002E21DC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002E29F8.c": [
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002E6448.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002E8400.c": [
+   "func_00556B54",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002EA8F8.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002EBA30.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002EF93C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002F08B0.c": [
+   "func_00556B94",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002F1B2C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002F24D0.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002F9EB4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002FA684.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002FCAF8.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002FCB1C.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002FD784.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/002/func_002FDBC4.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00305F0C.c": [
+   "func_003616D4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0030E2B8.c": [
+   "func_00556CD0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0030EA5C.c": [
+   "func_00556CD0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0030F1B0.c": [
+   "func_00556CD0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0030FD44.c": [
+   "func_00556AEC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003109A8.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00310C08.c": [
+   "func_00556AEC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003137A4.c": [
+   "func_00556B70"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00315E64.c": [
+   "func_00556CB8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0031E9A8.c": [
+   "func_0053EDAC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00327A4C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00329C70.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0032AD60.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0033485C.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00344834.c": [
+   "func_002559B4",
+   "func_00255AAC",
+   "func_00255B88",
+   "func_00255CD8",
+   "func_00255D04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0034F96C.c": [
+   "func_005569D4",
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035005C.c": [
+   "func_005569D4",
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035008C.c": [
+   "func_005569D4",
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00352F0C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00353DC4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003541E4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003545FC.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00354998.c": [
+   "func_00556B7C",
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003553C8.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00356DE0.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035ECD4.c": [
+   "func_0025B84C",
+   "func_00556BC8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035EF44.c": [
+   "func_00556B94",
+   "func_00556BC8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035EFF8.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0035FA4C.c": [
+   "func_00556BC8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00360670.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00360954.c": [
+   "func_00556A04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00368CEC.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036A638.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036AC08.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036B668.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036B868.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036CB64.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036CBF0.c": [
+   "func_003616C4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00371DE4.c": [
+   "func_00255A18",
+   "func_00255C14"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00372798.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00373BB0.c": [
+   "func_00255C84",
+   "func_00255D20",
+   "func_00255D48",
+   "func_00556A80",
+   "func_00556B2C",
+   "func_00556B3C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00373EEC.c": [
+   "func_00556A80",
+   "func_00556B2C",
+   "func_00556B3C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00374174.c": [
+   "func_00556A80",
+   "func_00556B2C",
+   "func_00556B3C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00388654.c": [
+   "func_00556B70"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391CE8.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391F94.c": [
+   "func_00391F90"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0039222C.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00393644.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_00393648.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003953EC.c": [
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0039A96C.c": [
+   "func_00556A90"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_0039E0FC.c": [
+   "func_00556A04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003E489C.c": [
+   "func_001058EC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/003/func_003E4B34.c": [
+   "func_001058EC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004262AC.c": [
+   "func_00556A74"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00426EFC.c": [
+   "func_00556A74",
+   "func_00556AEC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00437A78.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00438078.c": [
+   "func_00556AEC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0043D4F4.c": [
+   "func_00556B54"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0043F904.c": [
+   "func_005569BC",
+   "func_00556A2C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0043FC74.c": [
+   "func_005569BC",
+   "func_00556A2C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00448138.c": [
+   "func_0025B7B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00455170.c": [
+   "func_00556E64"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0045F574.c": [
+   "func_0036174C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0045FBD0.c": [
+   "func_0036174C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0045FCE4.c": [
+   "func_0025B788"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046019C.c": [
+   "func_0036174C",
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046308C.c": [
+   "func_00556A74",
+   "func_00556A80",
+   "func_00556B2C",
+   "func_00556B3C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004644D4.c": [
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_0047035C.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00477088.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004793F8.c": [
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_00479404.c": [
+   "func_00556AF8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004797BC.c": [
+   "func_0036174C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004AF5C4.c": [
+   "func_0025B7C4",
+   "func_0025B7D8",
+   "func_005210AC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004BA3DC.c": [
+   "func_00556A38"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004BA6BC.c": [
+   "func_00556B94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004BB708.c": [
+   "func_005569D4"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C2650.c": [
+   "func_0025B7D8",
+   "func_005210AC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C90E8.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C92F0.c": [
+   "func_00556AA8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C9684.c": [
+   "func_00521184"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C9B74.c": [
+   "func_00521184"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004D55FC.c": [
+   "func_00556A38"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004DCE20.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E19C8.c": [
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E4788.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E6420.c": [
+   "func_00556C48"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E9584.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E97BC.c": [
+   "func_0025B760"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004E9A68.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EA17C.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EA868.c": [
+   "func_0025B810",
+   "func_0025B84C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EABB8.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EAE58.c": [
+   "func_0025B7D8"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EB350.c": [
+   "func_0025B760"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EB658.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EBB58.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EBEB0.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EC0B8.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EC324.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004EC410.c": [
+   "func_0025B810"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004F70A8.c": [
+   "func_00521100"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004F7A5C.c": [
+   "func_00556A04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004F7A60.c": [
+   "func_00556A04"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004FEE78.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004FF430.c": [
+   "func_0052114C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/004/func_004FF4DC.c": [
+   "func_005211BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_005059A4.c": [
+   "func_00556E00"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00507AE0.c": [
+   "func_00556B94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00508144.c": [
+   "func_005569EC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050B78C.c": [
+   "func_0050B788"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050BC9C.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050C4B0.c": [
+   "func_00556AE0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00514B9C.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0051EC78.c": [
+   "func_00556A2C"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00523F30.c": [
+   "func_005569BC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_005291BC.c": [
+   "func_00521184"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0053993C.c": [
+   "func_0025B7B0"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00541C38.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00548B78.c": [
+   "func_00521184"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0054B9D8.c": [
+   "func_00556A74",
+   "func_00556AEC"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00559C64.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_0056CDC0.c": [
+   "func_0056B500"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587970.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587A78.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587BE0.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587CE8.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587DDC.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_00587EB4.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/005/func_005880A8.c": [
+   "func_0025B838"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_00604598.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_0060B2A0.c": [
+   "func_0050B788"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_006527B8.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_00652E10.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_006533D8.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_00653BB0.c": [
+   "func_00361790"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_006549D4.c": [
+   "func_00556E94"
+  ],
+  "ghidra_fallback/ghidra_analyzed5_v4/006/func_00655988.c": [
+   "func_00556E94"
+  ]
+ },
+ "ghidra_sources_wrong_body": {
+  "001058A8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001058A8.c",
+   "decompiled_eu": "0010587C",
+   "correct_eu": "001058A8"
+  },
+  "001058EC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001058EC.c",
+   "decompiled_eu": "001058A8",
+   "correct_eu": "001058EC"
+  },
+  "00105928": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_00105928.c",
+   "decompiled_eu": "001058EC",
+   "correct_eu": "00105928"
+  },
+  "00105960": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_00105960.c",
+   "decompiled_eu": "00105928",
+   "correct_eu": "00105960"
+  },
+  "00108FF0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_00108FF0.c",
+   "decompiled_eu": "00108FDC",
+   "correct_eu": "00108FF0"
+  },
+  "00109014": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_00109014.c",
+   "decompiled_eu": "00108FF0",
+   "correct_eu": "00109014"
+  },
+  "001B3778": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B3778.c",
+   "decompiled_eu": "001B3754",
+   "correct_eu": "001B3778"
+  },
+  "001B3970": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B3970.c",
+   "decompiled_eu": "001B394C",
+   "correct_eu": "001B3970"
+  },
+  "001B3C90": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B3C90.c",
+   "decompiled_eu": "001B3C6C",
+   "correct_eu": "001B3C90"
+  },
+  "001B4580": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B4580.c",
+   "decompiled_eu": "001B455C",
+   "correct_eu": "001B4580"
+  },
+  "001B4598": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/001/func_001B4598.c",
+   "decompiled_eu": "001B4574",
+   "correct_eu": "001B4598"
+  },
+  "002558DC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002558DC.c",
+   "decompiled_eu": "002558C0",
+   "correct_eu": "00255904"
+  },
+  "00255980": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255980.c",
+   "decompiled_eu": "002558D0",
+   "correct_eu": "002559A8"
+  },
+  "002559D4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002559D4.c",
+   "decompiled_eu": "00255924",
+   "correct_eu": "002559FC"
+  },
+  "00255A00": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255A00.c",
+   "decompiled_eu": "00255950",
+   "correct_eu": "00255A28"
+  },
+  "00255A10": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255A10.c",
+   "decompiled_eu": "00255960",
+   "correct_eu": "00255A38"
+  },
+  "00255AAC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255AAC.c",
+   "decompiled_eu": "00255A40",
+   "correct_eu": "00255AD4"
+  },
+  "00255AB4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255AB4.c",
+   "decompiled_eu": "00255A48",
+   "correct_eu": "00255ADC"
+  },
+  "00255AC4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255AC4.c",
+   "decompiled_eu": "00255A58",
+   "correct_eu": "00255AEC"
+  },
+  "00255B88": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255B88.c",
+   "decompiled_eu": "00255AEC",
+   "correct_eu": "00255BB0"
+  },
+  "00255BB8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255BB8.c",
+   "decompiled_eu": "00255B1C",
+   "correct_eu": "00255BE0"
+  },
+  "00255BC8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255BC8.c",
+   "decompiled_eu": "00255B2C",
+   "correct_eu": "00255BF0"
+  },
+  "00255BD0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255BD0.c",
+   "decompiled_eu": "00255B34",
+   "correct_eu": "00255BF8"
+  },
+  "00255C14": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255C14.c",
+   "decompiled_eu": "00255BB0",
+   "correct_eu": "00255C3C"
+  },
+  "00255C40": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255C40.c",
+   "decompiled_eu": "00255BE0",
+   "correct_eu": "00255C68"
+  },
+  "00255C84": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255C84.c",
+   "decompiled_eu": "00255C3C",
+   "correct_eu": "00255CAC"
+  },
+  "00255CC8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255CC8.c",
+   "decompiled_eu": "00255C68",
+   "correct_eu": "00255CF0"
+  },
+  "00255CF4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255CF4.c",
+   "decompiled_eu": "00255CAC",
+   "correct_eu": "00255D1C"
+  },
+  "00255D20": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255D20.c",
+   "decompiled_eu": "00255CF0",
+   "correct_eu": "00255D48"
+  },
+  "00255D48": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255D48.c",
+   "decompiled_eu": "00255D1C",
+   "correct_eu": "00255D70"
+  },
+  "00255E6C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00255E6C.c",
+   "decompiled_eu": "00255E40",
+   "correct_eu": "00255E94"
+  },
+  "00256034": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00256034.c",
+   "decompiled_eu": "00256008",
+   "correct_eu": "0025605C"
+  },
+  "002567B0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002567B0.c",
+   "decompiled_eu": "00256784",
+   "correct_eu": "002567D8"
+  },
+  "002567E4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002567E4.c",
+   "decompiled_eu": "002567B8",
+   "correct_eu": "0025680C"
+  },
+  "0025B74C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B74C.c",
+   "decompiled_eu": "0025B760",
+   "correct_eu": "0025B774"
+  },
+  "0025B760": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B760.c",
+   "decompiled_eu": "0025B774",
+   "correct_eu": "0025B788"
+  },
+  "0025B788": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B788.c",
+   "decompiled_eu": "0025B788",
+   "correct_eu": "0025B7B0"
+  },
+  "0025B79C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B79C.c",
+   "decompiled_eu": "0025B79C",
+   "correct_eu": "0025B7C4"
+  },
+  "0025B7B0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B7B0.c",
+   "decompiled_eu": "0025B7B0",
+   "correct_eu": "0025B7D8"
+  },
+  "0025B7C4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B7C4.c",
+   "decompiled_eu": "0025B7C4",
+   "correct_eu": "0025B7EC"
+  },
+  "0025B810": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B810.c",
+   "decompiled_eu": "0025B800",
+   "correct_eu": "0025B838"
+  },
+  "0025B824": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B824.c",
+   "decompiled_eu": "0025B814",
+   "correct_eu": "0025B84C"
+  },
+  "0025B838": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B838.c",
+   "decompiled_eu": "0025B838",
+   "correct_eu": "0025B860"
+  },
+  "0025B88C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B88C.c",
+   "decompiled_eu": "0025B88C",
+   "correct_eu": "0025B8B4"
+  },
+  "0025B894": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0025B894.c",
+   "decompiled_eu": "0025B894",
+   "correct_eu": "0025B8BC"
+  },
+  "00297E28": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00297E28.c",
+   "decompiled_eu": "00297ED0",
+   "correct_eu": "00297E04"
+  },
+  "0029822C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029822C.c",
+   "decompiled_eu": "002982D0",
+   "correct_eu": "00298208"
+  },
+  "002982F4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002982F4.c",
+   "decompiled_eu": "00298398",
+   "correct_eu": "002982D0"
+  },
+  "00298394": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00298394.c",
+   "decompiled_eu": "00298438",
+   "correct_eu": "00298370"
+  },
+  "00298B90": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00298B90.c",
+   "decompiled_eu": "00298C34",
+   "correct_eu": "00298B6C"
+  },
+  "00298C70": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00298C70.c",
+   "decompiled_eu": "00298D14",
+   "correct_eu": "00298C4C"
+  },
+  "00298C74": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00298C74.c",
+   "decompiled_eu": "00298D18",
+   "correct_eu": "00298C50"
+  },
+  "00298E64": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00298E64.c",
+   "decompiled_eu": "00298F08",
+   "correct_eu": "00298E40"
+  },
+  "002990A4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002990A4.c",
+   "decompiled_eu": "00299148",
+   "correct_eu": "00299080"
+  },
+  "002992E0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002992E0.c",
+   "decompiled_eu": "00299384",
+   "correct_eu": "002992BC"
+  },
+  "0029942C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029942C.c",
+   "decompiled_eu": "002994D0",
+   "correct_eu": "00299408"
+  },
+  "00299454": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00299454.c",
+   "decompiled_eu": "002994F8",
+   "correct_eu": "00299430"
+  },
+  "00299458": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00299458.c",
+   "decompiled_eu": "002994FC",
+   "correct_eu": "00299434"
+  },
+  "002994D0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002994D0.c",
+   "decompiled_eu": "00299574",
+   "correct_eu": "002994AC"
+  },
+  "00299574": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_00299574.c",
+   "decompiled_eu": "00299618",
+   "correct_eu": "00299550"
+  },
+  "0029993C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_0029993C.c",
+   "decompiled_eu": "002999E0",
+   "correct_eu": "00299918"
+  },
+  "002999E8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002999E8.c",
+   "decompiled_eu": "00299A8C",
+   "correct_eu": "002999C4"
+  },
+  "002999EC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/002/func_002999EC.c",
+   "decompiled_eu": "00299A90",
+   "correct_eu": "002999C8"
+  },
+  "00307CD8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00307CD8.c",
+   "decompiled_eu": "00307CD8",
+   "correct_eu": "00307CB4"
+  },
+  "0036176C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_0036176C.c",
+   "decompiled_eu": "003616D0",
+   "correct_eu": "00361748"
+  },
+  "003617B0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_003617B0.c",
+   "decompiled_eu": "00361748",
+   "correct_eu": "0036178C"
+  },
+  "00391558": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391558.c",
+   "decompiled_eu": "00391538",
+   "correct_eu": "00391534"
+  },
+  "00391618": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391618.c",
+   "decompiled_eu": "003915F8",
+   "correct_eu": "003915F4"
+  },
+  "00391CAC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391CAC.c",
+   "decompiled_eu": "00391C8C",
+   "correct_eu": "00391C88"
+  },
+  "00391CEC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391CEC.c",
+   "decompiled_eu": "00391CCC",
+   "correct_eu": "00391CC8"
+  },
+  "00391F90": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391F90.c",
+   "decompiled_eu": "00391F70",
+   "correct_eu": "00391F6C"
+  },
+  "00391F94": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/003/func_00391F94.c",
+   "decompiled_eu": "00391F74",
+   "correct_eu": "00391F70"
+  },
+  "004008C8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004008C8.c",
+   "decompiled_eu": "004008C8",
+   "correct_eu": "004008A8"
+  },
+  "0040F6FC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0040F6FC.c",
+   "decompiled_eu": "0040F6D8",
+   "correct_eu": "0040F6DC"
+  },
+  "004451A4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004451A4.c",
+   "decompiled_eu": "00445184",
+   "correct_eu": "0044517C"
+  },
+  "004451A8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004451A8.c",
+   "decompiled_eu": "00445188",
+   "correct_eu": "00445180"
+  },
+  "00457904": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00457904.c",
+   "decompiled_eu": "004578E0",
+   "correct_eu": "004578DC"
+  },
+  "00457974": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00457974.c",
+   "decompiled_eu": "00457950",
+   "correct_eu": "0045794C"
+  },
+  "00457B90": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00457B90.c",
+   "decompiled_eu": "00457B6C",
+   "correct_eu": "00457B68"
+  },
+  "00457FC0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00457FC0.c",
+   "decompiled_eu": "00457F9C",
+   "correct_eu": "00457F98"
+  },
+  "004580FC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004580FC.c",
+   "decompiled_eu": "004580D8",
+   "correct_eu": "004580D4"
+  },
+  "00458460": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458460.c",
+   "decompiled_eu": "0045843C",
+   "correct_eu": "00458438"
+  },
+  "00458694": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458694.c",
+   "decompiled_eu": "00458670",
+   "correct_eu": "0045866C"
+  },
+  "00458A3C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458A3C.c",
+   "decompiled_eu": "00458A18",
+   "correct_eu": "00458A14"
+  },
+  "00458AFC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458AFC.c",
+   "decompiled_eu": "00458AD8",
+   "correct_eu": "00458AD4"
+  },
+  "00458B00": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458B00.c",
+   "decompiled_eu": "00458ADC",
+   "correct_eu": "00458AD8"
+  },
+  "00458E18": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_00458E18.c",
+   "decompiled_eu": "00458DF4",
+   "correct_eu": "00458DF0"
+  },
+  "0046B5B8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046B5B8.c",
+   "decompiled_eu": "0046B5B8",
+   "correct_eu": "0046B590"
+  },
+  "0046B6E0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046B6E0.c",
+   "decompiled_eu": "0046B6E0",
+   "correct_eu": "0046B6B8"
+  },
+  "0046B85C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046B85C.c",
+   "decompiled_eu": "0046B85C",
+   "correct_eu": "0046B834"
+  },
+  "0046B8E8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046B8E8.c",
+   "decompiled_eu": "0046B8E8",
+   "correct_eu": "0046B8C0"
+  },
+  "0046B9C8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046B9C8.c",
+   "decompiled_eu": "0046B9C8",
+   "correct_eu": "0046B9A0"
+  },
+  "0046BBDC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BBDC.c",
+   "decompiled_eu": "0046BBDC",
+   "correct_eu": "0046BBB4"
+  },
+  "0046BC68": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BC68.c",
+   "decompiled_eu": "0046BC68",
+   "correct_eu": "0046BC40"
+  },
+  "0046BCF4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BCF4.c",
+   "decompiled_eu": "0046BCF4",
+   "correct_eu": "0046BCCC"
+  },
+  "0046BE28": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BE28.c",
+   "decompiled_eu": "0046BE28",
+   "correct_eu": "0046BE00"
+  },
+  "0046BEFC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BEFC.c",
+   "decompiled_eu": "0046BEFC",
+   "correct_eu": "0046BED4"
+  },
+  "0046BF88": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046BF88.c",
+   "decompiled_eu": "0046BF88",
+   "correct_eu": "0046BF60"
+  },
+  "0046C014": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_0046C014.c",
+   "decompiled_eu": "0046C014",
+   "correct_eu": "0046BFEC"
+  },
+  "004C2B24": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C2B24.c",
+   "decompiled_eu": "004C2B00",
+   "correct_eu": "004C2AFC"
+  },
+  "004C2EF4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C2EF4.c",
+   "decompiled_eu": "004C2ED0",
+   "correct_eu": "004C2ECC"
+  },
+  "004C33C8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C33C8.c",
+   "decompiled_eu": "004C33A4",
+   "correct_eu": "004C33A0"
+  },
+  "004C3698": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/004/func_004C3698.c",
+   "decompiled_eu": "004C3674",
+   "correct_eu": "004C3670"
+  },
+  "0050A434": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050A434.c",
+   "decompiled_eu": "0050A410",
+   "correct_eu": "0050A40C"
+  },
+  "0050A500": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050A500.c",
+   "decompiled_eu": "0050A4DC",
+   "correct_eu": "0050A4D8"
+  },
+  "0050A750": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050A750.c",
+   "decompiled_eu": "0050A72C",
+   "correct_eu": "0050A728"
+  },
+  "0050A95C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050A95C.c",
+   "decompiled_eu": "0050A938",
+   "correct_eu": "0050A934"
+  },
+  "0050AB40": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050AB40.c",
+   "decompiled_eu": "0050AB1C",
+   "correct_eu": "0050AB18"
+  },
+  "0050AC74": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050AC74.c",
+   "decompiled_eu": "0050AC50",
+   "correct_eu": "0050AC4C"
+  },
+  "0050B600": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050B600.c",
+   "decompiled_eu": "0050B5DC",
+   "correct_eu": "0050B5D8"
+  },
+  "0050B61C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050B61C.c",
+   "decompiled_eu": "0050B5F8",
+   "correct_eu": "0050B5F4"
+  },
+  "0050B788": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050B788.c",
+   "decompiled_eu": "0050B764",
+   "correct_eu": "0050B760"
+  },
+  "0050B78C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050B78C.c",
+   "decompiled_eu": "0050B768",
+   "correct_eu": "0050B764"
+  },
+  "0050BC74": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050BC74.c",
+   "decompiled_eu": "0050BC50",
+   "correct_eu": "0050BC4C"
+  },
+  "0050BCA0": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0050BCA0.c",
+   "decompiled_eu": "0050BC7C",
+   "correct_eu": "0050BC78"
+  },
+  "00521060": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00521060.c",
+   "decompiled_eu": "00521020",
+   "correct_eu": "00521038"
+  },
+  "00521100": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00521100.c",
+   "decompiled_eu": "00521084",
+   "correct_eu": "005210D8"
+  },
+  "005211BC": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_005211BC.c",
+   "decompiled_eu": "0052115C",
+   "correct_eu": "00521194"
+  },
+  "00556BD4": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00556BD4.c",
+   "decompiled_eu": "00556B60",
+   "correct_eu": "00556BAC"
+  },
+  "00556D04": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00556D04.c",
+   "decompiled_eu": "00556CA8",
+   "correct_eu": "00556CDC"
+  },
+  "00556D7C": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00556D7C.c",
+   "decompiled_eu": "00556D20",
+   "correct_eu": "00556D54"
+  },
+  "00556E20": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00556E20.c",
+   "decompiled_eu": "00556DB8",
+   "correct_eu": "00556DF8"
+  },
+  "00556ED8": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_00556ED8.c",
+   "decompiled_eu": "00556E80",
+   "correct_eu": "00556EB0"
+  },
+  "0056B544": {
+   "source": "ghidra_fallback/ghidra_analyzed5_v4/005/func_0056B544.c",
+   "decompiled_eu": "0056B4E4",
+   "correct_eu": "0056B51C"
+  }
+ },
+ "matched_sources_using_key_names": [
+  "src/work4/agent8/func_001E461C.cpp",
+  "src/work5/finisher/func_001E7000.cpp",
+  "src/work7/ds1/func_0013BE7C.cpp",
+  "src/work7/ds2/f_0015A244_nw.cpp",
+  "src/work7/ds2/f_001E510C.cpp",
+  "src/work7/ds2/f_0025433C.cpp",
+  "src/work7/ds2/v2238F8_e_nw.cpp",
+  "src/work7/ds3/func_00287740.cpp",
+  "src/work7/ds3/func_002A06C4.cpp",
+  "src/work7/ds3/func_0030C474.cpp",
+  "src/work7/ds3/func_003264D0.cpp",
+  "src/work7/ds5/func_0046100C.cpp",
+  "src/work7/ds6/func_0050805C.cpp",
+  "src/work7/gpt15/variants/00102E14/v0.cpp",
+  "src/work7/gpt16/func_0017E228.cpp",
+  "src/work7/gpt17/func_002881BC.cpp",
+  "src/work7/gpt21/func_0058EFE8.cpp",
+  "src/work7/gpt24/func_00199260.cpp",
+  "src/work7/gpt25/best/func_0026CF28_nw.cpp",
+  "src/work7/gpt25/best/func_0030E4F4.cpp",
+  "src/work7/gpt27/func_003E46C8.cpp",
+  "src/work7/gpt29/func_005702DC.cpp",
+  "src/work7/gpt29/func_00570314.cpp",
+  "src/work7/gpt29/func_0057034C.cpp",
+  "src/work8/audit_reloc/fix/src/00520FD4.cpp",
+  "src/work8/lead/ledger_1019/dehack/0021ABB0.cpp",
+  "src/work8/lead/ledger_1019/dehack/0021ACB8.cpp",
+  "src/work8/lead/matched_1020/00199438.c",
+  "src/work8/lead/matched_1020/002C661C.c",
+  "src/work8/lead/matched_1020/0036167C.c",
+  "src/work8/lead/matched_1020/0037C668.c",
+  "src/work8/nm3/f_00514224.cpp",
+  "src/work8/opus2/0046420C.c",
+  "src/work8/sol1/004E415C.cpp"
+ ],
+ "native_sources": {
+  "native/compilefix/func_001437A0.c": {
+   "func_00361790": "WRONG"
+  },
+  "native/compilefix/func_001B369C.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_001B3994.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_0022B768.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_00235ED4.c": {
+   "func_00556B94": "WRONG"
+  },
+  "native/compilefix/func_0023D438.c": {
+   "func_005211BC": "WRONG"
+  },
+  "native/compilefix/func_002EBA30.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_002EF93C.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_002F08B0.c": {
+   "func_00556B94": "WRONG",
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_00352F0C.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_00354998.c": {
+   "func_00556B7C": "WRONG",
+   "func_00556E94": "WRONG"
+  },
+  "native/compilefix/func_00368CEC.c": {
+   "func_0025B838": "WRONG"
+  },
+  "native/compilefix/func_004C2650.c": {
+   "func_0025B7D8": "WRONG",
+   "func_005210AC": "neither"
+  },
+  "native/compilefix/func_004E19C8.c": {
+   "func_0025B84C": "correct"
+  },
+  "native/game/func_003C79C0.c": {
+   "func_00556E64": "neither"
+  },
+  "native/hot/func_004F70A8.c": {
+   "func_00521100": "WRONG"
+  },
+  "native/robust/func_0060B2A0.c": {
+   "func_0050B788": "WRONG"
+  },
+  "native/route/alt/func_00352F0C.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/route/func_00157BF0.c": {
+   "func_00556E94": "WRONG"
+  },
+  "native/route/func_002E6448.c": {
+   "func_00556E94": "WRONG"
+  }
+ },
+ "native_sources_check_by_hand": {
+  "native/hot/test/actor_test.c": [
+   "func_00521100"
+  ],
+  "native/sdk/services.c": [
+   "func_001058EC",
+   "func_00105928",
+   "func_00105960"
+  ]
+ },
+ "bogus_start_names_no_action": "8 Ghidra sources call func_00391558/func_00256034/func_002567B0, Ghidra names of non-start EU addresses 00391538/00256008/00256784; the EU code calls the true starts, whose USA names these are: correct as printed."
+}
