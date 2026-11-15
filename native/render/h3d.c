@@ -437,11 +437,109 @@ static void vtx_upload(H3dVtx *v, uint32_t verts) {
     g_st.vbo_uploads++;
 }
 
+/* Index buffer address of a draw: the PICA index word (0x227) holds a 28-bit offset from the
+ * attribute base (0x200, here the VRAM start 0x1F000000) and the 16-bit flag in bit 31. On the 3DS
+ * every buffer lies within 256 MB of that base; in the port the game heap can be anywhere in the
+ * 32-bit space (0xD... on i386), so the relocated offset's top bits do not fit and only its low
+ * 28 bits are kept. The full address is the one with those low 28 bits that is nearest the
+ * mesh's vertex buffer (same file, same heap block; its address register 0x203 is a full word).
+ * Pure address arithmetic, decided once per draw op. */
+static uintptr_t index_addr(const H3dVtx *v, uint32_t word) {
+    uint32_t low = (v->base + (word & 0x0FFFFFFFu)) & 0x0FFFFFFFu;
+    uint32_t best = (v->addr & 0xF0000000u) | low;
+    int64_t bd = (int64_t)best - (int64_t)v->addr;
+    for (int k = -1; k <= 1; k += 2) {
+        uint32_t c = (uint32_t)((v->addr & 0xF0000000u) + (uint32_t)k * 0x10000000u) | low;
+        int64_t d = (int64_t)c - (int64_t)v->addr;
+        if ((d < 0 ? -d : d) < (bd < 0 ? -bd : bd)) { best = c; bd = d; }
+    }
+    return (uintptr_t)best;
+}
+
+/* ALBW_H3D_DUMP=<n>: log the first n draws of frame ALBW_H3D_DUMP_AT (default: any) with the
+ * uniforms that place them and their first vertices (debug only) */
+static void dump_draw(const H3dVtx *v, const Ibuf *ib, const ROp *op, const uint8_t *idx) {
+    static long left = -2;
+    if (left == -2) { const char *e = getenv("ALBW_H3D_DUMP"); left = e ? atol(e) : -1; }
+    if (left <= 0) return;
+    left--;
+    uint16_t b;
+    const float *c = render_vs_floats(&b);
+    int var = 0, prog = render_current_program(&var);
+    fprintf(stderr, "h3d-dump: draw prim %u count %u u16 %d idx %p max %u vtx %#x stride %u base %#x prog %d/%d b %#x\n",
+            op->u.ext.c, op->u.ext.b, ib->u16, (const void *)idx, ib->max_index, v->addr, v->stride, v->base, prog, var, b);
+    for (int i = 0; i < v->nattr; i++)
+        fprintf(stderr, "h3d-dump:   attr %d reg v%u type %u comps %u fixed %u off %u val %g %g %g %g\n", i, v->attr[i].reg,
+                v->attr[i].type, v->attr[i].comps, v->attr[i].fixed, v->attr[i].offset, v->attr[i].value[0],
+                v->attr[i].value[1], v->attr[i].value[2], v->attr[i].value[3]);
+    static const int regs[] = {3, 6, 7, 8, 10, 11, 20, 21, 25, 26, 27, 86, 87, 88, 89, 90, 91, 92};
+    for (unsigned k = 0; k < sizeof regs / sizeof *regs; k++) {
+        const float *r = c + 4 * regs[k];
+        fprintf(stderr, "h3d-dump:   c%d = %g %g %g %g\n", regs[k], r[0], r[1], r[2], r[3]);
+    }
+    for (int k = 0; k < 3; k++) {
+        uint32_t i = ib->u16 ? (uint32_t)(idx[2 * k] | idx[2 * k + 1] << 8) : idx[k];
+        const uint8_t *vp = (const uint8_t *)(uintptr_t)v->addr + (size_t)i * v->stride;
+        for (int a = 0; a < v->nattr; a++) {
+            const H3dAttr *at = &v->attr[a];
+            if (at->fixed) continue;
+            float f[4] = {0};
+            for (int j = 0; j < at->comps; j++) {
+                const uint8_t *q = vp + at->offset;
+                switch (at->type & 3) {
+                case 0: f[j] = (float)((const int8_t *)q)[j]; break;
+                case 1: f[j] = (float)q[j]; break;
+                case 2: { int16_t t; memcpy(&t, q + 2 * j, 2); f[j] = t; break; }
+                default: memcpy(&f[j], q + 4 * j, 4); break;
+                }
+            }
+            fprintf(stderr, "h3d-dump:   vert %u v%u = %g %g %g %g\n", i, at->reg, f[0], f[1], f[2], f[3]);
+        }
+    }
+}
+
+/* ALBW_H3D_SNAP=<k>[,<k>...]: after the k-th h3d draw, write the colour target (the shared render
+ * buffer 0x1F000080) as ALBW_SHOT_DIR/h3d_<k>.ppm, i.e. what the 3D pass drew before any transfer
+ * or later pass (debug only) */
+static void snap_maybe(void) {
+    static const char *spec;
+    static int init;
+    if (!init) { init = 1; spec = getenv("ALBW_H3D_SNAP"); }
+    if (!spec) return;
+    char want[32];
+    snprintf(want, sizeof want, "%u", g_st.draws);
+    const char *q = spec;
+    int hit = 0;
+    size_t n = strlen(want);
+    while (*q) {
+        if (!strncmp(q, want, n) && (q[n] == ',' || q[n] == 0)) { hit = 1; break; }
+        while (*q && *q != ',') q++;
+        if (*q) q++;
+    }
+    if (!hit) return;
+    int w = 0, h = 0;
+    if (!render_read_surface(0x1F000080u, NULL, &w, &h) || w <= 0 || h <= 0) return;
+    uint8_t *px = malloc((size_t)w * h * 4);
+    if (!px || !render_read_surface(0x1F000080u, px, &w, &h)) { free(px); return; }
+    const char *dir = getenv("ALBW_SHOT_DIR");
+    char path[512];
+    snprintf(path, sizeof path, "%s/h3d_%s.ppm", dir ? dir : ".", want);
+    FILE *f = fopen(path, "wb");
+    if (f) {
+        fprintf(f, "P6\n%d %d\n255\n", w, h);
+        for (int y = h - 1; y >= 0; y--)
+            for (int x = 0; x < w; x++) fwrite(px + ((size_t)y * w + x) * 4, 1, 3, f);
+        fclose(f);
+        fprintf(stderr, "h3d: wrote %s (%dx%d)\n", path, w, h);
+    }
+    free(px);
+}
+
 static void draw(const ROp *op) {
     H3dVtx *v = g_cur;
     if (!v || !v->addr || !v->stride || !op->u.ext.b) { g_st.dropped++; return; }
-    uintptr_t ia = (uintptr_t)(uint32_t)(v->base + (op->u.ext.a & 0x0FFFFFFFu));
-    int u16 = (int)(op->u.ext.a >> 31);
+    uintptr_t ia = op->flags & 1 ? (uintptr_t)op->u.ext.a : index_addr(v, op->u.ext.a);
+    int u16 = op->flags & 1 ? op->unit : (int)(op->u.ext.a >> 31);
     pthread_mutex_lock(&g_mx);
     Ibuf *ib = ibuf_get(ia, op->u.ext.b, u16);
     if (ib->dirty) ibuf_upload(ib);
@@ -463,10 +561,21 @@ static void draw(const ROp *op) {
         const H3dAttr *a = &v->attr[i];
         if (a->fixed && a->reg < 12) pVertexAttrib4f(a->reg, a->value[0], a->value[1], a->value[2], a->value[3]);
     }
+    dump_draw(v, ib, op, (const uint8_t *)ia);
+    static int white = -1;
+    if (white < 0) white = getenv("ALBW_H3D_WHITE") != NULL;
+    if (white) { /* debug: geometry coverage only (logic op SET, no depth test / culling) */
+        static void (*logic)(GLenum);
+        if (!logic) logic = (void (*)(GLenum))SDL_GL_GetProcAddress("glLogicOp");
+        glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_CULL_FACE);
+        glEnable(0x0BF2 /* GL_COLOR_LOGIC_OP */); if (logic) logic(0x150F /* GL_SET */);
+    }
     glDrawElements(PRIM[op->u.ext.c % 3], (GLsizei)op->u.ext.b, u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE, 0);
+    if (white) { glDisable(0x0BF2); render_frag_dirty(); }
     render_draw_done();
     pthread_mutex_unlock(&g_mx);
     g_st.draws++;
+    snap_maybe();
 }
 
 static void ext_op(const ROp *op) {

@@ -23,7 +23,8 @@
 enum {
     H3D_VTX = 1,     /* ptr: H3dVtx * (vertex layout + buffer of a mesh), NULL = none */
     H3D_DRAW,        /* a: index word (offset from the vertex base, bit 31 = 16-bit indices),
-                        b: index count, c: primitive (RPRIM_*) */
+                        b: index count, c: primitive (RPRIM_*); flags 1: a is the absolute index
+                        buffer address (from the file's relocation table), unit = 16-bit indices */
     H3D_TEXADDR,     /* unit; a: texture address, b: width | height << 16, c: format | max level << 8 */
     H3D_TEXPARAM,    /* unit; a: wrap_s | wrap_t << 4 | mag << 8 | min << 12 | type << 16 (RTexUnit
                         codes), b: border RGBA (R low byte), f[0]: LOD bias */

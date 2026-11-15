@@ -1235,6 +1235,11 @@ void render_set_vs_float(int reg, const float *v, int count) {
     R.vsf_dirty = true;
 }
 void render_set_vs_bool(uint16_t mask) { R.vsb = mask; R.vsf_dirty = true; }
+/* debug readback of the vertex-shader float / bool registers (render/h3d.c ALBW_H3D_DUMP) */
+const float *render_vs_floats(uint16_t *bools) {
+    if (bools) *bools = R.vsb;
+    return R.vsf;
+}
 void render_set_attrib(int reg, const void *ptr, int type, int count, int stride) {
     if (reg < 0 || reg >= RENDER_MAX_ATTRIBS) return;
     R.attr[reg].ptr = (uintptr_t)ptr;
@@ -1738,15 +1743,30 @@ int render_exec_cmds(const void *addr, uint32_t size) {
     int n = 0;
     lock();
     /* only our own 2-word markers are looked for; nothing else in the range is interpreted */
-    for (; a + 8 <= e; a += 4) {
-        const uint32_t *w = (const uint32_t *)a;
-        if (w[1] != RENDER_MARK) continue;
-        const ROp *op = pool_get(w[0]);
-        if (!op) continue;
-        ROp copy = *op; /* the pool may grow (realloc) while the op runs */
-        render_exec_op(&copy);
-        n++;
-        a += 4;
+    for (int seg = 0;; seg++) {
+        uintptr_t call_slot = 0; /* return-segment size slot of the last CALL run in this segment */
+        for (; a + 8 <= e; a += 4) {
+            const uint32_t *w = (const uint32_t *)a;
+            if (w[1] != RENDER_MARK) continue;
+            const ROp *op = pool_get(w[0]);
+            if (!op) continue;
+            ROp copy = *op; /* the pool may grow (realloc) while the op runs */
+            render_exec_op(&copy);
+            n++;
+            a += 4;
+            call_slot = copy.type == ROP_CALL ? a + 4 : 0;
+        }
+        /* Chained segments (003CC090 / 003CC230 / 003CC054): a range that ENDS with a CALL (its
+           slot words included) continues, like the hardware returning through CMDBUF ADDR1, with
+           the return segment right after the call: *slot x 8 bytes (patched by the next CALL or by
+           003CC054). Requests sized with the cursor's first-CALL offset (ctx[4]: 005FFF7C callers,
+           002FE918 scene lists) cover only the first segment. A full-range request ends with the
+           tail after its last CALL (slot = 0 or the call not last), so nothing runs twice. */
+        if (!call_slot || call_slot + 8 < e || seg > 65536) break;
+        uint32_t next = *(const uint32_t *)call_slot;
+        if (!next || next > (1u << 21)) break;
+        a = call_slot + 8;
+        e = a + (uintptr_t)next * 8;
     }
     R.st.ops_run += (uint64_t)n;
     unlock();

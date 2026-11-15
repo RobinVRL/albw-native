@@ -173,6 +173,65 @@ static void f24x4(const uint32_t w[3], float out[4]) {
     out[0] = f24(w[2] & 0xFFFFFF);
 }
 
+/* ------------------------------------------------------------------ index buffer relocations
+ * The index-buffer word of a draw (PICA 0x227) is written by the game's relocation 003FCE5C as
+ * GetPhysicalAddr(target) - VRAM start, OR 0x80000000 for 16-bit indices (relocation types 7 /
+ * 0xC), plain for 8-bit ones (8 / 0xD). On the 3DS the offset fits in 28 bits; in the port the
+ * game heap can lie anywhere in the 32-bit space (0xD... on i386: offset 0xB...), so both the
+ * offset's top bits and the 16-bit flag are lost in that word. The relocation table says which
+ * words are index buffers, of which width, and where they point: func_003FCCF8 walks it (same
+ * address computation as 003FCE5C) before the relocation runs and records word address ->
+ * (absolute index buffer address, 16-bit flag); the blob decoder of the same file consumes it.
+ * Load-time data only, cleared per file. */
+typedef struct { uint32_t word, addr; uint8_t u16, used; } IdxReloc;
+static IdxReloc *g_ir;
+static size_t g_ir_cap, g_ir_n;
+
+static size_t ir_hash(uint32_t w, size_t cap) { return (size_t)((w >> 2) * 2654435761u) & (cap - 1); }
+static void idx_reloc_put(uint32_t word, uint32_t addr, int u16) {
+    if ((g_ir_n + 1) * 2 > g_ir_cap) {
+        IdxReloc *old = g_ir;
+        size_t oc = g_ir_cap;
+        g_ir_cap = oc ? oc * 2 : 1024;
+        g_ir = calloc(g_ir_cap, sizeof *g_ir);
+        if (!g_ir) abort();
+        g_ir_n = 0;
+        for (size_t i = 0; i < oc; i++)
+            if (old[i].used) idx_reloc_put(old[i].word, old[i].addr, old[i].u16);
+        free(old);
+    }
+    size_t h = ir_hash(word, g_ir_cap);
+    while (g_ir[h].used && g_ir[h].word != word) h = (h + 1) & (g_ir_cap - 1);
+    if (!g_ir[h].used) g_ir_n++;
+    g_ir[h] = (IdxReloc){word, addr, (uint8_t)u16, 1};
+}
+static int idx_reloc_get(uint32_t word, uint32_t *addr, int *u16) {
+    if (!g_ir_cap) return 0;
+    for (size_t h = ir_hash(word, g_ir_cap); g_ir[h].used; h = (h + 1) & (g_ir_cap - 1))
+        if (g_ir[h].word == word) { *addr = g_ir[h].addr; *u16 = g_ir[h].u16; return 1; }
+    return 0;
+}
+static void idx_reloc_clear(void) {
+    if (g_ir) memset(g_ir, 0, g_ir_cap * sizeof *g_ir);
+    g_ir_n = 0;
+}
+/* the relocation table (table, count words) against the section addresses sec[0..9] (as 003FCE5C:
+ * entry = offset (bits 0-24) | type (bits 25-28) | section (bits 29-31); the patched word is in
+ * section `section` (2 = sec[8] when set), at offset * 4 (type 1: bytes); index targets are in
+ * section 3 (types 7, 8) or 4 (0xC, 0xD) + the word's original value) */
+static void idx_reloc_scan(const uint32_t *sec, uint32_t table, uint32_t count) {
+    idx_reloc_clear();
+    for (uint32_t i = 0; i < count && i < (1u << 22); i++) {
+        uint32_t e = G32(table, 4 * i), type = (e << 3) >> 28, off = e & 0x1FFFFFF;
+        if (type != 7 && type != 8 && type != 0xC && type != 0xD) continue;
+        uint32_t s = e >> 29;
+        uint32_t base = (s == 2 && sec[8]) ? sec[8] : sec[s];
+        uint32_t word = base + (off << 2);
+        uint32_t target = sec[type <= 8 ? 3 : 4] + G32(word, 0);
+        idx_reloc_put(word, target, type == 7 || type == 0xC);
+    }
+}
+
 /* Decoder state: a shadow of the registers this blob writes (byte-masked writes merged) + the
  * order-sensitive streams (uniforms, bools, draws) turned into ops as they occur. */
 typedef struct {
@@ -190,6 +249,10 @@ typedef struct {
     uint16_t fx_set;
     /* vertex layout emitted (before the first draw) */
     int vtx_done;
+    /* game address of the parameter word being written (index buffer relocations) */
+    uint32_t word_addr;
+    uint32_t idx_abs;      /* 0x227 resolved through the relocation table: absolute address */
+    int idx_known, idx_u16;
     /* fragment-lighting LUT data words (0x1C8..0x1CF) */
     int nlut;
     float lut[256][2];
@@ -263,6 +326,8 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
             d->fx_idx++;
             d->fx_n = 0;
         }
+    } else if (reg == 0x227) {
+        d->idx_known = idx_reloc_get(d->word_addr, &d->idx_abs, &d->idx_u16);
     } else if (reg == 0x22F && (v & 1)) {
         /* draw-elements kick: index buffer 0x227 (offset from the attribute base, bit 31 = 16-bit
            indices), count 0x228, primitive 0x25E bits 8-9 */
@@ -271,6 +336,11 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
         ROp op = op_new(ROP_EXT);
         op.u.ext.kind = H3D_DRAW;
         op.u.ext.a = d->reg[0x227];
+        if (d->idx_known) {
+            op.flags = 1;
+            op.u.ext.a = d->idx_abs;
+            op.unit = (uint8_t)d->idx_u16;
+        }
         op.u.ext.b = d->reg[0x228];
         uint32_t prim = (d->reg[0x25E] >> 8) & 3;
         op.u.ext.c = prim == 3 ? RPRIM_TRIANGLES : prim;
@@ -479,8 +549,12 @@ static int dec_walk(Dec *d, uint32_t addr, uint32_t words) {
         uint32_t p0 = G32(addr, 4 * i), h = G32(addr, 4 * i + 4);
         uint32_t reg = h & 0xFFFF, mask = (h >> 16) & 0xF, n = (h >> 20) & 0xFF, cons = h >> 31;
         if (i + 2 + n > words) return -1;
+        d->word_addr = addr + 4 * i;
         dec_write(d, reg, p0, mask);
-        for (uint32_t k = 0; k < n; k++) dec_write(d, cons ? reg + k + 1 : reg, G32(addr, 4 * (i + 2 + k)), mask);
+        for (uint32_t k = 0; k < n; k++) {
+            d->word_addr = addr + 4 * (i + 2 + k);
+            dec_write(d, cons ? reg + k + 1 : reg, G32(addr, 4 * (i + 2 + k)), mask);
+        }
         i += 2 + n;
         if (i & 1) i++;
     }
@@ -651,6 +725,7 @@ uint32_t func_003FCCF8(uint32_t *out, uint32_t *hdr, uint32_t *sec) {
     b0[1] = sec[6] + hdr[0xE];
     b1[0] = sec[9] ? sec[9] : sec[7];
     b1[1] = b1[0] + hdr[0xF];
+    idx_reloc_scan(sec, sec[5], hdr[0xD] >> 2);
     func_003FCE5C(res, GPTR_OF(out), sec[5], hdr[0xD] >> 2, GPTR_OF(sec), GPTR_OF(hdr), b0);
     if ((int32_t)res[1] < 0) return res[1] | r;
     for (int i = 0; i < 10; i++) out[i] = sec[i];
@@ -694,6 +769,18 @@ static void ctx_call(uint32_t *ctx, uint32_t target, uint32_t bytes) {
 }
 uint32_t *func_00130C1C(uint32_t rnd, const float *view, const float *proj, uint32_t *ctx) {
     uint32_t env = G32(data_00712F70, 0x1B8);
+    if (getenv("ALBW_H3D_TRACE")) { /* every 120 passes: is the 3D path being fed? */
+        static unsigned n;
+        if (n++ % 97 == 0) {
+            H3dStats s = h3d_stats();
+            uint32_t sc = G32(rnd, 0x4C);
+            fprintf(stderr, "h3d: pass %u (rnd %#x ctx %s from %p): blobs %u calls %u draws %u dropped %u vbo %u ibo %u"
+                    " | scene %#x +47 %u +44 %u +40 %#x +28 %#x +2c %#x\n", n, rnd,
+                    ctx ? "chunk" : "own", __builtin_return_address(0), s.blobs, s.blob_calls, s.draws, s.dropped,
+                    s.vbo_uploads, s.ibo_uploads, sc, sc ? G8(sc, 0x47) : 0, sc ? G8(sc, 0x44) : 0,
+                    sc ? G32(sc, 0x40) : 0, sc ? G32(sc, 0x28) : 0, sc ? G32(sc, 0x2C) : 0);
+        }
+    }
     if (ctx) {
         ctx_call(ctx, G32(rnd, 0x2BFC), G32(rnd, 0x2C00) << 2);
         ctx_call(ctx, G32(rnd, 0x2C04), G32(rnd, 0x2C08) << 2);
