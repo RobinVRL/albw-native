@@ -3,6 +3,10 @@
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
  *  - (T *)<float expr> -> (T *)CF_FBITS(expr): 32-bit copy of the float (vmov/vstr), never a conversion [2]
  *  - explicit casts at pointer-type mismatches (identity on the ARM) [3]
+ *  - the PrimitiveRenderer textured-quad call (vtable +0x1C, 00496ABC: this, mtx, tex, c0, c1,
+ *    uv_src, uv_size) lost its three stack arguments: [sp] = c1 (param_3 + 9), [sp+4] = uv_src
+ *    (param_4), [sp+8] = uv_size (param_4 + 8) (EU 00495258..00495280), stored by Ghidra in
+ *    local_98 / local_94 / local_90 but not passed (file select crashed in prim.c, boot stop 93)
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
@@ -55,6 +59,6 @@ undefined4 func_004951F0(int param_1,undefined4 param_2,float *param_3,int param
   local_98 = param_3 + 9;
   local_94 = (float *)param_4;
   return (**(code **)(**(int **)(param_1 + 0x20) + 0x1c))
-            (*(int **)(param_1 + 0x20),afStack_58,param_2,param_3 + 5);
+            (*(int **)(param_1 + 0x20),afStack_58,param_2,param_3 + 5,local_98,local_94,local_90);
 }
 

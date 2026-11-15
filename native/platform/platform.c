@@ -672,6 +672,41 @@ static void plat_layout_overlay(void) {
     glDisable(GL_SCISSOR_TEST);
 }
 
+/* presented frames (plat_end_frame calls), the frame numbers of ALBW_SHOT and ALBW_PRESS */
+static long g_plat_frames;
+
+/* ALBW_PRESS=<frame>:<button>[:<frames>][,...] (debug aid, headless runs): hold a 3DS button from
+ * that presented frame on for <frames> frames (default 6). Buttons: A B X Y L R START SELECT UP
+ * DOWN LEFT RIGHT. Example: ALBW_PRESS=1800:A,2400:START */
+static uint32_t scripted_keys(void) {
+    static const char *spec;
+    static int init;
+    if (!init) { init = 1; spec = getenv("ALBW_PRESS"); }
+    if (!spec) return 0;
+    static const struct { const char *name; uint32_t bit; } names[] = {
+        {"A", KEY_A}, {"B", KEY_B}, {"X", KEY_X}, {"Y", KEY_Y}, {"L", KEY_L}, {"R", KEY_R},
+        {"START", KEY_START}, {"SELECT", KEY_SELECT}, {"UP", KEY_DUP}, {"DOWN", KEY_DDOWN},
+        {"LEFT", KEY_DLEFT}, {"RIGHT", KEY_DRIGHT}};
+    uint32_t keys = 0;
+    for (const char *s = spec; *s;) {
+        char *e;
+        long f = strtol(s, &e, 10);
+        if (e == s || *e != ':') break;
+        const char *b = e + 1;
+        size_t n = strcspn(b, ":,");
+        long len = 6;
+        const char *t = b + n;
+        if (*t == ':') { len = strtol(t + 1, &e, 10); t = e; }
+        for (size_t k = 0; k < sizeof names / sizeof names[0]; k++)
+            if (strlen(names[k].name) == n && !strncmp(names[k].name, b, n) && g_plat_frames >= f &&
+                g_plat_frames < f + len)
+                keys |= names[k].bit;
+        s = (*t == ',') ? t + 1 : t;
+        if (!*t) break;
+    }
+    return keys;
+}
+
 int plat_poll(void) {
     uint32_t prev = in.held;
     SDL_Event e;
@@ -718,7 +753,7 @@ int plat_poll(void) {
         in.touch_x = tx;
         in.touch_y = ty;
     }
-    in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0);
+    in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | scripted_keys();
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
     return 1;
@@ -746,6 +781,7 @@ static void shot_maybe(void) {
     static int init;
     if (!init) { init = 1; spec = getenv("ALBW_SHOT"); }
     frame++;
+    g_plat_frames = frame;
     if (!spec) return;
     int hit = 0;
     for (const char *s = spec; *s;) {
