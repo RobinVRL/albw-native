@@ -871,6 +871,22 @@ void render_mem_written(const void *addr, size_t size) {
     if (R.ext.mem) R.ext.mem((uintptr_t)addr, size);
     uintptr_t a = (uintptr_t)addr, e = a + size;
     lock();
+    static int dbg = -1;
+    if (dbg < 0) dbg = getenv("ALBW_SURF_WRITE_TRACE") != NULL;
+    if (dbg && a >= 0x1F000000u && a < 0x1F600000u)
+        rlog("vram-write %#lx +%#zx frame %u", (unsigned long)a, size, (unsigned)R.frame);
+    if (dbg)
+        for (size_t i = 0; i < R.nsurf; i++) {
+            Surface *s = R.surf[i];
+            if (s->addr < e && s->addr + s->bytes > a) {
+                const uint32_t *w = (const uint32_t *)addr;
+                size_t n = size / 4, same = 1;
+                for (size_t k = 1; k < n; k++) if (w[k] != w[0]) { same = 0; break; }
+                rlog("surf-write %#lx +%#zx into %s surface %#lx (%dx%d) first %08x uniform %zu frame %u",
+                     (unsigned long)a, size, s->depth ? "depth" : "colour", (unsigned long)s->addr, s->w, s->h, n ? w[0] : 0,
+                     same, (unsigned)R.frame);
+            }
+        }
     for (size_t i = 0; i < R.ntex; i++) {
         TexEnt *t = &R.tex[i];
         size_t bytes = texfmt_size(t->fmt, t->w, t->h) * (t->cube ? 1 : 2); /* + mip chain bound */

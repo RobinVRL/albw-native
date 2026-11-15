@@ -487,6 +487,9 @@ static void dec_finish(Dec *d) {
         fprintf(stderr, "h3d: frag blob %#x: 100 %08x 101 %08x 102 %08x 103 %08x 104 %08x 107 %08x | F8 %08x F9 %08x FA %08x FB %08x\n",
                 d->word_addr, d->reg[0x100], d->reg[0x101], d->reg[0x102], d->reg[0x103], d->reg[0x104], d->reg[0x107],
                 d->reg[0xF8], d->reg[0xF9], d->reg[0xFA], d->reg[0xFB]);
+    if (getenv("ALBW_H3D_FRAGTRACE") && (d->written[0x4D] || d->written[0x4E] || d->written[0x6D]))
+        fprintf(stderr, "h3d: depthmap blob %#x: 4D %08x 4E %08x 6D %08x (written %d %d %d)\n", d->word_addr, d->reg[0x4D],
+                d->reg[0x4E], d->reg[0x6D], d->written[0x4D], d->written[0x4E], d->written[0x6D]);
     if (d->written[0x100] || d->written[0x101] || d->written[0x103]) {
         uint32_t b = d->reg[0x101], mode = d->reg[0x100];
         ROp op = op_new(ROP_BLEND);
@@ -1060,9 +1063,16 @@ void func_00565204(uint32_t *mat, uint32_t *ctx, uint16_t *state, uint32_t *lut)
     uint16_t flags = state[0];
     if (getenv("ALBW_H3D_TRACE")) {
         static unsigned n;
-        if (n++ % 600 == 0)
-            fprintf(stderr, "h3d: 00565204 #%u mat %#x flags %#x sel %#x pal %08x %08x %08x %08x %08x %08x\n", n, GPTR_OF(mat), flags,
+        static long want = -2;
+        if (want == -2) { const char *e = getenv("ALBW_H3D_MATSEL"); want = e ? strtol(e, NULL, 16) : -1; }
+        if (want >= 0 ? (G32(st, 8) == (uint32_t)want && n++ % 30 == 0) : n++ % 600 == 0)
+            fprintf(stderr, "h3d: 00565204 #%u st %#x mat %#x flags %#x sel %#x pal %08x %08x %08x %08x %08x %08x\n", n, st, GPTR_OF(mat), flags,
                     G32(st, 8), G32(st, 0x24), G32(st, 0x28), G32(st, 0x2C), G32(st, 0x30), G32(st, 0x34), G32(st, 0x38));
+        if (n == 1 && getenv("ALBW_H3D_MATSEL")) {
+            uint32_t par = mat[0];
+            for (uint32_t o = 0; o < 0x110; o += 16)
+                fprintf(stderr, "h3d:   params+%03x: %08x %08x %08x %08x\n", o, G32(par, o), G32(par, o + 4), G32(par, o + 8), G32(par, o + 12));
+        }
     }
     if (flags & 0x400) {
         uint32_t sel = G32(st, 8);
@@ -1139,4 +1149,48 @@ void func_00170378(uint32_t elem, uint32_t *ctx, uint32_t *cache, const float *n
     ctx_floats(ctx, G8(loc, 0x22), g, 1);
     ctx_floats(ctx, G8(loc, 0x2A), g, 1);
     ctx_floats(ctx, G8(loc, 0x32), dir, 1);
+}
+
+/* ================================================================== material colour animation */
+
+/* USA 003FD364 (EU 003FD344)  apply an animated colour to a material state slot (u8 *state,
+ * const float rgba[4], u32 mask, u16 slot, float) -> float. Slot 1..11: state +0x24 + 4 (k - 1)
+ * (constant colours 0..5, then the other material colours), 0xC / 0xE / 0x10: border colours
+ * +0x130 / +0x134 / +0x138, 0x12: +0x50 (blend colour); others: none (the original then loads
+ * from address 0). Mask bits 16..19 select the components R, G, B, A (byte 0..3 of the word);
+ * each is clamp(v, 0, 1) * 255 + 0.5 (vmla, unfused) converted to an unsigned integer
+ * (vcvt.u32.f32, round toward zero) and its low byte stored.
+ * Bug fixed: the Ghidra source kept the vcvt result in a float variable
+ * (`fparam_0 = (float)VectorFloatToUnsigned(...)`) and the FCONV pass then stored its bits
+ * (`ALBW_AS_U32(fparam_0) & 0xff`): 255 became 0x437F0000 & 0xFF = 0, so every animated colour
+ * component was written as 0 (the title Triforce's constant 3 alpha: invisible). CLASS integer
+ * conversion results typed float (6 Ghidra sources: 003FD364, 00590B1C, 00244E68, 002CEA4C,
+ * 002AE274, 004DE3E0). Returns s0 as the original leaves it (the last converted integer's bits;
+ * 0 bits when no component was converted keeps the caller's value irrelevant: the callers
+ * 0068FDFC / 0069021C ignore it). From the EU machine code. Confidence: high. */
+float func_003FD364(uint32_t state, const float *rgba, uint32_t mask, uint16_t slot, float x) {
+    uint32_t off;
+    if (slot >= 1 && slot <= 11) off = 0x24 + 4u * (slot - 1u);
+    else if (slot == 0xC) off = 0x130;
+    else if (slot == 0xE) off = 0x134;
+    else if (slot == 0x10) off = 0x138;
+    else if (slot == 0x12) off = 0x50;
+    else return x;
+    uint32_t w = G32(state, off), last = 0;
+    int any = 0;
+    for (int c = 0; c < 4; c++) {
+        if (!(mask & (0x10000u << c))) continue;
+        float v = rgba[c];
+        if (v > 1.0f) v = 1.0f;
+        else if (v < 0.0f) v = 0.0f;
+        volatile float prod = v * 255.0f; /* vmla.f32: product rounded, then the add */
+        float f = prod + 0.5f;
+        uint32_t u = f >= 4294967296.0f ? 0xFFFFFFFFu : (uint32_t)f;
+        w = (w & ~(0xFFu << (8 * c))) | (u & 0xFFu) << (8 * c);
+        last = u;
+        any = 1;
+    }
+    memcpy((void *)GA(state + off), &w, 4);
+    if (any) memcpy(&x, &last, 4);
+    return x;
 }
