@@ -61,7 +61,6 @@ _ZN4RDDB3getEv func_00111A64
 _ZN4Self5startEi func_00257528
 _ZN4TaskC1EP4HeapP4Self func_00297A04
 _ZN4Vec36setMulERKS_f func_00115D70
-_ZN5B151013func_003C90C8Ev func_003C90C8
 _ZN5C6028C1EPv func_001273A4
 _ZN5Ctl3813func_002317C0Ef func_002317C0
 _ZN5Mtx444copyERKS_ func_00115224
@@ -387,7 +386,6 @@ _Znwj12NoThrowTag20 func_0010BAB4
 _Znwj14NoThrowTag6028 func_0010BAB4
 _Znwj3Tag func_0010BAB4
 _ZnwjP4Heapi func_0010CF28
-__current_pc func_003C9D1C
 cmpstr func_0010FBAC
 f66dcb0 func_0066DCB0
 f66e65c func_0066E65C
