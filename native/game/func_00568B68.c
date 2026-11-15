@@ -28,3 +28,31 @@ float albw_lyt_vtx_pos_y(const uint8_t *pane)
     default: return 0.0f;
     }
 }
+
+/* USA 00569264 (EU 0056923C): nw::lyt::TextBox text position offset (pane, const Vec2 *size,
+ * bool round) -> Vec2 (s0 = x, s1 = y), from the text position byte +0xD0 (bits 0-1 horizontal,
+ * bits 2-3 vertical: 0 centre -> size * 0.5, rounded by 0059090C when `round`; 2 -> size;
+ * else 0). Same VFP-pair class as 00568B68: Ghidra kept x and its callers read y from in_s1
+ * (005694A0: y = GetVtxPos.y - in_s1, NaN once GetVtxPos.y was right, so "Press (A)" vanished,
+ * boot stop 86). Rewritten from the EU disassembly (constants 0.0 / 0.5 at 005692D0 / 005692D4).
+ * Confidence: high. */
+extern float func_0059090C(float x);
+
+static float text_pos(const uint8_t *pane, float size, int round, int shift)
+{
+    switch ((pane[0xD0] >> shift) & 3) {
+    case 0: return round ? func_0059090C(size * 0.5f) : size * 0.5f;
+    case 2: return size;
+    default: return 0.0f;
+    }
+}
+
+float func_00569264(const uint8_t *pane, const float *size, int round)
+{
+    return text_pos(pane, size[0], round, 0);
+}
+
+float albw_lyt_text_pos_y(const uint8_t *pane, const float *size, int round)
+{
+    return text_pos(pane, size[1], round, 2);
+}
