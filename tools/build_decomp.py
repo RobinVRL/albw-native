@@ -473,6 +473,23 @@ def stack_arg_rewrite(text):
     return text
 
 
+# Callees that return a float in s0 but that Ghidra typed void; their callers read s0 through
+# the variable the other branch assigns. name -> True. 005670A0 (animation curve value at a
+# frame, matched f_5670A0 returns f32; ARM callers `vstr s0` right after the call): its callers
+# lost the evaluated values and on i386 left the float on the x87 stack (boot stop 95c).
+FLOAT_RET_CALLS = {"func_005670A0"}
+RE_FR_ELSE = r"(\n[ \t]+)(%s\((?:[^;])*?\));(\s*\}\s*else\s*\{\s*(\w+) = )"
+
+
+def float_ret_rewrite(text):
+    for name in FLOAT_RET_CALLS:
+        if name not in text:
+            continue
+        text = re.sub(r"extern void %s\(" % name, "extern float %s(" % name, text)
+        text = re.sub(RE_FR_ELSE % name, lambda m: "%s%s = %s;%s" % (m.group(1), m.group(4), m.group(2), m.group(3)), text)
+    return text
+
+
 def fconv_enabled():
     v = os.environ.get("ALBW_FCONV")
     return v == "1" or (v is None and v4_stage() >= 2)
@@ -617,6 +634,7 @@ def build_one(job):
             text = open(src).read()
             new_text = stack_arg_rewrite(pmf_this_rewrite(text))
             new_text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", new_text)
+            new_text = float_ret_rewrite(new_text)
             if new_text != text:
                 with open(src, "w") as fh:
                     fh.write(new_text)

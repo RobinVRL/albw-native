@@ -67,7 +67,8 @@ def main():
         text = open(src).read()
         return ("warning:" in r.stderr or bool(grep and grep.search(text))
                 or bd.stack_arg_rewrite(bd.pmf_this_rewrite(text)) != text
-                or bd.RE_GARBLED_RETURN_ARRAY.search(text) is not None)
+                or bd.RE_GARBLED_RETURN_ARRAY.search(text) is not None
+                or bd.float_ret_rewrite(text) != text)
 
     with ThreadPoolExecutor(os.cpu_count()) as ex:
         todo = [j for j, h in zip(jobs, ex.map(lambda j: has_sites(j[0]), jobs)) if h]
