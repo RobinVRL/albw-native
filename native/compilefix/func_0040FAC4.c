@@ -3,6 +3,8 @@
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
  *  - switch on a pointer-typed variable / (T *)N case labels -> integer switch, same values [54]
  *  - explicit (T)(uintptr_t) casts at int<->pointer mismatches (identity on the 32-bit ARM) [5]
+ *  - commands 4 / 5: the virtual call through param_1[4]'s vtable (+0xC / +0x10) lost its `this`
+ *    (Ghidra `(*pcVar6)()`); r0 = param_1[4] (BOOT_LOG stop 78)
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
@@ -94,7 +96,7 @@ uint func_0040FAC4(int *param_1)
     case 0x5:
       pcVar6 = *(code **)(*(int *)param_1[4] + 0x10);
 LAB_0040fbf0:
-      piVar2 = (int *)(*pcVar6)();
+      piVar2 = (int *)(*pcVar6)((int *)param_1[4]); /* ARM 0040FBD4-0040FBF0: r0 = param_1[4] */
       break;
     case 0x6:
       if (*(char *)(param_1 + 5) != '\0') {
