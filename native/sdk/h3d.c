@@ -52,7 +52,9 @@
  * Not handled yet: fog, shadows, other uniform writers (00387E58,
  * 00518694, 00171510, 002C3870), runtime patches of blob words (material animations that edit
  * blobs in place would not be seen: the blobs are decoded once). */
+#include <execinfo.h>
 #include <math.h>
+#include <signal.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -870,6 +872,27 @@ uint32_t *func_00130C1C(uint32_t rnd, const float *view, const float *proj, uint
             fprintf(stderr, "\n");
         }
     }
+    if (getenv("ALBW_H3D_SCENE")) { /* debug: the scene's model list (env +0x5C count, +0x64 array):
+                                      * instance, flags +0x164, vis index +0x13C, shown +0x168 / +0x169,
+                                      * element count +0x5C (004D033C) */
+        static unsigned n;
+        static int trapped;
+        extern uint32_t data_0070B960;
+        int trap = !trapped && getenv("ALBW_H3D_SCENE_TRAP") && G32(data_0070B960, 0x5C) >= 10;
+        if (n++ % 300 == 0 || trap) {
+            uint32_t sb = data_0070B960, cnt = G32(sb, 0x5C), arr = G32(sb, 0x64);
+            fprintf(stderr, "h3d-scene: pass %u env %#x models %u:", n, sb, cnt);
+            for (uint32_t k = 0; k < cnt && k < 64; k++) {
+                uint32_t e = G32(arr, 4 * k), m = G32(e, 0);
+                if (!m) { fprintf(stderr, " [%u null]", k); continue; }
+                fprintf(stderr, " [%u %#x%s f%#x v%d s%u%u e%u]", k, m, G8(e, 4) ? " dead" : "",
+                        G32(m, 0x164), (int)G32(m, 0x13C), G8(m, 0x168), G8(m, 0x169), G32(m, 0x5C));
+            }
+            fprintf(stderr, "\n");
+            if (trap) { trapped = 1; raise(SIGTRAP); } /* ALBW_H3D_SCENE_TRAP: stop under gdb once the
+                                                        * scene has models (set watchpoints) */
+        }
+    }
     if (getenv("ALBW_H3D_TRACE")) { /* every 120 passes: is the 3D path being fed? */
         static unsigned n;
         if (n++ % 97 == 0) {
@@ -1043,6 +1066,30 @@ static void model_trace(uint32_t elem) {
     int i;
     for (i = 0; i < nseen; i++) if (seen[i] == res) break;
     if (i == nseen && nseen < 256) { seen[nseen] = res; cnt[nseen] = 0; nseen++; }
+    /* ALBW_H3D_MODELS_BT=1: call chain of the first draw of every ResModel (debug) */
+    static int bt = -1;
+    if (bt < 0) bt = getenv("ALBW_H3D_MODELS_BT") != NULL;
+    if (bt) {
+        static uint32_t ever[512];
+        static int nev;
+        int j;
+        for (j = 0; j < nev; j++) if (ever[j] == res) break;
+        if (j == nev && nev < 512) {
+            void *fr[16];
+            ever[nev++] = res;
+            fprintf(stderr, "h3d-models-bt: res %#x names:", res);
+            for (uint32_t w = 0; w < 24; w++) {   /* words of the ResModel that point at a C string */
+                uint32_t p = G32(res, 4 * w);
+                if (p < res - 0x200000u || p > res + 0x200000u) continue;   /* same file only */
+                const unsigned char *str = (const unsigned char *)GA(p);
+                int l = 0;
+                while (l < 40 && str[l] >= 0x20 && str[l] < 0x7F) l++;
+                if (l >= 3 && str[l] == 0) fprintf(stderr, " +%#x \"%s\"", 4 * w, (const char *)str);
+            }
+            fprintf(stderr, "\n");
+            backtrace_symbols_fd(fr, backtrace(fr, 16), 2);
+        }
+    }
     if (i < 256) cnt[i]++;
     if (++calls % 3000 == 0) {
         fprintf(stderr, "h3d-models: %d models:", nseen);
