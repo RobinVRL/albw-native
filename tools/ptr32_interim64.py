@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """64-bit interim (until the next full build_decomp64 run): apply the newer tools/ptr32.py rules
 (RE_NEG_UNSIGNED: unsigned negation as a pointer offset; align1_arrays: game data arrays declared
-aligned(1)) in place to build/decomp64's sources (converted Ghidra and mirrored matched sources)
+aligned(1); truncate_i64_ptr_casts; RE_NEG_LONG_INDEX) in place to build/decomp64's sources (converted Ghidra and mirrored matched sources)
 and rebuild only the objects whose source changed (build_decomp.build_one, round-3 stage-1
 settings). Then tools/link64.sh. A full build_decomp64 run applies the rules itself to sources it
 regenerates; this script then finds nothing to do.
 
   python3 tools/ptr32_interim64.py [ADDR ...]     (default: every source in decomp64/report.json)
-BOOT_LOG64 stops 5, 6, 8."""
+BOOT_LOG64 stops 5, 6, 8, 9, 10."""
 import json, os, re, sys
 from concurrent.futures import ThreadPoolExecutor
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -27,6 +27,8 @@ for ad, e in json.load(open(os.path.join(ROOT, "..", "albw-decomp-ai", "function
 def rules(t, ghidra):
     t = ptr32.align1_arrays(t)
     if ghidra:
+        t = ptr32.truncate_i64_ptr_casts(t)
+        t = ptr32.RE_NEG_LONG_INDEX.sub(lambda m: "[-0x%x]" % int(m.group(1), 16), t)
         t = ptr32.RE_NEG_UNSIGNED.sub(lambda k: k.group(1) + "(long long)", t)
     return t
 

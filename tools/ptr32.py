@@ -72,7 +72,30 @@ def align1_arrays(text):
     return RE_EXTERN_ARRAY.sub(lambda m: m.group(1) + " __attribute__((aligned(1)))" + m.group(2), text)
 
 
+# `p[-0xffffffff000000NN]`: Ghidra's 64-bit spelling of the 32-bit offset -0xNN (i386 truncates
+# the index; x86-64 adds ~4 GiB: 00405138, BOOT_LOG64 stop 9)
+RE_NEG_LONG_INDEX = re.compile(r"\[-0xffffffff([0-9a-fA-F]{8})\]")
+
+
+# `(T *)uVar` where uVar is a 64-bit integer (undefined8 pairs: eye-0/eye-1 view matrices passed
+# as one stack doubleword, 00270D04 -> 00567AFC, BOOT_LOG64 stop 10): the 32-bit pointer is the
+# low word (ARM/i386 truncate); on x86-64 the cast keeps the high word -> truncate first
+RE_I64_DECL = re.compile(r"\b(?:undefined8|ulonglong|longlong|uint64_t|int64_t|unkuint8|unkint8|(?:unsigned\s+)?long\s+long)\s+(\w+)\s*[;,)=\[]")
+RE_PTR_CAST_VAR = re.compile(r"(\((?:const\s+)?[A-Za-z_]\w*(?:\s*\*\s*(?:ALBW_GP\s*)?)*\s*\*\s*\))\s*(\w+)\b(?!\s*[\[(])")
+
+
+def truncate_i64_ptr_casts(text):
+    v64 = set(RE_I64_DECL.findall(text))
+    text = re.sub(r"(\([A-Za-z_][\w ]*\*\s*\))\s*CONCAT44\(", r"\1(unsigned int)CONCAT44(", text)
+    if not v64:
+        return text
+    return RE_PTR_CAST_VAR.sub(lambda m: "%s(unsigned int)%s" % (m.group(1), m.group(2)) if m.group(2) in v64
+                               else m.group(0), text)
+
+
 def rewrite_ghidra(text):
+    text = truncate_i64_ptr_casts(text)
+    text = RE_NEG_LONG_INDEX.sub(lambda m: "[-0x%x]" % int(m.group(1), 16), text)
     text = align1_arrays(text)
     text = RE_NEG_UNSIGNED.sub(lambda m: m.group(1) + "(long long)", text)
     text = RE_PTRPTR.sub(lambda m: _stars(m.group(1), m.group(3)), text)
