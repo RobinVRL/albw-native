@@ -10,9 +10,6 @@
  * the argument block of the 00120FBC call (sp+0 -> sp+0x20, CLASS unwritten stack copy).
  * BOOT_LOG 89f [3d]. High. */
 #include "../route/route.h"
-extern int fprintf(void *, const char *, ...);
-extern void *stderr;
-extern char *getenv(const char *);
 
 extern int func_00115C54(float *out, const float *a, const float *b);
 extern float func_00115DC8(float *v);
@@ -49,12 +46,6 @@ void func_00122C78(int *param_1, uint32_t param_2, uint32_t param_3)
     if (g && cam) {
         float limits[3] = {f32of(DAT_00122db8), f32of(DAT_00122dbc), f32of(DAT_00122db8)};
         func_00115C54(target, (float *)(self + 0x54), (float *)(self + 0x6C));
-        if (target[2] != target[2] && getenv("ALBW_H3D_CAMTRACE")) {
-            static int done;
-            if (!done++) fprintf(stderr, "cam-event-nan: this %p +54 %g %g %g +6c %g %g %g\n", (void *)self, RF(self, 0x54, float),
-                                 RF(self, 0x58, float), RF(self, 0x5C, float), RF(self, 0x6C, float), RF(self, 0x70, float),
-                                 RF(self, 0x74, float));
-        }
         r = func_00120FBC((int)cam, (uint32_t *)(self + 4), target, (uint32_t *)(self + 0xC), 0, 0, limits) != 0;
     }
     RF(self, 0x95, uint8_t) = (uint8_t)r;
