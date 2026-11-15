@@ -11,7 +11,8 @@ wraps each one in ALBW_AS_U32 / ALBW_AS_F32 (bit copies). Here the same converte
 the Ghidra-derived sources of the given address ranges that have such sites, and only their
 objects are rebuilt. The full rebuild redoes all of this; this script then finds nothing to do.
 
-  python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the UI draw path)
+  python3 tools/fconv_interim.py [--arch x86_64] [LO-HI ...]   (hex USA ranges; default: the UI
+                                                               draw path; x86_64: build/decomp64)
 
 Default ranges (BOOT_LOG stop 75: title screen): nw::lyt / nw::font drawers 003E0000-0042FFFF,
 sead graphics 00490000-0049FFFF (FrameBufferCTR 00490304, PrimitiveRenderer 004979CC).
@@ -28,12 +29,19 @@ DEFAULT = ["003E0000-0042FFFF", "00490000-0049FFFF"]
 
 
 def main():
-    ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (sys.argv[1:] or DEFAULT)]
+    args = sys.argv[1:]
+    arch64 = args[:2] == ["--arch", "x86_64"]
+    if arch64:
+        args = args[2:]
+    ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (args or DEFAULT)]
     os.environ["ALBW_CONVERT_V4"] = "1"   # the build's own settings (stage 1: -DALBW_V4)
     os.environ["ALBW_V4_STAGE"] = "1"
     os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies only
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import build_decomp as bd
+    if arch64:  # as build_decomp.main() --arch x86_64
+        bd.OUT, bd.TARGET, bd.ARCH64 = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu", True
+        os.environ["ALBW_ARCH"] = "x86_64"
     rt3 = os.path.join(ROOT, "native", "returns_this3.json")
     if os.path.exists(rt3):
         bd.RETURNS_THIS = set(json.load(open(rt3)))
@@ -45,6 +53,8 @@ def main():
             continue
         jobs.append((m.group(1), [m.group(2)]))
     inc = ["-I", os.path.join(bd.OUT, "shared", "include"), "-include", bd.COMPAT, "-DALBW_V4"]
+    if arch64:
+        inc += ["-fms-extensions"]
 
     def has_sites(path):
         src = os.path.join(bd.OUT, path)

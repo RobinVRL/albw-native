@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Link the x86-64 game (low-4GB mode, native/64BIT.md): mirrors tools/link.sh for 64-bit.
-#   tools/build_decomp64_v2.sh && tools/link64.sh          -> build/albw64
+#   ALBW_V4_STAGE=1 tools/build_decomp64_v4.sh && tools/link64.sh   -> build/albw64
 #   ALBW_FRONTEND=qt tools/link64.sh                         -> Qt frontend instead of platform.c
 #                                                              (build it first: native/frontend/qt/build.sh)
 # Separate outputs (build/decomp64, build/native64, build/data64, build/albw64): the 32-bit
@@ -31,27 +31,41 @@ else
 fi
 
 mkdir -p $O $B/data64
+# interim FCONV of the UI draw path (link.sh): only for a round-3 (V4) decomp64, whose sources
+# the converter's FCONV step expects
+if [[ "${ALBW_FCONV_INTERIM:-1}" == 1 ]] && ls -d $B/decomp64/ghidra_fallback/*_v4 >/dev/null 2>&1; then
+    python3 tools/fconv_interim.py --arch x86_64 | tail -1
+fi
 NATIVE=()
-# native/x64/*.c: 64-bit-only replacements (strong func_<ADDR>); a file there named like one
-# in native/game or native/robust replaces it in this build
-X64=" $( (ls native/x64/*.c 2>/dev/null || true) | xargs -rn1 basename | tr "\n" " ") "
+# the decompiled-code directories (as link.sh): Ghidra-style C, pointer words of game memory
+# kept 4 bytes by tools/ptr32.py --native
+GAMEDIRS="native/game native/robust native/gameplay native/compilefix native/framework native/core native/route native/hot"
+is_game() { local d; d=$(dirname "$1"); [[ " $GAMEDIRS " == *" $d "* ]]; }
+# native/x64/*.c: 64-bit-only replacements (strong func_<ADDR>); native/refs/lms: LibMessageStudio
+# written 64-bit clean (matched 0011F054 takes one `long long` = rdi only on x86-64: the free hook
+# was lost). A file there named like one in a decomp directory replaces it in this build.
+OVR=" $( (ls native/x64/*.c native/refs/lms/*.c 2>/dev/null || true) | xargs -rn1 basename | tr "\n" " ") "
 for f in "${PLATFORM[@]}" native/runtime/*.c native/audio/mixer.c native/audio/fx.c native/audio/output.c \
-         $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c native/gameplay/*.c native/x64/*.c 2>/dev/null); do
-    [[ "$f" == native/gameplay/func_0051E5F8.c ]] && continue  # as link.sh
+         $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c native/gameplay/*.c native/compilefix/*.c \
+              native/framework/*.c native/core/*.c native/route/*.c 2>/dev/null) \
+         $(git ls-files native/hot | grep -E "^native/hot/[^/]+\.c$") \
+         $(ls native/refs/lms/*.c native/x64/*.c 2>/dev/null); do
     b=$(basename "$f" .c)
-    if [[ ( "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* ) && "$X64" == *" $b.c "* ]]; then continue; fi
-    sub=$(basename "$(dirname "$f")")
+    if is_game "$f" && [[ "$OVR" == *" $b.c "* ]]; then continue; fi
+    sub=${f#native/}; sub=$(dirname "$sub")
     o=$O/$sub/$b.o
     mkdir -p $O/$sub
     EXTRA=()
-    [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/x64/* ]] && EXTRA=(-Inative/robust -Inative/gameplay -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)
+    if is_game "$f" || [[ "$f" == native/x64/* || "$f" == native/refs/lms/* ]]; then
+        EXTRA=(-DALBW_LINK_GAME_003E6AA8 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)
+    fi
     if [[ "${ALBW_REAL_SND:-1}" == 0 && ( "$f" == native/sdk/snd.c || "$f" == native/audio/* ) ]]; then continue; fi
     if [[ "$f" == native/sdk/snd_silent.c ]]; then
         [[ "${ALBW_REAL_SND:-1}" != 0 ]] && EXTRA+=(-DALBW_REAL_SND)
         rm -f "$o"
     fi
     src=$f
-    if [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* ]]; then
+    if is_game "$f"; then
         # pointer words of game memory stay 4 bytes (tools/ptr32.py --native)
         src=$O/$sub/$b.p32.c
         EXTRA+=(-I"$(dirname "$f")")
@@ -61,21 +75,33 @@ for f in "${PLATFORM[@]}" native/runtime/*.c native/audio/mixer.c native/audio/f
         for try in 1 2 3 4 5; do
             if clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" $SDLC -c "$src" -o "$o" 2>$O/err.txt; then break; fi
             # a symbol address stored into a 4-byte pointer: route it through ALBW_LAUNDER
-            syms=$(grep -o 'addrspacecast (ptr @[A-Za-z_][A-Za-z0-9_]*' $O/err.txt | sed 's/.*@//' | sort -u)
-            if [[ -z "$syms" || "$src" == "$f" ]]; then cat $O/err.txt >&2; exit 1; fi
+            syms=$(grep -o 'addrspacecast (ptr @[A-Za-z_][A-Za-z0-9_]*' $O/err.txt | sed 's/.*@//' | sort -u) || true
+            if [[ -z "$syms" || "$src" == "$f" ]]; then echo "FAILED $f" >&2; cat $O/err.txt >&2; exit 1; fi
             python3 tools/ptr32.py --launder "$src" $syms
         done
     fi
     NATIVE+=("$o")
 done
 llvm-nm -u --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native64_syms.txt
-python3 tools/gen_data.py --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
+# game globals a decomp object defines weakly (link.sh, BOOT_LOG stop 69) and &DAT_ pool names
+python3 -c "import json;print('\\n'.join(json.load(open('$B/decomp64/report.json'))['objects']))" > $B/objs64_pre.txt
+llvm-nm -A --defined-only @$B/objs64_pre.txt 2>/dev/null | awk '$3 ~ /^[VvWw]$/ && $4 ~ /^data_[0-9A-F]{8}$/ {print $4}' \
+    | sort -u >> $B/native64_syms.txt
+grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp64/ghidra_fallback native/game native/robust native/gameplay native/sdk \
+    | sed 's/^&//' | sort -u > $B/addr_taken_pool64.txt
+python3 tools/gen_data.py --addr-taken $B/addr_taken_pool64.txt --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
     --map ../albw-decomp-ai/shared/eu_usa_map.json --extra $B/native64_syms.txt \
     --report $B/decomp64/report.json --out $B/data64/gamedata.s >/dev/null
 clang --target=x86_64-linux-gnu -c $B/data64/gamedata.s -o $B/data64/gamedata.o
 python3 -c "import json;print('\n'.join(json.load(open('$B/decomp64/report.json'))['objects']))" > $B/objs64.txt
 echo $B/data64/gamedata.o >> $B/objs64.txt
 ld.lld -m elf_x86_64 -r -o $B/albw64_game.o @$B/objs64.txt
+# bool results come back in %al only (System V too): zero-extending adapters (tools/boolret.py)
+llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native64_defs.txt
+python3 tools/boolret.py $B/albw64_game.o $B/objs64.txt $B/objs64_bool.txt $B/boolret64.s $B/native64_defs.txt
+ld.lld -m elf_x86_64 -r -o $B/albw64_game.o @$B/objs64_bool.txt
+clang --target=x86_64-linux-gnu -c $B/boolret64.s -o $O/boolret.o
+NATIVE+=($O/boolret.o)
 cat native/symbol_aliases.txt native/symbol_aliases_manual.txt 2>/dev/null | grep -v '^#' | grep . > $B/aliases64.txt || true
 llvm-nm -u --format=just-symbols $B/albw64_game.o | python3 -c "
 import sys,re
