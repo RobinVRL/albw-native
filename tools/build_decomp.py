@@ -42,12 +42,17 @@ RE_HEX_E = re.compile(r"(0[xX][0-9a-fA-F]*[eE])([+-])")
 
 
 RE_GARBLED_RETURN = re.compile(r"#define (\w+) \(\*\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
+# the same for an array local: `return local_8[0];` -> `#define local_8 ((return *)(albw_frame + K))`
+# (4 functions, all `[0]` in the Ghidra dump: 0048A16C file GetSize returned garbage, so the
+# attract demo's Demo10 table was allocated with a bogus size, boot stop 97)
+RE_GARBLED_RETURN_ARRAY = re.compile(r"#define (\w+) \(\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
 
 
 def rewrite(text):
     # the stack-layout pass of the converter turns `return local_c;` into a bogus macro
     # `#define local_c (*(return *)(albw_frame + K))` (21 functions): restore the return
     text = RE_GARBLED_RETURN.sub(r"return \1;", text)
+    text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", text)
     text = RE_TLS.sub(r"\1 = albw_tls();", text)
     text = RE_ASM_BLOCK.sub("", text)
     text = RE_REG_PIN.sub("", text)
@@ -468,6 +473,23 @@ def stack_arg_rewrite(text):
     return text
 
 
+# Callees that return a float in s0 but that Ghidra typed void; their callers read s0 through
+# the variable the other branch assigns. name -> True. 005670A0 (animation curve value at a
+# frame, matched f_5670A0 returns f32; ARM callers `vstr s0` right after the call): its callers
+# lost the evaluated values and on i386 left the float on the x87 stack (boot stop 95c).
+FLOAT_RET_CALLS = {"func_005670A0"}
+RE_FR_ELSE = r"(\n[ \t]+)(%s\((?:[^;])*?\));(\s*\}\s*else\s*\{\s*(\w+) = )"
+
+
+def float_ret_rewrite(text):
+    for name in FLOAT_RET_CALLS:
+        if name not in text:
+            continue
+        text = re.sub(r"extern void %s\(" % name, "extern float %s(" % name, text)
+        text = re.sub(RE_FR_ELSE % name, lambda m: "%s%s = %s;%s" % (m.group(1), m.group(4), m.group(2), m.group(3)), text)
+    return text
+
+
 def fconv_enabled():
     v = os.environ.get("ALBW_FCONV")
     return v == "1" or (v is None and v4_stage() >= 2)
@@ -611,6 +633,8 @@ def build_one(job):
         if not cpp and pmf_this_enabled() and "/ghidra_fallback/" in src:
             text = open(src).read()
             new_text = stack_arg_rewrite(pmf_this_rewrite(text))
+            new_text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", new_text)
+            new_text = float_ret_rewrite(new_text)
             if new_text != text:
                 with open(src, "w") as fh:
                     fh.write(new_text)

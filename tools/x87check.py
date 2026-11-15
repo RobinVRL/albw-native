@@ -26,6 +26,28 @@ import re, subprocess, sys, collections, struct
 POP = ('fstp', 'fistp', 'fisttp', 'ffreep', 'fxch', 'fucomip', 'fcomip')
 
 
+def declared_non_float_functions(report='build/decomp/report.json'):
+    """func_XXXXXXXX defined in a linked decomp source (or a native C file) with a non-float return."""
+    import json, os, glob
+    out, srcs = set(), []
+    try:
+        for o in json.load(open(report))['objects']:
+            m = re.search(r'/obj/(.+?\.(?:cpp|c))\.final\.o$', o)
+            if m: srcs.append(os.path.join(os.path.dirname(report), m.group(1)))
+    except OSError:
+        pass
+    srcs += glob.glob('native/*/func_*.c')
+    rx = re.compile(r'^[ \t]*(?:extern\s+"C"\s+)?(?:static\s+)?([A-Za-z_][\w \t\*]*?)\s*\b(func_[0-9A-F]{8})\s*\([^;{]*\)\s*\{', re.M)
+    for f in srcs:
+        try: t = open(f, errors='replace').read()
+        except OSError: continue
+        for m in rx.finditer(t):
+            ret = m.group(1).split()[-1] if m.group(1).split() else ''
+            if ret not in ('float', 'f32', 'double'):
+                out.add(m.group(2))
+    return out
+
+
 def analyse(binary):
     dis = subprocess.run(['objdump', '-d', '--no-show-raw-insn', binary],
                          capture_output=True, text=True, check=True).stdout
@@ -69,9 +91,14 @@ def analyse(binary):
                     break
                 if op2.startswith(('fld', 'fild')): return True
         return False
+    # declared return types from the linked sources: a function defined with a non-float return
+    # never returns a float, even when its last call before `ret` is to a float-returning
+    # function (matched sources that declare that callee void: 0048B5D4 / 004D7F70 -> 00115154,
+    # the result was left on the x87 stack, boot stop 95b)
+    declared_nonfloat = declared_non_float_functions()
     rets_float = set()
     while True:
-        new = {f for f, ins in funcs.items() if returns_float(ins, rets_float)}
+        new = {f for f, ins in funcs.items() if f not in declared_nonfloat and returns_float(ins, rets_float)}
         if new == rets_float: break
         rets_float = new
     leak, under = [], []
