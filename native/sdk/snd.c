@@ -703,6 +703,17 @@ void func_003E0AF0(void *voice) {
     aud_unlock();
 }
 
+/* USA 00564678 (EU 00564650) nn::snd::Voice::GetPlayPosition(): the sample position in the
+ * wave buffer being played (the SDK reads it from the voice's DSP status block, voice+0x68 ->
+ * +8). Outside the 003DB000.. nn::snd range, so it was left decompiled and read that SDK layout
+ * on the native voice (boot stop 84: the title stream crashed in 0041A2D4 -> 0056D488 ->
+ * 00564678; nw::snd adds it to the block start for the stream play position). Confidence: high
+ * for the layout use; medium for the name (only reader: the stream player 0041A2D4). */
+uint32_t func_00564678(void *voice) {
+    int i = vidx(voice);
+    return i < 0 ? 0 : aud_voice_play_position(i);
+}
+
 /* USA 003E16D4 (EU 003E16B4) nn::snd::Voice::SetState(State): 0 play, 1 stop (all wave buffers
  * done, position reset), 2 pause (keeps the position). Confidence: high. */
 void func_003E16D4(void *voice, int32_t state) {
