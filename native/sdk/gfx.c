@@ -1192,11 +1192,28 @@ void func_005FEF5C(uint32_t addr, uint32_t size) {
     fire(cb);
 }
 
-/* USA 005FF104  write a CMDBUF jump/subroutine to (addr, size) into the bound list and close the
- * chunk. Callers 001321B8, 002FE918. Native: the jump target words are discarded too, so only
- * the chunk is closed. Confidence: low (name), high (body). */
+/* USA 005FF104  write a CMDBUF subroutine call to (addr, size) into the bound list and close the
+ * chunk. Callers 001321B8, 002FE918 (the double-buffered scene sub-lists: 002FE9CC records a pass
+ * into its own list, 002FEA3C ends it, the next frame's 002FE918 calls the finished buffer from the
+ * main list; the title's top-screen layouts Mn_TitleT / Mn_TitleLogoT and the other layer-2 2D
+ * objects of 0012E048 go this way). Native: ROP_CALL(addr, size) at the write pointer, so the
+ * sub-list's markers run in place like the hardware jumping there and returning, followed by a
+ * zero return-segment slot (as 003CC230 writes: render_exec_cmds stops there), then the chunk is
+ * closed. Before, the target was discarded and those passes never ran (boot: top-screen 2D
+ * missing; "(c) 2013 Nintendo", title logo). Confidence: medium (name), high (body). */
 void func_005FF104(uint32_t addr, uint32_t size) {
     lock();
+    if (G.bound && G.cur && addr && size >= 8 && G.cur + 16 <= G.end) {
+        ROp op;
+        memset(&op, 0, sizeof op);
+        op.type = ROP_CALL;
+        op.u.call.addr = (uintptr_t)addr;
+        op.u.call.size = size;
+        uint32_t *q = render_rec((uint32_t *)(void *)G.cur, &op);
+        q[0] = 0;
+        q[1] = 0;
+        G.cur = (uint8_t *)(q + 2);
+    }
     Callback cb = chunk_close(false, 0);
     unlock();
     fire(cb);
