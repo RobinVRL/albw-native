@@ -221,8 +221,16 @@ void fegl_rebind(void) {
     if (g_cur >= 0) fegl_begin_screen(g_cur);
 }
 
-void fegl_composite(unsigned fbo, const Layout *l, int linear) {
-    if (!g_ready) return;
+unsigned fegl_new_vao(void) {
+    GLuint v = 0;
+    if (g_ready) glGenVertexArrays(1, &v);
+    return v;
+}
+
+void fegl_composite(unsigned fbo, const Layout *l, int linear) { fegl_composite_vao(fbo, blit_vao, l, linear); }
+
+void fegl_composite_vao(unsigned fbo, unsigned own_vao, const Layout *l, int linear) {
+    if (!g_ready || !own_vao) return;
     /* save */
     GLint prog, vao, active, tex, sampler, vp[4], mask[4];
     GLfloat cc[4];
@@ -250,7 +258,7 @@ void fegl_composite(unsigned fbo, const Layout *l, int linear) {
     glClear(GL_COLOR_BUFFER_BIT);
     p_glBindSampler(0, 0);
     glUseProgram(blit_prog);
-    glBindVertexArray(blit_vao);
+    glBindVertexArray(own_vao);
     GLint filter = linear ? GL_LINEAR : GL_NEAREST;
     for (int k = 0; k < 2; k++) {
         int s = l->order[k];

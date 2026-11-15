@@ -14,7 +14,9 @@
 #include <QKeyEvent>
 #include <QMenuBar>
 #include <QSettings>
+#include <QScreen>
 #include <QStandardPaths>
+#include <QTimer>
 
 MainWindow::MainWindow(ScreenView *view) : view_(view) {
     setCentralWidget(view_);
@@ -71,16 +73,23 @@ void MainWindow::buildMenus() {
     }
     QAction *next = new QAction(QStringLiteral("Next layout"), this);
     next->setShortcut(Qt::Key_F2);
-    connect(next, &QAction::triggered, this, [this] { setPreset((fe().layout.preset + 1) % LAYOUT_PRESET_COUNT); });
+    connect(next, &QAction::triggered, this, [this] { stepPreset(1); });
     addAction(next);
     QAction *prev = new QAction(QStringLiteral("Previous layout"), this);
     prev->setShortcut(Qt::SHIFT | Qt::Key_F2);
-    connect(prev, &QAction::triggered, this,
-            [this] { setPreset((fe().layout.preset + LAYOUT_PRESET_COUNT - 1) % LAYOUT_PRESET_COUNT); });
+    connect(prev, &QAction::triggered, this, [this] { stepPreset(-1); });
     addAction(prev);
     layoutMenu_->addSeparator();
+    // separate: the top screen in this window, the bottom screen in its own; the presets above
+    // arrange the joined window (separate: top/bottom only hide the other window)
+    separateAct_ = act(layoutMenu_, QStringLiteral("Separate &Windows"), QKeySequence(Qt::Key_F5),
+                       [this] { setSeparate(!fe().separate, true); }, true);
     layoutMenu_->addAction(next);
     swapAct_ = act(layoutMenu_, QStringLiteral("&Swap Screens"), QKeySequence(Qt::Key_F4), [] {
+        if (fe().separate) {
+            feToast(QStringLiteral("Swap applies to the joined window (F5 joins)"));
+            return;
+        }
         if (fe().layout.preset == LAYOUT_CUSTOM) fe().layout.custom_front ^= 1;
         else fe().layout.swap ^= 1;
         feLayoutChanged();
@@ -176,6 +185,7 @@ void MainWindow::addLayoutActions(QMenu *m) {
     m->addSection(QStringLiteral("Screen layout"));
     for (QAction *a : presetActs_) m->addAction(a);
     m->addSeparator();
+    m->addAction(separateAct_);
     m->addAction(swapAct_);
     m->addAction(editAct_);
     m->addAction(keepAspectAct_);
@@ -190,6 +200,7 @@ void MainWindow::syncActions() {
     swapAct_->setText(c.preset == LAYOUT_CUSTOM ? QStringLiteral("&Swap Front Screen") : QStringLiteral("&Swap Screens"));
     swapAct_->setChecked(c.preset == LAYOUT_CUSTOM ? c.custom_front == LAYOUT_SCREEN_TOP : c.swap);
     editAct_->setChecked(fe().editing);
+    separateAct_->setChecked(fe().separate);
     keepAspectAct_->setChecked(c.keep_aspect);
     snapAct_->setChecked(c.snap);
     integerAct_->setChecked(c.integer_scale);
@@ -205,11 +216,16 @@ void MainWindow::syncActions() {
 }
 
 void MainWindow::updateTitle() {
-    QString t = fe().title;
-    if (fe().paused) t += QStringLiteral("  [Paused]");
-    if (fe().editing) t += QStringLiteral("  [Layout editor]");
-    if (fe().showFps) t += QStringLiteral("  %1 fps").arg(fe().fps, 0, 'f', 1);
+    QString f;
+    if (fe().paused) f += QStringLiteral("  [Paused]");
+    if (fe().editing) f += QStringLiteral("  [Layout editor]");
+    if (fe().showFps) f += QStringLiteral("  %1 fps").arg(fe().fps, 0, 'f', 1);
+    QString t = fe().title + (fe().separate ? QStringLiteral(" - Top") : QString()) + f;
     if (windowTitle() != t) setWindowTitle(t);
+    if (ScreenView *b = fe().bottomView) {
+        QString bt = fe().title + QStringLiteral(" - Bottom") + f;
+        if (b->windowTitle() != bt) b->setWindowTitle(bt);
+    }
 }
 
 void MainWindow::setMenuBarShown(bool on) {
@@ -218,17 +234,155 @@ void MainWindow::setMenuBarShown(bool on) {
     if (!on) view_->setFocus();
 }
 
-void MainWindow::toggleMenuBar() { setMenuBarShown(!menuBar()->isVisible()); }
+void MainWindow::toggleMenuBar() {
+    ScreenView *b = fe().bottomView;
+    if (!isVisible() && b) {   // separate, bottom screen only: this window (and its menu bar) is hidden
+        showMenuPopup();
+        return;
+    }
+    bool show = !menuBar()->isVisible();
+    setMenuBarShown(show);
+    if (show && b && b->isActiveWindow()) {  // Esc in the bottom window: the menus are up here
+        raise();
+        activateWindow();
+    }
+}
+
+// the menu bar's menus as a popup over the bottom-screen window
+void MainWindow::showMenuPopup() {
+    ScreenView *b = fe().bottomView;
+    if (!b) return;
+    QMenu m(b);
+    for (QAction *a : menuBar()->actions()) m.addAction(a);
+    m.exec(b->mapToGlobal(QPoint(8, 8)));
+}
 
 void MainWindow::setPreset(int p) {
-    fe().layout.preset = p;
-    if (p != LAYOUT_CUSTOM && fe().editing) fe().editing = false;
+    FeState &s = fe();
+    s.layout.preset = p;
+    if (p != LAYOUT_TOP_ONLY && p != LAYOUT_BOTTOM_ONLY) s.lastTwoPreset = p;
+    if (p != LAYOUT_CUSTOM && s.editing) s.editing = false;
+    if (s.separate) applySeparateVisibility();
     feLayoutChanged();
     feToast(QStringLiteral("Layout: %1").arg(QString::fromUtf8(layout_preset_name(p))));
 }
 
+void MainWindow::stepPreset(int dir) {
+    FeState &s = fe();
+    if (!s.separate) {
+        setPreset((s.layout.preset + dir + LAYOUT_PRESET_COUNT) % LAYOUT_PRESET_COUNT);
+        return;
+    }
+    // separate: both windows -> top only -> bottom only; "both" restores the joined preset
+    int p = s.layout.preset, idx = p == LAYOUT_TOP_ONLY ? 1 : p == LAYOUT_BOTTOM_ONLY ? 2 : 0;
+    idx = (idx + (dir < 0 ? 2 : 1)) % 3;
+    setPreset(idx == 1 ? LAYOUT_TOP_ONLY : idx == 2 ? LAYOUT_BOTTOM_ONLY : s.lastTwoPreset);
+}
+
+void MainWindow::applySeparateVisibility() {
+    FeState &s = fe();
+    ScreenView *b = s.bottomView;
+    if (!s.separate || !b) {
+        if (!isVisible()) show();
+        return;
+    }
+    bool top = layout_separate_visible(&s.layout, LAYOUT_SCREEN_TOP);
+    bool bot = layout_separate_visible(&s.layout, LAYOUT_SCREEN_BOTTOM);
+    bool wasTop = isActiveWindow(), wasBot = b->isActiveWindow();
+    if (top) show();
+    if (bot) b->show();
+    if (!top) hide();
+    if (!bot) b->hide();
+    // keep the keyboard in one of the two windows
+    if (wasTop && !top) {
+        b->raise();
+        b->activateWindow();
+    } else if (wasBot && !bot) {
+        raise();
+        activateWindow();
+    }
+}
+
+void MainWindow::setSeparate(bool on, bool save) {
+    FeState &s = fe();
+    QSettings &st = *s.settings;
+    bool wasSeparate = s.separate;
+    if (on && !s.bottomView) {
+        if (s.editing) {
+            s.editing = false;
+            layout_edit_end(&s.edit);
+            view_->unsetCursor();
+        }
+        if (!wasSeparate && isVisible()) {   // runtime split: keep the joined window's geometry
+            st.setValue(QStringLiteral("window/geometry"), saveGeometry());
+            if (isFullScreen()) setFullscreen(false);
+        }
+        s.separate = true;
+        view_->setScreen(LAYOUT_SCREEN_TOP);
+        qreal d = view_->devicePixelRatioF();
+        if (!wasSeparate && !restoreGeometry(st.value(QStringLiteral("window/topGeometry")).toByteArray())) {
+            if (isMaximized()) showNormal();
+            resize(size() - view_->size() + QSize(qRound(LAYOUT_TOP_W * s.defScale / d), qRound(LAYOUT_SCREEN_H * s.defScale / d)));
+        }
+        auto *b = new ScreenView;   // top-level: the bottom screen's window
+        b->setScreen(LAYOUT_SCREEN_BOTTOM);
+        b->addActions(actions());   // the F-key / Ctrl shortcuts work in that window too
+        s.bottomView = b;
+        if (!b->restoreGeometry(st.value(QStringLiteral("window/bottomGeometry")).toByteArray())) {
+            b->resize(qRound(LAYOUT_BOTTOM_W * s.defScale / d), qRound(LAYOUT_SCREEN_H * s.defScale / d));
+            // under this window, centred (or to its right if the screen has no room below);
+            // ignored where the windowing system places windows itself (Wayland). The frame may
+            // not be known yet (window manager still placing this window): assume a title bar.
+            QRect g = geometry(), f = frameGeometry(), avail = screen() ? screen()->availableGeometry() : QRect();
+            int titleH = g.top() - f.top() > 0 ? g.top() - f.top() : 32, below = f.bottom() - g.bottom();
+            // (a window not shown yet is placed by its client area: leave room for its title bar)
+            QPoint p(g.x() + (g.width() - b->width()) / 2, g.bottom() + 1 + below + titleH);
+            if (avail.isValid() && p.y() + b->height() > avail.bottom() + 1) p = QPoint(f.right() + 1 + (g.left() - f.left()), g.top());
+            b->move(p);
+        }
+    } else if (!on && wasSeparate) {
+        if (s.bottomView) {
+            st.setValue(QStringLiteral("window/topGeometry"), saveGeometry());
+            st.setValue(QStringLiteral("window/bottomGeometry"), s.bottomView->saveGeometry());
+            delete s.bottomView;    // its own GL context goes with it; fe_poll makes the game's current again
+            s.bottomView = nullptr;
+        }
+        s.separate = false;
+        view_->setScreen(-1);
+        if (!restoreGeometry(st.value(QStringLiteral("window/geometry")).toByteArray())) {
+            int cw, ch;
+            layout_canvas_size(&s.layout, &cw, &ch);
+            qreal d = view_->devicePixelRatioF();
+            resize(size() - view_->size() + QSize(qRound(cw * s.defScale / d), qRound(ch * s.defScale / d)));
+        }
+    }
+    applySeparateVisibility();
+    if (save) s.layout.separate = s.separate;
+    feLayoutChanged();
+    if (save) feToast(s.separate ? QStringLiteral("Separate windows (F5 joins them)") : QStringLiteral("Joined window (F5 separates)"));
+}
+
+void MainWindow::activationChanged() {
+    // deferred: while focus moves between our two windows, one is already inactive and the other
+    // not yet active
+    QTimer::singleShot(0, this, [this] {
+        FeState &s = fe();
+        bool active = isActiveWindow() || (s.bottomView && s.bottomView->isActiveWindow());
+        if (!active && s.pauseOnFocusLoss && !s.paused && !QApplication::activeModalWidget()) {
+            s.paused = s.pausedByFocus = true;
+            syncActions();
+            updateTitle();
+            view_->refreshOverlay();
+            if (s.bottomView) s.bottomView->refreshOverlay();
+        } else if (active && s.pausedByFocus) {
+            setPaused(false);
+        }
+    });
+}
+
 void MainWindow::setEditing(bool on) {
     FeState &s = fe();
+    if (on && s.separate) setSeparate(false, true);   // the editor arranges the joined window
     s.editing = on;
     layout_edit_end(&s.edit);
     if (on) {
@@ -243,6 +397,13 @@ void MainWindow::setEditing(bool on) {
 void MainWindow::setWindowScale(int n) {
     if (isFullScreen()) setFullscreen(false);
     if (isMaximized()) showNormal();
+    if (ScreenView *b = fe().bottomView) {   // separate: each window n x its screen
+        qreal d = view_->devicePixelRatioF();
+        resize(size() - view_->size() + QSize(qRound(LAYOUT_TOP_W * n / d), qRound(LAYOUT_SCREEN_H * n / d)));
+        if (b->isMaximized() || b->isFullScreen()) b->showNormal();
+        b->resize(qRound(LAYOUT_BOTTOM_W * n / d), qRound(LAYOUT_SCREEN_H * n / d));
+        return;
+    }
     int cw, ch;
     layout_canvas_size(&fe().layout, &cw, &ch);
     qreal d = view_->devicePixelRatioF();
@@ -262,6 +423,7 @@ void MainWindow::setPaused(bool on) {
     syncActions();
     updateTitle();
     view_->refreshOverlay();
+    if (fe().bottomView) fe().bottomView->refreshOverlay();
 }
 
 void MainWindow::setRenderScale(int n) {
@@ -325,7 +487,9 @@ void MainWindow::openRomPath(const QString &path) {
 
 void MainWindow::saveSettings() {
     QSettings &st = *fe().settings;
-    st.setValue(QStringLiteral("window/geometry"), saveGeometry());
+    // joined and separate keep their own geometry (the top screen's window is this window)
+    st.setValue(fe().separate ? QStringLiteral("window/topGeometry") : QStringLiteral("window/geometry"), saveGeometry());
+    if (fe().bottomView) st.setValue(QStringLiteral("window/bottomGeometry"), fe().bottomView->saveGeometry());
     st.setValue(QStringLiteral("window/fullscreen"), isFullScreen());
     st.setValue(QStringLiteral("window/showFps"), fe().showFps);
     st.setValue(QStringLiteral("game/pauseOnFocusLoss"), fe().pauseOnFocusLoss);
@@ -338,10 +502,17 @@ void MainWindow::restoreGeometryFromSettings(int defaultScale) {
     QSettings &st = *fe().settings;
     fe().showFps = st.value(QStringLiteral("window/showFps"), false).toBool();
     fe().pauseOnFocusLoss = st.value(QStringLiteral("game/pauseOnFocusLoss"), false).toBool();
-    if (!restoreGeometry(st.value(QStringLiteral("window/geometry")).toByteArray())) {
+    fe().defScale = defaultScale;
+    bool sep = fe().separate;
+    if (!restoreGeometry(st.value(sep ? QStringLiteral("window/topGeometry") : QStringLiteral("window/geometry")).toByteArray())) {
         int cw, ch;
         layout_canvas_size(&fe().layout, &cw, &ch);
+        if (sep) cw = LAYOUT_TOP_W, ch = LAYOUT_SCREEN_H;
         resize(cw * defaultScale, ch * defaultScale);
+        QRect avail = screen() ? screen()->availableGeometry() : QRect();
+        int pairH = (2 * LAYOUT_SCREEN_H) * defaultScale + 2 * 32;   // two windows + typical title bars
+        if (sep && avail.isValid() && pairH <= avail.height())   // first separate run: centre the pair
+            move(avail.x() + (avail.width() - width()) / 2, avail.y() + (avail.height() - pairH) / 2);
     }
     syncActions();
 }
@@ -349,8 +520,9 @@ void MainWindow::restoreGeometryFromSettings(int defaultScale) {
 bool MainWindow::eventFilter(QObject *o, QEvent *e) {
     if (e->type() == QEvent::KeyPress || e->type() == QEvent::KeyRelease) {
         auto *k = static_cast<QKeyEvent *>(e);
+        bool ours = isActiveWindow() || (fe().bottomView && fe().bottomView->isActiveWindow());
         if (k->key() == Qt::Key_Escape && !QApplication::activePopupWidget() && !QApplication::activeModalWidget() &&
-            isActiveWindow()) {
+            ours) {
             // Esc toggles the menu bar and is never passed on to the game
             if (e->type() == QEvent::KeyPress && !k->isAutoRepeat()) toggleMenuBar();
             return true;
@@ -368,15 +540,7 @@ void MainWindow::closeEvent(QCloseEvent *e) {
 void MainWindow::changeEvent(QEvent *e) {
     QMainWindow::changeEvent(e);
     if (e->type() == QEvent::ActivationChange) {
-        FeState &s = fe();
-        if (!isActiveWindow() && s.pauseOnFocusLoss && !s.paused && !QApplication::activeModalWidget()) {
-            s.paused = s.pausedByFocus = true;
-            syncActions();
-            updateTitle();
-            view_->refreshOverlay();
-        } else if (isActiveWindow() && s.pausedByFocus) {
-            setPaused(false);
-        }
+        activationChanged();
     } else if (e->type() == QEvent::WindowStateChange) {
         if (fullscreenAct_) fullscreenAct_->setChecked(isFullScreen());
     }

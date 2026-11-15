@@ -20,6 +20,9 @@
  * Environment the frontend applies before the game reads it (fe_prepare):
  *   ALBW_ROM       if unset: the ROM chosen with File > Open ROM (remembered)
  *   ALBW_SAVE_DIR  if unset: Options > Paths > save folder (if set there)
+ * Windows: by default the top screen is in the main window (with the menu bar) and the bottom
+ * screen in a second window; View > Screen Layout > Separate Windows (F5) joins them into one
+ * (saved in layout.cfg "windows"; ALBW_WINDOWS=separate|joined overrides it for one run).
  * Settings: QSettings ~/.config/albw-port/qt-frontend.conf; screen layout: layout.cfg (shared with
  * the SDL backend, native/platform/layout.h); controls: input.cfg (native/platform/input.h). */
 #pragma once

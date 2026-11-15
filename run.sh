@@ -15,6 +15,8 @@
 #   ALBW_GFX_TRACE=1  print frame/swap counters once a second
 #   ALBW_GL_DEBUG=1   OpenGL debug messages
 #   ALBW_TRACE_CTORS=1  print every static constructor during startup
+#   ALBW_WINDOWS=separate|joined   one window per screen (default) or both screens in one window,
+#                   for this run (F5 toggles at runtime and saves the choice in layout.cfg)
 #
 # Controls: arrows = circle pad, X = A, Z = B, S = X, A = Y, Q/W = L/R, Enter = Start,
 #           Backspace = Select, IJKL = D-pad, mouse on the bottom screen = touch, Esc = quit.

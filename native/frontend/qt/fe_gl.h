@@ -19,6 +19,11 @@ void fegl_screen_size(int screen, int *w, int *h);
  * rely on (program, VAO, texture/sampler of unit 0, viewport, enables, clear colour, colour mask)
  * is saved and restored. */
 void fegl_composite(unsigned fbo, const Layout *l, int linear);
+/* The same from another (shared) context, e.g. the separate bottom-screen window's widget:
+ * textures and programs are shared between contexts, vertex arrays are not, so that context
+ * draws with its own `vao` (from fegl_new_vao, created while it is current). */
+void fegl_composite_vao(unsigned fbo, unsigned vao, const Layout *l, int linear);
+unsigned fegl_new_vao(void);
 /* Read one screen target as top-down RGBA8 (w*h*4 bytes, see fegl_screen_size). */
 void fegl_read_screen(int screen, uint8_t *rgba);
 const char *fegl_renderer_string(void);

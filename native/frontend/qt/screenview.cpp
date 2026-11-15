@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "state.h"
 #include <QApplication>
+#include <QCloseEvent>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -123,7 +124,12 @@ ScreenView::ScreenView(QWidget *parent) : QOpenGLWidget(parent) {
 }
 
 void ScreenView::initializeGL() {
-    if (fegl_ready()) return;  // same context (the view is never reparented)
+    if (fegl_ready()) {
+        // the main view: same context (it is never reparented); a separate bottom-screen view:
+        // its own context, sharing the game's textures and programs
+        if (fe().view != this) vao_ = fegl_new_vao();
+        return;
+    }
     if (fegl_init(getProc, fe().renderScale, qEnvironmentVariableIsSet("ALBW_GL_DEBUG"))) {
         QMessageBox::critical(this, QStringLiteral("OpenGL"),
                               QStringLiteral("Could not initialise OpenGL 3.3 core.\n"
@@ -135,16 +141,26 @@ void ScreenView::initializeGL() {
     emit glInitialized();
 }
 
+void ScreenView::setScreen(int s) {
+    screen_ = s;
+    if (s >= 0) unsetCursor();
+    update();
+    overlay_->update();
+}
+
 Layout ScreenView::currentLayout() const {
     Layout l;
-    layout_compute(&fe().layout, qRound(width() * devicePixelRatioF()), qRound(height() * devicePixelRatioF()), &l);
+    int ww = qRound(width() * devicePixelRatioF()), wh = qRound(height() * devicePixelRatioF());
+    if (screen_ >= 0) layout_compute_single(&fe().layout, screen_, ww, wh, &l);
+    else layout_compute(&fe().layout, ww, wh, &l);
     return l;
 }
 
 void ScreenView::paintGL() {
     if (!fegl_ready()) return;
     Layout l = currentLayout();
-    fegl_composite(defaultFramebufferObject(), &l, fe().layout.linear_filter);
+    if (vao_) fegl_composite_vao(defaultFramebufferObject(), vao_, &l, fe().layout.linear_filter);
+    else fegl_composite(defaultFramebufferObject(), &l, fe().layout.linear_filter);
 }
 
 void ScreenView::resizeEvent(QResizeEvent *e) {
@@ -168,7 +184,7 @@ QString ScreenView::toast() const {
 QImage ScreenView::grabComposite() { return grabFramebuffer(); }
 
 void ScreenView::updateCursor(QPointF dev) {
-    if (!fe().editing) {
+    if (!fe().editing || screen_ >= 0) {
         unsetCursor();
         return;
     }
@@ -184,8 +200,8 @@ void ScreenView::mousePressEvent(QMouseEvent *e) {
     FeState &s = fe();
     QPointF dev = e->position() * dpr();
     Layout l = currentLayout();
-    bool ctrl = e->modifiers() & Qt::ControlModifier;
-    if (s.editing || ctrl) {
+    bool ctrl = (e->modifiers() & Qt::ControlModifier) && screen_ < 0;  // editing: joined view only
+    if ((s.editing && screen_ < 0) || ctrl) {
         if (e->button() == Qt::RightButton && s.editing && !ctrl) {
             rightPending_ = true;   // drag = resize, click = context menu
             rightPressPos_ = e->position();
@@ -257,7 +273,7 @@ void ScreenView::mouseReleaseEvent(QMouseEvent *e) {
 }
 
 void ScreenView::wheelEvent(QWheelEvent *e) {
-    if (!fe().editing || e->angleDelta().y() == 0) return;
+    if (!fe().editing || screen_ >= 0 || e->angleDelta().y() == 0) return;
     Layout l = currentLayout();
     QPointF dev = e->position() * dpr();
     int sc = layout_hit(&l, dev.x(), dev.y());
@@ -286,9 +302,20 @@ void ScreenView::leaveEvent(QEvent *e) {
     if (fe().editing) unsetCursor();
 }
 
+void ScreenView::closeEvent(QCloseEvent *e) {
+    // the separate bottom-screen window: closing it quits, like closing the main window
+    QOpenGLWidget::closeEvent(e);
+    if (isWindow() && fe().win && fe().win != window()) fe().win->close();
+}
+
+void ScreenView::changeEvent(QEvent *e) {
+    QOpenGLWidget::changeEvent(e);
+    if (e->type() == QEvent::ActivationChange && isWindow() && fe().win) fe().win->activationChanged();
+}
+
 void ScreenView::populateLayoutMenu(QMenu *m, int sc) {
     FeState &s = fe();
-    if (s.editing && sc >= 0) {
+    if (s.editing && sc >= 0 && screen_ < 0) {
         QString name = sc == LAYOUT_SCREEN_TOP ? QStringLiteral("Top screen") : QStringLiteral("Bottom screen");
         m->addSection(name);
         for (int n = 1; n <= 4; n++)
