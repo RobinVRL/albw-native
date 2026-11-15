@@ -264,6 +264,8 @@ void render_set_tev_stages(int stage_mask, const RTev *t, int flags);
 void render_set_program(int prog);
 void render_set_vs_float(int reg, const float *v, int count);   /* count vec4 registers */
 void render_set_vs_bool(uint16_t mask);
+const float *render_vs_floats(uint16_t *bools);   /* debug readback (96 vec4 + bool mask) */
+const RTev *render_tev_state(void);              /* debug readback of the combiner */
 void render_set_attrib(int reg, const void *ptr, int type, int count, int stride);
 void render_set_attrib_const(int reg, const float v[4]);
 void render_disable_attribs(void);

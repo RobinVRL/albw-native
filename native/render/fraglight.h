@@ -106,3 +106,5 @@ void fraglight_upload(FLLoc *loc, int unit);
 
 /* debugging */
 const FLEnv *fraglight_env(void);
+#include <stdio.h>
+void fraglight_debug_print(FILE *f);   /* lights + LUT bindings (ALBW_H3D_DUMP) */

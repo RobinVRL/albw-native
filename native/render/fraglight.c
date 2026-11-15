@@ -235,6 +235,19 @@ void fraglight_reset(void) {
 }
 
 const FLEnv *fraglight_env(void) { return &S.env; }
+void fraglight_debug_print(FILE *f) {
+    for (int k = 0; k < S.env.nlights && k < 8; k++) {
+        const LightState *l = &S.light[S.env.perm[k] & 7];
+        fprintf(f, "h3d-dump:   light %u: dif %u %u %u amb %u %u %u s0 %u %u %u s1 %u %u %u dir %u pos %g %g %g\n",
+                S.env.perm[k], l->diffuse[0], l->diffuse[1], l->diffuse[2], l->ambient[0], l->ambient[1], l->ambient[2],
+                l->spec0[0], l->spec0[1], l->spec0[2], l->spec1[0], l->spec1[1], l->spec1[2], l->directional, l->pos[0],
+                l->pos[1], l->pos[2]);
+    }
+    fprintf(f, "h3d-dump:   luts bound:");
+    for (int i = 0; i < 24; i++) if (S.bound[i]) fprintf(f, " %d->%u", i, S.bound[i]);
+    fprintf(f, " | in abs %#x sel %u %u %u %u %u %u %u\n", S.in.abs, S.in.sel[0], S.in.sel[1], S.in.sel[2], S.in.sel[3],
+            S.in.sel[4], S.in.sel[5], S.in.sel[6]);
+}
 
 void fraglight_exec(const ROp *op) {
     const void *d = op->u.fl.data;
