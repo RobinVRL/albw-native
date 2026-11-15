@@ -677,7 +677,8 @@ static long g_plat_frames;
 
 /* ALBW_PRESS=<frame>:<button>[:<frames>][,...] (debug aid, headless runs): hold a 3DS button from
  * that presented frame on for <frames> frames (default 6). Buttons: A B X Y L R START SELECT UP
- * DOWN LEFT RIGHT. Example: ALBW_PRESS=1800:A,2400:START */
+ * DOWN LEFT RIGHT; circle pad: CUP CDOWN CLEFT CRIGHT (full deflection + the direction bits,
+ * combinable for diagonals). Example: ALBW_PRESS=1800:A,2400:START,3000:CUP:120 */
 static uint32_t scripted_keys(void) {
     static const char *spec;
     static int init;
@@ -686,7 +687,8 @@ static uint32_t scripted_keys(void) {
     static const struct { const char *name; uint32_t bit; } names[] = {
         {"A", KEY_A}, {"B", KEY_B}, {"X", KEY_X}, {"Y", KEY_Y}, {"L", KEY_L}, {"R", KEY_R},
         {"START", KEY_START}, {"SELECT", KEY_SELECT}, {"UP", KEY_DUP}, {"DOWN", KEY_DDOWN},
-        {"LEFT", KEY_DLEFT}, {"RIGHT", KEY_DRIGHT}};
+        {"LEFT", KEY_DLEFT}, {"RIGHT", KEY_DRIGHT},
+        {"CUP", KEY_CPAD_UP}, {"CDOWN", KEY_CPAD_DOWN}, {"CLEFT", KEY_CPAD_LEFT}, {"CRIGHT", KEY_CPAD_RIGHT}};
     uint32_t keys = 0;
     for (const char *s = spec; *s;) {
         char *e;
@@ -753,7 +755,12 @@ int plat_poll(void) {
         in.touch_x = tx;
         in.touch_y = ty;
     }
-    in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | scripted_keys();
+    uint32_t sk = scripted_keys();
+    if (sk & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_CPAD_LEFT | KEY_CPAD_RIGHT)) {  /* scripted circle pad */
+        in.cpad_x = (int16_t)((sk & KEY_CPAD_RIGHT ? 156 : 0) - (sk & KEY_CPAD_LEFT ? 156 : 0));
+        in.cpad_y = (int16_t)((sk & KEY_CPAD_UP ? 156 : 0) - (sk & KEY_CPAD_DOWN ? 156 : 0));
+    }
+    in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
     return 1;
