@@ -23,6 +23,8 @@
  * nothing -> 0xC8804471. (The decompiled table lookups 0068F1B8/0068F3E4 fail natively.)
  * Confidence: high (RomFS format; object layout read from 003C854C and a live archive). */
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define RES_NOT_FOUND 0xC8804470u
 #define RES_NO_MEMORY 0xD8604659u
@@ -148,6 +150,16 @@ uint32_t func_003C854C(uint8_t *arch, uint32_t *out_file, const uint32_t *path, 
             return RES_NOT_FOUND;
         file = lookup(arch, 0, parent, start, n);
         break;
+    }
+    {   /* ALBW_FS_LOG=1: RomFS opens (the path, UTF-16 -> ASCII) */
+        static int log = -1;
+        if (log < 0) { const char *ev = getenv("ALBW_FS_LOG"); log = ev && *ev == '1'; }
+        if (log) {
+            char a[256]; int i = 0;
+            for (const uint16_t *q = (const uint16_t *)(uintptr_t)path[1]; *q && i < 255; q++) a[i++] = (char)*q;
+            a[i] = 0;
+            fprintf(stderr, "[romfs] open %s%s\n", a, file == EMPTY ? " (not found)" : "");
+        }
     }
     if (file == EMPTY)
         return RES_NOT_FOUND;
