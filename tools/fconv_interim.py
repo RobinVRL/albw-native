@@ -10,6 +10,8 @@ wraps each one in ALBW_AS_U32 / ALBW_AS_F32 (bit copies). Here the same converte
 (build_decomp.build_one with ALBW_FCONV=1, stage-1 settings otherwise) is applied in place to
 the Ghidra-derived sources of the given address ranges that have such sites, and only their
 objects are rebuilt. The full rebuild redoes all of this; this script then finds nothing to do.
+Also applied: the stage-2 rewrite of inlined pointer-to-member calls that lost their `this`
+(build_decomp.pmf_this_rewrite, ALBW_PMF_THIS).
 
   python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the whole game)
   python3 tools/fconv_interim.py --grep REGEX     also rebuild every source matching REGEX
@@ -38,7 +40,8 @@ def main():
     ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (args or DEFAULT)]
     os.environ["ALBW_CONVERT_V4"] = "1"   # the build's own settings (stage 1: -DALBW_V4)
     os.environ["ALBW_V4_STAGE"] = "1"
-    os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies only
+    os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies
+    os.environ["ALBW_PMF_THIS"] = "1"     # + `this` of inlined pointer-to-member calls
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import build_decomp as bd
     rt3 = os.path.join(ROOT, "native", "returns_this3.json")
@@ -58,7 +61,9 @@ def main():
         r = subprocess.run(["clang", "--target=" + bd.TARGET, "-fsyntax-only", "-Wno-everything",
                             "-Wfloat-conversion", "-Wimplicit-int-float-conversion", "-std=gnu11",
                             "-I", os.path.dirname(src)] + inc + [src], capture_output=True, text=True)
-        return "warning:" in r.stderr or bool(grep and grep.search(open(src).read()))
+        text = open(src).read()
+        return ("warning:" in r.stderr or bool(grep and grep.search(text))
+                or bd.pmf_this_rewrite(text) != text)
 
     with ThreadPoolExecutor(os.cpu_count()) as ex:
         todo = [j for j, h in zip(jobs, ex.map(lambda j: has_sites(j[0]), jobs)) if h]

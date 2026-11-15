@@ -385,6 +385,23 @@ def v4_stage():
     return int(os.environ.get("ALBW_V4_STAGE", "2")) if v4_enabled() else 0
 
 
+def pmf_this_enabled():
+    v = os.environ.get("ALBW_PMF_THIS")
+    return v == "1" or (v is None and v4_stage() >= 2)
+
+
+# Inlined pointer-to-member calls (sead StateMgr::exec and the like). armcc computes
+# r0 = obj + (adj >> 1) before testing the virtual bit and passes it as `this`; Ghidra prints the
+# call with no arguments: `if ((uV & 1) != 0) { pcV = *(code **)(pcV + *(int *)(OBJ + ((int)uV >> 1))); }
+# (*pcV)();` (BOOT_LOG stops 74-80: title task, title object, layout parts; 242 sites in 230 files)
+RE_PMF_NOTHIS = re.compile(r"(if \(\((\w+) & 1\) != 0\) \{\s*(\w+) = \*\(code \*\*\)\(\3 \+ \*\(int \*\)\((.+?) \+ "
+                           r"\(\(int\)\2 >> 1\)\)\);\s*\}\s*\(\*\3\)\()\)")
+
+
+def pmf_this_rewrite(text):
+    return RE_PMF_NOTHIS.sub(lambda m: "%s(int)(%s) + ((int)%s >> 1))" % (m.group(1), m.group(4), m.group(2)), text)
+
+
 def fconv_enabled():
     v = os.environ.get("ALBW_FCONV")
     return v == "1" or (v is None and v4_stage() >= 2)
@@ -520,6 +537,12 @@ def build_one(job):
     lay_file = fin + ".layout64"
     layout = []
     if not (os.path.exists(fin) and os.path.getmtime(fin) >= os.path.getmtime(src)):
+        if not cpp and pmf_this_enabled() and "/ghidra_fallback/" in src:
+            text = open(src).read()
+            new_text = pmf_this_rewrite(text)
+            if new_text != text:
+                with open(src, "w") as fh:
+                    fh.write(new_text)
         r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
         for _ in range(8):  # 64-bit: symbol addresses stored into 4-byte pointers (tools/ptr32.py)
             bad = set(RE_BAD_CONST.findall(r.stderr)) if ARCH64 and r.returncode else set()
