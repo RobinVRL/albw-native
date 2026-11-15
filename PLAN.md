@@ -55,7 +55,7 @@ first frame -> title screen -> file select -> gameplay.
 
 | Track | Current | Next when it finishes |
 |---|---|---|
-| Boot | title screen reached deterministically (stops 81-88, BOOT_LOG): idle at "Press (A)", title BGM plays; bottom wood panel full-screen, "Press (A)" glyphs drawn at the reference position | (1) stop 88b: text colour (two-tone font variant: TextBox +0xF4 flags vs the layout); (2) stop 80 top screen: covered only once the h3d draws rasterise (3D agent); (3) attract-timeout crash in sead heap teardown 0049B044; then Start -> file select |
+| Boot | title deterministic, A press (ALBW_PRESS) reaches file select (three slots drawn); stops 81-95 in BOOT_LOG | (1) stop 95: NaN animation frame in file select (~1,600 frames after A); (2) 88b text colour (combiner inherited from the previous material); (3) stop 92 attract-demo load crash (title timeout path); (4) class sweeps: lost `this` in `(**(code **)(local_X + 8))()` sites (stop 91 list), stack-argument callees (STACK_ARG_CALLS) |
 | Systemic fixes | float casts, no-return, return types, `tools/systemic_rebuild.sh` | run the combined rebuild at a boot-agent pause point; re-run the boot to confirm no regressions; commit |
 | Font / layout | RectDrawer + nw::lyt producers, hand-written GLSL; title pass in progress (boot agent): pane geometry fixed (stop 86) | glyph rendering of "Press (A)" (solid blocks), then masks/colours vs the emulator frames |
 | Models (queued) | — | hook native/assets into the game's h3d model load/draw (00568224/00568798/005681C0, uniform writers 00565204/005683D0, vertex setup 00113388); hand-write the nw::h3d DefaultShader GLSL (15 variants via defines) |
