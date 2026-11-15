@@ -14,10 +14,13 @@ struct FeState {
     QApplication *app = nullptr;
     QSettings *settings = nullptr;
     MainWindow *win = nullptr;
-    ScreenView *view = nullptr;
+    ScreenView *view = nullptr;       // the joined view, or the top screen's (in the main window)
+    ScreenView *bottomView = nullptr; // separate windows: the bottom screen's own top-level window
     QString title;
 
     LayoutConfig layout{};       // layout.cfg (shared with the SDL backend)
+    bool separate = false;       // current window mode; layout.separate is the saved choice
+    int lastTwoPreset = LAYOUT_DEFAULT;  // separate F2 cycle: "both windows" returns to it
     bool editing = false;        // custom layout editor active
     LayoutEdit edit{};           // drag in progress
 
@@ -30,6 +33,7 @@ struct FeState {
     FeResetFn resetFn = nullptr;
     void *resetUser = nullptr;
     int renderScale = 1;
+    int defScale = 2;            // window size multiplier when there is no saved geometry
     int vsync = 1;
     int argc = 0;
     char **argv = nullptr;
