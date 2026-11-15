@@ -48,7 +48,21 @@ RE_GARBLED_RETURN = re.compile(r"#define (\w+) \(\*\(return \*\)\(albw_frame \+ 
 RE_GARBLED_RETURN_ARRAY = re.compile(r"#define (\w+) \(\(return \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
 
 
+# Callee names in the Ghidra dump that come from wrong "sure": false entries of eu_usa_map.json:
+# the project names each EU function func_<USA> by the map, so a wrong entry makes every
+# Ghidra-derived call of that EU function call another USA function (boot stop 105: EU 0036161C,
+# a getter `return this->m10->m610`, is USA 00361640 by the code (EU = USA - 0x24 through the
+# block, checked against the matched/templater sources), but the map says USA 0036167C, whose
+# matched source returns 1). Only Ghidra-derived text: matched and native sources use real names.
+GHIDRA_NAME_FIXES = {
+    "func_0036167C": "func_00361640",  # EU 0036161C getter m10->m610
+    "func_0036166C": "func_00361634",  # EU 00361610 setter m10->m6C5 = v
+}
+RE_GHIDRA_NAME_FIX = re.compile(r"\b(%s)\b" % "|".join(GHIDRA_NAME_FIXES))
+
+
 def rewrite(text):
+    text = RE_GHIDRA_NAME_FIX.sub(lambda m: GHIDRA_NAME_FIXES[m.group(1)], text)
     # the stack-layout pass of the converter turns `return local_c;` into a bogus macro
     # `#define local_c (*(return *)(albw_frame + K))` (21 functions): restore the return
     text = RE_GARBLED_RETURN.sub(r"return \1;", text)
@@ -88,7 +102,7 @@ def virtual_this(text):
 
 
 RE_ARGCOUNT = re.compile(r"too (?:many|few) arguments to function call")
-RE_CF_ERR = re.compile(r"operand of type 'float' cannot be cast to a pointer type|pointer cannot be cast to type 'float'|"
+RE_CF_ERR = re.compile(r"operand of type '(?:float|double)' cannot be cast to a pointer type|pointer cannot be cast to type 'float'|"
                        r"statement requires expression of integer type \('[^']*\*'")
 RE_DIAG = re.compile(r"^(.+?):(\d+):(\d+):((?:\{\d+:\d+-\d+:\d+\})*):?\s*(error|warning): (.*)$", re.M)
 
@@ -115,6 +129,12 @@ def cf_error_rewrite(text, stderr):
             r = _cf_operand(text, i)
             if r:
                 edits.append((r[0], r[1], "ALBW_PTR_BITS(", ")"))
+        elif msg.startswith("operand of type 'double' cannot be cast"):
+            # a single-precision VFP value Ghidra computed through a double helper (SQRT ->
+            # __builtin_sqrt; vsqrt.f32 on the ARM): back to float, then the 32-bit copy
+            r = _cf_operand(text, i)
+            if r:
+                edits.append((r[0], r[1], "ALBW_PTR_BITS((float)", ")"))
         elif msg.startswith("pointer cannot be cast to type 'float'"):
             j = i - len("(float)") if text[:i].endswith("(float)") else i
             if text.startswith("(float)", j):
@@ -125,7 +145,9 @@ def cf_error_rewrite(text, stderr):
             k = text.find("(", i)
             e = _cf_operand(text, k)
             if e:
-                edits.append((e[0], e[1], "(int)(uintptr_t)", ""))
+                # the operand is the switch's own parenthesised expression: keep a pair around
+                # the cast (BOOT_LOG stop 104: `switch(int)(uintptr_t)(p) {` does not parse)
+                edits.append((e[0], e[1], "((int)(uintptr_t)", ")"))
     edits.sort(key=lambda e: e[0], reverse=True)
     last = None
     for e in edits:
