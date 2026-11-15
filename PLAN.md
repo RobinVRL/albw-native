@@ -55,7 +55,7 @@ first frame -> title screen -> file select -> gameplay.
 
 | Track | Current | Next when it finishes |
 |---|---|---|
-| Boot | title screen reached deterministically (stops 81-86, BOOT_LOG): idle at "Press (A)", title BGM plays; bottom wood panel full-screen | (1) stop 80: top screen shows a copy of the bottom (should be black until the 3D pass draws); (2) "Press (A)" text drawn as red blocks (font texture / alpha / glyph path); (3) attract-timeout crash in sead heap teardown 0049B044; then Start -> file select |
+| Boot | title screen reached deterministically (stops 81-88, BOOT_LOG): idle at "Press (A)", title BGM plays; bottom wood panel full-screen, "Press (A)" glyphs drawn at the reference position | (1) stop 88b: text colour (two-tone font variant: TextBox +0xF4 flags vs the layout); (2) stop 80 top screen: covered only once the h3d draws rasterise (3D agent); (3) attract-timeout crash in sead heap teardown 0049B044; then Start -> file select |
 | Systemic fixes | float casts, no-return, return types, `tools/systemic_rebuild.sh` | run the combined rebuild at a boot-agent pause point; re-run the boot to confirm no regressions; commit |
 | Font / layout | RectDrawer + nw::lyt producers, hand-written GLSL; title pass in progress (boot agent): pane geometry fixed (stop 86) | glyph rendering of "Press (A)" (solid blocks), then masks/colours vs the emulator frames |
 | Models (queued) | — | hook native/assets into the game's h3d model load/draw (00568224/00568798/005681C0, uniform writers 00565204/005683D0, vertex setup 00113388); hand-write the nw::h3d DefaultShader GLSL (15 variants via defines) |

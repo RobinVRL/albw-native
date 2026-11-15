@@ -473,6 +473,9 @@ static uint32_t *text_pass(uint8_t *d, uint32_t *p, uint8_t *buf, const uint8_t 
     uint8_t k3[4], k4[4];
     font_color_pack(white, k3);
     font_color_pack(black, k4);
+    k4[3] = 0; /* 00420DE8(black, 0): the black colour is packed with alpha 0 (the second argument),
+                  so stage 4 interpolates alpha from 0 to white.a by the glyph texel: the glyph shape.
+                  Packing black.a (= the pane alpha, 1) drew every glyph as an opaque box (boot stop 88) */
     p = font_rec_tev_const(p, 3, k3);
     p = font_rec_tev_const(p, 4, k4);
     return replay(d, p, buf);

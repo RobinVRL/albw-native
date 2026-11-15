@@ -1417,6 +1417,13 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
          R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
          f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
          changed, lit);
+    for (int i = 0; i < 6; i++) {
+        const RTevStage *t = &R.tev.stage[i];
+        rlog("dump:     tev%d rgb src %u/%u/%u op %u/%u/%u cmb %u x%u | a src %u/%u/%u op %u/%u/%u cmb %u x%u | k %u %u %u %u",
+             i, t->src_rgb[0], t->src_rgb[1], t->src_rgb[2], t->op_rgb[0], t->op_rgb[1], t->op_rgb[2], t->combine_rgb,
+             t->scale_rgb, t->src_a[0], t->src_a[1], t->src_a[2], t->op_a[0], t->op_a[1], t->op_a[2], t->combine_a,
+             t->scale_a, t->konst[0], t->konst[1], t->konst[2], t->konst[3]);
+    }
     for (int r = 0; r < 72; r++)  /* projection, stereo c4, record c9, pools c32.. / c64.. */
         if (r < 5 || r == 9 || (r >= 32 && r < 44) || r >= 64)
             rlog("dump:     c%d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
