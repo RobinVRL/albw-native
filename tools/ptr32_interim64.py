@@ -14,6 +14,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT + "/tools")
 os.environ.update(ALBW_CONVERT_V4="1", ALBW_V4_STAGE="1", ALBW_ARCH="x86_64")
 import build_decomp as bd, ptr32
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 bd.OUT, bd.TARGET, bd.ARCH64 = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu", True
 bd.RETURNS_THIS = set(json.load(open(ROOT + "/native/returns_this3.json")))
 want = set(a.upper() for a in sys.argv[1:])
@@ -48,7 +50,7 @@ for o in json.load(open(bd.OUT + "/report.json"))["objects"]:
     if n != t:
         open(src, "w", encoding="utf-8").write(n)
         jobs.append((path, addrs))
-with ThreadPoolExecutor(os.cpu_count()) as ex:
+with ThreadPoolExecutor(albw_jobs()) as ex:
     res = list(ex.map(lambda j: bd.build_one((j[0], j[1], None)), jobs))
 bad = [r for r in res if not r.get("ok")]
 for r in bad:

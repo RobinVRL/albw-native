@@ -26,6 +26,8 @@ import re
 import shutil
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "build", "decomp")
@@ -823,7 +825,7 @@ def load_decomp_tool(decomp, name):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default=os.path.join(ROOT, "..", "albw-decomp-ai"))
-    ap.add_argument("--jobs", type=int, default=os.cpu_count())
+    ap.add_argument("--jobs", type=int, default=albw_jobs())
     ap.add_argument("--only", default="")
     ap.add_argument("--arch", choices=("x86", "x86_64"), default="x86",
                     help="x86 = 32-bit intermediate build; x86_64 = the release target (tracks 64-bit health)")

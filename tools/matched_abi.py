@@ -37,6 +37,8 @@ import os
 import re
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEC = os.path.join(os.path.dirname(ROOT), "albw-decomp-ai")
@@ -286,7 +288,7 @@ def check(matched, out_dir, ir_dir, sigs, args=True, abi=True, jobs=None, livein
     resolve, _ = default_resolver()
     lv = livein or {u: v["final"] for u, v in json.load(open(LIVEIN2)).items()}
     paths = sorted(set(matched.values()))
-    with cf.ThreadPoolExecutor(jobs or os.cpu_count()) as ex:
+    with cf.ThreadPoolExecutor(jobs or albw_jobs()) as ex:
         lls = dict(zip(paths, ex.map(lambda p: make_ir(p, out_dir, ir_dir), paths)))
     by_path = collections.defaultdict(list)
     for a, p in matched.items():

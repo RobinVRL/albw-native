@@ -24,6 +24,8 @@ import os
 import re
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FLAGS = ["clang", "--target=x86_64-linux-gnu", "-std=gnu11", "-O1", "-g0", "-w", "-fms-extensions",
@@ -85,7 +87,7 @@ def main():
     for p in paths:
         files += sorted(glob.glob(os.path.join(p, "*.c"))) if os.path.isdir(p) else [p]
     sdl = sdl_cflags()
-    with cf.ThreadPoolExecutor(os.cpu_count()) as ex:
+    with cf.ThreadPoolExecutor(albw_jobs()) as ex:
         res = dict(ex.map(lambda f: scan(os.path.abspath(f), sdl), files))
     by_dir = collections.defaultdict(lambda: collections.Counter())
     for f, r in res.items():

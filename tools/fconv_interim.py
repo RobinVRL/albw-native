@@ -30,6 +30,8 @@ import re
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DEFAULT = ["00100000-006FFFFF"]
@@ -83,11 +85,11 @@ def main():
                 or bd.float_ret_rewrite(text) != text
                 or bd.singleton_dtor_rewrite(text) != text)
 
-    with ThreadPoolExecutor(os.cpu_count()) as ex:
+    with ThreadPoolExecutor(albw_jobs()) as ex:
         todo = [j for j, h in zip(jobs, ex.map(lambda j: has_sites(j[0]), jobs)) if h]
     for path, _ in todo:
         os.utime(os.path.join(bd.OUT, path))   # build_one recompiles only newer sources
-    with ThreadPoolExecutor(os.cpu_count()) as ex:
+    with ThreadPoolExecutor(albw_jobs()) as ex:
         res = list(ex.map(lambda j: bd.build_one((j[0], j[1], None)), todo))
     bad = [r for r in res if not r.get("ok")]
     for r in bad:

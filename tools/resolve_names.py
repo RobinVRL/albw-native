@@ -17,6 +17,9 @@ import os
 import re
 import struct
 import subprocess
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from albw_jobs import albw_jobs  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DECOMP = os.path.join(ROOT, "..", "albw-decomp-ai")
@@ -101,7 +104,7 @@ def main():
         return [(n, t) for n, t in zip(nat, org) if n in unresolved and not n.startswith("func_")]
 
     votes = collections.defaultdict(collections.Counter)
-    with cf.ThreadPoolExecutor(os.cpu_count()) as ex:
+    with cf.ThreadPoolExecutor(albw_jobs()) as ex:
         for pairs in ex.map(one, jobs):
             for n, t in pairs:
                 if t in to_usa:
