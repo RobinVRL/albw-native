@@ -26,6 +26,7 @@
  */
 #define _GNU_SOURCE
 #include <errno.h>
+#include <execinfo.h>
 #include <pthread.h>
 #include <sched.h>
 #include <stdatomic.h>
@@ -1001,11 +1002,29 @@ int32_t func_003CD764(int32_t *word) { return lightlock_trylock(word); }
  * it is the native thread id (see header). */
 typedef struct { int32_t word; _Atomic uint32_t owner; int32_t count; } NnCriticalSection;
 
+/* ALBW_CS_TRACE=1 (debug aid): every CriticalSection acquisition records the acquiring thread
+ * and its backtrace in g_cs_trace (hashed by address, last one wins), to find in a core dump who
+ * holds a lock that another thread waits on (gdb: p g_cs_trace[albw_cs_slot(addr)], then
+ * info symbol on the frames). */
+typedef struct { const void *cs; uint32_t tid; int n; void *bt[10]; } CsTrace;
+CsTrace g_cs_trace[4096];
+unsigned albw_cs_slot(const void *cs) { return (unsigned)(((uintptr_t)cs >> 2) % 4096); }
+static void cs_trace(const void *cs, uint32_t me) {
+    static int on = -1;
+    if (on < 0) on = getenv("ALBW_CS_TRACE") != NULL;
+    if (!on) return;
+    CsTrace *t = &g_cs_trace[albw_cs_slot(cs)];
+    t->cs = cs;
+    t->tid = me;
+    t->n = backtrace(t->bt, 10);
+}
+
 static void cs_enter(NnCriticalSection *cs) {
     uint32_t me = current_thread_id();
     if (atomic_load_explicit(&cs->owner, memory_order_relaxed) != me) {
         lightlock_lock(&cs->word);
         atomic_store_explicit(&cs->owner, me, memory_order_relaxed);
+        cs_trace(cs, me);
     }
     cs->count++;
 }
@@ -1022,6 +1041,7 @@ static int32_t cs_try_enter(NnCriticalSection *cs) {
     if (atomic_load_explicit(&cs->owner, memory_order_relaxed) != me) {
         if (!lightlock_trylock(&cs->word)) return 0;
         atomic_store_explicit(&cs->owner, me, memory_order_relaxed);
+        cs_trace(cs, me);
     }
     cs->count++;
     return 1;

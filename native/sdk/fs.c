@@ -54,6 +54,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -985,6 +986,15 @@ int32_t func_003C9A84(const uint32_t *handle, uint32_t *out_read, uint32_t offse
     uint64_t want = size;
     if (kind == H_ROM)
         want = off >= lim ? 0 : (lim - off < want ? lim - off : want);
+    /* ALBW_FS_DELAY_US=<n>: sleep n microseconds per RomFS read (debug aid: reproduces the
+     * timing of a cold file cache, which exposed load-order races at boot) */
+    static long delay_us = -1;
+    if (delay_us < 0) {
+        const char *e = getenv("ALBW_FS_DELAY_US");
+        delay_us = e ? atol(e) : 0;
+    }
+    if (delay_us > 0 && kind == H_ROM)
+        nanosleep(&(struct timespec){delay_us / 1000000, (delay_us % 1000000) * 1000}, NULL);
     uint64_t done = 0;
     while (done < want) {
         ssize_t n = pread(fd, (uint8_t *)buffer + done, (size_t)(want - done),

@@ -29,8 +29,9 @@
  *                   the completed request count, as the GSP interrupt thread did.
  *   display         Gen/Bind/DisplaybufferStorage allocate host memory; ActiveDisplay selects the
  *                   slot (0x400 top, 0x401 bottom, 0x410 top right eye). SwapBuffers(0x400/0x401/
- *                   0x402) shows each screen's bound display buffer: if it received a new frame,
- *                   the screen render target is cleared with that frame's colour (plat_begin_screen
+ *                   0x402) shows each screen's bound display buffer from the next vblank on
+ *                   (it does not block): the next CheckVSync / WaitVSync on the GL thread presents
+ *                   it: the screen render target is cleared with that frame's colour (plat_begin_screen
  *                   + glClearColor/glClear) and plat_end_frame() composites, swaps and paces 60 Hz;
  *                   plat_poll() pumps SDL every present (quit -> clean exit).
  *   vsync           a host 60 Hz counter (CheckVSync / WaitVSync): sead's vblank-interval logic
@@ -66,7 +67,7 @@
  * DMA path 00504ED0). OpenGL is only touched on the thread where the GL context is current (the
  * main thread: entry.c calls plat_init there and the sead frame loop runs on it). If SwapBuffers is
  * called from another thread, the frame is only recorded (and a warning printed once); the GL
- * thread presents it the next time it enters this file (CheckVSync/WaitVSync/SwapBuffers) or calls
+ * thread presents it the next time it enters this file (CheckVSync/WaitVSync) or calls
  * albw_gfx_service().
  */
 #define _GNU_SOURCE
@@ -1518,15 +1519,19 @@ void func_005FF580(void *self) {
 /* USA 00601658  nngxSwapBuffers(display 0x400 / 0x401 / 0x402 both): for each LCD, the bound
  * display buffer becomes the scanned-out one (003E34D8). Callers: game present 0032259C /
  * 00322BF0, sead pacing 00496238 / 0049ABAC (os.c, several times per frame). Native: each screen
- * shows its bound buffer's frame; present when a screen got a new frame (else at most every
- * 100 ms, to keep the window alive). GL work only on the GL thread. Confidence: high. */
+ * shows its bound buffer's frame. As on the 3DS, the swap takes effect at the next vblank and the
+ * call does not block: the host present (which swaps and paces to 60 Hz, so it sleeps) is done by
+ * the next CheckVSync / WaitVSync on the GL thread. The game's frame (00322460) swaps in
+ * vtbl+0x78 while it holds the display lock (*data_00715160) and waits for the vblank in vtbl+0x7C
+ * after releasing it; presenting here slept inside the lock, and the prepare thread waiting for
+ * that lock never got it (the main thread re-took it first every frame): the title task never
+ * loaded, about half the boots (boot stop 85, the stop-73 lock). Confidence: high. */
 void func_00601658(uint32_t display) {
     lock();
     G.swaps++;
     for (int s = 0; s < 2; s++)
         if (display == NN_GX_DISPLAY0 + (uint32_t)s || display == NN_GX_DISPLAY_BOTH) screen_show(s, G.slot_buf[s]);
     unlock();
-    present_maybe();
 }
 
 /* ================================================================== nngx: vsync */
@@ -1538,6 +1543,7 @@ static uint32_t vcount(void) {
 
 static void wait_vblank(void) {
     ensure_init();
+    if (on_gl_thread()) present_maybe(); /* a swapped frame is shown at this vblank (SwapBuffers) */
     uint64_t t = now_ns() - g_t0;
     uint64_t next = (t / VBLANK_NS + 1) * VBLANK_NS;
     for (;;) {
@@ -1552,15 +1558,12 @@ static void wait_vblank(void) {
 /* USA 005FF6E4  nngxCheckVSync(display) -> vblank counter of 0x400 / 0x401 (0x402: the older of
  * the two, with the 0x7FFFFFFE wrap rule); other ids 0. Callers: sead loops (os.c 0049AD58,
  * 004966D4, 00496238, 0049ABAC) and 00322880. Native: one host 60 Hz counter for both LCDs. Also
- * pumps SDL (rate-limited) and presents frames recorded by another thread, since the frame loop
- * spins here. Confidence: high. */
+ * pumps SDL (rate-limited) and, on the GL thread, presents the frame swapped since the last vblank
+ * (SwapBuffers does not present itself), since the frame loop spins here. Confidence: high. */
 int32_t func_005FF6E4(uint32_t display) {
     if (display < NN_GX_DISPLAY0 || display > NN_GX_DISPLAY_BOTH) return 0;
+    if (on_gl_thread()) present_maybe(); /* the frame swapped since the last vblank (keep-alive too) */
     pump(false);
-    lock();
-    bool foreign = G.dirty && G.warned_thread;
-    unlock();
-    if (foreign) present_maybe();
     return (int32_t)vcount();
 }
 

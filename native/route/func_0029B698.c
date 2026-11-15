@@ -10,6 +10,8 @@
  * Verified instruction by instruction against EU 0029B674..0029B870 (input test 0x81B on
  * +0x4D0, the +0x4DC bit 1, s8 state +0xC0 <2 / ==2 branches, vldrne/vldreq 15.0f/1.0f into
  * *(+0xF4)+0x90, tail call 001E30D0(this)).  Confidence: high. */
+#include <stdio.h>
+#include <stdlib.h>
 #include "route.h"
 
 extern uint32_t data_00712450[], data_007124F0[], data_00711F50[], data_0070B960[];
@@ -20,8 +22,26 @@ int func_00587F74(int obj, int *name, int a);
 void func_00122C78(int *obj, uint32_t a, uint32_t b);
 int func_001E30D0(char *self);
 
+extern uint32_t data_0070B800[];
+
+/* ALBW_TITLE_TRACE=1: once a second, the title state (+0xC0), the 2D fade query 00520B48 and the
+ * loading layout part's StateMgr bytes (*(data_0070B800 + 0x1848) +0xD/+0xE: 3/3 open and idle,
+ * 0/0 closed; the screen fader holds black until it is closed, 0034B58C) - debug aid */
+static void title_trace(char *self)
+{
+    static int on = -1, n;
+    if (on < 0) on = getenv("ALBW_TITLE_TRACE") != NULL;
+    if (!on || n++ % 60) return;
+    char *mgr = GPTR_TO(char, data_0070B800[0]);
+    char *part = mgr ? RP(mgr, 0x1848) : NULL;
+    fprintf(stderr, "title: calc %d state %d fade %d loading-part %s %d/%d\n", n - 1,
+            RF(self, 0xC0, int8_t), func_00520B48((int)data_00712450[0]),
+            part ? "" : "(none)", part ? RF(part, 0xD, uint8_t) : -1, part ? RF(part, 0xE, uint8_t) : -1);
+}
+
 void func_0029B698(char *self)
 {
+    title_trace(self);
     if (func_00520B48((int)data_00712450[0]) == 0) {
         char *pad = GPTR_TO(char, data_007124F0[0]);
         if ((RF(pad, 0x4D0, uint32_t) & 0x81B) != 0 || (RF(pad, 0x4DC, uint32_t) & 2) != 0) {
