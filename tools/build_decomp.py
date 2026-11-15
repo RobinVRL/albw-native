@@ -544,7 +544,8 @@ def build_one(job):
             # implicit float<->int conversions are Ghidra COPYs between a float and an int-typed
             # variable / pool word: make them bit copies (whole build: 1647 sites in 471 files)
             text = open(src).read()
-            w = subprocess.run(cmd + ["-fsyntax-only", "-Wno-everything", "-Wfloat-conversion",
+            # (without the build's -w, which silences every warning flag after it as well)
+            w = subprocess.run([c for c in cmd if c != "-w"] + ["-fsyntax-only", "-Wno-everything", "-Wfloat-conversion",
                                       "-Wimplicit-int-float-conversion", "-fdiagnostics-print-source-range-info",
                                       "-fno-caret-diagnostics", src], capture_output=True, text=True).stderr
             new_text = fconv_rewrite(text, w, src)

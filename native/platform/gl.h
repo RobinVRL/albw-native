@@ -66,6 +66,7 @@ typedef void GLvoid;
 /* X(return type, name, parameters) for every function the port uses */
 #define GL_FUNCS(X) \
     X(void, glClear, (GLbitfield)) \
+    X(void, glReadPixels, (GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *)) \
     X(void, glClearColor, (GLclampf, GLclampf, GLclampf, GLclampf)) \
     X(void, glViewport, (GLint, GLint, GLsizei, GLsizei)) \
     X(void, glScissor, (GLint, GLint, GLsizei, GLsizei)) \

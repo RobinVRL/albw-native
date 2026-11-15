@@ -149,8 +149,9 @@ int render_fill(const void *start, uint32_t size, uint32_t value, int bits);
 /* DisplayTransfer (block -> linear, nngxAddB2LTransferCommand / GX cmd 3): blit of the colour
  * surface at `src` (sw x sh, created lazily if unknown) into the display image or colour surface at
  * `dst` (dw x dh), with format conversion, AA downscale (aa 0x500 none, 0x501 2x horizontal,
- * 0x502 2x2) and optional vertical flip. Returns 1 if done in GL. */
-int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw, int dh, int dfmt, int flip);
+ * 0x502 2x2: aa 0 / 1 / 2) and optional vertical flip. `src` may lie inside a larger colour surface
+ * (whole rows into it: the screens share one render buffer). Returns 1 if done in GL. */
+int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw, int dh, int dfmt, int flip, int aa);
 
 /* TextureCopy / BlockImageCopy of `size` bytes: if `src` is a colour surface, the destination
  * becomes a GL copy of it (render-to-texture); else just marks dst written. */

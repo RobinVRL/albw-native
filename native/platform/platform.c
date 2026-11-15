@@ -422,7 +422,48 @@ void plat_begin_screen(int screen) {
     glViewport(0, 0, t->w, t->h);
 }
 
+/* Debug screenshots: ALBW_SHOT=<frame>[,<frame>...] writes both screen targets as PPM files
+ * (ALBW_SHOT_DIR, default ".") when plat_end_frame is called for the n-th time:
+ * shot_<frame>_top.ppm / shot_<frame>_bottom.ppm (unrotated screen orientation). */
+static void shot_maybe(void) {
+    static long frame;
+    static const char *spec;
+    static int init;
+    if (!init) { init = 1; spec = getenv("ALBW_SHOT"); }
+    frame++;
+    if (!spec) return;
+    int hit = 0;
+    for (const char *s = spec; *s;) {
+        char *e;
+        long v = strtol(s, &e, 10);
+        if (e == s) break;
+        if (v == frame) hit = 1;
+        s = (*e == ',') ? e + 1 : e;
+    }
+    if (!hit) return;
+    const char *dir = getenv("ALBW_SHOT_DIR");
+    for (int i = 0; i < 2; i++) {
+        Target *t = &screens[i];
+        unsigned char *px = malloc((size_t)t->w * t->h * 4);
+        if (!px) return;
+        glBindFramebuffer(GL_FRAMEBUFFER, t->fbo);
+        glReadPixels(0, 0, t->w, t->h, 0x1908 /*GL_RGBA*/, 0x1401 /*GL_UNSIGNED_BYTE*/, px);
+        char path[512];
+        snprintf(path, sizeof path, "%s/shot_%ld_%s.ppm", dir ? dir : ".", frame, i ? "bottom" : "top");
+        FILE *f = fopen(path, "wb");
+        if (f) {
+            fprintf(f, "P6\n%d %d\n255\n", t->w, t->h);
+            for (int y = t->h - 1; y >= 0; y--)
+                for (int x = 0; x < t->w; x++) fwrite(px + ((size_t)y * t->w + x) * 4, 1, 3, f);
+            fclose(f);
+            fprintf(stderr, "plat: wrote %s\n", path);
+        }
+        free(px);
+    }
+}
+
 void plat_end_frame(void) {
+    shot_maybe();
     plat_layout_update();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, g_layout.ww, g_layout.wh);

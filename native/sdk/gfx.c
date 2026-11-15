@@ -199,7 +199,7 @@ typedef struct {
         struct { const uint8_t *src; uint8_t *dst; uint32_t size; } dma;
         struct { uintptr_t addr; uint32_t size; } cmd;
         struct { uintptr_t start[2]; uint32_t size[2], value[2]; uint8_t bits[2]; } fill;
-        struct { uintptr_t src, dst; uint16_t sw, sh, dw, dh; uint8_t sfmt, dfmt, flip; } xfer;
+        struct { uintptr_t src, dst; uint16_t sw, sh, dw, dh; uint8_t sfmt, dfmt, flip, aa; } xfer;
         struct { uintptr_t src, dst; uint32_t size, sw, sgap, dw, dgap; } copy;
     } u;
 } Request;
@@ -335,6 +335,14 @@ static void present_now(float shown[2][4], const void *const shown_mem[2]) {
     if (G.presents == 1)
         gfx_log("first frame presented (top %.2f %.2f %.2f, bottom %.2f %.2f %.2f)", shown[0][0], shown[0][1],
                 shown[0][2], shown[1][0], shown[1][1], shown[1][2]);
+    if (g_trace && G.presents % 60 == 0) {
+        RStats rs = render_stats();
+        gfx_log("render: ops run %llu recorded %llu pooled %llu fills %llu transfers %llu draws %llu tex %llu",
+                (unsigned long long)rs.ops_run, (unsigned long long)rs.ops_recorded,
+                (unsigned long long)rs.ops_pooled, (unsigned long long)rs.fills,
+                (unsigned long long)rs.transfers, (unsigned long long)rs.draws,
+                (unsigned long long)rs.tex_uploads);
+    }
     if (g_trace && G.presents % 60 == 0)
         gfx_log("presents %llu swaps %llu B2L %llu fills %llu top %.2f %.2f %.2f bottom %.2f %.2f %.2f",
                 (unsigned long long)G.presents, (unsigned long long)G.swaps,
@@ -543,7 +551,8 @@ static void exec_request(CmdList *l, const Request *r) {
         DisplayBuffer *b = dbuf_at(r->u.xfer.dst);
         if (b) frame_into(b, r->u.xfer.src, r->u.xfer.sfmt);
         render_transfer((const void *)r->u.xfer.src, r->u.xfer.sw, r->u.xfer.sh, r->u.xfer.sfmt,
-                        (void *)r->u.xfer.dst, r->u.xfer.dw, r->u.xfer.dh, r->u.xfer.dfmt, r->u.xfer.flip);
+                        (void *)r->u.xfer.dst, r->u.xfer.dw, r->u.xfer.dh, r->u.xfer.dfmt, r->u.xfer.flip,
+                        r->u.xfer.aa);
         break;
     }
     case RQ_L2B:
@@ -798,9 +807,9 @@ void func_003E3AFC(const void *src, uint32_t sw, uint32_t sh, void *dst, uint32_
     lock();
     DisplayBuffer *b = dbuf_at((uintptr_t)dst);
     if (b) frame_into(b, (uintptr_t)src, (int)(flags >> 8 & 7));
-    /* flags: bit 0 vertical flip, bits 8-10 input format, 12-14 output format */
+    /* flags: bit 0 vertical flip, bits 8-10 input format, 12-14 output format, 24-25 scaling */
     render_transfer(src, (int)sw, (int)sh, (int)(flags >> 8 & 7), dst, (int)dw, (int)dh, (int)(flags >> 12 & 7),
-                    (int)(flags & 1));
+                    (int)(flags & 1), (int)(flags >> 24 & 3));
     unlock();
 }
 
@@ -1338,6 +1347,7 @@ static Callback add_b2l(CmdList *l, const void *src, uint32_t sw, uint32_t sh, u
     r->u.xfer.sfmt = (uint8_t)in;
     r->u.xfer.dfmt = (uint8_t)out;
     r->u.xfer.flip = flip != 0;
+    r->u.xfer.aa = (uint8_t)(aa - 0x500); /* 0 none, 1 2x horizontal, 2 2x2 */
     return req_commit(l);
 }
 

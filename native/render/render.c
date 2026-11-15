@@ -450,6 +450,7 @@ static const char *SCAN_FS =
     "  o = vec4(texture(img, t).rgb, 1.0); }\n";
 
 static void reset_state(void);
+static long g_dump_frame = -1;   /* ALBW_RENDER_DUMP (see dumping()) */
 
 int render_ready(void) {
     if (R.ready) return 1;
@@ -470,6 +471,8 @@ int render_ready(void) {
     }
     const char *s = getenv("ALBW_RENDER_SCALE");
     if (s && atoi(s) >= 1 && atoi(s) <= 8) R.scale = atoi(s);
+    s = getenv("ALBW_RENDER_DUMP");
+    if (s) g_dump_frame = atol(s);
     s = getenv("ALBW_SCANOUT");
     R.scanout_mode = !s ? 0 : !strcmp(s, "direct") ? 1 : !strcmp(s, "rot") ? 2 : !strcmp(s, "rotflip") ? 3 : 0;
     for (int i = 0; i < RPROG_COUNT; i++) program_build(i);
@@ -717,33 +720,55 @@ static Surface *display_image(Display *d, int w, int h, int fmt) {
     return d->img;
 }
 
-int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw, int dh, int dfmt, int flip) {
+int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw, int dh, int dfmt, int flip, int aa) {
     if (!src || !dst || sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0 || !render_ready()) return 0;
     lock();
-    Surface *s = surface_at((uintptr_t)src, 0);
-    if (!s || s->addr != (uintptr_t)src) s = surface_get((uintptr_t)src, sw, sh, sfmt, false);
+    /* the source may start inside a larger colour surface: the game shares one render buffer
+     * between the screens (sead FrameBufferCTR top 240x400 and bottom 240x320 both use the
+     * 0x1F000080 buffer) and transfers the bottom screen from 80 rows into it */
+    uintptr_t a = (uintptr_t)src;
+    Surface *s = surface_at(a, 0);
+    int off_rows = 0;
+    if (s && s->addr != a) {
+        size_t row_bytes = (size_t)s->w * (size_t)fmt_bytes(s->fmt);
+        size_t off = a - s->addr;
+        if (row_bytes && off % row_bytes == 0 && (int)(off / row_bytes) < s->h) off_rows = (int)(off / row_bytes);
+        else s = NULL;
+    }
+    if (!s) s = surface_get(a, sw, sh, sfmt, false);
     Display *d = display_at((uintptr_t)dst);
     Surface *t = d ? display_image(d, dw, dh, dfmt) : surface_get((uintptr_t)dst, dw, dh, dfmt, false);
     int ok = 0;
     if (s && t && s != t) {
         int S = R.scale;
-        int bw = sw < s->w ? sw : s->w, bh = sh < s->h ? sh : s->h;
+        /* AA downscale: 0 none, 1 2x horizontal, 2 2x2; the transfer reads only what the output
+         * needs (input rows beyond dh * ay are not read) */
+        int ax = aa >= 1 ? 2 : 1, ay = aa >= 2 ? 2 : 1;
+        int bw = dw * ax, bh = dh * ay;
+        if (bw > sw) bw = sw;
+        if (bh > sh) bh = sh;
+        if (bw > s->w) bw = s->w;
+        if (bh > s->h - off_rows) bh = s->h - off_rows;
+        int ow = bw / ax, oh = bh / ay;
+        /* memory row m of the source = GL row s->h-1-m (top window row first in memory); the
+         * destination keeps memory row order: source memory row off_rows -> destination row 0 */
+        int sy1 = s->h - off_rows, sy0 = sy1 - bh;
+        int dy1 = dh, dy0 = dh - oh;
+        if (flip) { int tmp = dy0; dy0 = dy1; dy1 = tmp; }
         glDisable(GL_SCISSOR_TEST);
         rglColorMask(1, 1, 1, 1);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, s->fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, t->fbo);
-        /* memory row order is kept (flip mirrors it); GL rows follow memory rows bottom-up, so a
-         * plain blit keeps orientation. AA downscale = linear filter on the size ratio. */
-        int y0 = flip ? dh * S : 0, y1 = flip ? 0 : dh * S;
-        rglBlitFramebuffer(0, 0, bw * S, bh * S, 0, y0, dw * S, y1, GL_COLOR_BUFFER_BIT,
-                           (bw != dw || bh != dh) ? GL_LINEAR : GL_NEAREST);
+        rglBlitFramebuffer(0, sy0 * S, bw * S, sy1 * S, 0, dy0 * S, ow * S, dy1 * S, GL_COLOR_BUFFER_BIT,
+                           (ax > 1 || ay > 1) ? GL_LINEAR : GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
         R.frag_dirty = true;
         if (d) d->valid = true;
         ok = 1;
         R.st.transfers++;
-        if (g_trace) rlog("transfer %#lx %dx%d -> %s %#lx %dx%d flip %d", (unsigned long)(uintptr_t)src, sw, sh,
-                          d ? "display" : "surface", (unsigned long)(uintptr_t)dst, dw, dh, flip);
+        if (g_trace) rlog("transfer %#lx (+%d rows of %#lx) %dx%d -> %s %#lx %dx%d flip %d aa %d", (unsigned long)a,
+                          off_rows, (unsigned long)s->addr, sw, sh, d ? "display" : "surface",
+                          (unsigned long)(uintptr_t)dst, dw, dh, flip, aa);
     }
     unlock();
     return ok;
@@ -1177,6 +1202,11 @@ void render_set_ext(const RenderExt *ext) {
 
 RTexUnit *render_texunit(int unit) { return &R.unit[unit < 0 || unit > 2 ? 0 : unit]; }
 
+static bool dumping(void);
+static void dump_read(uint8_t **buf);
+static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t count);
+static uint8_t *g_ext_before;
+
 int render_draw_bind(void) {
     if (!render_ready()) return 0;
     lock();
@@ -1188,10 +1218,12 @@ int render_draw_bind(void) {
     R.tev_dirty = R.vsf_dirty = true;
     upload_uniforms(p);
     for (int i = 0; i < 3; i++) bind_unit(i);
+    if (dumping()) { g_ext_before = NULL; dump_read(&g_ext_before); }
     return 1; /* keeps the lock until render_draw_done */
 }
 
 void render_draw_done(void) {
+    if (dumping()) dump_draw_after(g_ext_before, "extdraw", 0);
     glBindVertexArray(0);
     R.st.draws++;
     unlock();
@@ -1304,12 +1336,102 @@ static bool draw_setup(uint32_t vmin, uint32_t vmax) {
     return true;
 }
 
+/* ALBW_RENDER_DUMP=<frame>: log every executed op of that host frame, and for each draw the
+ * pipeline state and how many pixels of the target changed (glReadPixels before/after). Debug only. */
+static bool dumping(void) { return g_dump_frame >= 0 && (long)R.frame == g_dump_frame; }
+static uint8_t *g_dump_px; static size_t g_dump_cap;
+static void dump_read(uint8_t **buf) {
+    if (!R.cur_c) { *buf = NULL; return; }
+    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    if (g_dump_cap < 2 * n) { g_dump_px = xrealloc(g_dump_px, 2 * n); g_dump_cap = 2 * n; }
+    if (!*buf) *buf = g_dump_px; else *buf = g_dump_px + n;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, *buf);
+    glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+}
+static void dump_probe(const uint8_t *before) {
+    if (!before) return;
+    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    uint8_t *after = g_dump_px + n;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
+    glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+    size_t changed = 0, first = (size_t)-1;
+    int minx = 1 << 30, miny = 1 << 30, maxx = -1, maxy = -1, W = R.cur_c->w * R.scale;
+    for (size_t i = 0; i < n; i += 4)
+        if (memcmp(before + i, after + i, 4)) {
+            changed++;
+            if (first == (size_t)-1) first = i;
+            int x = (int)(i / 4 % (size_t)W), y = (int)(i / 4 / (size_t)W);
+            if (x < minx) minx = x; if (x > maxx) maxx = x; if (y < miny) miny = y; if (y > maxy) maxy = y;
+        }
+    const RTevStage *t = &R.tev.stage[0];
+    if (changed)
+        rlog("dump:   probe (no blend/depth): changed %zu box %d,%d-%d,%d first rgba %u %u %u %u; tex0 %#lx %ux%u fmt %u; "
+             "tev0 src %u/%u/%u cmb %u a-src %u/%u/%u cmb %u k %u %u %u %u", changed, minx, miny, maxx, maxy,
+             after[first], after[first + 1], after[first + 2], after[first + 3], (unsigned long)R.unit[0].addr,
+             R.unit[0].w, R.unit[0].h, R.unit[0].fmt, t->src_rgb[0], t->src_rgb[1], t->src_rgb[2], t->combine_rgb,
+             t->src_a[0], t->src_a[1], t->src_a[2], t->combine_a, t->konst[0], t->konst[1], t->konst[2], t->konst[3]);
+    else {
+        rlog("dump:   probe (no blend/depth): nothing rasterised");
+        for (int r = 0; r < 44; r++)
+            if (r < 12 || r >= 32) rlog("dump:     c%-2d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
+        for (int i = 0; i < 4; i++)
+            if (R.attr[i].array) {
+                const uint8_t *v = (const uint8_t *)R.attr[i].ptr;
+                if (R.attr[i].type == RATTR_FLOAT)
+                    rlog("dump:     v%d ptr %#lx f32x%d stride %d: %g %g %g", i, (unsigned long)R.attr[i].ptr, R.attr[i].count,
+                         R.attr[i].stride, ((const float *)v)[0], ((const float *)v)[1], R.attr[i].count > 2 ? ((const float *)v)[2] : 0.f);
+                else
+                    rlog("dump:     v%d ptr %#lx type %d x%d stride %d: %02x %02x %02x %02x", i, (unsigned long)R.attr[i].ptr,
+                         R.attr[i].type, R.attr[i].count, R.attr[i].stride, v[0], v[1], v[2], v[3]);
+            } else
+                rlog("dump:     v%d const %g %g %g %g", i, R.attr[i].k[0], R.attr[i].k[1], R.attr[i].k[2], R.attr[i].k[3]);
+    }
+}
+
+static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t count) {
+    if (!before) { rlog("dump: %s %u: no colour target", kind, count); return; }
+    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    uint8_t *after = g_dump_px + n;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
+    glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+    size_t changed = 0, lit = 0;
+    for (size_t i = 0; i < n; i += 4) {
+        if (memcmp(before + i, after + i, 4)) changed++;
+        if (after[i] | after[i + 1] | after[i + 2]) lit++;
+    }
+    const RFragState *f = &R.frag;
+    rlog("dump: %s %u prog %d/%d target %#lx vp %d,%d %dx%d sc %d(%d,%d %dx%d) cmask %x blend %d(%d,%d) depth %d/%d/%d "
+         "stencil %d alpha %d/%d/%d cull %d tex %x -> changed %zu lit %zu",
+         kind, count, R.prog_id, R.prog_variant, (unsigned long)R.cur_c->addr, R.vp[0], R.vp[1], R.vp[2], R.vp[3],
+         R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
+         f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
+         changed, lit);
+}
+
 void render_draw(int prim, uint32_t first, uint32_t count) {
     if (!count || !render_ready()) return;
     lock();
     if (draw_setup(first, first + count - 1)) {
+        uint8_t *before = NULL;
+        bool dmp = dumping();
+        if (dmp) { dump_read(&before); glBindVertexArray(R.vao); }
         glDrawArrays(PRIM_GL[prim % 3], 0, (GLsizei)count);
         R.st.draws++;
+        if (dmp) {
+            dump_draw_after(before, "draw", count);
+            /* probe: the same draw without blending / depth / alpha test, what does it output? */
+            glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_STENCIL_TEST); glDisable(GL_CULL_FACE);
+            { static const float mag[4] = {1, 0, 1, 0.5f}; rglColorMask(1, 1, 1, 1); rglClearBufferfv(GL_COLOR, 0, mag); }
+            glBindVertexArray(R.vao);
+            before = NULL;
+            dump_read(&before);
+            glDrawArrays(PRIM_GL[prim % 3], 0, (GLsizei)count);
+            dump_probe(before);
+            R.frag_dirty = true;
+        }
     }
     glBindVertexArray(0);
     unlock();
@@ -1327,9 +1449,24 @@ void render_draw_indexed(int prim, const void *indices, int index_u16, uint32_t 
     if (draw_setup(mn, mx)) {
         size_t isz = (size_t)count * (index_u16 ? 2 : 1);
         size_t o = stream(GL_ELEMENT_ARRAY_BUFFER, R.ibo, &R.ibo_off, STREAM_BYTES / 4, indices, isz);
+        uint8_t *before = NULL;
+        bool dmp = dumping();
+        if (dmp) { dump_read(&before); glBindVertexArray(R.vao); }
         rglDrawElementsBaseVertex(PRIM_GL[prim % 3], (GLsizei)count, index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
                                   (const void *)(uintptr_t)o, -(GLint)mn);
         R.st.draws++;
+        if (dmp) {
+            dump_draw_after(before, "drawidx", count);
+            glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_STENCIL_TEST); glDisable(GL_CULL_FACE);
+            { static const float mag[4] = {1, 0, 1, 0.5f}; rglColorMask(1, 1, 1, 1); rglClearBufferfv(GL_COLOR, 0, mag); }
+            glBindVertexArray(R.vao);
+            before = NULL;
+            dump_read(&before);
+            rglDrawElementsBaseVertex(PRIM_GL[prim % 3], (GLsizei)count, index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
+                                      (const void *)(uintptr_t)o, -(GLint)mn);
+            dump_probe(before);
+            R.frag_dirty = true;
+        }
     }
     glBindVertexArray(0);
     unlock();
@@ -1472,6 +1609,19 @@ void render_frame_end(void) {
 static int exec_depth;
 
 void render_exec_op(const ROp *op) {
+    if (dumping() && op->type != ROP_DRAW) {
+        if (op->type == ROP_TARGET)
+            rlog("dump: op TARGET c %#lx(%d) d %#lx(%d) %ux%u", (unsigned long)op->u.target.color, op->u.target.has_color,
+                 (unsigned long)op->u.target.depth, op->u.target.has_depth, op->u.target.w, op->u.target.h);
+        else if (op->type == ROP_PROGRAM)
+            rlog("dump: op PROGRAM %u key %#lx", op->u.program.id, (unsigned long)op->u.program.key);
+        else if (op->type == ROP_CALL)
+            rlog("dump: op CALL %#lx +%u", (unsigned long)op->u.call.addr, op->u.call.size);
+        else if (op->type == ROP_EXT)
+            rlog("dump: op EXT kind %u", op->u.ext.kind);
+        else
+            rlog("dump: op %u", op->type);
+    }
     switch (op->type) {
     case ROP_TARGET:
         render_set_target(op->u.target.has_color ? op->u.target.color : 0, op->u.target.cfmt,
