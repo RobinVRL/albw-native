@@ -11,10 +11,13 @@ wraps each one in ALBW_AS_U32 / ALBW_AS_F32 (bit copies). Here the same converte
 the Ghidra-derived sources of the given address ranges that have such sites, and only their
 objects are rebuilt. The full rebuild redoes all of this; this script then finds nothing to do.
 
-  python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the UI draw path)
+  python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the whole game)
+  python3 tools/fconv_interim.py --grep REGEX     also rebuild every source matching REGEX
+                                                  (after a header fix, e.g. CONCAT44)
 
-Default ranges (BOOT_LOG stop 75: title screen): nw::lyt / nw::font drawers 003E0000-0042FFFF,
-sead graphics 00490000-0049FFFF (FrameBufferCTR 00490304, PrimitiveRenderer 004979CC).
+The whole game (~100 s, 328 of 18457 sources): BOOT_LOG stops 75-76 found the class in the
+lyt/font drawers, sead FrameBufferCTR 00490304 and the layout animation players; writes
+build/fconv_interim.stamp (tools/link.sh runs this once per decomp build).
 """
 import json
 import os
@@ -24,11 +27,15 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DEFAULT = ["003E0000-0042FFFF", "00490000-0049FFFF"]
+DEFAULT = ["00100000-006FFFFF"]
 
 
 def main():
-    ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (sys.argv[1:] or DEFAULT)]
+    args = sys.argv[1:]
+    grep = None
+    if args[:1] == ["--grep"]:
+        grep, args = re.compile(args[1]), args[2:]
+    ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (args or DEFAULT)]
     os.environ["ALBW_CONVERT_V4"] = "1"   # the build's own settings (stage 1: -DALBW_V4)
     os.environ["ALBW_V4_STAGE"] = "1"
     os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies only
@@ -51,7 +58,7 @@ def main():
         r = subprocess.run(["clang", "--target=" + bd.TARGET, "-fsyntax-only", "-Wno-everything",
                             "-Wfloat-conversion", "-Wimplicit-int-float-conversion", "-std=gnu11",
                             "-I", os.path.dirname(src)] + inc + [src], capture_output=True, text=True)
-        return "warning:" in r.stderr
+        return "warning:" in r.stderr or bool(grep and grep.search(open(src).read()))
 
     with ThreadPoolExecutor(os.cpu_count()) as ex:
         todo = [j for j, h in zip(jobs, ex.map(lambda j: has_sites(j[0]), jobs)) if h]
@@ -64,6 +71,8 @@ def main():
         print("FAILED %s: %s" % (r["path"], r.get("error")))
     print("fconv_interim: %d sources in range, %d with float<->int copies rebuilt, %d failed"
           % (len(jobs), len(todo) - len(bad), len(bad)))
+    if not bad and not args:
+        open(os.path.join(ROOT, "build", "fconv_interim.stamp"), "w").write("%d\n" % (len(todo)))
     return 1 if bad else 0
 
 

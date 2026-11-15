@@ -311,6 +311,26 @@ def layout_check(cmd, src, out_ll):
     return why
 
 
+CONCAT44_OLD = "#define CONCAT44(a, b) ((uint64_t)(((uint64_t)(uint32_t)(a) << 32) | (uint32_t)(b)))"
+CONCAT44_NEW = """/* (port) CONCAT44 pieces are 32-bit register words: a float piece (Ghidra's CONCAT44(fVarA, fVarB),
+ * a VFP register pair) contributes its bits, never its value converted to an integer */
+#ifndef __cplusplus
+#define ALBW_PIECE32(x) _Generic((x), float: albw_piece32_f((float)_Generic((x), float: (x), default: 0.0f)), \\
+    default: (uint32_t)(x))
+static inline uint32_t albw_piece32_f(float f) { uint32_t u; __builtin_memcpy(&u, &f, 4); return u; }
+#define CONCAT44(a, b) ((uint64_t)(((uint64_t)ALBW_PIECE32(a) << 32) | ALBW_PIECE32(b)))
+#else
+#define CONCAT44(a, b) ((uint64_t)(((uint64_t)(uint32_t)(a) << 32) | (uint32_t)(b)))
+#endif"""
+
+
+def header_rewrite(name, text):
+    """Port-side fixes of the mirrored ghidra_types.h (the decomp repository is never modified)."""
+    if name == "ghidra_types.h" and CONCAT44_OLD in text:
+        text = text.replace(CONCAT44_OLD, CONCAT44_NEW)
+    return text
+
+
 def mirror(decomp):
     """Copy sources + headers with rewrites (only files that changed)."""
     n = 0
@@ -326,7 +346,7 @@ def mirror(decomp):
                 os.makedirs(os.path.dirname(d), exist_ok=True)
                 with open(s, encoding="utf-8", errors="replace") as fh:
                     text = fh.read()
-                text = rewrite(text)
+                text = header_rewrite(f, rewrite(text))
                 if ARCH64 and "nonmatching" in dp and f.endswith(".c"):
                     text = ptr32_rewrite(text)
                 with open(d, "w", encoding="utf-8") as fh:
