@@ -1237,11 +1237,50 @@ extern uint32_t data_00715458[];     /* u64 frame period (ticks) */
 /* USA 0049AD58 (EU 0049AD30)  framework main loop (noreturn): this+0xA0 = vcount(0x402);
  * this+0xB0 = this+0xB8 = tick; for (;;) this->vtbl[0x64](this). Matched
  * src/work7/gpt20/func_0049AD58.cpp. Confidence: high. */
+/* x87 register-stack depth of the calling thread (i386 only: float returns travel in st(0); a
+ * float result nobody pops stays pushed, and after 8 every later float return reads as NaN) */
+static int x87_depth(void) {
+#if defined(__i386__)
+    uint16_t sw, tw;
+    __asm__ volatile("fnstsw %0" : "=m"(sw));
+    struct { uint16_t cw, p0, sw, p1, tw, p2; uint32_t rest[4]; } env;
+    __asm__ volatile("fnstenv %0; fldenv %0" : "=m"(env));
+    tw = env.tw;
+    int n = 0;
+    for (int i = 0; i < 8; i++) n += ((tw >> (2 * i)) & 3) != 3;
+    (void)sw;
+    return n;
+#else
+    return 0;
+#endif
+}
+
 _Noreturn void func_0049AD58(void *self) {
     S32(self, 0xA0) = func_005FF6E4(0x402);
     store_tick(self, 0xB0);
     store_tick(self, 0xB8);
-    for (;;) VCALL(self, 0x64);
+    /* ALBW_X87_TRACE=1 (debug aid): report when the main thread's x87 stack grows between frames
+     * (a float result left unpopped by an indirect call, see tools/x87check.py) */
+    int trace = getenv("ALBW_X87_TRACE") != NULL, depth = 0;
+    long frame = 0;
+    for (;;) {
+        VCALL(self, 0x64);
+        frame++;
+        if (trace) {
+            int d = x87_depth();
+            if (d != depth) fprintf(stderr, "x87: main thread stack depth %d -> %d after frame %ld\n", depth, d, frame);
+        }
+#if defined(__i386__)
+        /* i386 guard (boot stop 95): no x87 value is live across frames (the game's math is SSE;
+         * x87 only carries float return values), so values left pushed by float results nobody
+         * popped (indirect calls through void/int prototypes, which tools/x87check.py cannot
+         * redirect) are dropped here instead of piling up until every float return reads NaN.
+         * emms marks the register stack empty and keeps the control word. The leaking sites
+         * are still bugs: ALBW_X87_TRACE=1 reports them per frame / per title calc step. */
+        __asm__ volatile("emms");
+#endif
+        depth = 0;
+    }
 }
 
 /* USA 004966D4 (EU 004966AC)  framework main loop variant: as 0049AD58 plus one

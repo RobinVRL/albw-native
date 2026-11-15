@@ -39,8 +39,31 @@ static void title_trace(char *self)
             part ? "" : "(none)", part ? RF(part, 0xD, uint8_t) : -1, part ? RF(part, 0xE, uint8_t) : -1);
 }
 
+/* ALBW_X87_TRACE: report which step of the title / file select calc leaves x87 values pushed */
+static int x87_depth_now(void) {
+#if defined(__i386__)
+    struct { uint16_t cw, p0, sw, p1, tw, p2; uint32_t rest[4]; } env;
+    __asm__ volatile("fnstenv %0; fldenv %0" : "=m"(env));
+    int n = 0;
+    for (int i = 0; i < 8; i++) n += ((env.tw >> (2 * i)) & 3) != 3;
+    return n;
+#else
+    return 0;
+#endif
+}
+static void x87_step(const char *what, int *last) {
+    static int on = -1;
+    if (on < 0) on = getenv("ALBW_X87_TRACE") != NULL;
+    if (!on) return;
+    int d = x87_depth_now();
+    if (*last >= 0 && d != *last) fprintf(stderr, "x87: TaskFileSelect calc: %s changed depth %d -> %d\n", what, *last, d);
+    *last = d;
+}
+
 void func_0029B698(char *self)
 {
+    int x87 = -1;
+    x87_step("start", &x87);
     title_trace(self);
     if (func_00520B48((int)data_00712450[0]) == 0) {
         char *pad = GPTR_TO(char, data_007124F0[0]);
@@ -56,21 +79,27 @@ void func_0029B698(char *self)
             }
         }
     }
+    x87_step("input/fade", &x87);
     char *o = RP(self, 0xEC);
     RVFN(void (*)(char *), o, 0x60)(o);
+    x87_step("+0xEC vtbl+0x60", &x87);
 
     route_statemgr_exec(RAT(self, 0xBC));
+    x87_step("state machine +0xBC", &x87);
 
     if (RF(self, 0xC0, int8_t) >= 1) {
         char *sub = RP(self, 0x138);
         uint8_t flag = RF(sub, 0xE8, uint8_t);
         RF(RP(self, 0xF4), 0x90, float) = flag != 0 ? 15.0f : 1.0f;
         func_00122C78((int *)RP(self, 0xF4), flag, 0);
+        x87_step("00122C78", &x87);
         route_statemgr_exec(RAT(RP(self, 0x138), 4));
+        x87_step("sub state machine *(+0x138)+4", &x87);
     }
     if (RF(RP(self, 0xEC), 0x194, uint8_t) != 0) {
         RF(RP(self, 0xF4), 0x94, uint8_t) = 0;
         RF(GPTR_TO(char, data_0070B960[0]), 0x2C1B, uint8_t) = 0;
     }
     func_001E30D0(self);
+    x87_step("001E30D0", &x87);
 }
