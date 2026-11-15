@@ -110,18 +110,24 @@ static const RTevStage T_F_TTA = ST(S_T0, S_K, S_K, S_T0, S_K, S_K, O_A, 0, 0, 0
 typedef struct { const RTevStage *st; uint8_t stage; } FontBlock;
 typedef struct { FontBlock a, b; } FontVariant;
 /* index = alpha-only format | two-tone << 1 (0041E948); table 1 = both blocks (EU 00714B38),
- * table 2 = first block only (EU 00714B78); NULL = "no block" (the game never copies it) */
+ * table 2 = first block only (EU 00714B78); NULL = "no block" (the game never copies it).
+ * The values are the tables as the game uses them: its static constructor EU 005D0C00 patches
+ * four entries at startup from the table at EU 00714B28 (TAB1[1].b = stage-1 pass-through,
+ * TAB1[3].a = TT0, TAB2[2] = TT1, TAB2[3] = TTA); the .rodata image alone has them NULL, which
+ * left the A4 two-tone title/demo text with the previous material's stages (boot stop 88b:
+ * checked against the original on citra: TextBox bits 2 -> TT0 at stage 0, bits 3 -> TTA at
+ * stage 1, sheet format 11 with the two-tone flag in both) */
 static const FontVariant FONT_TAB1[4] = {
     {{&T_F_TEX, 0}, {&T_F_PREV, 1}},
-    {{&T_F_ALPHA, 0}, {NULL, 0}},
+    {{&T_F_ALPHA, 0}, {&T_F_PREV, 1}},
     {{&T_F_TT0, 0}, {&T_F_TT1, 1}},
-    {{NULL, 0}, {&T_F_TTA, 1}},
+    {{&T_F_TT0, 0}, {&T_F_TTA, 1}},
 };
 static const FontVariant FONT_TAB2[4] = {
     {{&T_F_TEX, 1}, {NULL, 0}},
     {{&T_F_ALPHA, 1}, {NULL, 0}},
-    {{NULL, 0}, {NULL, 0}},
-    {{NULL, 0}, {NULL, 0}},
+    {{&T_F_TT1, 1}, {NULL, 0}},
+    {{&T_F_TTA, 1}, {NULL, 0}},
 };
 
 /* nw::lyt material combiners (EU 006A860C..006A8714) */
