@@ -10,12 +10,18 @@ wraps each one in ALBW_AS_U32 / ALBW_AS_F32 (bit copies). Here the same converte
 (build_decomp.build_one with ALBW_FCONV=1, stage-1 settings otherwise) is applied in place to
 the Ghidra-derived sources of the given address ranges that have such sites, and only their
 objects are rebuilt. The full rebuild redoes all of this; this script then finds nothing to do.
+Also applied: the stage-2 rewrite of inlined pointer-to-member calls that lost their `this`
+(build_decomp.pmf_this_rewrite, ALBW_PMF_THIS).
 
-  python3 tools/fconv_interim.py [--arch x86_64] [LO-HI ...]   (hex USA ranges; default: the UI
-                                                               draw path; x86_64: build/decomp64)
+  python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the whole game)
+  python3 tools/fconv_interim.py --arch x86_64 ...  the 64-bit build (build/decomp64, tools/link64.sh;
+                                                  stamp build/fconv_interim64.stamp)
+  python3 tools/fconv_interim.py --grep REGEX     also rebuild every source matching REGEX
+                                                  (after a header fix, e.g. CONCAT44)
 
-Default ranges (BOOT_LOG stop 75: title screen): nw::lyt / nw::font drawers 003E0000-0042FFFF,
-sead graphics 00490000-0049FFFF (FrameBufferCTR 00490304, PrimitiveRenderer 004979CC).
+The whole game (~100 s, 328 of 18457 sources): BOOT_LOG stops 75-76 found the class in the
+lyt/font drawers, sead FrameBufferCTR 00490304 and the layout animation players; writes
+build/fconv_interim.stamp (tools/link.sh runs this once per decomp build).
 """
 import json
 import os
@@ -25,18 +31,24 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DEFAULT = ["003E0000-0042FFFF", "00490000-0049FFFF"]
+DEFAULT = ["00100000-006FFFFF"]
 
 
 def main():
     args = sys.argv[1:]
-    arch64 = args[:2] == ["--arch", "x86_64"]
-    if arch64:
+    grep = None
+    arch64 = False
+    while args[:1] in (["--grep"], ["--arch"]):
+        if args[0] == "--grep":
+            grep = re.compile(args[1])
+        else:
+            arch64 = args[1] == "x86_64"
         args = args[2:]
     ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (args or DEFAULT)]
     os.environ["ALBW_CONVERT_V4"] = "1"   # the build's own settings (stage 1: -DALBW_V4)
     os.environ["ALBW_V4_STAGE"] = "1"
-    os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies only
+    os.environ["ALBW_FCONV"] = "1"        # + the FCONV bit copies
+    os.environ["ALBW_PMF_THIS"] = "1"     # + `this` of inlined pointer-to-member calls
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import build_decomp as bd
     if arch64:  # as build_decomp.main() --arch x86_64
@@ -54,14 +66,16 @@ def main():
         jobs.append((m.group(1), [m.group(2)]))
     inc = ["-I", os.path.join(bd.OUT, "shared", "include"), "-include", bd.COMPAT, "-DALBW_V4"]
     if arch64:
-        inc += ["-fms-extensions"]
+        inc += ["-fms-extensions"]  # __ptr32 (ALBW_GP)
 
     def has_sites(path):
         src = os.path.join(bd.OUT, path)
         r = subprocess.run(["clang", "--target=" + bd.TARGET, "-fsyntax-only", "-Wno-everything",
                             "-Wfloat-conversion", "-Wimplicit-int-float-conversion", "-std=gnu11",
                             "-I", os.path.dirname(src)] + inc + [src], capture_output=True, text=True)
-        return "warning:" in r.stderr
+        text = open(src).read()
+        return ("warning:" in r.stderr or bool(grep and grep.search(text))
+                or bd.pmf_this_rewrite(text) != text)
 
     with ThreadPoolExecutor(os.cpu_count()) as ex:
         todo = [j for j, h in zip(jobs, ex.map(lambda j: has_sites(j[0]), jobs)) if h]
@@ -74,6 +88,8 @@ def main():
         print("FAILED %s: %s" % (r["path"], r.get("error")))
     print("fconv_interim: %d sources in range, %d with float<->int copies rebuilt, %d failed"
           % (len(jobs), len(todo) - len(bad), len(bad)))
+    if not bad and not args:
+        open(os.path.join(ROOT, "build", "fconv_interim64.stamp" if arch64 else "fconv_interim.stamp"), "w").write("%d\n" % (len(todo)))
     return 1 if bad else 0
 
 

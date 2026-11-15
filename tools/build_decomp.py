@@ -311,6 +311,26 @@ def layout_check(cmd, src, out_ll):
     return why
 
 
+CONCAT44_OLD = "#define CONCAT44(a, b) ((uint64_t)(((uint64_t)(uint32_t)(a) << 32) | (uint32_t)(b)))"
+CONCAT44_NEW = """/* (port) CONCAT44 pieces are 32-bit register words: a float piece (Ghidra's CONCAT44(fVarA, fVarB),
+ * a VFP register pair) contributes its bits, never its value converted to an integer */
+#ifndef __cplusplus
+#define ALBW_PIECE32(x) _Generic((x), float: albw_piece32_f((float)_Generic((x), float: (x), default: 0.0f)), \\
+    default: (uint32_t)(x))
+static inline uint32_t albw_piece32_f(float f) { uint32_t u; __builtin_memcpy(&u, &f, 4); return u; }
+#define CONCAT44(a, b) ((uint64_t)(((uint64_t)ALBW_PIECE32(a) << 32) | ALBW_PIECE32(b)))
+#else
+#define CONCAT44(a, b) ((uint64_t)(((uint64_t)(uint32_t)(a) << 32) | (uint32_t)(b)))
+#endif"""
+
+
+def header_rewrite(name, text):
+    """Port-side fixes of the mirrored ghidra_types.h (the decomp repository is never modified)."""
+    if name == "ghidra_types.h" and CONCAT44_OLD in text:
+        text = text.replace(CONCAT44_OLD, CONCAT44_NEW)
+    return text
+
+
 def mirror(decomp):
     """Copy sources + headers with rewrites (only files that changed)."""
     n = 0
@@ -326,7 +346,7 @@ def mirror(decomp):
                 os.makedirs(os.path.dirname(d), exist_ok=True)
                 with open(s, encoding="utf-8", errors="replace") as fh:
                     text = fh.read()
-                text = rewrite(text)
+                text = header_rewrite(f, rewrite(text))
                 if ARCH64 and "nonmatching" in dp and f.endswith(".c"):
                     text = ptr32_rewrite(text)
                 with open(d, "w", encoding="utf-8") as fh:
@@ -363,6 +383,24 @@ def v4_stage():
     """ALBW_V4_STAGE: 1 = return classes, stack objects, returns-this, FUN_ declarations;
     2 (default) = everything (+ FCONV, compile-fix retries, switch-case fragments dropped)."""
     return int(os.environ.get("ALBW_V4_STAGE", "2")) if v4_enabled() else 0
+
+
+def pmf_this_enabled():
+    v = os.environ.get("ALBW_PMF_THIS")
+    return v == "1" or (v is None and v4_stage() >= 2)
+
+
+# Inlined pointer-to-member calls (sead StateMgr::exec and the like). armcc computes
+# r0 = obj + (adj >> 1) before testing the virtual bit and passes it as `this`; Ghidra prints the
+# call with no arguments: `if ((uV & 1) != 0) { pcV = *(code **)(pcV + *(int *)(OBJ + ((int)uV >> 1))); }
+# (*pcV)();` (BOOT_LOG stops 74-80: title task, title object, layout parts; 242 sites in 230 files)
+# (x86-64: ptr32 spells the vtable slot `*(code * ALBW_GP *)`)
+RE_PMF_NOTHIS = re.compile(r"(if \(\((\w+) & 1\) != 0\) \{\s*(\w+) = \*\(code (?:\*\*|\* ALBW_GP \*)\)\(\3 \+ \*\(int \*\)\((.+?) \+ "
+                           r"\(\(int\)\2 >> 1\)\)\);\s*\}\s*\(\*\3\)\()\)")
+
+
+def pmf_this_rewrite(text):
+    return RE_PMF_NOTHIS.sub(lambda m: "%s(int)(%s) + ((int)%s >> 1))" % (m.group(1), m.group(4), m.group(2)), text)
 
 
 def fconv_enabled():
@@ -500,6 +538,12 @@ def build_one(job):
     lay_file = fin + ".layout64"
     layout = []
     if not (os.path.exists(fin) and os.path.getmtime(fin) >= os.path.getmtime(src)):
+        if not cpp and pmf_this_enabled() and "/ghidra_fallback/" in src:
+            text = open(src).read()
+            new_text = pmf_this_rewrite(text)
+            if new_text != text:
+                with open(src, "w") as fh:
+                    fh.write(new_text)
         r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
         for _ in range(8):  # 64-bit: symbol addresses stored into 4-byte pointers (tools/ptr32.py)
             bad = set(RE_BAD_CONST.findall(r.stderr)) if ARCH64 and r.returncode else set()

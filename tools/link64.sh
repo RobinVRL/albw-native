@@ -31,9 +31,9 @@ else
 fi
 
 mkdir -p $O $B/data64
-# interim FCONV of the UI draw path (link.sh): only for a round-3 (V4) decomp64, whose sources
-# the converter's FCONV step expects
-if [[ "${ALBW_FCONV_INTERIM:-1}" == 1 ]] && ls -d $B/decomp64/ghidra_fallback/*_v4 >/dev/null 2>&1; then
+# interim FCONV + pmf `this` (link.sh): once per round-3 (V4) decomp64 build, until stage 2
+if [[ "${ALBW_FCONV_INTERIM:-1}" == 1 ]] && ls -d $B/decomp64/ghidra_fallback/*_v4 >/dev/null 2>&1 \
+   && [[ ! -f $B/fconv_interim64.stamp || $B/decomp64/report.json -nt $B/fconv_interim64.stamp ]]; then
     python3 tools/fconv_interim.py --arch x86_64 | tail -1
 fi
 NATIVE=()

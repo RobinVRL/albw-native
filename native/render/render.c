@@ -656,9 +656,11 @@ static void clear_surface(Surface *s, uint32_t value, int bits) {
     R.st.fills++;
 }
 
+static bool dumping(void);
 int render_fill(const void *start, uint32_t size, uint32_t value, int bits) {
     if (!start || !size || !render_ready()) return 0;
     lock();
+    if (dumping()) rlog("dump: FILL %#lx +%#x value %#x bits %d", (unsigned long)(uintptr_t)start, size, value, bits);
     uintptr_t a = (uintptr_t)start;
     int done = 0;
     for (size_t i = 0; i < R.nsurf; i++) {
@@ -766,7 +768,7 @@ int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw
         if (d) d->valid = true;
         ok = 1;
         R.st.transfers++;
-        if (g_trace) rlog("transfer %#lx (+%d rows of %#lx) %dx%d -> %s %#lx %dx%d flip %d aa %d", (unsigned long)a,
+        if (g_trace || dumping()) rlog("transfer %#lx (+%d rows of %#lx) %dx%d -> %s %#lx %dx%d flip %d aa %d", (unsigned long)a,
                           off_rows, (unsigned long)s->addr, sw, sh, d ? "display" : "surface",
                           (unsigned long)(uintptr_t)dst, dw, dh, flip, aa);
     }
@@ -1409,6 +1411,8 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
          R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
          f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
          changed, lit);
+    for (int r = 0; r < 4; r++)
+        rlog("dump:     c%d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
 }
 
 void render_draw(int prim, uint32_t first, uint32_t count) {
