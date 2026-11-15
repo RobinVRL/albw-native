@@ -172,6 +172,28 @@ def main():
         for name in open(a.extra).read().split():
             unresolved.setdefault(name, 1)
 
+    cstr = {}
+    out_cstr = []
+
+    def code_string_label(v):
+        """Label of a copy of the string at code address v, for literal-pool words holding the
+        address of a string stored among the code (00423F68's pool word 00424C88 -> "G_ScrollBtnT_00",
+        read through the raw 3DS address: the title's attract demo crashed in 003FDF90, boot stop
+        90). Only a 4-aligned start of a printable NUL-terminated string of 5+ characters (preceded
+        by a NUL) counts; other code-range constants (bitfields such as 0x00270044, float tables
+        such as 0x00202BF8 = 0.65f "ff&?") stay plain."""
+        if not (TEXT <= v < text_end) or v % 4 or v in fn_of or code[v - TEXT - 1] != 0:
+            return None
+        o = v - TEXT
+        e = code.find(b"\0", o, o + 256)
+        if e - o < 5 or not all(0x20 <= b < 0x7F for b in code[o:e]):
+            return None
+        if v not in cstr:
+            cstr[v] = "albw_cstr_%08X" % v
+            out_cstr.extend(["    .section .rodata.albw_str,\"a\"", "%s:" % cstr[v],
+                             "    .byte " + ",".join(str(b) for b in code[o:e + 1])])
+        return cstr[v]
+
     def word(addr, w):
         """Assembly for the 4-byte word w stored at addr."""
         if TEXT <= w < text_end and w in fn_of:
@@ -268,12 +290,17 @@ def main():
                     out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
                             "%s:" % sym, "    .byte " + ",".join(str(b) for b in raw), "    .p2align 2"]
                 else:
+                    v = rd(addr)
+                    lbl = code_string_label(v) if w.startswith(".long 0x") else None
+                    if lbl:  # a pointer to a string stored among the code: point at a copy of it
+                        w = ".long " + lbl
                     out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
                             "%s:" % sym, "    " + w]
             else:
                 nbad += 1
                 continue
             npool += 1
+    out += out_cstr
     # startup initialiser tables, as pointer-sized tables of native functions (.dc.a: 64-bit clean)
     ctors, inits = init_tables(code, rd, fn_of)
     for name, lst in (("albw_ctors", ctors), ("albw_inits", inits)):
