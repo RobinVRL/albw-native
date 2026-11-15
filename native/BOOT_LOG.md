@@ -88,3 +88,15 @@ One entry per boot-loop stop: where it stopped, cause, fix. USA addresses (EU in
 | 72 | fmodf (00590DEC) -> soft-float remainder core 00691F88 jumps into ARM code | | native fmodf in compilefix/func_00590DEC.c |
 | -- | MAIN LOOP RUNS STEADILY: 60 presents/s for 90 s+ (5,340 frames), same in ALBW_SCHED=parallel; screens black (fills stop at ~1,100 after ~10 s) | | |
 | 73 | OPEN: the prepare thread (title task load, 001E1EDC -> 00233F4C) sleeps in a CriticalSection wait (word 0xD17E0694 = 1, free) while the main thread keeps taking that lock (1 <-> -1, the waiter is never counted): a lost wake-up or a re-initialised lock word; same in both scheduling modes | | next |
+
+### Round-3 (stage 2) follow-ups from the boot (classes, most frequent first)
+1. Lost register arguments in virtual / pointer-to-member calls (r1-r3 and `this`): stops 44, 54, 55, 61, 65, 70; ~190 converted files contain a no-argument `(*pcVarN)()` call.
+2. Matched sources typed void whose ARM r0 is a callee's result (tail call or call just before the return): stops 48, 57, 66; plus round-3 factories typed void (52).
+3. Variadic callees / arguments stored at the caller's sp (snprintf helper 003E6AA8, Layout::Build 5th arg): stop 46.
+4. Unwritten stack objects at sp (`&stack0x...` statics): stops 49, 63.
+5. 64-bit (r0:r1) returns typed `int`: __aeabi_uidivmod 00110710 / idivmod 001104E4 (50 + 44 callers) - SIG_OVERRIDES added in tools/build_decomp.py, needs the rebuild.
+6. Float words passed through unprototyped `(code *)` calls are promoted to double: stop 56.
+7. Branches on uninitialised locals in perm_local sources fold whole functions away: compile the decomp with -ftrivial-auto-var-init=zero (stop 59).
+8. Integer-literal data addresses in matched sources (stop 68; the scan found 8, all fixed).
+9. Fall-through entry points decompiled as stale copies of the next function (0049D4A0, stop 67).
+10. Shared-page (0x1FF81000) reads inline in game code (3D slider, stop 53).
