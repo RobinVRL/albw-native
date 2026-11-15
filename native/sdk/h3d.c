@@ -856,6 +856,20 @@ static void ctx_call(uint32_t *ctx, uint32_t target, uint32_t bytes) {
 }
 uint32_t *func_00130C1C(uint32_t rnd, const float *view, const float *proj, uint32_t *ctx) {
     uint32_t env = G32(data_00712F70, 0x1B8);
+    if (getenv("ALBW_H3D_CAMTRACE")) {
+        static unsigned n;
+        if (n++ % 150 == 0)
+            fprintf(stderr, "h3d-cam: pass %u from %p view %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f proj00 %.3f %.3f\n", n,
+                    __builtin_return_address(0), view[0], view[1], view[2], view[3], view[4], view[5], view[6], view[7], view[8], view[9],
+                    view[10], view[11], proj[1], proj[4]);
+        if (getenv("ALBW_H3D_CAMTRACE") && n % 150 == 1) {
+            const float *cam = view - 1; /* camera object: +4 view Mtx34 */
+            uint32_t cw = GPTR_OF(cam);
+            fprintf(stderr, "h3d-cam:   cam %#x vt %#x words:", cw, G32(cw, 0));
+            for (int k = 13; k < 40; k++) { float f = GF(cw, 4 * (uint32_t)k); fprintf(stderr, " %g", f); }
+            fprintf(stderr, "\n");
+        }
+    }
     if (getenv("ALBW_H3D_TRACE")) { /* every 120 passes: is the 3D path being fed? */
         static unsigned n;
         if (n++ % 97 == 0) {
