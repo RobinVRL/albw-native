@@ -36,14 +36,40 @@ level.
     memory and is never used as a machine stack.
   - When the thread ends (it returns, or ExitThread calls `pthread_exit`), a pthread-key
     destructor marks it finished and wakes joiners.
-- **Priorities and cores** are recorded, so GetThreadPriority returns them, but they are not
-  applied. All threads are normal SCHED_OTHER threads. The SDK priority to kernel priority
+- **Priorities and cores** are recorded, so GetThreadPriority returns them, and applied by the
+  app-core scheduling (section below), not by the host scheduler (SCHED_OTHER pthreads). The SDK priority to kernel priority
   mapping of 00104248 is kept, and out-of-range priorities fail with an error as before.
 - **Time.** GetSystemTick is CLOCK_MONOTONIC scaled to 268,111,856 Hz. Sleep and SleepThread
   use nanosleep; 0 or a negative value yields.
 - **Results.** Success is 0. Timeout is 0x09401BFE and invalid handle is 0xD8E007F7. The
   others are approximate. 0010A98C (Result check) and 0010D0EC (svcBreak) call
   `runtime_fatal`.
+
+## App-core scheduling
+
+The 3DS runs an application's threads on the app core one at a time: the highest-priority ready
+thread runs (lower number = higher priority), FIFO among equal priorities, no time slicing. The
+game relies on that order (boot stop 61: the main thread, priority 0x30, finished destroying a
+task's heaps before the prepare thread, 0x31, continued). os.c reproduces the rule at the API
+level with an ownership token per core:
+
+- Game threads = the main game thread (`albw_sched_main_thread()`, called by entry.c) and every
+  thread created through 00103C80 (nn::os::Thread / sead::Thread). A game thread runs game code
+  only while it holds its core's token. Threads created on core 1 (the system core, e.g. the
+  0x2F / 0x30 workers) get core 1's token: they ran in parallel on the hardware too.
+- The token changes hands at: blocking waits (address waits = CriticalSection / LightEvent /
+  LightSemaphore / ArbitrateAddress; WaitSynchronization1/N incl. thread join), sleeps (Sleep,
+  TickSpan sleeps), Yield / Sleep(0) (equal or higher priority goes first), a wake-up that
+  readies a higher-priority thread (arb_signal: the waker is preempted and stays at the head of
+  its priority), creating a higher-priority thread, and thread exit.
+- Host threads (SDL audio callback, albw-snd, rendering, input, Qt) have no token and are never
+  scheduled; they may signal game primitives, which readies the woken game thread.
+- `albw_sched_block_begin()` / `albw_sched_block_end()`: for other areas that block on host
+  primitives from a game thread (gfx.c vblank sleep, platform.c swap + 60 Hz pacing).
+- `ALBW_SCHED=parallel` turns the model off (every thread runs freely; A/B tests).
+  `ALBW_SCHED_TRACE=1` logs each created thread (id, priority, core, entry).
+- Lock order: bucket mutex / object lock before the scheduler mutex (never the reverse).
+- 32-bit and 64-bit: plain pthread mutex/condvars, no pointer-size assumptions.
 
 ## Native API for other areas (non-`func_` symbols exported by os.c)
 
@@ -112,10 +138,16 @@ uint32_t albw_os_current_thread_id(void);
 
 ## Risks
 
-- **Scheduling differs.** The 3DS app core is priority-based with no time slicing. Native
-  threads run truly in parallel and without priorities. Races that never happened on the
-  hardware can now happen. This matters most for data the game shares without locks, and for
-  "high-priority thread spins until a low-priority one runs" patterns.
+- **Preemption is only at API calls.** The app-core model (section "App-core scheduling")
+  hands the core over at blocking calls, yields, wake-ups of higher-priority threads and thread
+  creation. The 3DS kernel also preempts on timer/interrupt wake-ups at any instruction; here a
+  higher-priority thread whose sleep ended waits for the running thread's next os.c call. A
+  game thread that computes for a long time without any os call (or spins on a value another
+  game thread sets) therefore delays (or with a spin: deadlocks) the others. None found yet;
+  add a `sched_yield_turn()` at such a spin point and list it here. Kernel-object signals
+  (svc events/semaphores/mutexes) do not preempt at the signal (the woken thread queues itself).
+  Host blocking on a game thread (vblank sleeps in gfx.c, swap/pacing in platform.c) releases
+  the core through `albw_sched_block_begin/end`.
 - **The light primitives mix with other decompiled code.** Other decompiled code that touches
   the same words with the ldrex/strex intrinsics (`hasExclusiveAccess`, or `__ldrex` /
   `__strex` in albw_native.h, which are currently not atomic) is not atomic with respect to

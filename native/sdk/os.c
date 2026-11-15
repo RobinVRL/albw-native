@@ -21,8 +21,8 @@
  *   pointer does not fit 4 bytes on 64-bit, so the owner is a native 32-bit thread id
  *   (non-zero, unique per thread). Every function that writes or compares that field is
  *   replaced here (0010C0C0, 0010C160, 003CD8E8 and their +0x10 entry points).
- * - Thread priorities and cores are recorded (GetThreadPriority returns them) but not
- *   applied: all game threads are normal SCHED_OTHER pthreads.
+ * - Thread priorities and cores: game threads run one per core at a time in priority order
+ *   (app-core scheduling below, native/sdk/os.md); ALBW_SCHED=parallel turns that off.
  */
 #define _GNU_SOURCE
 #include <errno.h>
