@@ -54,7 +54,15 @@ RE_EXTERN_PTR = re.compile(r"^(\s*extern\b[^;(=]*\*)(\s*)(?:const\s+)?(" + GAME_
 RE_GLOBAL_FN = re.compile(r"\b(?:code|_func_\w+) \*\s*ALBW_GP\s+(" + GAME_SYM + r")\b")
 
 
+# `p + -uVarN` / `p[-uVarN]`: the negation of a 32-bit unsigned is 2^32 - n, which wraps on
+# the 32-bit ARM/i386 but lands 4 GiB above p on x86-64 (Yaz0 decoders 004929F0, 00115E38,
+# BOOT_LOG64 stops 5-6) -> negate the 64-bit value (any non-literal negated subscript:
+# signed ones sign-extend, unchanged)
+RE_NEG_UNSIGNED = re.compile(r"(\+ -(?=u[A-Za-z]*Var\d+\b)|\[-(?=[A-Za-z_(*])(?!\(long long\)))")
+
+
 def rewrite_ghidra(text):
+    text = RE_NEG_UNSIGNED.sub(lambda m: m.group(1) + "(long long)", text)
     text = RE_PTRPTR.sub(lambda m: _stars(m.group(1), m.group(3)), text)
     text = RE_EXTERN_PTR.sub(lambda m: "%s ALBW_GP %s%s" % (m.group(1), m.group(3), m.group(4)), text)
     for v in set(RE_GLOBAL_FN.findall(text)):  # calls through a game function-pointer word
