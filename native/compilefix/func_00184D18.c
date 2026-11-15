@@ -24,7 +24,7 @@ extern int func_0016A02C(int param_1,int param_2,int *param_3,int param_4);
 extern int func_0016A2FC(undefined4 *param_1,int param_2,undefined4 param_3,int param_4);
 extern int func_004BC8D8(int param_1);
 extern int func_004BDEE8(int param_1);
-extern int func_004BE114(int *param_1,int param_2,undefined4 param_3);
+extern int func_004BE114(int * param_1,int param_2,int param_3,int param_4,undefined4 param_5);
 extern int func_004C03B8(int param_1,undefined4 *param_2);
 extern int func_004CE68C(int param_1,uint param_2,int param_3);
 extern int func_00611198(int param_1,int param_2,undefined1 param_3);
@@ -223,7 +223,7 @@ int * func_00184D18(undefined4 *param_1,uint *param_2)
   }
   local_b4 = &DAT_00185158;
   local_b8 = uVar15;
-  func_004BE114(piVar8,6,DAT_00185168);
+  func_004BE114(piVar8,6,0,0,DAT_00185168);
   local_d0 = 10;
   piVar8[0x25d] = (int)piVar8;
   *(undefined1 *)((int)piVar8 + 0x966) = 10;

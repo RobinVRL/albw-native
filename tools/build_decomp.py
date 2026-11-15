@@ -402,6 +402,72 @@ def pmf_this_rewrite(text):
     return RE_PMF_NOTHIS.sub(lambda m: "%s(int)(%s) + ((int)%s >> 1))" % (m.group(1), m.group(4), m.group(2)), text)
 
 
+# Callees with stack parameters whose Ghidra prototype is short: Ghidra's caller prints the
+# word stored at [sp] as a register argument and drops r2/r3. name -> (real parameter count,
+# {Ghidra argument index: real argument index}); the other real arguments become 0 (the callee
+# ignores them). Checked against the ARM of each callee:
+#   004BE114 (EU 004BE0EC, matched f_004BE114): r0 = actor, r1 = state count, r2 / r3 unused,
+#     [sp] = the actor's state table -> 004BDCEC stores it at +0x790. Ghidra calls it
+#     (actor, n, table), so the table landed in r2 and +0x790 stayed 0 (boot stop 82, ~50 actor
+#     ctors; the hand-written native/robust/func_0017AC58.c already passed it as the 5th).
+STACK_ARG_CALLS = {
+    "func_004BE114": (5, {2: 4}),
+}
+
+
+def _split_args(text, i):
+    """Arguments of the call whose '(' is at text[i]: (list of argument strings, index after ')')."""
+    depth, start, args = 0, i + 1, []
+    for j in range(i, len(text)):
+        c = text[j]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+            if depth == 0:
+                args.append(text[start:j])
+                return args, j + 1
+        elif c == "," and depth == 1:
+            args.append(text[start:j])
+            start = j + 1
+    return None, i
+
+
+def stack_arg_rewrite(text):
+    for name, (n, moves) in STACK_ARG_CALLS.items():
+        if name not in text:
+            continue
+        nghidra = max(moves) + 1
+        # the extern prototype: Ghidra's parameter types, padded to the real count
+        def proto(m):
+            ps = [x.strip() for x in m.group(2).split(",")]
+            if len(ps) != nghidra:
+                return m.group(0)
+            real = ["int param_%d" % (k + 1) for k in range(n)]
+            for k, t in enumerate(ps):
+                ty = re.match(r"^(.*?)\s*\w+$", t).group(1)  # type with its '*'s
+                real[moves.get(k, k)] = "%s param_%d" % (ty, moves.get(k, k) + 1)
+            return "%s(%s);" % (m.group(1), ",".join(real))
+        text = re.sub(r"(extern \w[\w *]*?\b%s)\(([^()]*)\);" % name, proto, text)
+        out, pos = [], 0
+        for m in re.finditer(r"\b%s\(" % name, text):
+            if m.start() < pos or text[:m.start()].rstrip().endswith(("extern int", "extern void")):
+                continue
+            line_start = text.rfind("\n", 0, m.start()) + 1
+            if text[line_start:m.start()].lstrip().startswith("extern"):
+                continue
+            args, end = _split_args(text, m.end() - 1)
+            if args is None or len(args) != nghidra:
+                continue
+            real = ["0"] * n
+            for k, a in enumerate(args):
+                real[moves.get(k, k)] = a.strip()
+            out.append(text[pos:m.start()] + "%s(%s)" % (name, ",".join(real)))
+            pos = end
+        text = "".join(out) + text[pos:]
+    return text
+
+
 def fconv_enabled():
     v = os.environ.get("ALBW_FCONV")
     return v == "1" or (v is None and v4_stage() >= 2)
@@ -544,7 +610,7 @@ def build_one(job):
     if not (os.path.exists(fin) and os.path.getmtime(fin) >= os.path.getmtime(src)):
         if not cpp and pmf_this_enabled() and "/ghidra_fallback/" in src:
             text = open(src).read()
-            new_text = pmf_this_rewrite(text)
+            new_text = stack_arg_rewrite(pmf_this_rewrite(text))
             if new_text != text:
                 with open(src, "w") as fh:
                     fh.write(new_text)
