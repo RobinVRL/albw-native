@@ -15,6 +15,9 @@ callers keep using the local symbol.  Native strong definitions still win over t
 import re, subprocess, sys, os, collections
 
 game_o, objs_txt, out_list, out_s, native_defs = sys.argv[1:6]
+# x86-64 (tools/link64.sh: ALBW_ARCH=x86_64): same %al-only convention; the adapter differs
+X64 = os.environ.get('ALBW_ARCH') == 'x86_64'
+SP = '%rsp' if X64 else '%esp'
 dis = subprocess.run(['llvm-objdump', '-d', '--no-show-raw-insn', game_o],
                      capture_output=True, text=True, check=True).stdout
 funcs = collections.OrderedDict(); cur = None
@@ -28,11 +31,11 @@ def byte_return(ins):
     seen_byte = False
     rets = 0
     for i, (op, arg) in enumerate(ins):
-        if op not in ('retl', 'ret'): continue
+        if op not in ('retl', 'retq', 'ret'): continue
         rets += 1
         j = i - 1
-        while j >= 0 and (ins[j][0] in ('popl', 'pop') or
-                          (ins[j][0] in ('addl', 'leal') and ins[j][1].endswith('%esp'))):
+        while j >= 0 and (ins[j][0] in ('popl', 'popq', 'pop') or
+                          (ins[j][0] in ('addl', 'leal', 'addq', 'leaq') and ins[j][1].endswith(SP))):
             j -= 1
         if j < 0: return False
         op2, a2 = ins[j]
@@ -57,7 +60,7 @@ owner = {}
 for line in nm.splitlines():
     m = re.match(r'^(.*\.o): [0-9a-f]+ ([WT]) (func_[0-9A-F]{8})$', line)
     if m and m.group(3) in cands: owner.setdefault(m.group(3), m.group(1))
-outdir = os.path.join(os.path.dirname(out_s), 'boolfix')
+outdir = os.path.join(os.path.dirname(out_s), 'boolfix64' if X64 else 'boolfix')
 os.makedirs(outdir, exist_ok=True)
 by_obj = collections.defaultdict(list)
 for f, o in owner.items(): by_obj[o].append(f)
@@ -72,6 +75,16 @@ with open(out_list, 'w') as fh:
         fh.write(repl.get(l, l) + '\n')
 out = ['.text']
 for f in sorted(owner):
+    if X64:
+        # System V: register arguments (rdi rsi rdx rcx r8 r9, xmm0-7, al) pass through untouched;
+        # 16 stack words copied through r11 (as link64.sh's returns-this thunks); entry rsp = 8
+        # mod 16: push + 128 -> call at 0 mod 16
+        body = ['  push %rbx', '  sub $128, %rsp']
+        for i in range(16):
+            body += ['  mov %d(%%rsp), %%r11' % (144 + 8 * i), '  mov %%r11, %d(%%rsp)' % (8 * i)]
+        body += ['  call %s__bool' % f, '  movzbl %al, %eax', '  add $128, %rsp', '  pop %rbx', '  ret']
+        out += ['.weak %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f] + body
+        continue
     out += ['.weak %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f,
             '  push %esi', '  push %edi', '  sub $84, %esp', '  lea 96(%esp), %esi',  # entry esp = 12 mod 16: 2 pushes + 84 -> call at 0 mod 16
             '  mov %esp, %edi', '  mov $16, %ecx', '  cld', '  rep movsl',

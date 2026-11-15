@@ -54,7 +54,50 @@ RE_EXTERN_PTR = re.compile(r"^(\s*extern\b[^;(=]*\*)(\s*)(?:const\s+)?(" + GAME_
 RE_GLOBAL_FN = re.compile(r"\b(?:code|_func_\w+) \*\s*ALBW_GP\s+(" + GAME_SYM + r")\b")
 
 
+# `p + -uVarN` / `p[-uVarN]`: the negation of a 32-bit unsigned is 2^32 - n, which wraps on
+# the 32-bit ARM/i386 but lands 4 GiB above p on x86-64 (Yaz0 decoders 004929F0, 00115E38,
+# BOOT_LOG64 stops 5-6) -> negate the 64-bit value (any non-literal negated subscript:
+# signed ones sign-extend, unchanged)
+RE_NEG_UNSIGNED = re.compile(r"(\+ -(?=u[A-Za-z]*Var\d+\b)|\[-(?=[A-Za-z_(*])(?!\(long long\)))")
+
+
+# extern arrays of game data: the x86-64 System V ABI lets the compiler assume a global array of
+# >= 16 bytes is 16-byte aligned (movaps / movdqa); game symbols keep their 3DS offsets (any
+# alignment): data_0069C792 (2 mod 16) faulted in 00498700 (BOOT_LOG64 stop 8). Declare them
+# aligned(1) (i386 has no such rule; this pass runs for x86-64 only)
+RE_EXTERN_ARRAY = re.compile(r"^(\s*extern\b[^;()=]*?\b\w*_[0-9A-Fa-f]{8}(?:\s*\[[^\]\n]*\])+)(\s*;)", re.M)
+
+
+def align1_arrays(text):
+    return RE_EXTERN_ARRAY.sub(lambda m: m.group(1) + " __attribute__((aligned(1)))" + m.group(2), text)
+
+
+# `p[-0xffffffff000000NN]`: Ghidra's 64-bit spelling of the 32-bit offset -0xNN (i386 truncates
+# the index; x86-64 adds ~4 GiB: 00405138, BOOT_LOG64 stop 9)
+RE_NEG_LONG_INDEX = re.compile(r"\[-0xffffffff([0-9a-fA-F]{8})\]")
+
+
+# `(T *)uVar` where uVar is a 64-bit integer (undefined8 pairs: eye-0/eye-1 view matrices passed
+# as one stack doubleword, 00270D04 -> 00567AFC, BOOT_LOG64 stop 10): the 32-bit pointer is the
+# low word (ARM/i386 truncate); on x86-64 the cast keeps the high word -> truncate first
+RE_I64_DECL = re.compile(r"\b(?:undefined8|ulonglong|longlong|uint64_t|int64_t|unkuint8|unkint8|(?:unsigned\s+)?long\s+long)\s+(\w+)\s*[;,)=\[]")
+RE_PTR_CAST_VAR = re.compile(r"(\((?:const\s+)?[A-Za-z_]\w*(?:\s*\*\s*(?:ALBW_GP\s*)?)*\s*\*\s*\))\s*(\w+)\b(?!\s*[\[(])")
+
+
+def truncate_i64_ptr_casts(text):
+    v64 = set(RE_I64_DECL.findall(text))
+    text = re.sub(r"(\([A-Za-z_][\w ]*\*\s*\))\s*CONCAT44\(", r"\1(unsigned int)CONCAT44(", text)
+    if not v64:
+        return text
+    return RE_PTR_CAST_VAR.sub(lambda m: "%s(unsigned int)%s" % (m.group(1), m.group(2)) if m.group(2) in v64
+                               else m.group(0), text)
+
+
 def rewrite_ghidra(text):
+    text = truncate_i64_ptr_casts(text)
+    text = RE_NEG_LONG_INDEX.sub(lambda m: "[-0x%x]" % int(m.group(1), 16), text)
+    text = align1_arrays(text)
+    text = RE_NEG_UNSIGNED.sub(lambda m: m.group(1) + "(long long)", text)
     text = RE_PTRPTR.sub(lambda m: _stars(m.group(1), m.group(3)), text)
     text = RE_EXTERN_PTR.sub(lambda m: "%s ALBW_GP %s%s" % (m.group(1), m.group(3), m.group(4)), text)
     for v in set(RE_GLOBAL_FN.findall(text)):  # calls through a game function-pointer word

@@ -421,7 +421,8 @@ def pmf_this_enabled():
 # r0 = obj + (adj >> 1) before testing the virtual bit and passes it as `this`; Ghidra prints the
 # call with no arguments: `if ((uV & 1) != 0) { pcV = *(code **)(pcV + *(int *)(OBJ + ((int)uV >> 1))); }
 # (*pcV)();` (BOOT_LOG stops 74-80: title task, title object, layout parts; 242 sites in 230 files)
-RE_PMF_NOTHIS = re.compile(r"(if \(\((\w+) & 1\) != 0\) \{\s*(\w+) = \*\(code \*\*\)\(\3 \+ \*\(int \*\)\((.+?) \+ "
+# (x86-64: ptr32 spells the vtable slot `*(code * ALBW_GP *)`)
+RE_PMF_NOTHIS = re.compile(r"(if \(\((\w+) & 1\) != 0\) \{\s*(\w+) = \*\(code (?:\*\*|\* ALBW_GP \*)\)\(\3 \+ \*\(int \*\)\((.+?) \+ "
                            r"\(\(int\)\2 >> 1\)\)\);\s*\}\s*\(\*\3\)\()\)")
 
 

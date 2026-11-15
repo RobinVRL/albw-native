@@ -83,7 +83,7 @@ float func_003E23F4(float *param_1,float *param_2,float *param_3,float *param_4,
   pfVar3 = param_7;
   pfVar1 = DAT_003e2798;
   fVar18 = DAT_003e2790;
-  ppfVar4 = &param_6;
+  ppfVar4 = (float **)&param_6;  /* only passed on as a word (x86-64: explicit cast, a native stack address) */
   if ((DAT_003e2790 <= fparam_1) && (ppfVar4 = (float **)CF_FBITS(fparam_1), (int)ALBW_AS_U32(fparam_1) < 0x3f800001)) {
     fVar9 = param_6[10];
     fVar8 = param_6[0xb];

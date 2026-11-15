@@ -28,6 +28,11 @@
 #endif
 #endif
 
+/* on an extern declaration of a game data array: the x86-64 ABI lets the compiler assume a
+ * global array of >= 16 bytes is 16-byte aligned (movaps); game data keeps its 3DS offsets
+ * (BOOT_LOG64 stop 8). tools/ptr32.py adds the attribute to the decompiled code itself. */
+#define ALBW_DATA_ALIGN __attribute__((aligned(1)))
+
 typedef uint32_t gptr_t;
 
 /* address word -> pointer (zero-extended) */

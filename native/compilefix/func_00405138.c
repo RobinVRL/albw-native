@@ -5,6 +5,8 @@
  *  - explicit (T)(uintptr_t) casts at int<->pointer mismatches (identity on the 32-bit ARM) [2]
  *  - implicit float<->int conversions (Ghidra COPY between a float and an int-typed variable or
  *    pool word, e.g. `fVar = _DAT_xxx;`, `puVar[3] = fVar;`) made bit copies [3]
+ * Ghidra printed byte offsets -0x14..-0x11 as `[-0xffffffff000000NN]` (64-bit literals: i386 truncates
+ * the index, x86-64 lands 4 GiB off, BOOT_LOG64 stop 9): written as the 32-bit offsets.
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
@@ -98,10 +100,10 @@ byte * func_00405138(undefined4 *param_1,int param_2,int param_3,float *param_4)
   if (pbVar6[8] == 1) {
     *(undefined2 *)(pbVar6 + -0x18) = *(undefined2 *)(param_3 + 0x5c);
     *(undefined2 *)(pbVar6 + -0x16) = *(undefined2 *)(param_3 + 0x5e);
-    pbVar6[-0xffffffff00000014] = 0;
-    pbVar6[-0xffffffff00000013] = 0;
-    pbVar6[-0xffffffff00000012] = 0;
-    pbVar6[-0xffffffff00000011] = 0;
+    pbVar6[-0x14] = 0;
+    pbVar6[-0x13] = 0;
+    pbVar6[-0x12] = 0;
+    pbVar6[-0x11] = 0;
     uVar18 = ALBW_AS_U32(VectorUnsignedToFloat((uint)*(ushort *)(param_3 + 0x60),(byte)(in_fpscr >> 0x15) & 3));
     *(undefined4 *)(pbVar6 + -0x84) = uVar18;
     pbVar6[-0x80] = pbVar6[-0x80] & 0xef | 0x10;
@@ -110,10 +112,10 @@ byte * func_00405138(undefined4 *param_1,int param_2,int param_3,float *param_4)
     uVar18 = VectorFloatToUnsigned(ALBW_AS_F32(*(undefined4 *)(pbVar6 + -0x88)),3);
     *(short *)(pbVar6 + -0x18) = (short)uVar18 - *(short *)(param_3 + 0x5e);
     *(undefined2 *)(pbVar6 + -0x16) = *(undefined2 *)(param_3 + 0x5e);
-    pbVar6[-0xffffffff00000014] = 0;
-    pbVar6[-0xffffffff00000013] = 0;
-    pbVar6[-0xffffffff00000012] = 0;
-    pbVar6[-0xffffffff00000011] = 0;
+    pbVar6[-0x14] = 0;
+    pbVar6[-0x13] = 0;
+    pbVar6[-0x12] = 0;
+    pbVar6[-0x11] = 0;
     uVar18 = ALBW_AS_U32(VectorUnsignedToFloat((uint)*(ushort *)(param_3 + 0x60),(byte)(in_fpscr >> 0x15) & 3));
     *(undefined4 *)(pbVar6 + -0x84) = uVar18;
     pbVar6[-0x80] = pbVar6[-0x80] & 0xef | 0x10;

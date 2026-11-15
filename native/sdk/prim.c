@@ -43,10 +43,10 @@ void func_00115960(float *out, const float *a44, const float *b44);      /* out 
 uint32_t *func_00563710(const uint8_t *units, uint32_t *p, int32_t flush); /* sdk/gr.c */
 uint32_t *func_00563918(const uint8_t *c, uint32_t *p);                    /* sdk/gr.c */
 int32_t func_00100174(uint32_t *guard);
-extern float data_007A93A8[12];  /* M of wvp = proj x view x M */
+extern float data_007A93A8[12] ALBW_DATA_ALIGN;  /* M of wvp = proj x view x M */
 extern float data_007A9860[16];  /* identity Mtx44 (user) */
-extern float data_007A93E8[4];   /* uv_size of the untextured mode */
-extern float data_007A93F8[4];   /* uv_src of the untextured mode */
+extern float data_007A93E8[4] ALBW_DATA_ALIGN;   /* uv_size of the untextured mode */
+extern float data_007A93F8[4] ALBW_DATA_ALIGN;   /* uv_src of the untextured mode */
 extern uint32_t data_00715160;   /* -> display object: +0xDC width, +0xE0 height */
 extern uint32_t data_007275A0;   /* guard of data_007275A4 */
 extern uint32_t data_007275A4;   /* texture type identity (00496ABC type check) */

@@ -15,6 +15,8 @@ Also applied: the stage-2 rewrite of inlined pointer-to-member calls that lost t
 whose Ghidra prototype is short (build_decomp.stack_arg_rewrite, STACK_ARG_CALLS).
 
   python3 tools/fconv_interim.py [LO-HI ...]      (hex USA ranges; default: the whole game)
+  python3 tools/fconv_interim.py --arch x86_64 ...  the 64-bit build (build/decomp64, tools/link64.sh;
+                                                  stamp build/fconv_interim64.stamp)
   python3 tools/fconv_interim.py --grep REGEX     also rebuild every source matching REGEX
                                                   (after a header fix, e.g. CONCAT44)
 
@@ -36,8 +38,13 @@ DEFAULT = ["00100000-006FFFFF"]
 def main():
     args = sys.argv[1:]
     grep = None
-    if args[:1] == ["--grep"]:
-        grep, args = re.compile(args[1]), args[2:]
+    arch64 = False
+    while args[:1] in (["--grep"], ["--arch"]):
+        if args[0] == "--grep":
+            grep = re.compile(args[1])
+        else:
+            arch64 = args[1] == "x86_64"
+        args = args[2:]
     ranges = [tuple(int(x, 16) for x in r.split("-")) for r in (args or DEFAULT)]
     os.environ["ALBW_CONVERT_V4"] = "1"   # the build's own settings: -DALBW_V4, and since the
     # round-3 stage-2 rebuild stage 2 (-ftrivial-auto-var-init=zero, compile-fix retries); a
@@ -47,6 +54,9 @@ def main():
     os.environ["ALBW_PMF_THIS"] = "1"     # + `this` of inlined pointer-to-member calls
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import build_decomp as bd
+    if arch64:  # as build_decomp.main() --arch x86_64
+        bd.OUT, bd.TARGET, bd.ARCH64 = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu", True
+        os.environ["ALBW_ARCH"] = "x86_64"
     rt3 = os.path.join(ROOT, "native", "returns_this3.json")
     if os.path.exists(rt3):
         bd.RETURNS_THIS = set(json.load(open(rt3)))
@@ -58,6 +68,8 @@ def main():
             continue
         jobs.append((m.group(1), [m.group(2)]))
     inc = ["-I", os.path.join(bd.OUT, "shared", "include"), "-include", bd.COMPAT, "-DALBW_V4"]
+    if arch64:
+        inc += ["-fms-extensions"]  # __ptr32 (ALBW_GP)
 
     def has_sites(path):
         src = os.path.join(bd.OUT, path)
@@ -83,7 +95,7 @@ def main():
     print("fconv_interim: %d sources in range, %d with float<->int copies rebuilt, %d failed"
           % (len(jobs), len(todo) - len(bad), len(bad)))
     if not bad and not args:
-        open(os.path.join(ROOT, "build", "fconv_interim.stamp"), "w").write("%d\n" % (len(todo)))
+        open(os.path.join(ROOT, "build", "fconv_interim64.stamp" if arch64 else "fconv_interim.stamp"), "w").write("%d\n" % (len(todo)))
     return 1 if bad else 0
 
 
