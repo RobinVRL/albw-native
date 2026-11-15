@@ -490,6 +490,17 @@ def float_ret_rewrite(text):
     return text
 
 
+# sead singleton disposers: `if (this == holder[1]) { holder[1] = 0; inst->vtbl[0](); holder[0] = 0; }`
+# -> Ghidra prints the virtual destructor call without its `this` = *holder (EU 004B2B88..:
+# `ldr r0, [r5]; ldr r1, [r0]; ldr r1, [r1]; blx r1`); the destructor then ran on a garbage
+# object when the title's heap was destroyed (boot stop 102; 8 functions)
+RE_SINGLETON_DTOR = re.compile(r"\(\*\(code \*\)\*\*\(undefined4 \*\*\)\*(\w+)\)\(\);")
+
+
+def singleton_dtor_rewrite(text):
+    return RE_SINGLETON_DTOR.sub(r"(*(code *)**(undefined4 **)*\1)((undefined4 *)*\1);", text)
+
+
 def fconv_enabled():
     v = os.environ.get("ALBW_FCONV")
     return v == "1" or (v is None and v4_stage() >= 2)
@@ -635,6 +646,7 @@ def build_one(job):
             new_text = stack_arg_rewrite(pmf_this_rewrite(text))
             new_text = RE_GARBLED_RETURN_ARRAY.sub(r"return \1[0];", new_text)
             new_text = float_ret_rewrite(new_text)
+            new_text = singleton_dtor_rewrite(new_text)
             if new_text != text:
                 with open(src, "w") as fh:
                     fh.write(new_text)
