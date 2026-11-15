@@ -82,13 +82,16 @@ def _pr(b):
     return 0x20 <= b < 0x7F
 
 
-def text_words(ws):
+def text_words(ws, is_ptr=None):
     """Words that are string text, never pointers. UTF-16 text such as u"$coin:/gamecoin.dat"
     has words like 0x006F0063 ("co") that fall into the data range and were relocated, which
     corrupted the string. A word counts as text when it looks like text (UTF-16: both units
     0x00xx printable/NUL with at least one printable, next to another such word; narrow: all 4
     bytes printable/NUL with the first printable, next to a word of 4 printable characters).
-    Pointer tables (e.g. 0x00694518, 0x0069451C...) are not text by these rules."""
+    Pointer tables (e.g. 0x00694518, 0x0069451C...) are not text by these rules.
+    A narrow-looking word that is a pointer right after a pointer is the last slot of a pointer
+    table followed by a string: the vtable at 0069C614 ends with 0x0043736C (`lsC\0`) before
+    "World", and its last slot stayed a raw game address (boot stop 106)."""
     def u16(w):
         if w & 0xFF00FF00:
             return False
@@ -106,6 +109,8 @@ def text_words(ws):
     for i in range(n):
         if k[i] and ((i > 0 and k[i - 1]) or (i + 1 < n and k[i + 1])):
             out[i] = True
+        elif is_ptr and i > 0 and is_ptr(ws[i]) and is_ptr(ws[i - 1]) and not f[i - 1]:
+            continue
         elif narrow(ws[i]) and ((i > 0 and f[i - 1]) or (i + 1 < n and f[i + 1])):
             out[i] = True
     return out
@@ -211,8 +216,8 @@ def main():
             out += ["    .section .data.albw,\"aw\"", "    .p2align 4", "    .globl albw_data", "albw_data:"]
         n = (size - size % 4) // 4
         ws = [rd(base + 4 * i) for i in range(n)]
-        text = text_words(ws)
         is_ptr = lambda w: (TEXT <= w < text_end and w in fn_of) or section_ref(w) is not None
+        text = text_words(ws, is_ptr)
         half = halfword_table_words(ws, is_ptr)
         if os.environ.get("ALBW_GEN_DATA_DEBUG"):
             for i in range(n):
