@@ -1236,6 +1236,7 @@ void render_set_vs_float(int reg, const float *v, int count) {
 }
 void render_set_vs_bool(uint16_t mask) { R.vsb = mask; R.vsf_dirty = true; }
 /* debug readback of the vertex-shader float / bool registers (render/h3d.c ALBW_H3D_DUMP) */
+const RTev *render_tev_state(void) { return &R.tev; }
 const float *render_vs_floats(uint16_t *bools) {
     if (bools) *bools = R.vsb;
     return R.vsf;

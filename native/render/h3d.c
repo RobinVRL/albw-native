@@ -51,6 +51,7 @@
 #include <SDL3/SDL.h>
 
 #include "../platform/platform.h"
+#include "fraglight.h"
 
 const char RENDER_VS_H3D[] =
     "layout(location = 0) in vec4 v0; layout(location = 1) in vec4 v1; layout(location = 2) in vec4 v2;\n"
@@ -462,16 +463,37 @@ static void dump_draw(const H3dVtx *v, const Ibuf *ib, const ROp *op, const uint
     static long left = -2;
     if (left == -2) { const char *e = getenv("ALBW_H3D_DUMP"); left = e ? atol(e) : -1; }
     if (left <= 0) return;
-    left--;
     uint16_t b;
     const float *c = render_vs_floats(&b);
     int var = 0, prog = render_current_program(&var);
+    static int only = -2;
+    if (only == -2) { const char *e = getenv("ALBW_H3D_DUMP_VAR"); only = e ? atoi(e) : -1; }
+    if (only >= 0 && var != only) return;
+    left--;
     fprintf(stderr, "h3d-dump: draw prim %u count %u u16 %d idx %p max %u vtx %#x stride %u base %#x prog %d/%d b %#x\n",
             op->u.ext.c, op->u.ext.b, ib->u16, (const void *)idx, ib->max_index, v->addr, v->stride, v->base, prog, var, b);
     for (int i = 0; i < v->nattr; i++)
         fprintf(stderr, "h3d-dump:   attr %d reg v%u type %u comps %u fixed %u off %u val %g %g %g %g\n", i, v->attr[i].reg,
                 v->attr[i].type, v->attr[i].comps, v->attr[i].fixed, v->attr[i].offset, v->attr[i].value[0],
                 v->attr[i].value[1], v->attr[i].value[2], v->attr[i].value[3]);
+    const RTev *t = render_tev_state();
+    for (int k = 0; k < 6; k++) {
+        const RTevStage *g = &t->stage[k];
+        fprintf(stderr, "h3d-dump:   tev%d rgb src %u %u %u op %u %u %u cmb %u x%u | a src %u %u %u op %u %u %u cmb %u x%u | k %u %u %u %u\n",
+                k, g->src_rgb[0], g->src_rgb[1], g->src_rgb[2], g->op_rgb[0], g->op_rgb[1], g->op_rgb[2], g->combine_rgb,
+                g->scale_rgb, g->src_a[0], g->src_a[1], g->src_a[2], g->op_a[0], g->op_a[1], g->op_a[2], g->combine_a,
+                g->scale_a, g->konst[0], g->konst[1], g->konst[2], g->konst[3]);
+    }
+    fprintf(stderr, "h3d-dump:   tevbuf upd %#x/%#x col %u %u %u %u\n", t->buf_update_rgb, t->buf_update_a,
+            t->buf_color[0], t->buf_color[1], t->buf_color[2], t->buf_color[3]);
+    for (int u = 0; u < 3; u++) {
+        const RTexUnit *x = render_texunit(u);
+        fprintf(stderr, "h3d-dump:   tex%d addr %#lx %ux%u fmt %u type %u\n", u, (unsigned long)x->addr, x->w, x->h, x->fmt, x->type);
+    }
+    const FLEnv *fe = fraglight_env();
+    fprintf(stderr, "h3d-dump:   fraglight enable %u n %u amb %u %u %u config %u lut_off %#x\n", fe->enable, fe->nlights,
+            fe->ambient[0], fe->ambient[1], fe->ambient[2], fe->config, fe->lut_off);
+    fraglight_debug_print(stderr);
     static const int regs[] = {3, 6, 7, 8, 10, 11, 20, 21, 25, 26, 27, 86, 87, 88, 89, 90, 91, 92};
     for (unsigned k = 0; k < sizeof regs / sizeof *regs; k++) {
         const float *r = c + 4 * regs[k];
@@ -630,7 +652,9 @@ static int ext_call(uintptr_t addr, uint32_t size) {
     return 1;
 }
 
+void h3d_mem_written(uintptr_t addr, size_t size) __attribute__((weak)); /* sdk/h3d.c: pending LUTs */
 static void ext_mem(uintptr_t addr, size_t size) {
+    if (h3d_mem_written) h3d_mem_written(addr, size);
     uintptr_t e = addr + size;
     pthread_mutex_lock(&g_mx);
     for (size_t i = 0; i < g_nvtx; i++) {

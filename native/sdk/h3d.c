@@ -53,6 +53,7 @@
  * 00518694, 00171510, 002C3870), runtime patches of blob words (material animations that edit
  * blobs in place would not be seen: the blobs are decoded once). */
 #include <math.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -220,7 +221,9 @@ static void idx_reloc_clear(void) {
  * section `section` (2 = sec[8] when set), at offset * 4 (type 1: bytes); index targets are in
  * section 3 (types 7, 8) or 4 (0xC, 0xD) + the word's original value) */
 static void idx_reloc_scan(const uint32_t *sec, uint32_t table, uint32_t count) {
-    idx_reloc_clear();
+    /* entries are keyed by the word address and overwritten by later files at the same address;
+       kept across files (a 0x227 word is always an index relocation of its own file) */
+    if (g_ir_n > (1u << 20)) idx_reloc_clear();
     for (uint32_t i = 0; i < count && i < (1u << 22); i++) {
         uint32_t e = G32(table, 4 * i), type = (e << 3) >> 28, off = e & 0x1FFFFFF;
         if (type != 7 && type != 8 && type != 0xC && type != 0xD) continue;
@@ -480,6 +483,10 @@ static void dec_finish(Dec *d) {
         ol_push(&d->ops, &op);
     }
     /* fragment operations */
+    if (getenv("ALBW_H3D_FRAGTRACE") && (d->written[0x100] || d->written[0x104] || d->written[0xF8]))
+        fprintf(stderr, "h3d: frag blob %#x: 100 %08x 101 %08x 102 %08x 103 %08x 104 %08x 107 %08x | F8 %08x F9 %08x FA %08x FB %08x\n",
+                d->word_addr, d->reg[0x100], d->reg[0x101], d->reg[0x102], d->reg[0x103], d->reg[0x104], d->reg[0x107],
+                d->reg[0xF8], d->reg[0xF9], d->reg[0xFA], d->reg[0xFB]);
     if (d->written[0x100] || d->written[0x101] || d->written[0x103]) {
         uint32_t b = d->reg[0x101], mode = d->reg[0x100];
         ROp op = op_new(ROP_BLEND);
@@ -542,8 +549,19 @@ static void dec_finish(Dec *d) {
 
 /* walk a command blob in game memory: [param][header] pairs, header = reg | byte mask << 16 |
  * extra count << 20 | consecutive << 31, extra params, padded to 8 bytes */
+/* Files whose command section lives in VRAM (BlackFilter.bch, the boot LUT file...): the section
+ * pointers (sec[2]) are VRAM addresses, the game relocates a staging copy in the file (sec[8]) and
+ * DMAs it to VRAM later (005FF314), so at set-up the VRAM blobs are still empty. Their contents are
+ * read from the staging copy (same bytes once copied); ops stay registered under the VRAM address
+ * the game CALLs. Set per file by h3d_register_file. */
+static uint32_t g_stage_lo, g_stage_hi, g_stage_src;
+static uint32_t stage_src(uint32_t addr) {
+    return g_stage_src && addr >= g_stage_lo && addr < g_stage_hi ? g_stage_src + (addr - g_stage_lo) : addr;
+}
+
 static int dec_walk(Dec *d, uint32_t addr, uint32_t words) {
     if (!addr || !words || words > (1u << 20)) return -1;
+    addr = stage_src(addr);
     uint32_t i = 0;
     while (i + 1 < words) {
         uint32_t p0 = G32(addr, 4 * i), h = G32(addr, 4 * i + 4);
@@ -612,6 +630,42 @@ static void material_luts(uint32_t params) {
     fraglight_material_set(GA(params), &c);
 }
 
+/* LUT sampler blobs that are not in place yet: the file's command section is relocated to VRAM
+ * (sampler blob pointers 0x1F......) and filled by the game's VRAM DMA (005FF314) after the set-up,
+ * so at register time they read as zeros. They are decoded when that memory is written
+ * (h3d_mem_written, from the renderer's memory-written hook). */
+typedef struct { uint32_t blob, words; } PendingLut;
+static PendingLut *g_plut;
+static size_t g_nplut, g_capplut;
+static pthread_mutex_t g_plut_mx = PTHREAD_MUTEX_INITIALIZER;
+
+static int lut_decode(uint32_t blob, uint32_t words) {
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) abort();
+    int ok = !dec_walk(d, blob, words) && d->nlut == 256;
+    if (ok) fraglight_lut_set(GA(blob), (const float(*)[2])d->lut);
+    free(d->ops.v);
+    free(d);
+    return ok;
+}
+
+void h3d_mem_written(uintptr_t addr, size_t size) {
+    if (!g_nplut) return;
+    pthread_mutex_lock(&g_plut_mx);
+    int n = 0;
+    for (size_t i = 0; i < g_nplut;) {
+        PendingLut *p = &g_plut[i];
+        if ((uintptr_t)p->blob < addr + size && (uintptr_t)p->blob + 4u * p->words > addr && lut_decode(p->blob, p->words)) {
+            *p = g_plut[--g_nplut];
+            n++;
+        } else {
+            i++;
+        }
+    }
+    pthread_mutex_unlock(&g_plut_mx);
+    if (n && getenv("ALBW_H3D_TRACE")) fprintf(stderr, "h3d: %d LUTs decoded after their VRAM copy\n", n);
+}
+
 /* LUT samplers of a file (contents section 4: LUT {samplers ptr, count}, sampler 0x10 bytes
  * {flags (bit 0 absolute input), command blob ptr, words, name}) -> decoded tables */
 static int register_luts(uint32_t cont) {
@@ -623,14 +677,19 @@ static int register_luts(uint32_t cont) {
         uint32_t sm = G32(lut, 0), ns = G32(lut, 4);
         for (uint32_t k = 0; k < ns && k < 1024; k++) {
             uint32_t blob = G32(sm + 0x10 * k, 4), words = G32(sm + 0x10 * k, 8);
-            Dec *d = calloc(1, sizeof *d);
-            if (!d) abort();
-            if (!dec_walk(d, blob, words) && d->nlut == 256) {
-                fraglight_lut_set(GA(blob), (const float(*)[2])d->lut);
+            if (!blob || !words || words > 4096) continue;
+            if (lut_decode(blob, words)) {
                 n++;
+            } else {
+                pthread_mutex_lock(&g_plut_mx);
+                if (g_nplut == g_capplut) {
+                    g_capplut = g_capplut ? 2 * g_capplut : 64;
+                    g_plut = realloc(g_plut, g_capplut * sizeof *g_plut);
+                    if (!g_plut) abort();
+                }
+                g_plut[g_nplut++] = (PendingLut){blob, words};
+                pthread_mutex_unlock(&g_plut_mx);
             }
-            free(d->ops.v);
-            free(d);
         }
     }
     return n;
@@ -661,6 +720,15 @@ void h3d_register_file(uint32_t resfile) {
         if (e > end) end = e;
     }
     h3d_forget_range(GA(hdr), GA(hdr) + end);
+    /* command section in VRAM with a staging copy (see stage_src); header v0x21: 6 section
+       offsets then 6 lengths (contents, strings, commands, raw data, raw ext, relocation) */
+    uint32_t sec2 = G32(resfile, 4 * 2), stage = G32(resfile, 4 * 8);
+    g_stage_src = 0;
+    if (stage && sec2 != stage && version >= 0x21) {
+        g_stage_lo = sec2;
+        g_stage_hi = sec2 + G32(hdr, 8 + 4 * nsec + 4 * 2);
+        g_stage_src = stage;
+    }
     int blobs0 = g_blobs;
     uint32_t mtbl = G32(cont, 0), mcnt = G32(cont, 4);
     uint32_t msz = version >= 0x21 ? 0x2C : 0x58;
@@ -698,6 +766,16 @@ void h3d_register_file(uint32_t resfile) {
         for (int u = 0; u < 3; u++) convert_blob(G32(t, 8 * u), G32(t, 8 * u + 4), NULL, 0);
     }
     int nluts = register_luts(cont);
+    g_stage_src = 0;
+    if (getenv("ALBW_H3D_TRACE")) {
+        uint32_t m0 = mcnt ? G32(mtbl, 0) : 0;
+        if (m0 && G32(m0, 0x38)) {
+            uint32_t mat = G32(m0, 0x34), par = G32(mat, 0);
+            fprintf(stderr, "h3d:   first material blobs %#x/%u %#x/%u\n", G32(mat, 0x10), G32(mat, 0x14), par ? G32(par, 0xC8) : 0,
+                    par ? G32(par, 0xCC) : 0);
+        }
+        if (m0 && G32(m0, 0x44)) fprintf(stderr, "h3d:   first mesh blob %#x/%u\n", G32(G32(m0, 0x40), 8), G32(G32(m0, 0x40), 12));
+    }
     if (getenv("ALBW_H3D_TRACE"))
         fprintf(stderr, "h3d: file %#x (v%#x): %u models, %u shaders, %u textures, %d LUTs, %d blobs converted (%d bad)\n",
                 (unsigned)hdr, version, (unsigned)mcnt, (unsigned)scnt, (unsigned)tcnt, nluts, g_blobs - blobs0, g_blob_errors);
@@ -725,6 +803,9 @@ uint32_t func_003FCCF8(uint32_t *out, uint32_t *hdr, uint32_t *sec) {
     b0[1] = sec[6] + hdr[0xE];
     b1[0] = sec[9] ? sec[9] : sec[7];
     b1[1] = b1[0] + hdr[0xF];
+    if (getenv("ALBW_H3D_TRACE"))
+        fprintf(stderr, "h3d: setup hdr %#x sec %#x %#x %#x %#x %#x %#x %#x %#x %#x %#x\n", GPTR_OF(hdr), sec[0], sec[1], sec[2],
+                sec[3], sec[4], sec[5], sec[6], sec[7], sec[8], sec[9]);
     idx_reloc_scan(sec, sec[5], hdr[0xD] >> 2);
     func_003FCE5C(res, GPTR_OF(out), sec[5], hdr[0xD] >> 2, GPTR_OF(sec), GPTR_OF(hdr), b0);
     if ((int32_t)res[1] < 0) return res[1] | r;
@@ -977,6 +1058,12 @@ void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
 void func_00565204(uint32_t *mat, uint32_t *ctx, uint16_t *state, uint32_t *lut) {
     uint32_t st = GPTR_OF(state);
     uint16_t flags = state[0];
+    if (getenv("ALBW_H3D_TRACE")) {
+        static unsigned n;
+        if (n++ % 600 == 0)
+            fprintf(stderr, "h3d: 00565204 #%u mat %#x flags %#x sel %#x pal %08x %08x %08x %08x %08x %08x\n", n, GPTR_OF(mat), flags,
+                    G32(st, 8), G32(st, 0x24), G32(st, 0x28), G32(st, 0x2C), G32(st, 0x30), G32(st, 0x34), G32(st, 0x38));
+    }
     if (flags & 0x400) {
         uint32_t sel = G32(st, 8);
         for (int s = 0; s < 6; s++) {
