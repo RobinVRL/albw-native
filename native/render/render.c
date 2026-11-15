@@ -1417,8 +1417,9 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
          R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
          f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
          changed, lit);
-    for (int r = 0; r < 4; r++)
-        rlog("dump:     c%d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
+    for (int r = 0; r < 72; r++)  /* projection, stereo c4, record c9, pools c32.. / c64.. */
+        if (r < 5 || r == 9 || (r >= 32 && r < 44) || r >= 64)
+            rlog("dump:     c%d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
 }
 
 void render_draw(int prim, uint32_t first, uint32_t count) {
