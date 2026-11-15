@@ -111,6 +111,38 @@ def text_words(ws):
     return out
 
 
+def _s16_small(h):
+    v = h - 0x10000 if h & 0x8000 else h
+    return v not in (0, -1) and -0x400 < v < 0x400
+
+
+def halfword_table_words(ws, is_ptr):
+    """Words of 16-bit tables, never pointers. A u16/s16 table holds pairs such as (76, 118) =
+    0x0076004C, which falls into .bss and was relocated, which corrupted the table (the actor ID
+    -> profile index table at 0x0069E248: ID 76 became 0xAF4C, its placement mapped to profile -1
+    and the title spawned a MapFloatRoom actor without a name, boot stop 81).
+    A word counts as table data when
+      - it is a data address (code words are only relocated when they are exact function
+        starts, vtables hold many such as 0x0048FD7C) that is itself a pair of small signed
+        16-bit values (-0x3FF..0x3FF, neither 0 nor -1; the high half of a data address,
+        0x69..0x7A, always is, the low half of a pointer rarely),
+      - none of the 4 words within +-2 is a pointer that is not such a pair (pointer tables,
+        pmf pairs), and
+      - at least 2 of those 4 words are such pairs (sentinels like 0xFFFFFF00 do not count)."""
+    n = len(ws)
+    # a relocated code word (exact function start) is always a pointer, whatever its halves
+    code = [is_ptr(w) and section_ref(w) is None for w in ws]
+    pr = [not code[i] and _s16_small(w >> 16) and _s16_small(w & 0xFFFF) for i, w in enumerate(ws)]
+    hard = [is_ptr(w) and not pr[i] for i, w in enumerate(ws)]
+    out = [False] * n
+    for i in range(n):
+        if not pr[i] or section_ref(ws[i]) is None:
+            continue
+        nb = [j for j in (i - 2, i - 1, i + 1, i + 2) if 0 <= j < n]
+        out[i] = not any(hard[j] for j in nb) and sum(pr[j] for j in nb) >= 2
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--code", required=True)
@@ -158,6 +190,13 @@ def main():
         n = (size - size % 4) // 4
         ws = [rd(base + 4 * i) for i in range(n)]
         text = text_words(ws)
+        is_ptr = lambda w: (TEXT <= w < text_end and w in fn_of) or section_ref(w) is not None
+        half = halfword_table_words(ws, is_ptr)
+        if os.environ.get("ALBW_GEN_DATA_DEBUG"):
+            for i in range(n):
+                if half[i]:
+                    print("halfword table word %08X = %08X" % (base + 4 * i, ws[i]))
+        text = [t or h for t, h in zip(text, half)]
         for off in range(0, size - size % 4, 4):
             w = ws[off // 4]
             s = ".long 0x%08X" % w if text[off // 4] else word(base + off, w)
