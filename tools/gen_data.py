@@ -231,6 +231,7 @@ def main():
 
     # data symbols used by the code
     ndata = npool = nbad = 0
+    unplaceable = []
     for sym in sorted(unresolved):
         m = re.match(r"^data_([0-9A-F]{8})$", sym)
         if m:
@@ -239,7 +240,7 @@ def main():
                 out += ["    .globl %s" % sym, "    .set %s, %s" % (sym, r)]
                 ndata += 1
             else:
-                nbad += 1
+                nbad += 1; unplaceable.append(sym)
             continue
         m = LABEL_NAME.match(sym)
         if m:
@@ -258,8 +259,21 @@ def main():
                     raw = code[addr - TEXT:end + 1]
                 out += ["    .section .rodata.albw_str,\"a\"", "    .globl %s" % sym, "%s:" % sym,
                         "    .byte " + ",".join(str(b) for b in raw)]
+            elif TEXT <= addr < text_end and sym.startswith("_DAT_"):
+                # a literal-pool word read with another size than Ghidra typed it (`_DAT_0012cc18`,
+                # a float 1.0 read as `ALBW_AS_F32(_DAT_0012cc18)`); it fell through as unplaceable
+                # and the link stub in .text was read instead (an animation rate of 1.4e-33: the
+                # name-entry button animation never finished, boot stop 101). Emit the words as the
+                # literal-pool names are (word at addr, relocated like any pool word, then the next
+                # word raw for 8-byte reads)
+                lines = ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym, "%s:" % sym]
+                if addr % 4 == 0:
+                    lines += ["    " + word(addr, rd(addr)), "    .long 0x%08X" % rd(addr + 4)]
+                else:
+                    lines += ["    .byte " + ",".join(str(b) for b in code[addr - TEXT:addr - TEXT + 8])]
+                out += lines
             else:
-                nbad += 1
+                nbad += 1; unplaceable.append(sym)
                 continue
             ndata += 1
             continue
@@ -297,7 +311,7 @@ def main():
                     out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
                             "%s:" % sym, "    " + w]
             else:
-                nbad += 1
+                nbad += 1; unplaceable.append(sym)
                 continue
             npool += 1
     out += out_cstr
@@ -312,6 +326,9 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as fh:
         fh.write("\n".join(out) + "\n")
+    if os.environ.get("ALBW_GEN_DATA_DEBUG"):
+        for u in unplaceable:
+            print("unplaceable %s" % u)
     print("wrote %s: %d pointer words relocated, %d data symbols, %d Ghidra pool symbols, %d unplaceable"
           % (a.out, nptr, ndata, npool, nbad))
 
