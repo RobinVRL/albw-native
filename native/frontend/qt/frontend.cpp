@@ -46,6 +46,10 @@ void feLayoutChanged() {
         s.view->update();
         s.view->refreshOverlay();
     }
+    if (s.bottomView) {
+        s.bottomView->update();
+        s.bottomView->refreshOverlay();
+    }
     if (s.win) {
         s.win->syncActions();
         s.win->updateTitle();
@@ -122,6 +126,9 @@ static void autotestStep(int f) {
         if (!hold && f == a + n + 1) v->simulateMouse(QEvent::MouseButtonRelease, p1, b);
     };
     switch (f) {
+    case 3:
+        w->setSeparate(false, false);   // the steps below test the joined window's layouts
+        break;
     case 5:
         s.layout.preset = LAYOUT_DEFAULT;
         s.layout.swap = 0;
@@ -241,7 +248,37 @@ static void autotestStep(int f) {
         feLayoutChanged();
     }
     if (f == 215 + LAYOUT_CUSTOM * 12 + 8) saveGrab(v->grabComposite(), QStringLiteral("11_preset_large_swapped.png"));
+    // G: separate windows: each window grabbed, touch at the bottom window's centre -> (160, 120)
     if (f == D + 50) {
+        s.layout.swap = 0;
+        s.layout.preset = LAYOUT_DEFAULT;
+        w->setSeparate(true, false);
+    }
+    if (f == D + 60) {
+        saveGrab(v->grabComposite(), QStringLiteral("12_separate_top.png"));
+        if (s.bottomView) saveGrab(s.bottomView->grabComposite(), QStringLiteral("13_separate_bottom.png"));
+    }
+    if (f == D + 62 && s.bottomView) {
+        ScreenView *b = s.bottomView;
+        b->simulateMouse(QEvent::MouseButtonPress, QPointF(b->width() / 2.0, b->height() / 2.0), Qt::LeftButton);
+    }
+    if (f == D + 64 && s.bottomView) {
+        int t, tx, ty;
+        fein_touch_state(&t, &tx, &ty);
+        std::fprintf(stderr, "autotest: separate: touch at bottom-window centre -> touch=%d (%d, %d) [expect 1 (160, 120)]\n",
+                     t, tx, ty);
+        ScreenView *b = s.bottomView;
+        b->simulateMouse(QEvent::MouseButtonRelease, QPointF(b->width() / 2.0, b->height() / 2.0), Qt::LeftButton);
+        v->simulateMouse(QEvent::MouseButtonPress, QPointF(v->width() / 2.0, v->height() / 2.0), Qt::LeftButton);
+    }
+    if (f == D + 66) {
+        int t, tx, ty;
+        fein_touch_state(&t, &tx, &ty);
+        std::fprintf(stderr, "autotest: separate: press in the top window -> touch=%d [expect 0]\n", t);
+        v->simulateMouse(QEvent::MouseButtonRelease, QPointF(v->width() / 2.0, v->height() / 2.0), Qt::LeftButton);
+        w->setSeparate(false, false);
+    }
+    if (f == D + 72) {
         s.layout.swap = 0;
         s.layout.preset = LAYOUT_CUSTOM;
         feLayoutChanged();
@@ -280,6 +317,9 @@ extern "C" void fe_prepare(int *argc, char **argv) {
     fmt.setSwapInterval(s.vsync ? 1 : 0);
     if (qEnvironmentVariableIsSet("ALBW_GL_DEBUG")) fmt.setOption(QSurfaceFormat::DebugContext);
     QSurfaceFormat::setDefaultFormat(fmt);
+    // separate windows: the bottom screen's view (its own QOpenGLWidget context) samples the
+    // screen textures the game renders in the main view's context
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setOrganizationName(QStringLiteral("albw-port"));
     QCoreApplication::setApplicationName(QStringLiteral("qt-frontend"));
     s.app = new QApplication(s_argc, s.argv);
@@ -291,6 +331,14 @@ extern "C" void fe_prepare(int *argc, char **argv) {
     QString saves = s.settings->value(QStringLiteral("paths/saves")).toString();
     if (qEnvironmentVariableIsEmpty("ALBW_SAVE_DIR") && !saves.isEmpty()) qputenv("ALBW_SAVE_DIR", saves.toLocal8Bit());
     layout_load(&s.layout, nullptr);
+    s.separate = s.layout.separate;
+    QByteArray wm = qgetenv("ALBW_WINDOWS");   // for this run only (layout.cfg keeps its choice)
+    if (!wm.isEmpty()) {
+        int v = layout_windows_from_key(wm.constData());
+        if (v >= 0) s.separate = v;
+        else std::fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm.constData());
+    }
+    if (s.layout.preset != LAYOUT_TOP_ONLY && s.layout.preset != LAYOUT_BOTTOM_ONLY) s.lastTwoPreset = s.layout.preset;
 }
 
 extern "C" int fe_init(const char *title, const FeConfig *cfg) {
@@ -304,6 +352,7 @@ extern "C" int fe_init(const char *title, const FeConfig *cfg) {
     fein_init();
 
     s.view = new ScreenView;
+    if (s.separate) s.view->setScreen(LAYOUT_SCREEN_TOP);
     s.win = new MainWindow(s.view);
     s.win->restoreGeometryFromSettings(defScale);
     s.win->updateTitle();
@@ -317,10 +366,11 @@ extern "C" int fe_init(const char *title, const FeConfig *cfg) {
         std::fprintf(stderr, "frontend: OpenGL initialisation failed\n");
         return -1;
     }
+    if (s.separate) s.win->setSeparate(true, false);   // the bottom screen's window
     s.view->makeCurrent();
     s.view->setFocus();
     s.win->syncActions();
-    feToast(QStringLiteral("Esc: menu    F2: layouts    F3: edit layout    F11: fullscreen"));
+    feToast(QStringLiteral("Esc: menu    F2: layouts    F3: edit layout    F5: join/separate windows    F11: fullscreen"));
     s.nextFrameNs = feNowNs();
     return 0;
 }
@@ -330,6 +380,8 @@ extern "C" void fe_shutdown(void) {
     if (!s.app) return;
     if (s.win) {
         s.win->saveSettings();
+        delete s.bottomView;  // separate windows: a top-level window of its own
+        s.bottomView = nullptr;
         delete s.win;  // deletes the view and its GL context
         s.win = nullptr;
         s.view = nullptr;
@@ -399,7 +451,9 @@ extern "C" void fe_end_frame(void) {
         fpsN = 0;
         if (s.showFps) s.win->updateTitle();
     }
-    s.view->repaint();  // composite now (paintGL), then Qt presents the window
+    // composite now (paintGL), then Qt presents the window(s); the bottom screen's window first
+    if (s.bottomView && s.bottomView->isVisible()) s.bottomView->repaint();
+    s.view->repaint();
     if (qEnvironmentVariableIsSet("ALBW_FE_AUTOTEST")) autotestStep(s.frame);
     makeCurrentAndRebind();
 

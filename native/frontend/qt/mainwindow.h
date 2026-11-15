@@ -18,6 +18,11 @@ public:
     void toggleMenuBar();
     void setMenuBarShown(bool on);
     void setPreset(int preset);
+    void stepPreset(int dir);             // F2 / Shift+F2 (separate: both -> top only -> bottom only)
+    // Separate windows (top screen here, bottom screen in its own window) or one joined window.
+    // save: also make it the saved choice in layout.cfg (F5 / menu); start-up and tests pass false.
+    void setSeparate(bool on, bool save);
+    void activationChanged();             // this window or the bottom-screen window (de)activated
     void setEditing(bool on);
     void setWindowScale(int n);
     void setFullscreen(bool on);
@@ -39,6 +44,8 @@ private:
     void buildMenus();
     void rebuildRecent();
     void openRom();
+    void applySeparateVisibility();
+    void showMenuPopup();
     QAction *act(QMenu *m, const QString &text, const QKeySequence &key, std::function<void()> fn,
                  bool checkable = false);
 
@@ -48,5 +55,6 @@ private:
     QActionGroup *presetGroup_ = nullptr;
     QAction *pauseAct_ = nullptr, *swapAct_ = nullptr, *editAct_ = nullptr, *keepAspectAct_ = nullptr,
             *snapAct_ = nullptr, *integerAct_ = nullptr, *nearestAct_ = nullptr, *linearAct_ = nullptr,
-            *fullscreenAct_ = nullptr, *menuBarAct_ = nullptr, *focusPauseAct_ = nullptr, *fpsAct_ = nullptr;
+            *fullscreenAct_ = nullptr, *menuBarAct_ = nullptr, *focusPauseAct_ = nullptr, *fpsAct_ = nullptr,
+            *separateAct_ = nullptr;
 };

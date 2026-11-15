@@ -1,7 +1,13 @@
 /* Screen layout engine, shared by the SDL backend (platform.c) and the Qt frontend
  * (native/frontend/qt). Plain C, no GL/SDL/Qt, 32- and 64-bit clean.
  *
- * It decides where the two 3DS screens are drawn inside the window:
+ * Windows: "separate" (the default) gives each screen its own window, "joined" draws both into one
+ * window. The presets and the custom layout arrange the screens of the joined window; with
+ * separate windows each window shows its one screen letterboxed (layout_compute_single), and of
+ * the presets only top_only / bottom_only matter: they hide the other screen's window
+ * (layout_separate_visible). swap, custom rectangles and custom visibility apply to joined only.
+ *
+ * It decides where the two 3DS screens are drawn inside the (joined) window:
  *   - presets (top above bottom, side by side, large + small, picture-in-picture, one screen),
  *   - a custom layout: one rectangle per screen, stored normalized to the window (0..1) so it
  *     follows window resizes, edited by dragging/resizing with the mouse (layout_edit_*),
@@ -47,7 +53,11 @@ typedef enum {
 
 typedef struct { float x, y, w, h; } LayoutRect;
 
+/* Remembered geometry of one separate window (window points). */
+typedef struct { int x, y, w, h, has_pos, has_size; } LayoutWindowGeom;
+
 typedef struct {
+    int separate;            /* 1 = one window per screen (default), 0 = both screens in one window */
     int preset;              /* LayoutPreset */
     int swap;
     int integer_scale;
@@ -58,6 +68,7 @@ typedef struct {
     int custom_front;        /* LAYOUT_SCREEN_TOP / _BOTTOM */
     LayoutRect custom[2];    /* normalized to the window */
     int custom_visible[2];
+    LayoutWindowGeom window[2];  /* separate windows, per screen */
 } LayoutConfig;
 
 /* A computed layout for one window size. */
@@ -70,6 +81,14 @@ typedef struct {
 
 void layout_defaults(LayoutConfig *c);
 void layout_compute(const LayoutConfig *c, int ww, int wh, Layout *out);
+
+/* Separate windows: the layout of the window that shows only `screen` (letterboxed, centred,
+ * integer_scale respected), so layout_to_screen / layout_rect_ndc work on it as on the joined one. */
+void layout_compute_single(const LayoutConfig *c, int screen, int ww, int wh, Layout *out);
+/* Separate windows: is the window of `screen` shown? (top_only / bottom_only hide the other one) */
+int layout_separate_visible(const LayoutConfig *c, int screen);
+/* "separate" / "joined" (ALBW_WINDOWS, layout.cfg "windows"): 1 / 0, -1 if neither */
+int layout_windows_from_key(const char *key);
 
 /* Natural canvas of a preset in 3DS pixels (e.g. default 400x480), for "window scale Nx". */
 void layout_canvas_size(const LayoutConfig *c, int *w, int *h);

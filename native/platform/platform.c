@@ -5,6 +5,7 @@ void albw_sched_block_end(void);
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Screen layout engine (presets, custom layout, touch mapping), shared with the Qt frontend.
  * Compiled into this translation unit so the build scripts that compile platform.c alone
@@ -92,7 +93,16 @@ GLuint gl_program(const char *vs, const char *fs) {
 }
 
 /* ------------------------------------------------------------------ state */
+/* Windows: "separate" (default) = one window per screen, "joined" = both screens in one window
+ * (see the window mode section below). `win` always exists and owns the GL context: it is the
+ * joined window, or the top screen's window; `win_bottom` exists only while separate. Both
+ * windows share the one context (SDL_GL_MakeCurrent per window before drawing into it). */
 static SDL_Window *win;
+static SDL_Window *win_bottom;
+static int g_separate;               /* current mode; layout.cfg "windows" is the saved choice */
+static int g_joined_w, g_joined_h;   /* joined window size (points), restored when joining again */
+static int g_last_two_preset = LAYOUT_DEFAULT;  /* separate F2: "both windows" returns to it */
+static uint64_t g_geom_dirty_ns;     /* a separate window moved/resized: save once it settles */
 static SDL_GLContext ctx;
 static PlatConfig cfg;
 static PlatInput in;
@@ -105,6 +115,10 @@ static int g_layout_editing;
 static char g_layout_base_title[256];
 static SDL_Cursor *g_layout_cursor[4];   /* default, move, nwse, nesw */
 static void plat_layout_title(void);
+static int plat_windows_init(void);
+static void plat_set_windows(int separate, int save);
+static void plat_layout_changed(void);
+static void plat_layout_cursor(int which);
 
 typedef struct { GLuint fbo, color, depth; int w, h; } Target;
 static Target screens[2];
@@ -163,27 +177,26 @@ int plat_init(const char *title, const PlatConfig *c) {
     /* the window needs no depth/stencil: the game renders into the screen targets */
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
-    win = SDL_CreateWindow(title, TOP_W * cfg.scale, SCREEN_H * 2 * cfg.scale,
-                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-    if (!win) {
-        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
-        return -1;
-    }
     snprintf(g_layout_base_title, sizeof g_layout_base_title, "%s", title);
     layout_load(&g_layout_cfg, NULL);  /* defaults if there is no layout.cfg yet */
-    plat_layout_title();
+    g_separate = g_layout_cfg.separate;
+    const char *wm = getenv("ALBW_WINDOWS");  /* for this run only: not written to layout.cfg */
+    if (wm && *wm) {
+        int v = layout_windows_from_key(wm);
+        if (v >= 0) g_separate = v;
+        else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
+    }
+    if (g_layout_cfg.preset != LAYOUT_TOP_ONLY && g_layout_cfg.preset != LAYOUT_BOTTOM_ONLY)
+        g_last_two_preset = g_layout_cfg.preset;
+    g_joined_w = TOP_W * cfg.scale;
+    g_joined_h = SCREEN_H * 2 * cfg.scale;
+    if (plat_windows_init()) return -1;
     ctx = SDL_GL_CreateContext(win);
     if (!ctx) {
         fprintf(stderr, "Could not create an OpenGL 3.3 core context (%s).\n"
                 "This port needs OpenGL 3.3: any Intel GPU since 2011 (HD 2000+), AMD since 2009 (HD 5000+)\n"
                 "or NVIDIA since 2008 (GeForce 400+), with Mesa or the vendor driver.\n", SDL_GetError());
         return -1;
-    }
-    /* vsync: adaptive if the driver has it, else on, else off */
-    if (cfg.vsync) {
-        if (!SDL_GL_SetSwapInterval(-1) && !SDL_GL_SetSwapInterval(1)) SDL_GL_SetSwapInterval(0);
-    } else {
-        SDL_GL_SetSwapInterval(0);
     }
     if (gl_load((void *(*)(const char *))SDL_GL_GetProcAddress)) return -1;
     GLint major = 0, minor = 0;
@@ -203,12 +216,17 @@ int plat_init(const char *title, const PlatConfig *c) {
     target_init(&screens[SCREEN_BOTTOM], BOTTOM_W * cfg.render_scale, SCREEN_H * cfg.render_scale);
     blit_prog = gl_program(BLIT_VS, BLIT_FS);
     glGenVertexArrays(1, &blit_vao);
+    /* separate: the bottom screen's window (shares ctx); sets the swap intervals in both modes */
+    plat_set_windows(g_separate, 0);
     next_frame_ns = plat_ticks_ns();
     return 0;
 }
 
 void plat_shutdown(void) {
     input_shutdown();
+    if (g_geom_dirty_ns && layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());
+    if (win && ctx) SDL_GL_MakeCurrent(win, ctx);
+    if (win_bottom) SDL_DestroyWindow(win_bottom);
     if (ctx) SDL_GL_DestroyContext(ctx);
     if (win) SDL_DestroyWindow(win);
     SDL_Quit();
@@ -216,13 +234,265 @@ void plat_shutdown(void) {
 
 uint64_t plat_ticks_ns(void) { return SDL_GetTicksNS(); }
 
+/* ------------------------------------------------------------------ window mode
+ * Separate (default): the top screen in its own window (400x240 x scale), the bottom screen in
+ * another (320x240 x scale), each resizable, the screen letterboxed in it; the mouse touches the
+ * bottom screen in the bottom window. Joined: one window, laid out by the presets / custom
+ * layout below, exactly as before separate windows existed.
+ *   F5              join / separate the windows (saved in layout.cfg "windows")
+ *   ALBW_WINDOWS=separate|joined   overrides layout.cfg for one run (not saved unless F5 is used)
+ * With separate windows the presets that place two screens in one window have no effect (they
+ * stay the joined layout); top_only / bottom_only hide the other screen's window, and F2 cycles
+ * both windows -> top only -> bottom only. F3 joins the windows and opens the layout editor; F4
+ * (swap) and Ctrl+drag only apply to the joined window. Keyboard, controllers, the frontend
+ * menu binding and the F-keys work from either window (SDL keyboard state is global); closing
+ * either window quits. Each separate window's size (and position, where the windowing system
+ * reports one: not Wayland) is remembered in layout.cfg. */
+
+#define PLAT_WINDOW_FLAGS (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY)
+
+static SDL_Window *plat_window_of(int screen) { return screen == SCREEN_TOP ? win : win_bottom; }
+
+/* Wayland neither reports nor lets clients choose window positions */
+static int plat_pos_known(void) {
+    const char *d = SDL_GetCurrentVideoDriver();
+    return !d || strcmp(d, "wayland") != 0;
+}
+
+static void plat_separate_size(int s, int *w, int *h) {
+    const LayoutWindowGeom *g = &g_layout_cfg.window[s];
+    if (g->has_size) {
+        *w = g->w;
+        *h = g->h;
+    } else {
+        *w = (s == SCREEN_TOP ? TOP_W : BOTTOM_W) * cfg.scale;
+        *h = SCREEN_H * cfg.scale;
+    }
+}
+
+/* a saved position is used only if the window would still be on a connected display */
+static int plat_saved_pos(int s, int *x, int *y) {
+    const LayoutWindowGeom *g = &g_layout_cfg.window[s];
+    if (!g->has_pos || !plat_pos_known()) return 0;
+    int w, h, n = 0, ok = 0;
+    plat_separate_size(s, &w, &h);
+    SDL_DisplayID *ids = SDL_GetDisplays(&n);
+    for (int i = 0; ids && i < n && !ok; i++) {
+        SDL_Rect r;
+        int cx = g->x + w / 2;
+        if (SDL_GetDisplayUsableBounds(ids[i], &r) && cx >= r.x && cx < r.x + r.w && g->y >= r.y && g->y < r.y + r.h) ok = 1;
+    }
+    SDL_free(ids);
+    if (ok) {
+        *x = g->x;
+        *y = g->y;
+    }
+    return ok;
+}
+
+static void plat_set_size_restored(SDL_Window *w, int ww, int wh) {
+    if (SDL_GetWindowFlags(w) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN)) SDL_RestoreWindow(w);
+    SDL_SetWindowSize(w, ww, wh);
+}
+
+/* First window: the joined window, or the top screen's window. Created hidden so that it can be
+ * placed before it is mapped (window managers honour a position best at map time). */
+static int plat_windows_init(void) {
+    int w = g_joined_w, h = g_joined_h, x, y;
+    if (g_separate) plat_separate_size(SCREEN_TOP, &w, &h);
+    win = SDL_CreateWindow(g_layout_base_title, w, h, PLAT_WINDOW_FLAGS | SDL_WINDOW_HIDDEN);
+    if (!win) {
+        fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
+        return -1;
+    }
+    if (g_separate && plat_saved_pos(SCREEN_TOP, &x, &y)) {
+        SDL_SetWindowPosition(win, x, y);
+    } else if (g_separate && plat_pos_known()) {
+        /* first separate run: centre the pair (top above bottom) on the primary display */
+        int bw, bh;
+        SDL_Rect u;
+        plat_separate_size(SCREEN_BOTTOM, &bw, &bh);
+        int pair_h = h + bh + 2 * 32;   /* both windows + typical title bars (positions are the client area's) */
+        if (SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &u) && pair_h <= u.h)
+            SDL_SetWindowPosition(win, u.x + (u.w - w) / 2, u.y + (u.h - pair_h) / 2 + 32);
+        else
+            SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    }
+    if (!g_separate || layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) SDL_ShowWindow(win);
+    return 0;
+}
+
+/* default place of the bottom window: under the top one (centred), or to its right if the
+ * display has no room below */
+static void plat_place_bottom(void) {
+    int x, y;
+    if (plat_saved_pos(SCREEN_BOTTOM, &x, &y)) {
+        SDL_SetWindowPosition(win_bottom, x, y);
+        return;
+    }
+    if (!plat_pos_known()) return;
+    int tx, ty, tw, th, bw, bh, bt = 0, bl = 0, bb = 0, br = 0;
+    SDL_SyncWindow(win);  /* the window manager has placed (and decorated) the top window */
+    SDL_GetWindowPosition(win, &tx, &ty);
+    SDL_GetWindowSize(win, &tw, &th);
+    SDL_GetWindowSize(win_bottom, &bw, &bh);
+    if (!SDL_GetWindowBordersSize(win, &bt, &bl, &bb, &br)) bt = 30;  /* unknown: a typical title bar */
+    x = tx + (tw - bw) / 2;
+    y = ty + th + bb + bt;   /* the bottom window's title bar just below the top window's frame */
+    SDL_Rect u;
+    SDL_DisplayID d = SDL_GetDisplayForWindow(win);
+    if (d && SDL_GetDisplayUsableBounds(d, &u) && y + bh > u.y + u.h) {
+        x = tx + tw + br + bl;
+        y = ty;
+    }
+    SDL_SetWindowPosition(win_bottom, x, y);
+}
+
+/* Swap intervals: only one window waits for vsync (the top one, or the bottom one while the top
+ * is hidden); the other presents immediately, so two swaps per frame never wait twice. */
+static void plat_apply_vsync(void) {
+    SDL_Window *primary = win;
+    if (g_separate && win_bottom && !layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) primary = win_bottom;
+    SDL_Window *ws[2] = {win, win_bottom};
+    for (int i = 0; i < 2; i++) {
+        if (!ws[i]) continue;
+        SDL_GL_MakeCurrent(ws[i], ctx);
+        if (ws[i] == primary && cfg.vsync) {  /* adaptive if the driver has it, else on, else off */
+            if (!SDL_GL_SetSwapInterval(-1) && !SDL_GL_SetSwapInterval(1)) SDL_GL_SetSwapInterval(0);
+        } else {
+            SDL_GL_SetSwapInterval(0);
+        }
+    }
+    SDL_GL_MakeCurrent(win, ctx);
+}
+
+/* separate: show the windows of the screens top_only / bottom_only leave visible */
+static void plat_windows_visibility(void) {
+    if (!g_separate || !win_bottom) {
+        SDL_ShowWindow(win);
+        return;
+    }
+    SDL_Window *focus = SDL_GetKeyboardFocus();
+    for (int s = 0; s < 2; s++) {
+        SDL_Window *w = plat_window_of(s);
+        if (layout_separate_visible(&g_layout_cfg, s)) SDL_ShowWindow(w);
+        else SDL_HideWindow(w);
+    }
+    /* keep the keyboard on one of our windows when the focused one was hidden */
+    for (int s = 0; s < 2; s++)
+        if (focus == plat_window_of(s) && !layout_separate_visible(&g_layout_cfg, s))
+            SDL_RaiseWindow(plat_window_of(1 - s));
+}
+
+/* Switch between joined and separate. save: also make it the saved choice (F5); at start-up the
+ * mode comes from layout.cfg / ALBW_WINDOWS and nothing is written. */
+static void plat_set_windows(int separate, int save) {
+    int was = g_separate && win_bottom;
+    SDL_Window *focus = SDL_GetKeyboardFocus();
+    int had_focus = focus && (focus == win || focus == win_bottom);
+    if (separate && !was) {
+        if (win_bottom == NULL && !(SDL_GetWindowFlags(win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN)) &&
+            !g_separate)
+            SDL_GetWindowSize(win, &g_joined_w, &g_joined_h);   /* runtime split: remember the joined size */
+        if (g_layout_editing) {
+            g_layout_editing = 0;
+            layout_edit_end(&g_layout_edit);
+            plat_layout_cursor(0);
+        }
+        int bw, bh, x, y;
+        plat_separate_size(SCREEN_BOTTOM, &bw, &bh);
+        win_bottom = SDL_CreateWindow(g_layout_base_title, bw, bh, PLAT_WINDOW_FLAGS | SDL_WINDOW_HIDDEN);
+        if (!win_bottom) {
+            fprintf(stderr, "SDL_CreateWindow (bottom screen): %s; keeping one window\n", SDL_GetError());
+            g_separate = 0;
+        } else {
+            if (!g_separate) {   /* runtime split: the joined window becomes the top screen's window */
+                int tw, th;
+                plat_separate_size(SCREEN_TOP, &tw, &th);
+                plat_set_size_restored(win, tw, th);
+                if (plat_saved_pos(SCREEN_TOP, &x, &y)) SDL_SetWindowPosition(win, x, y);
+            }
+            g_separate = 1;
+            SDL_SetWindowMinimumSize(win, TOP_W / 4, SCREEN_H / 4);
+            SDL_SetWindowMinimumSize(win_bottom, BOTTOM_W / 4, SCREEN_H / 4);
+            plat_place_bottom();
+        }
+    } else if (!separate && (was || g_separate)) {
+        SDL_GL_MakeCurrent(win, ctx);   /* never leave the context current on a destroyed window */
+        if (win_bottom) SDL_DestroyWindow(win_bottom);
+        win_bottom = NULL;
+        g_separate = 0;
+        plat_set_size_restored(win, g_joined_w, g_joined_h);
+    }
+    plat_windows_visibility();
+    /* keep the keyboard on our side: window managers may focus the new bottom window, or another
+     * application when the focused bottom window goes away */
+    if (had_focus) {
+        SDL_Window *keep = focus == win_bottom ? win_bottom : win;   /* win_bottom is NULL once joined */
+        if (g_separate && !layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) keep = win_bottom;
+        SDL_RaiseWindow(keep);
+    }
+    plat_apply_vsync();
+    if (save) {
+        g_layout_cfg.separate = g_separate;
+        plat_layout_changed();
+    } else {
+        plat_layout_title();
+    }
+}
+
+/* the layout inside the window of one separate screen */
+static void plat_window_layout(int s, Layout *l) {
+    int ww, wh;
+    SDL_GetWindowSizeInPixels(plat_window_of(s), &ww, &wh);
+    layout_compute_single(&g_layout_cfg, s, ww, wh, l);
+}
+
+/* separate window moved / resized: remember it (layout.cfg, written once it settles) */
+static void plat_window_geom_event(SDL_WindowID id) {
+    if (!g_separate) return;
+    for (int s = 0; s < 2; s++) {
+        SDL_Window *w = plat_window_of(s);
+        if (!w || SDL_GetWindowID(w) != id) continue;
+        if (SDL_GetWindowFlags(w) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_HIDDEN))
+            return;
+        LayoutWindowGeom g = g_layout_cfg.window[s];
+        SDL_GetWindowSize(w, &g.w, &g.h);
+        g.has_size = 1;
+        if (plat_pos_known()) {
+            SDL_GetWindowPosition(w, &g.x, &g.y);
+            g.has_pos = 1;
+        }
+        if (memcmp(&g, &g_layout_cfg.window[s], sizeof g)) {
+            g_layout_cfg.window[s] = g;
+            g_geom_dirty_ns = plat_ticks_ns();
+        }
+    }
+}
+
+/* separate F2: both windows -> top only -> bottom only (Shift: backwards). "Both" restores the
+ * two-screen preset of the joined window, so the joined layout is not lost on the way. */
+static void plat_separate_cycle(int back) {
+    int p = g_layout_cfg.preset, idx = p == LAYOUT_TOP_ONLY ? 1 : p == LAYOUT_BOTTOM_ONLY ? 2 : 0;
+    if (idx == 0) g_last_two_preset = p;
+    static const int ONE[3] = {-1, LAYOUT_TOP_ONLY, LAYOUT_BOTTOM_ONLY};
+    idx = (idx + (back ? 2 : 1)) % 3;
+    g_layout_cfg.preset = idx ? ONE[idx] : g_last_two_preset;
+    plat_windows_visibility();
+    plat_apply_vsync();
+    plat_layout_changed();
+}
+
 /* ------------------------------------------------------------------ screen layout (layout.c)
- * Where the two screens go in the window: presets or a custom layout, saved in layout.cfg.
+ * Where the two screens go in the joined window: presets or a custom layout, saved in layout.cfg.
+ * (F5 and the separate-window meaning of F2-F4: see the window mode section above.)
+ *   F1              frontend menu (input.cfg binding; input.c)
  *   F2 / Shift+F2   next / previous preset
  *   F3              custom layout editor on/off (Esc also leaves it). In the editor:
  *                   left drag = move a screen, drag a corner or right drag = resize,
  *                   wheel = scale, Shift = free aspect, Alt = no snapping
  *   F4              swap the screens (presets) / bring the other screen to the front (custom)
+ *   F5              separate windows / one joined window
  *   Ctrl + left/right drag   move/resize a screen without entering the editor (-> custom) */
 
 #define LAYOUT_HANDLE 10.0f      /* corner handle size, window points */
@@ -235,6 +505,13 @@ static void plat_layout_update(void) {
 
 static void plat_layout_title(void) {
     char t[512];
+    if (g_separate && win_bottom) {
+        snprintf(t, sizeof t, "%s - Top", g_layout_base_title);
+        SDL_SetWindowTitle(win, t);
+        snprintf(t, sizeof t, "%s - Bottom", g_layout_base_title);
+        SDL_SetWindowTitle(win_bottom, t);
+        return;
+    }
     if (!g_layout_editing && g_layout_cfg.preset == LAYOUT_DEFAULT && !g_layout_cfg.swap) snprintf(t, sizeof t, "%s", g_layout_base_title);
     else snprintf(t, sizeof t, "%s  [%s%s]%s", g_layout_base_title, layout_preset_name(g_layout_cfg.preset),
                   g_layout_cfg.swap && g_layout_cfg.preset != LAYOUT_CUSTOM ? ", swapped" : "",
@@ -262,6 +539,14 @@ static int plat_layout_event(const SDL_Event *e) {
     SDL_Keymod mod = SDL_GetModState();
     switch (e->type) {
     case SDL_EVENT_KEY_DOWN:
+        if (e->key.key == SDLK_F5) {
+            if (!e->key.repeat) plat_set_windows(!g_separate, 1);
+            return 1;
+        }
+        if (e->key.key == SDLK_F2 && g_separate) {
+            if (!e->key.repeat) plat_separate_cycle((mod & SDL_KMOD_SHIFT) != 0);
+            return 1;
+        }
         if (e->key.key == SDLK_F2) {
             if (!e->key.repeat) {
                 int n = LAYOUT_PRESET_COUNT, step = (mod & SDL_KMOD_SHIFT) ? n - 1 : 1;
@@ -272,6 +557,7 @@ static int plat_layout_event(const SDL_Event *e) {
         }
         if (e->key.key == SDLK_F3) {
             if (!e->key.repeat) {
+                if (g_separate) plat_set_windows(0, 1);  /* the editor arranges the joined window */
                 g_layout_editing = !g_layout_editing;
                 plat_layout_update();
                 if (g_layout_editing) layout_make_custom(&g_layout_cfg, &g_layout);
@@ -279,6 +565,10 @@ static int plat_layout_event(const SDL_Event *e) {
                 plat_layout_cursor(0);
                 plat_layout_changed();
             }
+            return 1;
+        }
+        if (e->key.key == SDLK_F4 && g_separate) {
+            if (!e->key.repeat) fprintf(stderr, "layout: F4 (swap) applies to the joined window (F5 joins)\n");
             return 1;
         }
         if (e->key.key == SDLK_F4) {
@@ -297,6 +587,15 @@ static int plat_layout_event(const SDL_Event *e) {
             return 1;
         }
         return 0;
+    case SDL_EVENT_WINDOW_MOVED:
+    case SDL_EVENT_WINDOW_RESIZED:
+        plat_window_geom_event(e->window.windowID);
+        return 0;
+    default:
+        break;
+    }
+    if (g_separate) return 0;   /* the mouse only touches the bottom screen (plat_poll) */
+    switch (e->type) {
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (e->button.button != SDL_BUTTON_LEFT && e->button.button != SDL_BUTTON_RIGHT) return g_layout_editing;
         if (!g_layout_editing && !(mod & SDL_KMOD_CTRL)) return 0;
@@ -378,25 +677,41 @@ int plat_poll(void) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (plat_layout_event(&e)) continue;  /* layout keys (F2-F4) and layout editing with the mouse */
-        if (e.type == SDL_EVENT_QUIT) return 0;
+        if (e.type == SDL_EVENT_QUIT || e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) return 0;  /* either window */
         input_handle_event(&e);  /* controller hotplug, MENU/QUIT keys, binding capture */
     }
     /* buttons (keyboard kb, controllers gp), circle pad (+ its direction bits cp), C-stick,
      * motion, frontend menu: input.c, mapping from input.cfg */
     uint32_t kb, gp, cp;
     if (!input_update(&in, &kb, &gp, &cp)) return 0;
+    if (g_geom_dirty_ns && plat_ticks_ns() - g_geom_dirty_ns > 500000000ull) {  /* moves settled */
+        g_geom_dirty_ns = 0;
+        if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());
+    }
 
-    /* touch: left mouse button on the bottom screen, wherever the layout draws it. A touch starts
-     * inside the screen and, while held, follows the pointer clamped to the screen's edges. */
+    /* touch: left mouse button on the bottom screen, wherever the layout draws it (separate: in
+     * the bottom window, in its own coordinates). A touch starts inside the screen and, while held,
+     * follows the pointer clamped to the screen's edges (SDL captures the mouse while a button is
+     * held, so the coordinates stay relative to the window the press started in). */
     static int touching;
     float mx, my;
     SDL_MouseButtonFlags mb = SDL_GetMouseState(&mx, &my);
-    float pd = SDL_GetWindowPixelDensity(win);
-    int tx, ty;
-    plat_layout_update();
-    int inside = layout_to_screen(&g_layout, SCREEN_BOTTOM, mx * pd, my * pd, &tx, &ty);
-    int pressed = (mb & SDL_BUTTON_LMASK) && !g_layout_editing && g_layout_edit.mode == LAYOUT_EDIT_NONE &&
+    int tx, ty, inside, pressed;
+    if (g_separate) {
+        SDL_Window *mw = SDL_GetMouseFocus();
+        Layout bl;
+        int vis = win_bottom && mw == win_bottom && layout_separate_visible(&g_layout_cfg, SCREEN_BOTTOM);
+        float pd = vis ? SDL_GetWindowPixelDensity(win_bottom) : 1;
+        if (vis) plat_window_layout(SCREEN_BOTTOM, &bl);
+        inside = vis && layout_to_screen(&bl, SCREEN_BOTTOM, mx * pd, my * pd, &tx, &ty);
+        pressed = vis && (mb & SDL_BUTTON_LMASK);
+    } else {
+        float pd = SDL_GetWindowPixelDensity(win);
+        plat_layout_update();
+        inside = layout_to_screen(&g_layout, SCREEN_BOTTOM, mx * pd, my * pd, &tx, &ty);
+        pressed = (mb & SDL_BUTTON_LMASK) && !g_layout_editing && g_layout_edit.mode == LAYOUT_EDIT_NONE &&
                   g_layout.visible[SCREEN_BOTTOM];
+    }
     touching = pressed && (inside || touching);
     in.touch = touching;
     if (in.touch) {
@@ -462,11 +777,10 @@ static void shot_maybe(void) {
     }
 }
 
-void plat_end_frame(void) {
-    shot_maybe();
-    plat_layout_update();
+/* draw the screens of layout l into the current window's default framebuffer */
+static void plat_composite(const Layout *l) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, g_layout.ww, g_layout.wh);
+    glViewport(0, 0, l->ww, l->wh);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
@@ -477,10 +791,10 @@ void plat_end_frame(void) {
     GLint loc = glGetUniformLocation(blit_prog, "rect");
     GLint filter = g_layout_cfg.linear_filter ? GL_LINEAR : GL_NEAREST;
     for (int k = 0; k < 2; k++) {
-        int i = g_layout.order[k];
-        if (!g_layout.visible[i]) continue;
+        int i = l->order[k];
+        if (!l->visible[i]) continue;
         float rect[4];
-        layout_rect_ndc(&g_layout, i, rect);
+        layout_rect_ndc(l, i, rect);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, screens[i].color);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
@@ -488,11 +802,37 @@ void plat_end_frame(void) {
         glUniform4fv(loc, 1, rect);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
-    if (g_layout_editing || g_layout_edit.mode != LAYOUT_EDIT_NONE) plat_layout_overlay();
+}
+
+void plat_end_frame(void) {
+    shot_maybe();
+    SDL_Window *last;   /* presented after the block below starts: may wait for vsync */
+    if (!g_separate) {
+        plat_layout_update();
+        plat_composite(&g_layout);
+        if (g_layout_editing || g_layout_edit.mode != LAYOUT_EDIT_NONE) plat_layout_overlay();
+        last = win;
+    } else {
+        /* one window per screen, one shared context: the window that does not wait for vsync
+         * (plat_apply_vsync) is drawn and presented first, then the one that does */
+        int vis[2] = {layout_separate_visible(&g_layout_cfg, SCREEN_TOP), layout_separate_visible(&g_layout_cfg, SCREEN_BOTTOM)};
+        int order[2] = {vis[SCREEN_TOP] ? SCREEN_BOTTOM : SCREEN_TOP, vis[SCREEN_TOP] ? SCREEN_TOP : SCREEN_BOTTOM};
+        last = NULL;
+        for (int k = 0; k < 2; k++) {
+            int s = order[k];
+            if (!vis[s]) continue;
+            Layout l;
+            SDL_GL_MakeCurrent(plat_window_of(s), ctx);
+            plat_window_layout(s, &l);
+            plat_composite(&l);
+            if (k == 0) SDL_GL_SwapWindow(plat_window_of(s));
+            else last = plat_window_of(s);
+        }
+    }
     /* swap + pacing block the calling thread; when that is a game thread (os.c app-core
      * scheduling) the other game threads run meanwhile, as during a 3DS vblank wait */
     albw_sched_block_begin();
-    SDL_GL_SwapWindow(win);
+    if (last) SDL_GL_SwapWindow(last);
 
     /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate) */
     next_frame_ns += 16666667ull;

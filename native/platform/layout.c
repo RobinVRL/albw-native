@@ -41,6 +41,7 @@ int layout_preset_from_key(const char *k) {
 
 void layout_defaults(LayoutConfig *c) {
     memset(c, 0, sizeof *c);
+    c->separate = 1;   /* one window per screen unless layout.cfg says "windows joined" */
     c->preset = LAYOUT_DEFAULT;
     c->linear_filter = 1;
     c->large_ratio = 2.5f;
@@ -162,6 +163,27 @@ void layout_compute(const LayoutConfig *c, int ww, int wh, Layout *l) {
     for (int i = 0; i < 2; i++)
         l->r[i] = l->visible[i] ? pixel_align((LayoutRect){ox + r[i].x * s, oy + r[i].y * s, r[i].w * s, r[i].h * s})
                                 : (LayoutRect){0, 0, 0, 0};
+}
+
+void layout_compute_single(const LayoutConfig *c, int screen, int ww, int wh, Layout *out) {
+    /* the one-screen presets already letterbox a single screen: reuse them */
+    LayoutConfig d = *c;
+    d.preset = screen == LAYOUT_SCREEN_TOP ? LAYOUT_TOP_ONLY : LAYOUT_BOTTOM_ONLY;
+    d.swap = 0;
+    layout_compute(&d, ww, wh, out);
+}
+
+int layout_separate_visible(const LayoutConfig *c, int screen) {
+    if (c->preset == LAYOUT_TOP_ONLY) return screen == LAYOUT_SCREEN_TOP;
+    if (c->preset == LAYOUT_BOTTOM_ONLY) return screen == LAYOUT_SCREEN_BOTTOM;
+    return 1;
+}
+
+int layout_windows_from_key(const char *k) {
+    if (!k) return -1;
+    if (!strcmp(k, "separate")) return 1;
+    if (!strcmp(k, "joined")) return 0;
+    return -1;
 }
 
 int layout_hit(const Layout *l, float x, float y) {
@@ -452,7 +474,18 @@ int layout_load(LayoutConfig *c, const char *path) {
         if (sscanf(line, "%63s %63s %n", key, arg, &n) < 2) continue;
         const char *rest = line + n;
         int iv = atoi(arg);
-        if (!strcmp(key, "preset")) { int p = layout_preset_from_key(arg); if (p >= 0) c->preset = p; }
+        if (!strcmp(key, "windows")) { int w = layout_windows_from_key(arg); if (w >= 0) c->separate = w; }
+        else if (!strcmp(key, "window_size") || !strcmp(key, "window_pos")) {
+            int s = !strcmp(arg, "top") ? 0 : !strcmp(arg, "bottom") ? 1 : -1, a, b;
+            if (s < 0 || sscanf(rest, "%d %d", &a, &b) != 2) continue;
+            LayoutWindowGeom *g = &c->window[s];
+            if (key[7] == 's') {
+                if (a >= 32 && b >= 32 && a <= 16384 && b <= 16384) g->w = a, g->h = b, g->has_size = 1;
+            } else {
+                g->x = a, g->y = b, g->has_pos = 1;
+            }
+        }
+        else if (!strcmp(key, "preset")) { int p = layout_preset_from_key(arg); if (p >= 0) c->preset = p; }
         else if (!strcmp(key, "swap")) c->swap = iv != 0;
         else if (!strcmp(key, "integer_scale")) c->integer_scale = iv != 0;
         else if (!strcmp(key, "linear_filter")) c->linear_filter = iv != 0;
@@ -484,9 +517,9 @@ int layout_save(const LayoutConfig *c, const char *path) {
     char r[32];
     layout_fmt_float(r, sizeof r, clamp_ratio(c->large_ratio));
     fprintf(f, "# ALBW native port: screen layout (shared by the SDL and Qt frontends; see native/platform/layout.h)\n"
-               "preset %s\nswap %d\ninteger_scale %d\nlinear_filter %d\nlarge_ratio %s\nkeep_aspect %d\nsnap %d\n"
+               "windows %s\npreset %s\nswap %d\ninteger_scale %d\nlinear_filter %d\nlarge_ratio %s\nkeep_aspect %d\nsnap %d\n"
                "custom_front %s\n",
-            layout_preset_key(c->preset), c->swap, c->integer_scale, c->linear_filter, r, c->keep_aspect, c->snap,
+            c->separate ? "separate" : "joined", layout_preset_key(c->preset), c->swap, c->integer_scale, c->linear_filter, r, c->keep_aspect, c->snap,
             c->custom_front ? "bottom" : "top");
     for (int s = 0; s < 2; s++) {
         char v[4][32];
@@ -495,6 +528,11 @@ int layout_save(const LayoutConfig *c, const char *path) {
         layout_fmt_float(v[2], 32, c->custom[s].w);
         layout_fmt_float(v[3], 32, c->custom[s].h);
         fprintf(f, "custom %s %s %s %s %s %d\n", s ? "bottom" : "top", v[0], v[1], v[2], v[3], c->custom_visible[s]);
+    }
+    for (int s = 0; s < 2; s++) {
+        const LayoutWindowGeom *g = &c->window[s];
+        if (g->has_size) fprintf(f, "window_size %s %d %d\n", s ? "bottom" : "top", g->w, g->h);
+        if (g->has_pos) fprintf(f, "window_pos %s %d %d\n", s ? "bottom" : "top", g->x, g->y);
     }
     if (fclose(f)) return -1;
     return rename(tmp, path) ? -1 : 0;
