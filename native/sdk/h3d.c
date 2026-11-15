@@ -487,6 +487,9 @@ static void dec_finish(Dec *d) {
         fprintf(stderr, "h3d: frag blob %#x: 100 %08x 101 %08x 102 %08x 103 %08x 104 %08x 107 %08x | F8 %08x F9 %08x FA %08x FB %08x\n",
                 d->word_addr, d->reg[0x100], d->reg[0x101], d->reg[0x102], d->reg[0x103], d->reg[0x104], d->reg[0x107],
                 d->reg[0xF8], d->reg[0xF9], d->reg[0xFA], d->reg[0xFB]);
+    if (getenv("ALBW_H3D_FRAGTRACE") && (d->written[0x4D] || d->written[0x4E] || d->written[0x6D]))
+        fprintf(stderr, "h3d: depthmap blob %#x: 4D %08x 4E %08x 6D %08x (written %d %d %d)\n", d->word_addr, d->reg[0x4D],
+                d->reg[0x4E], d->reg[0x6D], d->written[0x4D], d->written[0x4E], d->written[0x6D]);
     if (d->written[0x100] || d->written[0x101] || d->written[0x103]) {
         uint32_t b = d->reg[0x101], mode = d->reg[0x100];
         ROp op = op_new(ROP_BLEND);

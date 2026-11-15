@@ -494,6 +494,15 @@ static void dump_draw(const H3dVtx *v, const Ibuf *ib, const ROp *op, const uint
     fprintf(stderr, "h3d-dump:   fraglight enable %u n %u amb %u %u %u config %u lut_off %#x\n", fe->enable, fe->nlights,
             fe->ambient[0], fe->ambient[1], fe->ambient[2], fe->config, fe->lut_off);
     fraglight_debug_print(stderr);
+    if (getenv("ALBW_H3D_DUMP_ALL")) {
+        for (int r = 0; r < 96; r++)
+            fprintf(stderr, "h3d-dump:   C%d = %g %g %g %g\n", r, c[4 * r], c[4 * r + 1], c[4 * r + 2], c[4 * r + 3]);
+        const RFragState *f = render_frag_state();
+        fprintf(stderr, "h3d-dump:   frag blend %u logic %u/%u atest %u/%u/%u depth %u/%u/%u cmask %x stencil %u cull %u range %g %g poly %u %g\n",
+                f->blend_enable, f->logic_enable, f->logic_op, f->alpha_test, f->alpha_func, f->alpha_ref, f->depth_test,
+                f->depth_func, f->depth_write, f->color_mask, f->stencil_test, f->cull, f->depth_near, f->depth_far,
+                f->poly_offset_enable, f->poly_offset_units);
+    }
     static const int regs[] = {3, 6, 7, 8, 10, 11, 20, 21, 25, 26, 27, 86, 87, 88, 89, 90, 91, 92};
     for (unsigned k = 0; k < sizeof regs / sizeof *regs; k++) {
         const float *r = c + 4 * regs[k];
@@ -523,10 +532,47 @@ static void dump_draw(const H3dVtx *v, const Ibuf *ib, const ROp *op, const uint
 /* ALBW_H3D_SNAP=<k>[,<k>...]: after the k-th h3d draw, write the colour target (the shared render
  * buffer 0x1F000080) as ALBW_SHOT_DIR/h3d_<k>.ppm, i.e. what the 3D pass drew before any transfer
  * or later pass (debug only) */
+static void snap_maybe_write(const char *tag, int var) {
+    int w = 0, h = 0;
+    if (!render_read_surface(0x1F000080u, NULL, &w, &h) || w <= 0 || h <= 0) return;
+    uint8_t *px = malloc((size_t)w * h * 4);
+    if (!px || !render_read_surface(0x1F000080u, px, &w, &h)) { free(px); return; }
+    const char *dir = getenv("ALBW_SHOT_DIR");
+    char path[512];
+    snprintf(path, sizeof path, "%s/h3dv_%s_v%d.ppm", dir ? dir : ".", tag, var);
+    FILE *f = fopen(path, "wb");
+    if (f) {
+        fprintf(f, "P6\n%d %d\n255\n", w, h);
+        for (int y = h - 1; y >= 0; y--)
+            for (int x = 0; x < w; x++) fwrite(px + ((size_t)y * w + x) * 4, 1, 3, f);
+        fclose(f);
+    }
+    free(px);
+}
+
 static void snap_maybe(void) {
     static const char *spec;
     static int init;
     if (!init) { init = 1; spec = getenv("ALBW_H3D_SNAP"); }
+    static long from = -2;
+    static int last_var = -1, nsaved;
+    if (from == -2) { const char *e = getenv("ALBW_H3D_SNAPFROM"); from = e ? atol(e) : -1; }
+    if (from >= 0 && (long)g_st.draws >= from && nsaved < 24) { /* save at every variant change */
+        int wv = 0;
+        render_current_program(&wv);
+        if (wv != last_var) {
+            last_var = wv;
+            nsaved++;
+            char buf[32];
+            snprintf(buf, sizeof buf, "%u", g_st.draws);
+            static char spec2[64];
+            snprintf(spec2, sizeof spec2, "%s", buf);
+            const char *keep = spec;
+            spec = spec2;
+            snap_maybe_write(buf, wv);
+            spec = keep;
+        }
+    }
     if (!spec) return;
     char want[32];
     snprintf(want, sizeof want, "%u", g_st.draws);
@@ -570,6 +616,14 @@ static void draw(const ROp *op) {
     /* the model's own program: the material's DefaultShader variant, unless a shader bind of an
        h3d program (ROP_PROGRAM with a registered DVLE) selected one since */
     if (render_current_program(NULL) != RPROG_H3D_DEFAULT) render_set_program_variant(RPROG_H3D_DEFAULT, g_mat_variant);
+    static int noat = -2;
+    if (noat == -2) { const char *e = getenv("ALBW_H3D_NOATEST"); noat = e ? atoi(e) : -1; }
+    if (noat >= 0) { /* debug: alpha test off for one variant */
+        int wv = 0;
+        int pr = render_current_program(&wv);
+        if (pr == RPROG_H3D_DEFAULT && wv == noat) { render_frag_state()->alpha_test = 0; render_frag_dirty(); }
+        (void)pr;
+    }
     if (!render_draw_bind()) { pthread_mutex_unlock(&g_mx); g_st.dropped++; return; }
     glBindVertexArray(v->vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->ibo);
@@ -584,16 +638,62 @@ static void draw(const ROp *op) {
         if (a->fixed && a->reg < 12) pVertexAttrib4f(a->reg, a->value[0], a->value[1], a->value[2], a->value[3]);
     }
     dump_draw(v, ib, op, (const uint8_t *)ia);
-    static int white = -1;
-    if (white < 0) white = getenv("ALBW_H3D_WHITE") != NULL;
-    if (white) { /* debug: geometry coverage only (logic op SET, no depth test / culling) */
+    static int white = -1, white_var = -1;
+    int white_now = 1;
+    if (white < 0) {
+        const char *e = getenv("ALBW_H3D_WHITE");
+        white = e != NULL;
+        if (e && strcmp(e, "1")) white_var = atoi(e); /* =<variant>: only that variant, white */
+    }
+    if (white && white_var >= 0) {
+        int wv = 0;
+        render_current_program(&wv);
+        if (wv != white_var) {
+            if (!getenv("ALBW_H3D_WHITE_KEEP")) { render_draw_done(); pthread_mutex_unlock(&g_mx); return; }
+            white_now = 0;
+        }
+    }
+    static int skipv = -2;
+    if (skipv == -2) { const char *e = getenv("ALBW_H3D_SKIPVAR"); skipv = e ? atoi(e) : -1; }
+    if (skipv >= 0) {
+        int wv = 0;
+        render_current_program(&wv);
+        int sk = wv == skipv;
+        const RFragState *ff = render_frag_state();
+        const char *only = getenv("ALBW_H3D_SKIPKIND"); /* dome: depth always+write; stencil: stencil test; fade: blend 6/7 no depth */
+        if (sk && only) {
+            if (!strcmp(only, "dome")) sk = ff->depth_test && ff->depth_func == 1 && ff->depth_write;
+            else if (!strcmp(only, "stencil")) sk = ff->stencil_test && !(ff->depth_test && ff->depth_func == 1);
+            else if (!strcmp(only, "fade")) sk = !ff->depth_test && !ff->stencil_test;
+        }
+        if (sk) { render_draw_done(); pthread_mutex_unlock(&g_mx); return; }
+    }
+    static int nod = -2, noa = -2;
+    if (nod == -2) { const char *e = getenv("ALBW_H3D_NODEPTH"); nod = e ? atoi(e) : -1; }
+    if (noa == -2) { const char *e = getenv("ALBW_H3D_NOBLENDVAR"); noa = e ? atoi(e) : -1; }
+    if (nod >= 0 || noa >= 0) { /* debug: no depth test / no blending for one variant */
+        int wv = 0;
+        render_current_program(&wv);
+        if (wv == nod) glDisable(GL_DEPTH_TEST);
+        if (wv == noa) glDisable(GL_BLEND);
+        if (wv == nod && getenv("ALBW_H3D_NOCULL")) glDisable(GL_CULL_FACE);
+        if (wv == nod && getenv("ALBW_H3D_NOSTENCIL")) glDisable(0x0B90 /* GL_STENCIL_TEST */);
+        if (wv == nod && getenv("ALBW_H3D_NOLOGIC")) glDisable(0x0BF2);
+        if (wv == nod && getenv("ALBW_H3D_FULLMASK")) {
+            static void (*cm)(GLboolean, GLboolean, GLboolean, GLboolean);
+            if (!cm) cm = (void (*)(GLboolean, GLboolean, GLboolean, GLboolean))SDL_GL_GetProcAddress("glColorMask");
+            if (cm) cm(1, 1, 1, 1);
+        }
+    }
+    if (white && white_now) { /* debug: geometry coverage only (logic op SET, no depth test / culling) */
         static void (*logic)(GLenum);
         if (!logic) logic = (void (*)(GLenum))SDL_GL_GetProcAddress("glLogicOp");
         glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_CULL_FACE);
-        glEnable(0x0BF2 /* GL_COLOR_LOGIC_OP */); if (logic) logic(0x150F /* GL_SET */);
+        glEnable(0x0BF2 /* GL_COLOR_LOGIC_OP */); if (logic) logic(getenv("ALBW_H3D_LOGICCOPY") ? 0x1503 /* GL_COPY */ : 0x150F /* GL_SET */);
     }
     glDrawElements(PRIM[op->u.ext.c % 3], (GLsizei)op->u.ext.b, u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE, 0);
-    if (white) { glDisable(0x0BF2); render_frag_dirty(); }
+    if (white && white_now) glDisable(0x0BF2);
+    if (white || nod >= 0 || noa >= 0) render_frag_dirty();
     render_draw_done();
     pthread_mutex_unlock(&g_mx);
     g_st.draws++;
