@@ -33,6 +33,12 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
 done
 # data symbols the native code uses get defined by the data generator too
 llvm-nm -u --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_syms.txt
+# game globals that a decomp object defines itself (C++ inline/static-init variables, weak 'V'):
+# the generated data must define them too, or the object's copy and the literal-pool references
+# (relocated into the generated data) are two different variables (data_00708A50, a singleton)
+python3 -c "import json;print('\n'.join(json.load(open('$B/decomp/report.json'))['objects']))" > $B/objs_pre.txt
+llvm-nm -A --defined-only @$B/objs_pre.txt 2>/dev/null | awk '$3 ~ /^[VvWw]$/ && $4 ~ /^data_[0-9A-F]{8}$/ {print $4}' \
+    | sort -u >> $B/native_syms.txt
 grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp/ghidra_fallback native/game native/robust native/gameplay native/sdk \
     | sed 's/^&//' | sort -u > $B/addr_taken_pool.txt
 python3 tools/gen_data.py --addr-taken $B/addr_taken_pool.txt --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
