@@ -65,6 +65,8 @@
  * 64-bit: game structures are read through 32-bit fields; addresses are widened (gfx.c keeps GPU
  * memory and the game image below 2 GiB, GetPhysicalAddr is the identity). */
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "../render/font.h"
@@ -349,6 +351,11 @@ static uint32_t *font_block(uint32_t *p, const FontBlock *b) {
  * frame the string is drawn. High. */
 uint32_t *func_0041E948(uint8_t *d, uint32_t *p, uint32_t end, uint8_t *buf) {
     uint32_t n = U16(buf, 4);
+    {   /* ALBW_TEXT_TRACE=1: one line per string-command build (debug aid, boot stop 111) */
+        static int tr = -1;
+        if (tr < 0) { const char *e = getenv("ALBW_TEXT_TRACE"); tr = e && *e == '1'; }
+        if (tr) fprintf(stderr, "text: build buf %p chars %u capacity %u flags %02x\n", (void *)buf, n, U32(buf, 0), U8(buf, 0x41));
+    }
     if (!n) return p;
     WF(d, 0x5FC) = 0.0f;
     B8(d, 0x5F8) = B8(d, 0x5F9) = B8(d, 0x5FA) = B8(d, 0x5FB) = 0;
