@@ -837,15 +837,18 @@ int32_t func_003C97F4(const uint32_t *session, uint32_t *total_size, uint32_t *d
 }
 
 /* USA 003C99A8 (EU 003C9984) fs:USER OpenFile (cmd 0x080201C2).
- * int32 (u32 *session, u32 *out_handle, u32 transaction, u32 pad, u32 archive_lo,
- *        u32 archive_hi, u32 path_type, const void *path, u32 path_size, u32 open_flags,
- *        u32 attributes)
+ * int32 (u32 *session, u32 *out_handle, u32 transaction, u32 archive_lo, u32 archive_hi,
+ *        u32 path_type, const void *path, u32 path_size, u32 open_flags, u32 attributes)
  * asm: cmd[1] = r2; cmd[2..4] = stack0,stack1,stack2; cmd[5] = stack4; cmd[6] = stack5;
- *      cmd[7] = stack6; cmd[9] = stack3 (path buffer); out = cmd[3].  r3 is skipped (u64 archive
- *      handle is 8-aligned on the stack).  Caller: 003C9278 (archive object OpenFile).
+ *      cmd[7] = stack6; cmd[9] = stack3 (path buffer); out = cmd[3].  On ARM r3 is unused (the u64
+ *      archive handle is 8-aligned, so it starts at stack0); at the C level that is no parameter:
+ *      the converted caller 003C9278 (archive object OpenFile) passes 10 arguments, archive handle
+ *      first after the transaction. The earlier 11-parameter form with an explicit `pad` shifted
+ *      every argument by one (archive handle 0, path type = the path pointer): fatal D8E007F7 at
+ *      003CE074 on a first boot (empty save dir), BOOT_LOG64 stop 11.
  * Confidence: high. */
 int32_t func_003C99A8(const uint32_t *session, uint32_t *out_handle, uint32_t transaction,
-                      uint32_t pad, uint32_t archive_lo, uint32_t archive_hi, uint32_t path_type,
+                      uint32_t archive_lo, uint32_t archive_hi, uint32_t path_type,
                       const void *path, uint32_t path_size, uint32_t open_flags,
                       uint32_t attributes) {
     pthread_mutex_lock(&fs_lock);
