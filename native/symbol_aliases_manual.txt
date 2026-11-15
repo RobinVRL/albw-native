@@ -11,3 +11,5 @@ _ZdlPv func_0058FA08
 # PtrArrayImpl::setBuffer as a C name (matched 001066DC.cpp; the C++ users 00688BA4/BD4/C04 call
 # the same address): every call site is `bl 0x10B3EC`
 setBuffer func_0010B3EC
+# data_711F50 (matched 002944CC / 00296B8C / 003045CC): the global at 00711F50, leading zeros dropped (ARM: pool word 00711F50, value loaded)
+data_711F50 data_00711F50
