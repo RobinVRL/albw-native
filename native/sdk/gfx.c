@@ -137,9 +137,14 @@ static uint64_t now_ns(void) {
     return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
 }
 
+void albw_sched_block_begin(void);  /* native/sdk/os.c: other game threads run meanwhile */
+void albw_sched_block_end(void);
+
 static void sleep_ns(uint64_t ns) {
     struct timespec req = {(time_t)(ns / 1000000000ull), (long)(ns % 1000000000ull)}, rem;
+    albw_sched_block_begin();
     while (nanosleep(&req, &rem) != 0 && errno == EINTR) req = rem;
+    albw_sched_block_end();
 }
 
 static bool g_trace;

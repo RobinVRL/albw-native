@@ -22,6 +22,7 @@ void func_00100E60(void);
 void func_00100C18(void);
 void func_00100C90(void);
 void albw_fp_set_3ds_mode(void);   /* native/sdk/os.c */
+void albw_sched_main_thread(void); /* native/sdk/os.c */
 
 struct MainArgs { int argc; char **argv; };
 static int game_main(void *p);
@@ -47,6 +48,9 @@ static int game_main(void *p) {
      * initial FPSCR is not in the game code; 00106314 sets 0x03000000 on every thread it
      * creates). After plat_init: host libraries (SDL, GL drivers) keep their IEEE mode at init. */
     albw_fp_set_3ds_mode();
+    /* this is the game's main thread: it owns the app core from here on (native/sdk/os.md,
+     * "App-core scheduling"; ALBW_SCHED=parallel turns the model off) */
+    albw_sched_main_thread();
 
     fprintf(stderr, "startup: runtime init\n");
     func_00100024();  /* zero .bss (decompiled, harmless) */

@@ -1,5 +1,7 @@
 /* SDL3 + OpenGL 3.3 platform layer. */
 #include "platform.h"
+void albw_sched_block_begin(void);  /* native/sdk/os.c */
+void albw_sched_block_end(void);
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -446,6 +448,9 @@ void plat_end_frame(void) {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
     if (g_layout_editing || g_layout_edit.mode != LAYOUT_EDIT_NONE) plat_layout_overlay();
+    /* swap + pacing block the calling thread; when that is a game thread (os.c app-core
+     * scheduling) the other game threads run meanwhile, as during a 3DS vblank wait */
+    albw_sched_block_begin();
     SDL_GL_SwapWindow(win);
 
     /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate) */
@@ -453,4 +458,5 @@ void plat_end_frame(void) {
     uint64_t now = plat_ticks_ns();
     if (next_frame_ns > now) SDL_DelayNS(next_frame_ns - now);
     else if (now - next_frame_ns > 100000000ull) next_frame_ns = now;
+    albw_sched_block_end();
 }

@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -76,10 +77,16 @@ static struct timespec deadline_after(int64_t ns) {
     return ts;
 }
 
+static void sched_yield_turn(void);
+static void sched_release(void);
+static void sched_acquire(void);
+
 static void sleep_ns(int64_t ns) {
-    if (ns <= 0) { sched_yield(); return; }
+    if (ns <= 0) { sched_yield_turn(); return; }
     struct timespec req = { (time_t)(ns / 1000000000), (long)(ns % 1000000000) }, rem;
+    sched_release();
     while (nanosleep(&req, &rem) != 0 && errno == EINTR) req = rem;
+    sched_acquire();
 }
 
 static void cond_init_monotonic(pthread_cond_t *cv) {
@@ -102,6 +109,157 @@ static uint32_t current_thread_id(void) {
     return t_id;
 }
 
+/* ================================================================== app-core scheduling
+ * The 3DS runs an application's threads on its app core one at a time: the highest-priority
+ * ready thread runs (lower number = higher priority), FIFO among equal priorities, no time
+ * slicing. A running thread gives the CPU away only when it blocks (waits, sleeps, joins),
+ * yields, or wakes / starts a higher-priority thread. The game relies on that ordering (stop 61:
+ * the main thread finished destroying a task's heaps before the lower-priority prepare thread
+ * could run). Native: the same rule as an ownership token per core ("running"), handed over at
+ * exactly those API calls; game threads hold it while executing game code. Threads created on
+ * core 1 (the system core) get their own token, as they ran in parallel on the hardware.
+ * Host threads (SDL audio, rendering, input) have no SchedRec and are never scheduled here;
+ * they may signal game primitives (that makes the woken game thread ready).
+ * ALBW_SCHED=parallel: off (every thread runs freely, the old behaviour) for A/B tests. */
+typedef struct SchedRec {
+    struct SchedRec *next;   /* ready list link */
+    int32_t prio;
+    int core;                /* 0 app core, 1 system core */
+    bool queued;             /* in the ready list */
+    pthread_cond_t cv;
+    uint32_t id;
+} SchedRec;
+
+static pthread_mutex_t g_sched_m = PTHREAD_MUTEX_INITIALIZER;
+static struct { SchedRec *running; SchedRec *ready; } g_core[2];
+static _Thread_local SchedRec *t_sched;
+static int g_sched_mode = -1;  /* -1 unknown, 0 parallel, 1 priority */
+
+static bool sched_on(void) {
+    if (g_sched_mode < 0) {
+        const char *e = getenv("ALBW_SCHED");
+        g_sched_mode = (e && !strcmp(e, "parallel")) ? 0 : 1;
+    }
+    return g_sched_mode == 1;
+}
+
+/* g_sched_m held: insert r into its core's ready list, behind (or, front = true, in front of)
+ * the threads of its own priority */
+static void ready_insert_locked(SchedRec *r, bool front) {
+    SchedRec **pp = &g_core[r->core].ready;
+    while (*pp && ((*pp)->prio < r->prio || (!front && (*pp)->prio == r->prio))) pp = &(*pp)->next;
+    r->next = *pp;
+    *pp = r;
+    r->queued = true;
+}
+
+/* g_sched_m held: give a free core to its best ready thread */
+static void dispatch_locked(int core) {
+    if (g_core[core].running || !g_core[core].ready) return;
+    SchedRec *r = g_core[core].ready;
+    g_core[core].ready = r->next;
+    r->next = NULL;
+    r->queued = false;
+    g_core[core].running = r;
+    pthread_cond_signal(&r->cv);
+}
+
+/* g_sched_m held: block until this thread owns its core */
+static void wait_turn_locked(SchedRec *r) {
+    while (g_core[r->core].running != r) pthread_cond_wait(&r->cv, &g_sched_m);
+}
+
+static SchedRec *sched_new(int32_t prio, int core, uint32_t id) {
+    SchedRec *r = calloc(1, sizeof *r);
+    if (!r) runtime_fatal("os: out of memory");
+    pthread_cond_init(&r->cv, NULL);
+    r->prio = prio;
+    r->core = core == 1 ? 1 : 0;
+    r->id = id;
+    return r;
+}
+
+/* give up the core before blocking (no-op for host threads / parallel mode) */
+static void sched_release(void) {
+    SchedRec *r = t_sched;
+    if (!r) return;
+    pthread_mutex_lock(&g_sched_m);
+    if (g_core[r->core].running == r) {
+        g_core[r->core].running = NULL;
+        dispatch_locked(r->core);
+    }
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* after blocking: become ready (unless a waker already queued us) and wait for the core */
+static void sched_acquire(void) {
+    SchedRec *r = t_sched;
+    if (!r) return;
+    pthread_mutex_lock(&g_sched_m);
+    if (g_core[r->core].running != r && !r->queued) ready_insert_locked(r, false);
+    dispatch_locked(r->core);
+    wait_turn_locked(r);
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* a waker makes a sleeping game thread ready at once (so the preemption check below sees it) */
+static void sched_make_ready(SchedRec *r) {
+    if (!r) return;
+    pthread_mutex_lock(&g_sched_m);
+    if (g_core[r->core].running != r && !r->queued) ready_insert_locked(r, false);
+    dispatch_locked(r->core);
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* at an API call that may have readied a higher-priority thread: let it run first (the
+ * preempted thread stays at the head of its priority) */
+static void sched_preempt_check(void) {
+    SchedRec *r = t_sched;
+    if (!r) return;
+    pthread_mutex_lock(&g_sched_m);
+    SchedRec *best = g_core[r->core].ready;
+    if (g_core[r->core].running == r && best && best->prio < r->prio) {
+        g_core[r->core].running = NULL;
+        ready_insert_locked(r, true);
+        dispatch_locked(r->core);
+        wait_turn_locked(r);
+    }
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* Thread::Yield / Sleep(0): run the ready threads of the same or higher priority first */
+static void sched_yield_turn(void) {
+    SchedRec *r = t_sched;
+    if (!r) { sched_yield(); return; }
+    pthread_mutex_lock(&g_sched_m);
+    SchedRec *best = g_core[r->core].ready;
+    if (g_core[r->core].running == r && best && best->prio <= r->prio) {
+        g_core[r->core].running = NULL;
+        ready_insert_locked(r, false);
+        dispatch_locked(r->core);
+        wait_turn_locked(r);
+    }
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* the main game thread joins the scheduler (native/runtime/entry.c, before game main) */
+void albw_sched_main_thread(void) {
+    if (!sched_on() || t_sched) return;
+    SchedRec *r = sched_new(DEFAULT_PRIORITY, 0, current_thread_id());
+    pthread_mutex_lock(&g_sched_m);
+    t_sched = r;
+    ready_insert_locked(r, false);
+    dispatch_locked(0);
+    wait_turn_locked(r);
+    pthread_mutex_unlock(&g_sched_m);
+}
+
+/* for other native areas: wrap a host blocking call made on a game thread (vblank sleeps,
+ * present), so the other game threads run meanwhile (as they would while the 3DS thread
+ * waits). Nesting is not supported. */
+void albw_sched_block_begin(void) { sched_release(); }
+void albw_sched_block_end(void) { sched_acquire(); }
+
 /* ================================================================== address wait queues
  * The meaning of ArbitrateAddress: "sleep while *addr < value" and "wake N sleepers of addr".
  * Native: hashed buckets, each a mutex + a FIFO of waiters; a waiter sleeps on its own condvar
@@ -111,6 +269,7 @@ static uint32_t current_thread_id(void) {
 typedef struct Waiter {
     struct Waiter *next;
     const void *addr;
+    SchedRec *sched;   /* the waiting game thread (NULL: host thread) */
     bool woken;
     bool cv_ready;
     pthread_cond_t cv;
@@ -141,6 +300,7 @@ static uint32_t arb_wait(_Atomic int32_t *addr, int32_t value, bool decrement, i
     if (v >= value) { pthread_mutex_unlock(&g_park[b].m); return RES_OK; }
     if (decrement) atomic_fetch_sub(addr, 1);
     w->addr = (const void *)addr;
+    w->sched = t_sched;
     w->woken = false;
     w->next = NULL;
     Waiter **pp = &g_park[b].head;
@@ -149,6 +309,7 @@ static uint32_t arb_wait(_Atomic int32_t *addr, int32_t value, bool decrement, i
     uint32_t res = RES_OK;
     struct timespec dl;
     if (ns >= 0) dl = deadline_after(ns);
+    sched_release();   /* blocking: the next ready game thread runs (bucket -> sched lock order) */
     while (!w->woken) {
         if (ns < 0) {
             pthread_cond_wait(&w->cv, &g_park[b].m);
@@ -160,6 +321,7 @@ static uint32_t arb_wait(_Atomic int32_t *addr, int32_t value, bool decrement, i
         }
     }
     pthread_mutex_unlock(&g_park[b].m);
+    sched_acquire();   /* a waker queued us already; a timeout queues here */
     return res;
 }
 
@@ -172,6 +334,7 @@ static void arb_signal(_Atomic int32_t *addr, int32_t count) {
         if (w->addr == (const void *)addr) {
             *pp = w->next;
             w->woken = true;
+            sched_make_ready(w->sched);
             pthread_cond_signal(&w->cv);
             if (count > 0) count--;
         } else {
@@ -179,6 +342,7 @@ static void arb_signal(_Atomic int32_t *addr, int32_t count) {
         }
     }
     pthread_mutex_unlock(&g_park[b].m);
+    sched_preempt_check();   /* a woken higher-priority game thread runs now */
 }
 
 static uint32_t arbitrate(_Atomic int32_t *addr, int32_t type, int32_t value, int64_t ns) {
@@ -201,7 +365,7 @@ struct OsObject {
     int refs; /* handles + (for threads) the running thread itself */
     union {
         struct { bool done; int32_t prio; int32_t core; uint32_t id;
-                 void (*entry)(void *); uintptr_t arg; } th;
+                 void (*entry)(void *); uintptr_t arg; SchedRec *sched; } th;
         struct { uint32_t owner; uint32_t count; } mtx;
         struct { bool signaled; int32_t reset; } ev;
         struct { int32_t count, max; } sem;
@@ -311,6 +475,7 @@ static uint32_t wait_objects(int32_t *out_index, const uint32_t *handles, int32_
         objs[i]->refs++; /* keep alive while waiting even if another thread closes the handle */
     }
     uint32_t res = RES_OK;
+    bool released = false;
     for (;;) {
         int32_t hit = -1;
         if (wait_all) {
@@ -326,6 +491,7 @@ static uint32_t wait_objects(int32_t *out_index, const uint32_t *handles, int32_
         }
         if (hit >= 0) { if (out_index) *out_index = hit; break; }
         if (ns == 0) { res = RES_TIMEOUT; break; }
+        if (!released) { sched_release(); released = true; }  /* obj -> sched lock order */
         if (ns < 0) pthread_cond_wait(&g_obj_cv, &g_obj_lock);
         else if (pthread_cond_timedwait(&g_obj_cv, &g_obj_lock, &dl) == ETIMEDOUT) {
             /* one last check, then time out */
@@ -335,6 +501,7 @@ static uint32_t wait_objects(int32_t *out_index, const uint32_t *handles, int32_
     if (res == RES_TIMEOUT && out_index) *out_index = -1;
     for (int32_t i = 0; i < count; i++) obj_release_locked(objs[i]);
     obj_unlock();
+    if (released) sched_acquire();
     return res;
 }
 
@@ -474,6 +641,8 @@ static pthread_once_t g_thread_key_once = PTHREAD_ONCE_INIT;
 
 static void thread_finished(void *p) {
     OsObject *o = p;
+    sched_release();     /* the next ready game thread runs */
+    t_sched = NULL;
     obj_lock();
     o->u.th.done = true;
     pthread_cond_broadcast(&g_obj_cv);
@@ -490,6 +659,12 @@ static void *thread_main(void *p) {
     t_self = o;
     t_id = o->u.th.id;
     pthread_setspecific(g_thread_key, o);
+    if (o->u.th.sched) {   /* queued by the creator: wait for the first turn */
+        t_sched = o->u.th.sched;
+        pthread_mutex_lock(&g_sched_m);
+        wait_turn_locked(t_sched);
+        pthread_mutex_unlock(&g_sched_m);
+    }
     o->u.th.entry((void *)o->u.th.arg);
     return NULL;
 }
@@ -513,6 +688,16 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
     o->u.th.id = atomic_fetch_add(&g_next_thread_id, 1);
     o->u.th.entry = entry;
     o->u.th.arg = arg;
+    if (getenv("ALBW_SCHED_TRACE"))
+        fprintf(stderr, "os: thread %u created: priority 0x%x core %d entry %p\n",
+                o->u.th.id, (unsigned)priority, (int)core, (void *)(uintptr_t)entry);
+    if (sched_on()) {      /* a game thread: ready at once, in priority order */
+        o->u.th.sched = sched_new(priority, core, o->u.th.id);
+        pthread_mutex_lock(&g_sched_m);
+        ready_insert_locked(o->u.th.sched, false);
+        dispatch_locked(o->u.th.sched->core);
+        pthread_mutex_unlock(&g_sched_m);
+    }
     obj_lock();
     uint32_t h = 0, r = handle_alloc_locked(o, &h);
     obj_unlock();
@@ -532,6 +717,14 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
 #endif
     pthread_attr_destroy(&attr);
     if (err) {
+        if (o->u.th.sched) {        /* never ran: take it off the ready list / the core */
+            SchedRec *sr = o->u.th.sched;
+            pthread_mutex_lock(&g_sched_m);
+            for (SchedRec **pp = &g_core[sr->core].ready; *pp; pp = &(*pp)->next)
+                if (*pp == sr) { *pp = sr->next; break; }
+            if (g_core[sr->core].running == sr) { g_core[sr->core].running = NULL; dispatch_locked(sr->core); }
+            pthread_mutex_unlock(&g_sched_m);
+        }
         obj_lock();
         obj_release_locked(o);      /* thread reference */
         obj_unlock();
@@ -539,6 +732,7 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
         return RES_OUT_OF_HANDLES;
     }
     *out = h;
+    sched_preempt_check();          /* a higher-priority new thread runs first */
     return RES_OK;
 }
 
@@ -549,6 +743,8 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
 _Noreturn void func_0010998C(void) {
     pthread_once(&g_thread_key_once, thread_key_init);
     if (!pthread_getspecific(g_thread_key)) {
+        sched_release();
+        t_sched = NULL;
         obj_lock();
         if (t_self) { t_self->u.th.done = true; pthread_cond_broadcast(&g_obj_cv); }
         obj_unlock();
@@ -764,7 +960,7 @@ static void lightlock_lock(int32_t *word) {
                     if (atomic_compare_exchange_weak(w, &u, 1 - u)) return;
             }
         } else {
-            sched_yield(); /* 0: uninitialised word; the SDK spins here too */
+            sched_yield_turn(); /* 0: uninitialised word; the SDK spins here too */
         }
     }
 }
