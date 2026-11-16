@@ -44,6 +44,7 @@ void layout_defaults(LayoutConfig *c) {
     c->separate = 1;   /* one window per screen unless layout.cfg says "windows joined" */
     c->preset = LAYOUT_DEFAULT;
     c->linear_filter = 1;
+    c->render_scale = 1;
     c->large_ratio = 2.5f;
     c->keep_aspect = 1;
     c->snap = 1;
@@ -492,6 +493,7 @@ int layout_load(LayoutConfig *c, const char *path) {
         else if (!strcmp(key, "large_ratio")) c->large_ratio = clamp_ratio(layout_parse_float(arg, NULL));
         else if (!strcmp(key, "keep_aspect")) c->keep_aspect = iv != 0;
         else if (!strcmp(key, "snap")) c->snap = iv != 0;
+        else if (!strcmp(key, "render_scale")) { if (iv >= 1 && iv <= 8) c->render_scale = iv; }
         else if (!strcmp(key, "custom_front")) c->custom_front = !strcmp(arg, "top") ? 0 : 1;
         else if (!strcmp(key, "custom")) {
             int s = !strcmp(arg, "top") ? 0 : !strcmp(arg, "bottom") ? 1 : -1;
@@ -518,9 +520,9 @@ int layout_save(const LayoutConfig *c, const char *path) {
     layout_fmt_float(r, sizeof r, clamp_ratio(c->large_ratio));
     fprintf(f, "# ALBW native port: screen layout (shared by the SDL and Qt frontends; see native/platform/layout.h)\n"
                "windows %s\npreset %s\nswap %d\ninteger_scale %d\nlinear_filter %d\nlarge_ratio %s\nkeep_aspect %d\nsnap %d\n"
-               "custom_front %s\n",
+               "render_scale %d\ncustom_front %s\n",
             c->separate ? "separate" : "joined", layout_preset_key(c->preset), c->swap, c->integer_scale, c->linear_filter, r, c->keep_aspect, c->snap,
-            c->custom_front ? "bottom" : "top");
+            c->render_scale < 1 ? 1 : c->render_scale, c->custom_front ? "bottom" : "top");
     for (int s = 0; s < 2; s++) {
         char v[4][32];
         layout_fmt_float(v[0], 32, c->custom[s].x);

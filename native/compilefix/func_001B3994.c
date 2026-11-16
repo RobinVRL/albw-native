@@ -22,7 +22,7 @@ extern int func_00520FC0(void);
 extern int func_00521018(int param_1);
 extern int func_005211F4(int param_1,float fparam_0,float fparam_1);
 extern int func_0053F480(int param_1);
-extern int func_00556E94(int param_1);
+extern int func_00556E64(int param_1);
 extern int func_0058A7D4(void);
 extern int func_0058E2B8(int *param_1);
 extern int func_0065B158(undefined4 *param_1,undefined1 param_2);
@@ -107,7 +107,7 @@ undefined4 func_001B3994(int param_1)
   if (0x13 < *(ushort *)(param_1 + 0x918)) {
     iVar7 = *piRam001b3c70;
     iVar8 = func_0053F480(iVar7);
-    if ((iVar8 != 0) && (bVar1 = func_00556E94(iVar7), !bVar1)) {
+    if ((iVar8 != 0) && (bVar1 = func_00556E64(iVar7), !bVar1)) {
       iVar8 = func_00520FC0();
       fVar10 = *(float *)(iVar8 + 4) - *(float *)(param_1 + 0x3d4);
       if (fVar10 <= fVar11) {

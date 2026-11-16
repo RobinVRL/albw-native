@@ -14,7 +14,7 @@
 #include "route.h"
 
 extern uint32_t data_0070FB60[];
-int func_00556E94(int player);
+int func_00556E64(int player);
 int func_004F70A8(char *self);
 uint32_t func_005568E8(int player);
 int func_004F8998(char *self, int a, char *b);
@@ -30,7 +30,7 @@ int func_004F5BD8(char *A, uint32_t *src, int **force, float *unused);
 void func_00157BF0(char *self)
 {
     float f = RF(self, 0xA48, float);
-    if (func_00556E94((int)data_0070FB60[0]) != 0) {
+    if (func_00556E64((int)data_0070FB60[0]) != 0) {
         float d = -f;
         f = f + d * 0.05f;
     } else {

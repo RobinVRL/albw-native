@@ -4,6 +4,7 @@
  * function lost their object argument (EU 0067FC5C `add r0, r0, r2, asr #1`; this = reader +
  * adj/2), so f_004204D8 read through a garbage cursor. Rest unchanged. Confidence: high. */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 
 extern int func_00110D44(undefined4 *param_1,byte *param_2,uint param_3);
 extern int func_0056F89C(undefined4 *param_1,int *param_2,undefined4 param_3);

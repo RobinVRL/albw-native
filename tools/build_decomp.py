@@ -60,11 +60,66 @@ GHIDRA_NAME_FIXES = {
     "func_0036167C": "func_00361640",  # EU 0036161C getter m10->m610
     "func_0036166C": "func_00361634",  # EU 00361610 setter m10->m6C5 = v
 }
-RE_GHIDRA_NAME_FIX = re.compile(r"\b(%s)\b" % "|".join(GHIDRA_NAME_FIXES))
+# EU/USA map fix integration (PLAN "EU/USA map fix: integration", BOOT_LOG 119): the map audit
+# (albw-decomp-ai 7b09bf84) moved 240 entries after the Ghidra project was named from the old map.
+# tools/ghidra_name_fixes.json (80 entries, includes the two above) renames the old-map names in
+# RAW Ghidra text, in one simultaneous pass, BEFORE FUN_<EU> -> func_<USA> (which yields correct
+# names); matched / native sources use real names and are not touched. Files carrying the
+# `// MAPFIX` line (build/ghidra_mapfix: fresh dumps of the corrected EU starts) have them applied.
+_NF_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ghidra_name_fixes.json")
+GHIDRA_NAME_FIXES.update(json.load(open(_NF_PATH)) if os.path.exists(_NF_PATH) else {})
+RE_GHIDRA_NAME_FIX = re.compile(r"\b(%s)\b" % "|".join(sorted(GHIDRA_NAME_FIXES)))
+MAPFIX_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "ghidra_mapfix")
+MAPFIX_MARK = "// MAPFIX-INTEGRATED v1"   # first line of converted sources made after the integration
+
+
+def asm_semantic(path):
+    """True when a matched source has an armcc `__asm { }` block that computes something: rewrite()
+    strips the blocks (RE_ASM_BLOCK), which is right for no-ops (nop, `moveq x, x` scheduling pins,
+    mcr p15 barriers) but leaves the result of a real instruction unset (00564908's
+    `add entry, base, k, lsl #2`: the emitter-set name search read an uninitialised pointer, so
+    no particle effect was ever created, BOOT_LOG 120). Such sources fall back to Ghidra."""
+    try:
+        text = open(path, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return False
+    for blk in RE_ASM_BLOCK.findall(text):
+        for ins in re.split(r"[;\n]", blk[blk.index("{") + 1:-1]):
+            w = ins.replace(",", " ").split()
+            if not w:
+                continue
+            op = w[0].lower()
+            if op == "nop" or op in ("mcr", "mrc"):
+                continue
+            if op.startswith("mov") and len(w) == 3 and w[1] == w[2]:
+                continue
+            return True
+    return False
+
+
+def ghidra_name_fix(text):
+    """Old-map names in raw Ghidra text -> right names (one pass; skips MAPFIX dumps)."""
+    if "// MAPFIX:" in text[:400]:
+        return text
+    return RE_GHIDRA_NAME_FIX.sub(lambda m: GHIDRA_NAME_FIXES[m.group(1)], text)
+
+
+# Ghidra sometimes "writes back" a literal-pool constant it had loaded into a register
+# (`uVar2 = DAT_003f06a8; ... DAT_003f06a8 = uVar2;`): the ARM never stores into its code, but the
+# build places pool words in read-only data, so the store faulted (003F0080, the particle draw
+# setup, BOOT_LOG 120). A bare assignment to a code-range DAT_ word keeps only its value.
+RE_POOL_WRITE = re.compile(r"(?<![\w*&.>])(_?DAT_00(?:1[0-9a-f]|[2-5][0-9a-f]|6[0-8])[0-9a-f]{4})\s*=(?!=)")
+
+
+# The stack-layout pass reads a continuation line `local_X * local_X;` (the end of a product
+# wrapped by Ghidra) as the declaration `T *name;` and turns it into a frame macro whose type is the
+# name itself, `#define local_X (*(local_X * *)(albw_frame + K))` (001EA96C, BOOT_LOG 120): restore it
+RE_GARBLED_PRODUCT = re.compile(r"#define (\w+) \(\*\(\1 \* \*\)\(albw_frame \+ 0x[0-9a-f]+\)\)")
 
 
 def rewrite(text):
-    text = RE_GHIDRA_NAME_FIX.sub(lambda m: GHIDRA_NAME_FIXES[m.group(1)], text)
+    text = RE_POOL_WRITE.sub("(void)", text)
+    text = RE_GARBLED_PRODUCT.sub(r"\1 * \1;", text)
     # the stack-layout pass of the converter turns `return local_c;` into a bogus macro
     # `#define local_c (*(return *)(albw_frame + K))` (21 functions): restore the return
     text = RE_GARBLED_RETURN.sub(r"return \1;", text)
@@ -187,7 +242,21 @@ def fconv_rewrite(text, stderr, src):
             "ALBW_AS_F32(" if "to 'float' may lose precision" in msg else None
         if w:
             l1, c1, l2, c2 = map(int, rng[0])
-            edits.append((starts[l1 - 1] + c1 - 1, starts[l2 - 1] + c2 - 1, w))
+            a, b = starts[l1 - 1] + c1 - 1, starts[l2 - 1] + c2 - 1
+            loc = starts[int(m.group(2)) - 1] + col
+            if a < loc < b and re.match(r"[A-Z_][A-Z0-9_]*\s*\(", text[a:b]):
+                # the converted operand is an argument of a macro call (CONCAT44(f + pool, ..)):
+                # clang reports the whole call as the range, and wrapping the call neither
+                # fixes the conversion nor silences the warning, so every rebuild wrapped it
+                # again (6 nested pairs in 004784B8: "translation unit too large"). Wrap the
+                # identifier at the warning location instead, or leave the site alone.
+                t = re.match(r"[A-Za-z_]\w*", text[loc:])
+                if not t or text[loc + t.end():].lstrip().startswith("("):
+                    continue
+                a, b = loc, loc + t.end()
+            if text.startswith(w, a):
+                continue   # already this bit copy (idempotent across rebuilds)
+            edits.append((a, b, w))
     edits.sort(reverse=True)
     last = None
     for a, b, w in edits:
@@ -210,6 +279,7 @@ RE_MEMMOVE_FLOAT = re.compile(r"\b\w+ = (func_0010E74C\()")
 
 _EU_CODE = None
 RE_CODE_STR_ARG = re.compile(r"(?<=[(,])(\s*)(0x[0-9a-f]{5,6})(?=\s*[,)])")
+RE_CODE_STR_STORE = re.compile(r"\b((?:[a-z]*Stack_[0-9a-f]+)(?:\[1\])?) = (0x[0-9a-f]{5,6});")
 
 
 def code_strings(text):
@@ -233,7 +303,23 @@ def code_strings(text):
             return m.group(0)
         lit = code[o:e].decode("ascii").replace("\\", "\\\\").replace('"', '\\"')
         return '%s(int)"%s" /* EU %08X */' % (m.group(1), lit, a)
-    return RE_CODE_STR_ARG.sub(fix, text)
+
+    def fix_store(m):
+        # the C-string word of a temporary sead::SafeString on the stack ({vtable, const char *}:
+        # `iStack_1c = 0x4ebcdc;`, `objStack_50[1] = 0x202364;`): same address test, and one-
+        # character strings count ("_" separators). 10 sites in 7 functions (enemy names BombR /
+        # Biri / Amos / Popo..., 004EBC10 crashed in Link's house: BOOT_LOG 94)
+        a = int(m.group(2), 16)
+        o = a - 0x100000
+        if not (0x100000 <= a < 0x693000) or a % 4 or not code:
+            return m.group(0)
+        e = code.find(b"\0", o, o + 256)
+        if e < 0 or e - o < 1 or not all(0x20 <= b < 0x7F for b in code[o:e]):
+            return m.group(0)
+        lit = code[o:e].decode("ascii").replace("\\", "\\\\").replace('"', '\\"')
+        return '%s = (int)"%s"; /* EU %08X */' % (m.group(1), lit, a)
+    text = RE_CODE_STR_ARG.sub(fix, text)
+    return RE_CODE_STR_STORE.sub(fix_store, text)
 
 
 def void_tail_returns(text, addr, sigs):
@@ -375,6 +461,8 @@ def mirror(decomp):
                 os.makedirs(os.path.dirname(d), exist_ok=True)
                 with open(s, encoding="utf-8", errors="replace") as fh:
                     text = fh.read()
+                if "nonmatching" in dp:   # Ghidra-derived: old-map names (matched sources use real ones)
+                    text = ghidra_name_fix(text)
                 text = header_rewrite(f, rewrite(text))
                 if ARCH64 and "nonmatching" in dp and f.endswith(".c"):
                     text = ptr32_rewrite(text)
@@ -702,7 +790,10 @@ def build_one(job):
             with open(src, "w") as fh:
                 fh.write(new_text)
             r = subprocess.run(cmd + ["-o", obj, src], capture_output=True, text=True)
-        for _ in range(8 if v4_stage() >= 2 or os.environ.get("ALBW_CONVERT_CF") == "1" else 0):
+        # Until no progress (each pass sees the -ferror-limit=3 errors; capped): a fresh conversion of
+        # a large function (001EA96C: 320 sites) needs ~110 passes - with a fixed 8 it only built
+        # after many builds had rewritten the file in place (BOOT_LOG 120)
+        for _ in range(200 if v4_stage() >= 2 or os.environ.get("ALBW_CONVERT_CF") == "1" else 0):
             # error-driven exact rewrites (native/compilefix/README.md): (T *)<float> -> bit copy
             # (97 failures + 12 more hidden behind other errors); (float)<pointer> -> bit copy;
             # switch on a pointer-typed variable (8)
@@ -892,6 +983,11 @@ def main():
         return re.sub(r"\b(?:thunk_)?FUN_([0-9a-f]{8})\b", fix, text)
 
     sigs = import_ghidra.signatures(fallback_dir) if fallback_dir else {}
+    mapfix = set()
+    if os.path.isdir(MAPFIX_DIR) and os.environ.get("ALBW_MAPFIX", "1") != "0":
+        mapfix = {f[5:13] for f in os.listdir(MAPFIX_DIR) if f.startswith("func_") and f.endswith(".c")}
+        sigs.update(import_ghidra.signatures(MAPFIX_DIR))   # their prototypes, not the old bodies'
+        print("map fix: %d corrected Ghidra dumps (build/ghidra_mapfix), %d name fixes" % (len(mapfix), len(GHIDRA_NAME_FIXES)))
     if os.environ.get("ALBW_CONVERT_V3") == "1" and os.path.isdir(extra_dir):
         # V3: one signature table: functions outside the decomp table (ghidra_extra*) are
         # prototyped too (before: `extern int f();`, float arguments passed as doubles)
@@ -906,9 +1002,26 @@ def main():
             import_ghidra.v4_retfix().pop(k, None)
     print("callee prototypes from Ghidra: %d" % len(sigs))
 
+    def lab_data_rewrite(text):
+        """Code labels used as data (the corrected-map dumps, build/ghidra_mapfix: addresses the old
+        map called function starts were never typed as data in that Ghidra project):
+        `&LAB_<a>` of a NUL-terminated printable string stored among the code -> s_cf_<a> (gen_data
+        LABEL_NAME, as the compilefix class of 00254EFC); `_LAB_<a>` (a word read at <a>: literal
+        pool) -> _DAT_<a>. Plain `LAB_<a>` (goto targets and labels) is left alone."""
+        def is_str(a):
+            o = a - 0x100000
+            if not (0 <= o < len(code)):
+                return False
+            e = code.find(b"\0", o, o + 256)
+            return e - o >= 2 and all(0x20 <= c < 0x7F for c in code[o:e])
+        text = re.sub(r"&LAB_([0-9a-f]{8})\b", lambda m: ("s_cf_%s" % m.group(1)) if is_str(int(m.group(1), 16)) else m.group(0), text)
+        return re.sub(r"\b_LAB_([0-9a-f]{8})\b", r"_DAT_\1", text)
+
     def ghidra_source(addr):
         """Per-address Ghidra C (mirrored path relative to OUT), or None."""
-        raw = os.path.join(fallback_dir, "func_%s.c" % addr)
+        raw = os.path.join(MAPFIX_DIR, "func_%s.c" % addr) if addr in mapfix else ""
+        if not raw:
+            raw = os.path.join(fallback_dir, "func_%s.c" % addr)
         if not os.path.exists(raw):
             raw = os.path.join(extra_dir, "func_%s.c" % addr)  # functions missing from the table
         if not os.path.exists(raw) and addr in ghidra:
@@ -917,9 +1030,18 @@ def main():
             return None
         rel = os.path.join("ghidra_fallback", fb_sub, addr[:3], "func_%s.c" % addr)
         dst = os.path.join(OUT, rel)
-        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw):
+        stale = not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(raw)
+        if not stale and (mapfix or GHIDRA_NAME_FIXES):
+            # converted before the map-fix integration: redo it when the integration changes the
+            # text (a corrected dump, or an old-map name in the raw text); others stay cached
+            with open(dst, encoding="utf-8", errors="replace") as fh:
+                marked = fh.readline().startswith(MAPFIX_MARK)
+            if not marked:
+                rt = open(raw, encoding="utf-8", errors="replace").read()
+                stale = addr in mapfix or bool(RE_GHIDRA_NAME_FIX.search(rt))
+        if stale:
             os.makedirs(os.path.dirname(dst), exist_ok=True)
-            text = open(raw, encoding="utf-8", errors="replace").read()
+            text = lab_data_rewrite(ghidra_name_fix(open(raw, encoding="utf-8", errors="replace").read()))
             # FUN_<EU> -> func_<USA> *before* convert(): convert() declares the callees it sees,
             # so a callee still spelled FUN_ was called through an implicit `int f()` (float
             # arguments promoted to double). 1054 Ghidra sources call a FUN_ name; 6 failures.
@@ -930,7 +1052,7 @@ def main():
             if ARCH64:
                 text = ptr32_rewrite(text)
             with open(dst, "w") as fh:
-                fh.write(text)
+                fh.write(MAPFIX_MARK + "\n" + text)
         return rel
 
     # A matched source is used only when it belongs to exactly one address: files shared by many
@@ -957,8 +1079,13 @@ def main():
               % (chk_args, chk_abi, len(abi_flagged), dict(st)))
     by_path = collections.defaultdict(list)
     source_of = {}
+    asm_flagged = {addr for addr, e in matched.items() if e["status"] in ("honest", "hack")
+                   and users[e["path"]] == 1 and asm_semantic(os.path.join(decomp, e["path"]))}
+    if asm_flagged:
+        print("matched sources with computing __asm blocks, built from Ghidra: %s" % sorted(asm_flagged))
     for addr, e in matched.items():
-        if e["status"] in ("honest", "hack") and users[e["path"]] == 1 and addr not in abi_flagged:
+        if e["status"] in ("honest", "hack") and users[e["path"]] == 1 and addr not in abi_flagged \
+                and addr not in asm_flagged:
             by_path[e["path"]].append(addr)
             source_of[addr] = "matched"
     for addr in set(matched) | set(ghidra) | set(extra):
@@ -985,7 +1112,15 @@ def main():
             aliases |= {l.split()[0] for l in open(path) if l.strip() and not l.startswith("#")}
     defined_all = {d for r in res if r["ok"] for d in r["defs"]}
 
+    # Ghidra intrinsics (pc reads, cdp / ldc, vsqrt) have no definition: a matched source that
+    # references one cannot work (0040E74C's matched text called __current_pc, a link tripwire, at
+    # boot once the map fix changed which source the ABI check picked), so it falls back to Ghidra
+    GHIDRA_INTRINSICS = {"__current_pc", "coprocessor_function", "coprocessor_load", "coprocessor_store",
+                         "coprocessor_moveto", "coprocessor_movefromRt", "__sqrtf"}
+
     def unresolvable(name):
+        if name in GHIDRA_INTRINSICS:
+            return True
         return not (name.startswith(("func_", "data_", "DAT_", "PTR_", "_DAT_", "__")) or "Ram" in name
                     or name == "_GLOBAL_OFFSET_TABLE_"  # provided by the linker (PIC code)
                     or name in aliases or name in system or name in defined_all

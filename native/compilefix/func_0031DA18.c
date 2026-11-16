@@ -11,6 +11,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 extern char s_cf_0031dde6[];
 extern char s_cf_0031de58[];
 #include "compilefix.h"

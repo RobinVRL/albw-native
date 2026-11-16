@@ -149,6 +149,8 @@ static const char *FS =
     "  if (uAlphaTest == 4 && !(c.a < uAlphaRef)) discard;\n"
     "  o = c; }\n";
 
+static BchFile *g_tex_bf; /* second file for textures the model's file lacks (ALBW_VIEWER_TEXFILE) */
+
 static int build_model(const BchFile *bf, const BchModel *m, Draw **out, float bmin[3], float bmax[3]) {
     float (*bw)[12] = calloc((size_t)(m->bone_count ? m->bone_count : 1), sizeof *bw);
     bch_bone_world(m, bw);
@@ -214,6 +216,7 @@ static int build_model(const BchFile *bf, const BchModel *m, Draw **out, float b
         memcpy(dr->texmtx[0], t0, 16);
         memcpy(dr->texmtx[1], t1, 16);
         const BchTexture *tx = bch_find_texture(bf, mat->texture_names[0]);
+        if (!tx && g_tex_bf) tx = bch_find_texture(g_tex_bf, mat->texture_names[0]); /* ALBW_VIEWER_TEXFILE */
         if (tx) dr->tex = pica_tex_upload_gl(tx->data, tx->size, tx->format, tx->width, tx->height, tx->levels, &mat->sampler[0]);
         glGenVertexArrays(1, &dr->vao);
         glBindVertexArray(dr->vao);
@@ -311,6 +314,18 @@ int main(int argc, char **argv) {
     if (bch_load(&bf, buf, n)) { fprintf(stderr, "viewer: %s: %s\n", model_spec, bf.error); return 1; }
     if (model_index >= bf.model_count) { fprintf(stderr, "viewer: no model %d (%d models)\n", model_index, bf.model_count); return 1; }
     const BchModel *m = &bf.models[model_index];
+    static BchFile tex_bf;
+    const char *tex_file = getenv("ALBW_VIEWER_TEXFILE"); /* e.g. World/Course/fld_o_Common.bch */
+    if (tex_file && *tex_file) {
+        size_t tn;
+        uint8_t *town = NULL, *tb = load_file(tex_file, &tn, &town);
+        if (tb && !bch_load(&tex_bf, tb, tn)) {
+            g_tex_bf = &tex_bf;
+            printf("textures also from %s (%d textures)\n", tex_file, tex_bf.texture_count);
+        } else {
+            fprintf(stderr, "viewer: ALBW_VIEWER_TEXFILE %s: not loaded\n", tex_file);
+        }
+    }
     printf("model '%s' from %s: %d meshes, %d materials, %d bones, %d textures in file\n",
            m->name ? m->name : "?", model_spec, m->mesh_count, m->material_count, m->bone_count, bf.texture_count);
 

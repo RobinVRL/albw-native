@@ -28,7 +28,7 @@ int func_00542B24(int r) { (void)r; return 0; }
 uint32_t func_0014E2A0(char *s, uint32_t c, uint32_t a3, uint32_t a4, uint32_t a5, int t)
 { (void)s; (void)c; (void)a3; (void)a4; (void)a5; (void)t; return 0; }
 static int g_out_v, n_b58; static int b58_arg;
-int func_00521100(int s, int *out) { (void)s; *out = g_out_v; return 0; }
+int func_005210AC(int s, int *out) { (void)s; *out = g_out_v; return 0; }
 float func_00581B58(int m, int a, int b) { (void)m; (void)a; n_b58++; b58_arg = b; return 1.0f; }
 int func_00520EE4(int s) { (void)s; return 0; }
 int func_00588BE4(int s) { (void)s; return 0; }

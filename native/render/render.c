@@ -207,6 +207,8 @@ typedef struct {
     uint64_t hash;
     uint32_t checked_frame, used_frame;
     int p_wrap_s, p_wrap_t, p_min, p_mag; /* last sampler params set */
+    int p_maxl, p_minl;                   /* last per-draw LOD range set (-1 none) */
+    int up_levels;                        /* levels tex_upload actually stored (<= levels: stops under 8x8) */
 } TexEnt;
 
 typedef struct {
@@ -337,6 +339,12 @@ static const char FS_TEV[] =
     "  }\n"
     "  if (alpha_test.x != 0 && !test(alpha_test.y, int(prev.a * 255.0 + 0.5), alpha_test.z)) discard;\n"
     "  o_color = prev;\n"
+    /* debug (ALBW_FS_DEBUG): 1 texture 0, 2 vertex colour, 3 fragment-lighting diffuse */
+    "#if DBGOUT == 1 && FL\n  if (texcfg.x != 0) o_color = vec4(t0.rgb, 1.0);\n#elif DBGOUT == 2 && FL\n  if (texcfg.x != 0) o_color = vec4(v_color.rgb, 1.0);\n"
+    "#elif DBGOUT == 4 && FL\n  if (texcfg.x != 0) o_color = vec4(fract(v_tc0.xy), 0.0, 1.0);\n#elif DBGOUT == 5 && FL\n  if (texcfg.x != 0) o_color = vec4(t0.aaa, 1.0);\n"
+    "#elif DBGOUT == 6 && FL\n  if (texcfg.x != 0) o_color = vec4(fsec.rgb, 1.0);\n"
+    "#elif DBGOUT == 7 && FL\n  if (texcfg.x != 0) o_color = vec4(vec3(fract(gl_FragCoord.z * 256.0)), 1.0);\n"
+    "#elif DBGOUT == 3 && FL\n  if (texcfg.x != 0) o_color = vec4(fprim.rgb, 1.0);\n#endif\n"
     "}\n";
 
 /* Vertex programs: same interface as the PICA shaders they stand for (see SHADERS.md): float
@@ -381,7 +389,8 @@ static const char *VS_SRC[RPROG_COUNT] = { /* RPROG_H3D_DEFAULT: extension GLSL 
 static char *fs_source(bool fl) {
     size_t n = strlen(FS_HEAD) + strlen(FS_TEV) + strlen(RENDER_FS_FRAGLIGHT) + 64;
     char *s = xrealloc(NULL, n);
-    snprintf(s, n, "#version 330 core\n#define FL %d\n%s%s%s", fl ? 1 : 0, FS_HEAD, fl ? RENDER_FS_FRAGLIGHT : "", FS_TEV);
+    { static int dbg = -1; if (dbg < 0) { const char *e = getenv("ALBW_FS_DEBUG"); dbg = e ? atoi(e) : 0; }
+      snprintf(s, n, "#version 330 core\n#define FL %d\n#define DBGOUT %d\n%s%s%s", fl ? 1 : 0, dbg, FS_HEAD, fl ? RENDER_FS_FRAGLIGHT : "", FS_TEV); }
     return s;
 }
 
@@ -450,7 +459,10 @@ static const char *SCAN_FS =
     "  o = vec4(texture(img, t).rgb, 1.0); }\n";
 
 static void reset_state(void);
-static long g_dump_frame = -1;   /* ALBW_RENDER_DUMP (see dumping()) */
+static int g_light_trace;
+static uint64_t g_light_digest;
+static unsigned g_light_draws;
+static long g_dump_frame = -1, g_dump_last = -1;   /* ALBW_RENDER_DUMP=<frame>[-<last>] (see dumping()) */
 
 int render_ready(void) {
     if (R.ready) return 1;
@@ -471,8 +483,9 @@ int render_ready(void) {
     }
     const char *s = getenv("ALBW_RENDER_SCALE");
     if (s && atoi(s) >= 1 && atoi(s) <= 8) R.scale = atoi(s);
+    g_light_trace = getenv("ALBW_LIGHT_TRACE") != NULL;
     s = getenv("ALBW_RENDER_DUMP");
-    if (s) g_dump_frame = atol(s);
+    if (s) { char *e; g_dump_frame = strtol(s, &e, 10); g_dump_last = *e == '-' ? atol(e + 1) : g_dump_frame; }
     s = getenv("ALBW_SCANOUT");
     R.scanout_mode = !s ? 0 : !strcmp(s, "direct") ? 1 : !strcmp(s, "rot") ? 2 : !strcmp(s, "rotflip") ? 3 : 0;
     for (int i = 0; i < RPROG_COUNT; i++) program_build(i);
@@ -927,6 +940,50 @@ static void tex_upload(TexEnt *t) {
             int lw = t->w >> l, lh = t->h >> l;
             if (lw < 8 || lh < 8) break;
             if (tex_decode(t->fmt, src, lw, lh, buf)) break;
+            {   /* debug: ALBW_TEX_DEBUG=1: every texture becomes a flat colour unique to its address, with an
+                   8-texel checker (UV scale), a red band on the top rows and a blue band on the left
+                   columns (orientation); alpha kept so cut-outs / masks still apply */
+                static int td = -1;
+                if (td < 0) td = getenv("ALBW_TEX_DEBUG") != NULL;
+                if (td) {
+                    uint32_t hsh = (uint32_t)(t->addr * 2654435761u) ^ (uint32_t)(t->addr >> 13);
+                    uint8_t cr = (uint8_t)(64 + (hsh & 0x7F)), cg = (uint8_t)(64 + (hsh >> 8 & 0x7F)), cb = (uint8_t)(64 + (hsh >> 16 & 0x7F));
+                    int band = lh / 16 > 1 ? lh / 16 : 1, bandx = lw / 16 > 1 ? lw / 16 : 1;
+                    for (int y = 0; y < lh; y++)          /* buf rows: row 0 = bottom (image top = row lh-1) */
+                        for (int x = 0; x < lw; x++) {
+                            uint8_t *px = buf + ((size_t)y * lw + x) * 4;
+                            int top = (lh - 1 - y) < band, left = x < bandx;
+                            int chk = (((x >> (3 - (l < 3 ? l : 3))) ^ (y >> (3 - (l < 3 ? l : 3)))) & 1);
+                            uint8_t r = cr, g = cg, b = cb;
+                            if (chk) { r = (uint8_t)(r * 3 / 4); g = (uint8_t)(g * 3 / 4); b = (uint8_t)(b * 3 / 4); }
+                            if (top) { r = 255; g = 0; b = 0; } else if (left) { r = 0; g = 0; b = 255; }
+                            px[0] = r; px[1] = g; px[2] = b;
+                        }
+                }
+            }
+            if (l == 0 && f == 0) { /* debug: ALBW_TEX_DUMP_DIR=<dir>: every decoded texture (level 0) as a PAM image */
+                static const char *dd = (const char *)1;
+                if (dd == (const char *)1) dd = getenv("ALBW_TEX_DUMP_DIR");
+                if (dd) {
+                    char path[512];
+                    snprintf(path, sizeof path, "%s/tex_%08lx_%dx%d_f%d.pam", dd, (unsigned long)t->addr, lw, lh, t->fmt);
+                    FILE *fp = fopen(path, "wb");
+                    if (fp) {
+                        fprintf(fp, "P7\nWIDTH %d\nHEIGHT %d\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n", lw, lh);
+                        for (int y = lh - 1; y >= 0; y--) fwrite(buf + (size_t)y * lw * 4, 4, (size_t)lw, fp); /* rows top first */
+                        fclose(fp);
+                    }
+                }
+            }
+            {   /* experiment: ALBW_TEX_FLIPV=1 flips every 2D texture vertically */
+                static int fv = -1;
+                if (fv < 0) fv = getenv("ALBW_TEX_FLIPV") != NULL;
+                if (fv && !t->cube)
+                    for (int y = 0; y < lh / 2; y++) {
+                        uint8_t *r0 = buf + (size_t)y * lw * 4, *r1 = buf + (size_t)(lh - 1 - y) * lw * 4;
+                        for (int x = 0; x < lw * 4; x++) { uint8_t tmp = r0[x]; r0[x] = r1[x]; r1[x] = tmp; }
+                    }
+            }
             glTexImage2D(t->cube ? (GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + f) : GL_TEXTURE_2D, l, GL_RGBA8, lw, lh, 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, buf);
             src += texfmt_size(t->fmt, lw, lh);
@@ -935,6 +992,16 @@ static void tex_upload(TexEnt *t) {
     }
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels > 0 ? levels - 1 : 0);
+    t->up_levels = levels > 0 ? levels : 1;
+    {   /* experiment: ALBW_TEX_GENMIP=1 replaces the stored mip levels with GL-generated ones */
+        static int gm = -1;
+        if (gm < 0) gm = getenv("ALBW_TEX_GENMIP") != NULL;
+        if (gm && levels > 1) {
+            static void (*genmip)(GLenum);
+            if (!genmip) genmip = (void (*)(GLenum))SDL_GL_GetProcAddress("glGenerateMipmap");
+            if (genmip) genmip(target);
+        }
+    }
     t->dirty = false;
     R.st.tex_uploads++;
 }
@@ -951,12 +1018,20 @@ static TexEnt *tex_lookup(const RTexUnit *u) {
             return t;
         }
     }
+    {   /* debug: ALBW_TEX_TRACE=1: every texture's first use with its sampler request */
+        static int tt = -1;
+        if (tt < 0) tt = getenv("ALBW_TEX_TRACE") != NULL;
+        if (tt) rlog("tex %#lx %dx%d fmt %d%s min %d mag %d max_level %d -> levels %d lod_bias %.2f wrap %d/%d",
+                     (unsigned long)u->addr, u->w, u->h, u->fmt, cube ? " cube" : "", u->min, u->mag, u->max_level,
+                     levels, (double)u->lod_bias, u->wrap_s, u->wrap_t);
+    }
     VEC_PUSH(R.tex, R.ntex, R.captex);
     TexEnt *t = &R.tex[R.ntex++];
     memset(t, 0, sizeof *t);
     t->addr = u->addr; t->w = u->w; t->h = u->h; t->fmt = u->fmt; t->cube = cube; t->levels = levels;
     memcpy(t->faces, u->cube, sizeof t->faces);
     t->p_wrap_s = t->p_wrap_t = t->p_min = t->p_mag = -1;
+    t->p_maxl = t->p_minl = -1;
     glGenTextures(1, &t->tex);
     t->dirty = true;
     return t;
@@ -968,6 +1043,11 @@ static const GLenum MINF[6] = {GL_NEAREST, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST
 
 static void sampler_params(GLenum target, const RTexUnit *u, int *ws, int *wt, int *mi, int *ma, int levels) {
     int s = u->wrap_s & 3, t = u->wrap_t & 3, m = u->min < 6 ? u->min : 3, g = u->mag & 1;
+    { /* experiment: ALBW_TEX_FORCE_LINEAR=1 samples every texture bilinear (+ linear mips) */
+        static int fl = -1;
+        if (fl < 0) fl = getenv("ALBW_TEX_FORCE_LINEAR") != NULL;
+        if (fl) { m = levels > 1 ? 5 : 3; g = 1; }
+    }
     if (levels <= 1) m = (m >= 3) ? 3 : 0; /* no mip chain: drop the mip part */
     if (*ws != s) { glTexParameteri(target, GL_TEXTURE_WRAP_S, (GLint)WRAP[s]); *ws = s; }
     if (*wt != t) { glTexParameteri(target, GL_TEXTURE_WRAP_T, (GLint)WRAP[t]); *wt = t; }
@@ -975,7 +1055,11 @@ static void sampler_params(GLenum target, const RTexUnit *u, int *ws, int *wt, i
     if (*ma != g) { glTexParameteri(target, GL_TEXTURE_MAG_FILTER, g ? GL_LINEAR : GL_NEAREST); *ma = g; }
     float bc[4] = {u->border[0] / 255.f, u->border[1] / 255.f, u->border[2] / 255.f, u->border[3] / 255.f};
     if (s == 1 || t == 1) rglTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, bc);
-    rglTexParameterf(target, GL_TEXTURE_LOD_BIAS, u->lod_bias);
+    {   /* experiment: ALBW_TEX_LODBIAS=<f> added to every texture's LOD bias */
+        static float xb = -1e9f;
+        if (xb == -1e9f) { const char *e = getenv("ALBW_TEX_LODBIAS"); xb = e ? (float)atof(e) : 0.0f; }
+        rglTexParameterf(target, GL_TEXTURE_LOD_BIAS, u->lod_bias + xb);
+    }
 }
 
 /* bind texture unit i for the next draw */
@@ -1013,6 +1097,7 @@ static void bind_unit(int i) {
         tex_upload(t);
         t->checked_frame = R.frame;
         t->p_wrap_s = t->p_wrap_t = t->p_min = t->p_mag = -1;
+        t->p_maxl = t->p_minl = -1;
     }
     GLenum target = cube ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
     if (cube) {
@@ -1021,7 +1106,20 @@ static void bind_unit(int i) {
     } else {
         glBindTexture(GL_TEXTURE_2D, t->tex);
     }
-    sampler_params(target, u, &t->p_wrap_s, &t->p_wrap_t, &t->p_min, &t->p_mag, t->levels);
+    /* This draw's own mip range. A texture is cached once per (address, size, format) and its
+       levels are uploaded up to the largest max level any sampler asked for; on the PICA every
+       draw clamps sampling to its own LOD range (TEXUNIT LOD register: max level, min level), so
+       apply it per binding. Without this a model appearing with a longer mip chain changed the
+       sampled levels of every other draw using the texture: the title flyover's sudden texture /
+       tint jumps (BOOT_LOG 98). */
+    int want = (u->min == 0 || u->min == 3) ? 1 : u->max_level + 1;
+    int have = t->up_levels > 0 && t->up_levels < t->levels ? t->up_levels : t->levels;   /* never past the uploaded levels: */
+    int eff = want < have ? want : have;                                                    /* mipmap-incomplete samples black */
+    if (eff < 1) eff = 1;
+    int minl = u->min_level < eff ? u->min_level : eff - 1;
+    if (t->p_maxl != eff - 1) { glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, eff - 1); t->p_maxl = eff - 1; }
+    if (t->p_minl != minl) { rglTexParameterf(target, GL_TEXTURE_MIN_LOD, (float)minl); t->p_minl = minl; }
+    sampler_params(target, u, &t->p_wrap_s, &t->p_wrap_t, &t->p_min, &t->p_mag, eff);
 }
 
 /* ================================================================== pipeline state */
@@ -1102,7 +1200,11 @@ static void apply_frag(void) {
     if (f->cull) {
         glEnable(GL_CULL_FACE);
         rglFrontFace(GL_CCW);
-        rglCullFace(f->cull == 1 ? GL_FRONT : GL_BACK);
+        {   /* experiment: ALBW_CULL_FLIP=1 swaps the culled side */
+            static int cf = -1;
+            if (cf < 0) cf = getenv("ALBW_CULL_FLIP") != NULL;
+            rglCullFace((f->cull == 1) != (cf == 1) ? GL_FRONT : GL_BACK);
+        }
     } else {
         glDisable(GL_CULL_FACE);
     }
@@ -1111,7 +1213,11 @@ static void apply_frag(void) {
     rglDepthRange(n < 0 ? 0 : n > 1 ? 1 : n, fa < 0 ? 0 : fa > 1 ? 1 : fa);
     if (f->poly_offset_enable) {
         glEnable(GL_POLYGON_OFFSET_FILL);
-        rglPolygonOffset(0.f, f->poly_offset_units);
+        {   /* experiment: ALBW_POLYOFS_SCALE=<f> multiplies every depth offset (z-fighting tests) */
+            static float ps = -1e9f;
+            if (ps == -1e9f) { const char *e = getenv("ALBW_POLYOFS_SCALE"); ps = e ? (float)atof(e) : 1.0f; }
+            rglPolygonOffset(0.f, f->poly_offset_units * ps);
+        }
     } else {
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
@@ -1123,6 +1229,58 @@ static void apply_frag(void) {
     }
     glViewport(R.vp[0] * R.scale, R.vp[1] * R.scale, R.vp[2] * R.scale, R.vp[3] * R.scale);
     R.frag_dirty = false;
+}
+
+/* ================================================================== internal resolution */
+
+/* Re-create one surface at the current scale, its old contents stretched into the new texture
+ * (render targets the game reuses across frames, such as the screen capture behind the pause
+ * menus, keep their picture). `old` = the scale the surface was made with. */
+static void surface_rescale(Surface *s, int old) {
+    if (!s->tex) return;
+    GLuint otex = s->tex, ofbo = s->fbo;
+    s->tex = s->fbo = 0;
+    surface_alloc(s);
+    R.st.surfaces--;
+    glDisable(GL_SCISSOR_TEST);
+    rglColorMask(1, 1, 1, 1);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, ofbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, s->fbo);
+    if (s->depth) {
+        glDepthMask(GL_TRUE);
+        rglStencilMask(0xFF);
+        rglBlitFramebuffer(0, 0, s->w * old, s->h * old, 0, 0, s->w * R.scale, s->h * R.scale,
+                           GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    } else {
+        rglBlitFramebuffer(0, 0, s->w * old, s->h * old, 0, 0, s->w * R.scale, s->h * R.scale,
+                           GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    }
+    rglDeleteFramebuffers(1, &ofbo);
+    glDeleteTextures(1, &otex);
+}
+
+int render_get_scale(void) { return R.scale; }
+
+/* Change the internal resolution (1..8 x the 3DS screens) between frames: every surface and
+ * display image is re-created at the new size, the combined colour+depth FBOs rebuilt on use. */
+void render_set_scale(int scale) {
+    if (scale < 1 || scale > 8 || !render_ready()) return;
+    lock();
+    int old = R.scale;
+    if (scale != old) {
+        R.scale = scale;
+        for (size_t i = 0; i < R.nfbo; i++) rglDeleteFramebuffers(1, &R.fbos[i].fbo);
+        R.nfbo = 0;
+        R.cur_fbo = 0;   /* may have been one of those: surface_alloc rebinds R.cur_fbo */
+        for (size_t i = 0; i < R.nsurf; i++) surface_rescale(R.surf[i], old);
+        for (size_t i = 0; i < R.ndisp; i++)
+            if (R.disp[i].img) surface_rescale(R.disp[i].img, old);
+        R.cur_fbo = fbo_for(R.cur_c, R.cur_d);
+        glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+        R.frag_dirty = R.tev_dirty = R.vsf_dirty = true;
+        rlog("internal scale %d -> %d", old, scale);
+    }
+    unlock();
 }
 
 /* ================================================================== immediate API */
@@ -1304,10 +1462,26 @@ static void upload_uniforms(Program *p) {
                      R.tev.buf_color[2] / 255.f, R.tev.buf_color[3] / 255.f);
     }
     GLint at[4] = {R.frag.alpha_test, R.frag.alpha_func, R.frag.alpha_ref, 0};
+    {   /* experiment: ALBW_ATEST_TEX=<hex addr>: enable the configured alpha test for draws sampling that texture */
+        static long want = -2;
+        if (want == -2) { const char *e = getenv("ALBW_ATEST_TEX"); want = e ? (long)strtoul(e, NULL, 16) : -1; }
+        if (want >= 0 && (R.tex_enable & 1) && R.unit[0].addr == (uintptr_t)want) {
+            at[0] = 1;
+            const char *fe = getenv("ALBW_ATEST_FUNC");   /* optional PICA function override (4 = less) */
+            if (fe) at[1] = atoi(fe);
+        }
+    }
     rglUniform4iv(p->alpha, 1, at);
     GLint tc[4] = {R.tex_enable, R.tex2_tc1, (R.unit[0].type == 1 || R.unit[0].type == 4) ? 1 : R.unit[0].type == 3 ? 2 : 0, 0};
     rglUniform4iv(p->texcfg, 1, tc);
     if (p->fl) fraglight_upload(&p->fll, FL_LUT_UNIT);
+    if (g_light_trace) { /* debug: per-frame digest of the lighting / combiner constants all draws saw */
+        uint64_t h = p->fl ? fraglight_state_hash() : 0;
+        for (int i = 0; i < 6; i++) h = (h ^ R.tev.stage[i].konst[0] ^ (uint64_t)R.tev.stage[i].konst[1] << 8 ^
+                                         (uint64_t)R.tev.stage[i].konst[2] << 16 ^ (uint64_t)R.tev.stage[i].konst[3] << 24) * 1099511628211ull;
+        g_light_digest = (g_light_digest ^ h) * 1099511628211ull;
+        g_light_draws++;
+    }
     R.vsf_dirty = R.tev_dirty = false;
 }
 
@@ -1362,7 +1536,7 @@ static bool draw_setup(uint32_t vmin, uint32_t vmax) {
 
 /* ALBW_RENDER_DUMP=<frame>: log every executed op of that host frame, and for each draw the
  * pipeline state and how many pixels of the target changed (glReadPixels before/after). Debug only. */
-static bool dumping(void) { return g_dump_frame >= 0 && (long)R.frame == g_dump_frame; }
+static bool dumping(void) { return g_dump_frame >= 0 && (long)R.frame >= g_dump_frame && (long)R.frame <= g_dump_last; }
 static uint8_t *g_dump_px; static size_t g_dump_cap;
 static void dump_read(uint8_t **buf) {
     if (!R.cur_c) { *buf = NULL; return; }
@@ -1422,10 +1596,23 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
     rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     size_t changed = 0, lit = 0;
+    int W = R.cur_c->w * R.scale, bx0 = 1 << 30, by0 = 1 << 30, bx1 = -1, by1 = -1;
     for (size_t i = 0; i < n; i += 4) {
-        if (memcmp(before + i, after + i, 4)) changed++;
+        if (memcmp(before + i, after + i, 4)) {
+            changed++;
+            int x = (int)(i / 4 % (size_t)W), y = (int)(i / 4 / (size_t)W);
+            if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y;
+        }
         if (after[i] | after[i + 1] | after[i + 2]) lit++;
     }
+    /* surface coordinates (GL rows of the 240-wide target) -> LCD pixels: lcd_x = H-1-y, lcd_y = W-1-x */
+    if (changed)
+        rlog("dump:     lcd box x %d-%d y %d-%d", R.cur_c->h * R.scale - 1 - by1, R.cur_c->h * R.scale - 1 - by0,
+             W - 1 - bx1, W - 1 - bx0);
+    for (int u = 0; u < 3; u++)
+        if (R.tex_enable >> u & 1)
+            rlog("dump:     unit%d tex %#lx %ux%u fmt %u min %u mag %u lvl %u-%u", u, (unsigned long)R.unit[u].addr, R.unit[u].w,
+                 R.unit[u].h, R.unit[u].fmt, R.unit[u].min, R.unit[u].mag, R.unit[u].min_level, R.unit[u].max_level);
     const RFragState *f = &R.frag;
     rlog("dump: %s %u prog %d/%d target %#lx vp %d,%d %dx%d sc %d(%d,%d %dx%d) cmask %x blend %d(%d,%d) depth %d/%d/%d "
          "stencil %d alpha %d/%d/%d cull %d tex %x -> changed %zu lit %zu",
@@ -1441,8 +1628,16 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
              t->scale_a, t->konst[0], t->konst[1], t->konst[2], t->konst[3]);
     }
     for (int r = 0; r < 72; r++)  /* projection, stereo c4, record c9, pools c32.. / c64.. */
-        if (r < 5 || r == 9 || (r >= 32 && r < 44) || r >= 64)
+        if (r < 32 || (r >= 32 && r < 44) || r >= 64)
             rlog("dump:     c%d %g %g %g %g", r, R.vsf[r * 4], R.vsf[r * 4 + 1], R.vsf[r * 4 + 2], R.vsf[r * 4 + 3]);
+    rlog("dump:     bools %#06x tevbuf rgb %#x a %#x col %u %u %u %u", R.vsb, R.tev.buf_update_rgb, R.tev.buf_update_a,
+         R.tev.buf_color[0], R.tev.buf_color[1], R.tev.buf_color[2], R.tev.buf_color[3]);
+    rlog("dump:     depthofs %u units %g range %g..%g wbuf %u depthfmt %d", f->poly_offset_enable, (double)f->poly_offset_units,
+         (double)f->depth_near, (double)f->depth_far, f->wbuffer, R.cur_d ? R.cur_d->fmt : -1);
+    rlog("dump:     stencil test %u func %u ref %#x mask %#x write %#x ops fail %u zfail %u zpass %u | depth surface %#lx",
+         f->stencil_test, f->stencil_func, f->stencil_ref, f->stencil_mask, f->stencil_write, f->stencil_fail, f->stencil_zfail,
+         f->stencil_zpass, R.cur_d ? (unsigned long)R.cur_d->addr : 0ul);
+    fraglight_debug_print(stderr); /* lights, ambient, bound LUTs of this draw */
 }
 
 void render_draw(int prim, uint32_t first, uint32_t count) {
@@ -1524,7 +1719,35 @@ static uint32_t g_npool, g_cappool, g_live;
 static uint32_t *g_free; static uint32_t g_nfree, g_capfree;
 static uint32_t *g_htab; static uint32_t g_hcap; /* open addressing: slot+1, 0 empty */
 
-static uint64_t op_hash(const ROp *op) { return hash_bytes(op, sizeof *op) | 1; }
+/* Bytes of an op that matter: the header and the union member its type uses (every recorder
+ * zeroes the whole op first, so the rest is always zero). Hashing / comparing only these, instead
+ * of all 264 bytes, is the same equality for half the cost of the op pool (profile: rec +
+ * hash_bytes were the top two native functions of the title sequence). */
+#define OP_LEN(m) (offsetof(ROp, u) + sizeof(((ROp *)0)->u.m))
+static size_t op_len(const ROp *op) {
+    switch (op->type) {
+    case ROP_TARGET: return OP_LEN(target);
+    case ROP_VIEWPORT: case ROP_SCISSOR: return OP_LEN(rect);
+    case ROP_FRAG: case ROP_BLEND: case ROP_LOGICOP: case ROP_ALPHATEST: case ROP_STENCIL:
+    case ROP_DEPTH: case ROP_COLORMASK: case ROP_CULL: case ROP_DEPTHMAP: return OP_LEN(frag);
+    case ROP_TEXUNIT: return OP_LEN(tex);
+    case ROP_TEXCONFIG: return OP_LEN(texcfg);
+    case ROP_TEV: case ROP_TEV_STAGES: return OP_LEN(tev);
+    case ROP_TEV_CONST: return OP_LEN(tev_const);
+    case ROP_PROGRAM: return OP_LEN(program);
+    case ROP_VS_FLOAT: {   /* registers past the count (op->unit, at most 16) are zero */
+        unsigned n = op->unit > 16 ? 16 : op->unit;
+        return offsetof(ROp, u.vsf.v) + n * 4 * sizeof(float);
+    }
+    case ROP_VS_BOOL: return OP_LEN(vsb);
+    case ROP_ATTRIB: return OP_LEN(attrib);
+    case ROP_DRAW: return OP_LEN(draw);
+    case ROP_CALL: return OP_LEN(call);
+    case ROP_EXT: return OP_LEN(ext);
+    default: return sizeof *op;   /* ROP_FL and anything new: the whole op */
+    }
+}
+static uint64_t op_hash(const ROp *op) { return hash_bytes(op, op_len(op)) | 1; }
 
 /* marker token: slot + 1 (never 0) | generation << 20 | 4-bit check << 28 */
 static uint32_t token_of(uint32_t slot, uint8_t gen) {
@@ -1552,7 +1775,7 @@ static uint32_t pool_put(const ROp *op, int pinned) {
             uint32_t e = g_htab[i];
             if (!e) break;
             PoolEnt *p = &g_pool[e - 1];
-            if (p->live && p->hash == h && !memcmp(&p->op, op, sizeof *op)) {
+            if (p->live && p->hash == h && !memcmp(&p->op, op, op_len(op))) {
                 p->last_frame = R.frame;
                 if (pinned) p->pinned = 1;
                 return token_of(e - 1, p->gen);
@@ -1616,8 +1839,16 @@ static uint32_t *rec(uint32_t *p, const ROp *op, int pinned) {
 uint32_t *render_rec(uint32_t *p, const ROp *op) { return rec(p, op, 0); }
 uint32_t *render_rec_pinned(uint32_t *p, const ROp *op) { return rec(p, op, 1); }
 
+static void raw_flush(void);
 void render_frame_end(void) {
     lock();
+    raw_flush();
+    if (g_light_trace) {
+        rlog("light-trace frame %lu digest %016llx draws %u", (unsigned long)R.frame, (unsigned long long)g_light_digest, g_light_draws);
+        g_light_digest = 0;
+        g_light_draws = 0;
+    }
+    if (dumping()) rlog("dump: ==== end of render frame %lu", (unsigned long)R.frame);
     R.frame++;
     R.frag_dirty = R.tev_dirty = R.vsf_dirty = true; /* plat_end_frame changed GL state */
     if (g_live > POOL_GC_HIGH) {
@@ -1766,7 +1997,34 @@ void render_exec_op(const ROp *op) {
     }
 }
 
+/* debug: ALBW_RAW_TRACE=<first>-<last> (render frames): raw PICA register writes found in executed
+ * command ranges (the words between our markers, which the renderer never interprets): a per-frame
+ * summary "reg: writes (last value)", to find GPU state the game writes itself and the port drops */
+static int g_raw_on = -1;
+static long g_raw_lo, g_raw_hi;
+static uint32_t g_raw_cnt[0x300], g_raw_last[0x300];
+static void raw_note(const uint32_t *w, uintptr_t avail) {
+    if ((long)R.frame < g_raw_lo || (long)R.frame > g_raw_hi) return;
+    uint32_t h = w[1], reg = h & 0xFFFF, mask = (h >> 16) & 0xF, n = (h >> 20) & 0xFF, cons = h >> 31;
+    if ((h >> 28) & 7 || !mask || reg >= 0x300 || (uintptr_t)(8 + 4 * n) > avail) return;
+    g_raw_cnt[reg]++; g_raw_last[reg] = w[0];
+    for (uint32_t k = 0; k < n && cons; k++) if (reg + k + 1 < 0x300) { g_raw_cnt[reg + k + 1]++; g_raw_last[reg + k + 1] = w[2 + k]; }
+}
+static void raw_flush(void) {
+    if (g_raw_on <= 0 || (long)R.frame < g_raw_lo || (long)R.frame > g_raw_hi) return;
+    char line[4096]; int o = 0;
+    for (int r = 0; r < 0x300 && o < (int)sizeof line - 40; r++)
+        if (g_raw_cnt[r]) o += snprintf(line + o, sizeof line - (size_t)o, " %03x:%u(%08x)", r, g_raw_cnt[r], g_raw_last[r]);
+    rlog("raw frame %lu:%s", (unsigned long)R.frame, o ? line : " none");
+    memset(g_raw_cnt, 0, sizeof g_raw_cnt);
+}
+
 int render_exec_cmds(const void *addr, uint32_t size) {
+    if (g_raw_on < 0) {
+        const char *e = getenv("ALBW_RAW_TRACE");
+        g_raw_on = e != NULL;
+        if (e) { char *x; g_raw_lo = strtol(e, &x, 10); g_raw_hi = *x == '-' ? atol(x + 1) : g_raw_lo; }
+    }
     if (!addr || size < 8 || !render_ready()) return 0;
     uintptr_t a = ((uintptr_t)addr + 3) & ~(uintptr_t)3, e = (uintptr_t)addr + size;
     int n = 0;
@@ -1776,7 +2034,10 @@ int render_exec_cmds(const void *addr, uint32_t size) {
         uintptr_t call_slot = 0; /* return-segment size slot of the last CALL run in this segment */
         for (; a + 8 <= e; a += 4) {
             const uint32_t *w = (const uint32_t *)a;
-            if (w[1] != RENDER_MARK) continue;
+            if (w[1] != RENDER_MARK) {
+                if (g_raw_on && !((a - (uintptr_t)addr) & 7)) raw_note(w, e - a);
+                continue;
+            }
             const ROp *op = pool_get(w[0]);
             if (!op) continue;
             ROp copy = *op; /* the pool may grow (realloc) while the op runs */

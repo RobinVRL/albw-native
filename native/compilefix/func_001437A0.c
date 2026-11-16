@@ -11,7 +11,7 @@
 extern int func_00115C54(float *param_1,float *param_2,float *param_3);
 extern int func_00165E28(int param_1,undefined2 param_2);
 extern int func_00292460(int param_1,undefined1 param_2);
-extern int func_00361790(int param_1,int param_2,undefined4 param_3);
+extern int func_0036174C(int param_1,int param_2,undefined4 param_3);
 extern int func_004CDF40(int param_1,int param_2,int param_3);
 extern int func_004EF418(int param_1,byte *param_2,int param_3,int param_4);
 extern int func_00547514(int param_1);
@@ -83,7 +83,7 @@ undefined4 func_001437A0(int param_1)
     else {
       iVar9 = 0x18;
     }
-    iVar9 = func_00361790(*DAT_00143b00,iVar9,param_1 + 0x47c);
+    iVar9 = func_0036174C(*DAT_00143b00,iVar9,param_1 + 0x47c);
     if (iVar9 == 0) {
       return 0;
     }

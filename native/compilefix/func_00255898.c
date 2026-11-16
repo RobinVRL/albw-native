@@ -1,3 +1,4 @@
+/* Renamed from func_002558DC.c (2026-11-16, BOOT_LOG 119): the body is EU 002558C0, which the corrected EU/USA map names USA 00255898. */
 /* compilefix: USA 002558DC (EU 002558C0), Ghidra-derived (build/ghidra_analyzed4).
  * Failed to compile: conflicting types for 'func_00255898'
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
@@ -12,7 +13,7 @@ extern int func_00255710(int param_1,undefined4 param_2);
 
 // USA 002558DC <- EU 002558C0 [EDITED REGION: check by hand] (Ghidra, non-matching)
 
-void func_002558DC(int param_1)
+void func_00255898(int param_1)
 
 {
   func_00255710(param_1,3);

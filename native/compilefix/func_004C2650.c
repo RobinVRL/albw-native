@@ -15,7 +15,7 @@ extern int func_0014EEC8(int param_1,uint param_2,undefined4 *param_3,undefined4
 extern int func_0014FD6C(int param_1,float *param_2,undefined4 param_3);
 extern int func_00150A84(int *param_1,int *param_2,int param_3);
 extern int func_0025B61C(int param_1,int param_2,float fparam_0);
-extern int func_0025B7D8(int param_1,uint param_2);
+extern int func_0025B7B0(int param_1,uint param_2);
 extern int func_0025B874(undefined4 *param_1);
 extern int func_00392E48(undefined4 *param_1,int param_2,undefined4 *param_3,undefined1 param_4);
 extern int func_004A8F40(int param_1,int *param_2,uint param_3);
@@ -24,7 +24,7 @@ extern int func_00520ED8(int param_1);
 extern int func_00520EE4(int param_1);
 extern int func_00520FF8(int param_1);
 extern int func_0052108C(int param_1);
-extern int func_005210AC(int param_1);
+extern int func_00521054(int param_1);
 extern int func_005211D8(int param_1);
 extern int func_00588BE4(int param_1);
 extern char *DAT_004c2958;
@@ -258,7 +258,7 @@ undefined4 func_004C2650(int *param_1)
           local_6c = s_SE_OBJ_FALL_WATER_FLAT_L_004c2d88;
           func_00150A84(param_1,(int *)&local_70,(int)apiStack_d0);
         }
-        func_0025B7D8((int)apiStack_d0,5);
+        func_0025B7B0((int)apiStack_d0,5);
       }
       (**(code **)(param_1[200] + 0x30))(param_1 + 200);
       *(undefined1 *)(param_1 + 0x15a) = 1;
@@ -288,7 +288,7 @@ undefined4 func_004C2650(int *param_1)
     cVar1 = *(char *)((int)param_1 + 0x56a);
     apiStack_d0[0] = param_1 + 0x161;
     if (cVar1 == '\0') {
-      iVar5 = func_005210AC((int)param_1);
+      iVar5 = func_00521054((int)param_1);
       if (iVar5 == 0) goto LAB_004c2cbc;
       fVar10 = ALBW_AS_F32(param_1[3]);
       if (ALBW_AS_F32(param_1[0xf5]) - DAT_004c2dbc <= ALBW_AS_F32(param_1[3])) {

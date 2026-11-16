@@ -11,6 +11,8 @@
  * run-to-run variance 24 vs 9 vertex buffers; BOOT_LOG 91 [3d]).
  * CLASS lost float argument in a (tail) virtual call. From the EU machine code. High. */
 #include "../route/route.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern int DAT_0058205c;   /* room table: offset of the room count */
 extern int DAT_00582060;   /* room record size in words */
@@ -26,6 +28,19 @@ int func_00582014(int param_1, int param_2, int *param_3)
         char *room = tbl + 0x183C + param_2 * DAT_00582060 * 4;
         flag = RF(room, 0x3FD, uint8_t);
         alpha = RF(room, 0x3F8, float) * alpha;
+    }
+    { /* debug: ALBW_ROOMFADE_TRACE=1: each room's fade factor when it changes */
+        static int rt = -1; static float last[64];
+        if (rt < 0) { rt = getenv("ALBW_ROOMFADE_TRACE") != NULL; for (int i = 0; i < 64; i++) last[i] = -1.0f; }
+        if (rt && tbl && param_2 >= 0 && param_2 < 64 && param_2 < RF(tbl, DAT_0058205c, int32_t)) {
+            char *room = tbl + 0x183C + param_2 * DAT_00582060 * 4;
+            float f = RF(room, 0x3F8, float);
+            extern long g_plat_frames;
+            if (f != last[param_2]) {
+                fprintf(stderr, "roomfade: f=%ld room %d fade %g flag %u\n", g_plat_frames, param_2, (double)f, RF(room, 0x3FD, uint8_t));
+                last[param_2] = f;
+            }
+        }
     }
     int32_t bits;
     memcpy(&bits, &alpha, 4);

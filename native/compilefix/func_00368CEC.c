@@ -12,7 +12,7 @@
 
 extern int func_0010A464(undefined4 *param_1);
 extern int func_0010E3C4(uint *param_1,uint *param_2,uint param_3);
-extern int func_0025B838(int param_1,int param_2,float fparam_0);
+extern int func_0025B810(int param_1,int param_2,float fparam_0);
 extern int func_0025B874(undefined4 *param_1);
 extern float func_0034C4C0(int param_1,uint param_2,int param_3,float fparam_0);
 extern int func_0034C57C(int param_1,int param_2);
@@ -421,7 +421,7 @@ LAB_003692c8:
       }
       func_0010A464(auStack_b8);
       func_00587B50(*DAT_0036903c,&local_144,(int)auStack_b8);
-      func_0025B838((int)auStack_b8,0,fVar22);
+      func_0025B810((int)auStack_b8,0,fVar22);
       puVar5 = auStack_98;
       goto LAB_00369340;
     }
@@ -438,7 +438,7 @@ LAB_003692c8:
   }
   local_150 = iVar18;
   func_00587F74(*DAT_0036903c,&local_150,(int)&local_118);
-  func_0025B838((int)&local_118,0,fVar26);
+  func_0025B810((int)&local_118,0,fVar26);
   puVar5 = auStack_f8;
 LAB_00369340:
   return func_0025B874((undefined4 *)(puVar5 + -0x20));

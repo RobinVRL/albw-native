@@ -4,6 +4,7 @@
  * kept it). Rest unchanged. Confidence: high. Class: no-argument `(*pcVarN)()` calls (about 190
  * converted files) - pointer-to-member / state-handler calls that lost `this`. */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 
 extern int func_00110D44(undefined4 *param_1,byte *param_2,uint param_3);
 extern float func_0041E2D8(undefined4 *param_1,int param_2);

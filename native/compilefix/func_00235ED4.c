@@ -7,6 +7,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 #include "compilefix.h"
 
 extern int func_00100174(int *param_1);
@@ -35,7 +36,7 @@ extern int func_00521098(undefined4 param_1,int *param_2);
 extern int func_0052FBA0(int param_1,uint param_2);
 extern int func_00539200(int param_1);
 extern int func_0053F480(int param_1);
-extern int func_00556B94(int param_1);
+extern int func_00556B54(int param_1);
 extern int func_00588BE4(int param_1);
 extern int func_0058E2B8(int *param_1);
 extern undefined DAT_00000009;
@@ -336,7 +337,7 @@ LAB_002362f0:
                                (float *)(iVar26 + 4),(uint)(*(char *)((int)local_54 + 0x49) == '\0')
                               );
         if (iVar12 != 0) {
-          if ((*DAT_00236234 != 0) && (bVar8 = func_00556B94(*DAT_00236234), !bVar8)) {
+          if ((*DAT_00236234 != 0) && (bVar8 = func_00556B54(*DAT_00236234), !bVar8)) {
             return func_00237288(param_1,uVar23,1);
           }
           *(undefined1 *)(iVar25 + iVar24 * 0x104) = 1;

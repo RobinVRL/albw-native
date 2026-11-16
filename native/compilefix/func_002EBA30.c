@@ -19,7 +19,7 @@ extern int func_00260C78(float fparam_0,float fparam_1,float fparam_2,float fpar
 extern int func_002C11E8(int *param_1,undefined4 param_2,int param_3,undefined1 param_4);
 extern float func_003E19E8(float fparam_0,float fparam_1,float fparam_2,float fparam_3,float fparam_4);
 extern int func_00520FC0(void);
-extern int func_00556E94(int param_1);
+extern int func_00556E64(int param_1);
 extern int func_00556EAC(int param_1,int param_2);
 extern int func_005841D8(int param_1,undefined4 param_2);
 extern float func_006640EC(undefined4 *param_1,undefined1 param_2,float fparam_0);
@@ -115,7 +115,7 @@ void func_002EBA30(int *param_1,float fparam_0,float fparam_1,float fparam_2,flo
   #define local_e4 (*(int * *)(albw_frame + 0x1c))
   #define aiStack_98 ((int *)(albw_frame + 0x68))
   iVar13 = *DAT_002ebde4;
-  if ((iVar13 == 0) || (bVar4 = func_00556E94(iVar13), !bVar4)) {
+  if ((iVar13 == 0) || (bVar4 = func_00556E64(iVar13), !bVar4)) {
     bVar4 = false;
   }
   else {

@@ -24,6 +24,7 @@
  *   linear_filter 1           1 = bilinear, 0 = nearest-neighbour when scaling the screens
  *   large_ratio 2.50000       large_top / pip: big screen size relative to the small one
  *   keep_aspect 1             custom: keep 5:3 / 4:3 when resizing (and letterbox inside the box)
+ *   render_scale 1            internal resolution: 1..8 x the 3DS screens (ALBW_RENDER_SCALE overrides)
  *   snap 1                    custom editor: snap to window edges/centre, the other screen, integer sizes
  *   custom_front bottom       screen drawn last (on top) where custom rectangles overlap
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
@@ -65,6 +66,7 @@ typedef struct {
     float large_ratio;       /* 1.5 .. 6 */
     int keep_aspect;
     int snap;
+    int render_scale;        /* 1..8 internal resolution multiple */
     int custom_front;        /* LAYOUT_SCREEN_TOP / _BOTTOM */
     LayoutRect custom[2];    /* normalized to the window */
     int custom_visible[2];

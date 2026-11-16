@@ -202,10 +202,10 @@ _Noreturn void func_001017AC(const void *param, uint32_t param_size, uint32_t ha
  * Confidence: medium (area assignment: apt; it also touches gsp/dsp objects). */
 void func_00101BE8(void) {}
 
-/* USA 00105960  APT IPC SetApplicationCpuTimeLimit 0x004F0080 (u32 fixed, u32 percent) -> Result
+/* USA 00105928 (EU 00105928; was named 00105960 by the old map)  APT IPC SetApplicationCpuTimeLimit 0x004F0080 (u32 fixed, u32 percent) -> Result
  * (polls with GetSystemTick while the system is busy). Called via 00102E08/00102E14 under the
  * APT lock. Native: the host scheduler owns the CPU. Confidence: high. */
-uint32_t func_00105960(uint32_t fixed, uint32_t percent) { return RESULT_OK; }
+uint32_t func_00105928(uint32_t fixed, uint32_t percent) { return RESULT_OK; }
 
 /* USA 00102FB4  APT IPC Initialize 0x00020080 (u32 appId, u32 attr, Handle *notifyEvent,
  * Handle *resumeEvent) -> Result. Native: no events (0). Confidence: high. */
@@ -236,16 +236,16 @@ uint32_t func_001030B4(uint32_t cancel_preload) { return RESULT_OK; }
 /* USA 001030F0  APT IPC Enable 0x00030040 (u32 attributes). Confidence: high. */
 uint32_t func_001030F0(uint32_t attributes) { return RESULT_OK; }
 
-/* USA 001058EC (EU 001058A8)  APT IPC IsRegistered 0x00090040 (u32 appId, u8 *outRegistered).
+/* USA 001058A8 (EU 001058A8; old map name 001058EC)  APT IPC IsRegistered 0x00090040 (u32 appId, u8 *outRegistered).
  * Native: no other applet (home menu 0x101, 0x200/0x400 groups) exists. Confidence: high. */
-uint32_t func_001058EC(uint32_t app_id, uint8_t *out_registered) {
+uint32_t func_001058A8(uint32_t app_id, uint8_t *out_registered) {
     if (out_registered) *out_registered = 0;
     return RESULT_OK;
 }
 
-/* USA 00105928 (EU 001058EC)  APT IPC 0x003B0040 (u8) -- CancelLibraryApplet / close
+/* USA 001058EC (EU 001058EC; old map name 00105928)  APT IPC 0x003B0040 (u8) -- CancelLibraryApplet / close
  * preparation step, result only. Confidence: medium (command name), high (signature). */
-uint32_t func_00105928(uint32_t flag) { return RESULT_OK; }
+uint32_t func_001058EC(uint32_t flag) { return RESULT_OK; }
 
 /* USA 00109208  APT IPC SleepSystem 0x00420080 (u64 time as r0:r1). Confidence: high. */
 uint32_t func_00109208(uint32_t time_lo, uint32_t time_hi) { return RESULT_OK; }

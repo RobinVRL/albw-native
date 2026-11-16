@@ -8,6 +8,9 @@
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
 #include "compilefix.h"
+struct _IO_FILE; extern struct _IO_FILE *stderr;
+int fprintf(struct _IO_FILE *, const char *, ...);
+char *getenv(const char *);
 
 extern int func_00100118(int param_1,undefined *param_2,int param_3,int param_4);
 extern int func_003E6760(undefined4 *param_1);
@@ -133,6 +136,15 @@ int * func_00405AE0(undefined4 *param_1,int param_2,int param_3,float *param_4,c
   if (*(int *)(param_3 + 0x80) != 0) {
     puVar4[-0x11] = *(int *)(param_3 + 0x80) + param_3;
   }
+  { static int tr0 = -1;
+    if (tr0 < 0) tr0 = getenv("ALBW_TEXTPROV_TRACE") != 0;
+    if (tr0) {
+      const unsigned char *nm = (const unsigned char *)piVar13 + 0x80;
+      fprintf(stderr, "textbox-build: tb %p provider word %#x +80:", (void *)piVar13, (unsigned)ALBW_AS_U32(param_4[5]));
+      for (int k = 0; k < 0x28; k++) fprintf(stderr, k % 4 ? "%02x" : " %02x", nm[k]);
+      fprintf(stderr, " name %.24s\n", (const char *)piVar13 + 0x8c);
+    }
+  }
   if (param_4[5] != 0.0) {
     local_30 = 0;
     local_2c = 0xffffffff;
@@ -143,6 +155,12 @@ int * func_00405AE0(undefined4 *param_1,int param_2,int param_3,float *param_4,c
     }
     (**(code **)(*(int *)CF_FBITS(param_4[5]) + 8))
               ((int *)CF_FBITS(param_4[5]),&local_38,puVar4[-0x11],CF_FBITS(param_4[6]),piVar13,piVar17[4]);  /* boot agent: param_4[6] is a word (a float through an unprototyped call was promoted to double) */
+    { /* debug: ALBW_TEXTPROV_TRACE=1: the text provider's result (string, length, buffer size) */
+      static int tr = -1;
+      if (tr < 0) tr = getenv("ALBW_TEXTPROV_TRACE") != 0;
+      if (tr) fprintf(stderr, "textprov: fn %#x tb %p str %p len %u size %u limit %#x flags %#x default %u\n", (unsigned)*(int *)(*(int *)CF_FBITS(param_4[5]) + 8), (void *)piVar13,
+                      (void *)local_38, (unsigned)local_34, (unsigned)local_30, (unsigned)local_2c, *(byte *)(param_2 + 0x5e), uVar16);
+    }
     if (local_38 != (uint *)0x0) {
       uVar16 = local_34 & 0xffff;
       if (uVar16 == 0) {

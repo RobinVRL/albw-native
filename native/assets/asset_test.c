@@ -136,8 +136,23 @@ static void survey_bch(const char *name, const uint8_t *buf, size_t n) {
     }
     n_bch_ok++;
     n_shaders += f.shader_count;
+    { /* ALBW_BCH_COUNTS=<substring of the file name>: entries per content section */
+        const char *cw = getenv("ALBW_BCH_COUNTS");
+        if (cw && strstr(name, cw)) {
+            static const char *sec[15] = {"models", "materials", "shaders", "textures", "luts", "lights", "cameras", "fogs",
+                                          "skel_anims", "mat_anims", "vis_anims", "light_anims", "cam_anims", "fog_anims", "scenes"};
+            printf("bch %s:", name);
+            for (int k = 0; k < 15; k++) if (f.counts[k]) printf(" %s=%d", sec[k], f.counts[k]);
+            printf("\n");
+        }
+    }
     for (int i = 0; i < f.texture_count; i++) {
         const BchTexture *t = &f.textures[i];
+        { /* ALBW_TEX_LIST=<substring>: textures whose name contains it */
+            const char *tw = getenv("ALBW_TEX_LIST");
+            if (tw && t->name && strstr(t->name, tw))
+                printf("tex %s | %s %dx%d %s\n", name, t->name, t->width, t->height, pica_tex_format_name(t->format));
+        }
         n_tex++;
         cnt_add(&tex_formats, pica_tex_format_name(t->format), 1);
         uint8_t *img = malloc((size_t)t->width * t->height * 4 + 4);
@@ -157,6 +172,46 @@ static void survey_bch(const char *name, const uint8_t *buf, size_t n) {
         for (int k = 0; k < m->material_count; k++) {
             const BchMaterial *mt = &m->materials[k];
             const char *ref = mt->shader_ref ? mt->shader_ref : "(none)";
+            { /* ALBW_MAT_LIST=<substring of the file, material or texture 0 name>: sampler per unit */
+                const char *want = getenv("ALBW_MAT_LIST");
+                const char *t0 = mt->texture_names[0] ? mt->texture_names[0] : "-";
+                if (want && (strstr(name, want) || (mt->name && strstr(mt->name, want)) || strstr(t0, want) || (m->name && strstr(m->name, want)))) {
+                    printf("mat %s | %s | model %s | %s |", name, mt->name ? mt->name : "?", m->name ? m->name : "?", ref);
+                    for (int u = 0; u < 3; u++)
+                        printf(" t%d %s wrap %u/%u mag %u min %u", u, mt->texture_names[u] ? mt->texture_names[u] : "-",
+                               mt->sampler[u].wrap_s, mt->sampler[u].wrap_t, mt->sampler[u].mag_linear, mt->sampler[u].min_filter);
+                    printf("\n");
+                    if (getenv("ALBW_MAT_FULL")) {
+                        for (int u = 0; u < 3; u++)
+                            printf("    texcoord%d map %u xform %u cam %d flags %#x scale %g %g rot %g trans %g %g\n", u,
+                                   mt->texcoord[u].mapping, mt->texcoord[u].transform_type, (int8_t)mt->texcoord[u].ref_camera,
+                                   mt->texcoord[u].flags, mt->texcoord[u].scale[0], mt->texcoord[u].scale[1], mt->texcoord[u].rotation,
+                                   mt->texcoord[u].translation[0], mt->texcoord[u].translation[1]);
+                        printf("    colours (emi amb dif sp0 sp1 k0-5 blend):");
+                        for (int q = 0; q < 12; q++) printf(" %08x", mt->colors[q]);
+                        printf(" scale %g lightset %u fog %u fraglight %u tex_en %#x\n", mt->color_scale, mt->light_set, mt->fog,
+                               mt->fragment_lighting, mt->texture_enable);
+                        printf("    luts:");
+                        for (int q = 0; q < 8; q++) printf(" %s", mt->lut_names[q] ? mt->lut_names[q] : "-");
+                        printf("\n    stencil %u func %u ref %u mask %#x wmask %#x ops %u %u %u cmask %#x", mt->stencil_test, mt->stencil_func, mt->stencil_ref, mt->stencil_mask, mt->stencil_write_mask, mt->stencil_fail, mt->stencil_zfail, mt->stencil_zpass, mt->color_write_mask);
+                        printf("\n    blend %u eq %u/%u f %u %u %u %u colour %08x atest %u/%u/%u depth %u/%u/%u cull %u buf %#x/%08x\n",
+                               mt->blend_enable, mt->blend_eq_rgb, mt->blend_eq_a, mt->blend_src_rgb, mt->blend_dst_rgb,
+                               mt->blend_src_a, mt->blend_dst_a, mt->blend_color, mt->alpha_test, mt->alpha_func, mt->alpha_ref,
+                               mt->depth_test, mt->depth_func, mt->depth_write, mt->cull, mt->combiner_buffer_cfg,
+                               mt->combiner_buffer_color);
+                        for (int q = 0; q < 6; q++) {
+                            const BchCombiner *cb = &mt->combiner[q];
+                            printf("    tev%d rgb %x %x %x op %u %u %u f %u x%u | a %x %x %x op %u %u %u f %u x%u | k %08x\n", q,
+                                   cb->src_rgb[0], cb->src_rgb[1], cb->src_rgb[2], cb->op_rgb[0], cb->op_rgb[1], cb->op_rgb[2],
+                                   cb->func_rgb, cb->scale_rgb, cb->src_a[0], cb->src_a[1], cb->src_a[2], cb->op_a[0], cb->op_a[1],
+                                   cb->op_a[2], cb->func_a, cb->scale_a, cb->constant);
+                        }
+                        for (int q = 0; q < mt->uniform_count; q++)
+                            printf("    c%u = %g %g %g %g\n", mt->uniforms[q].index, mt->uniforms[q].v[0], mt->uniforms[q].v[1],
+                                   mt->uniforms[q].v[2], mt->uniforms[q].v[3]);
+                    }
+                }
+            }
             int seen = 0;
             for (int j = 0; j < k; j++)
                 if (m->materials[j].shader_ref && mt->shader_ref && !strcmp(m->materials[j].shader_ref, ref)) seen = 1;
@@ -385,6 +440,13 @@ int main(int argc, char **argv) {
                 for (int j = 0; j < sf.shader_count; j++)
                     if (sf.shaders[j].dvlb == sh->dvlb) printf(" %d", sf.shaders[j].program_index);
                 printf("\n");
+                const char *dd = getenv("ALBW_DUMP_DVLB"); /* write each distinct DVLB (disassembly: tools/pica_disasm.py) */
+                if (dd && sh->name) {
+                    char path[600];
+                    snprintf(path, sizeof path, "%s/%s.dvlb", dd, strchr(sh->name, '@') ? strchr(sh->name, '@') + 1 : sh->name);
+                    FILE *f = fopen(path, "wb");
+                    if (f) { fwrite(sh->dvlb, 1, sh->dvlb_size, f); fclose(f); printf("    wrote %s\n", path); }
+                }
             }
             if (sf.shader_count && sf.shaders[0].dvlb)
                 shader_catalogue("DefaultShader DVLB (no suffix)", sf.shaders[0].dvlb, sf.shaders[0].dvlb_size);

@@ -67,6 +67,8 @@
 #include "../render/render.h"
 #include "../render/texdecode.h"
 
+volatile uint32_t *g_mat_watch; /* ALBW_MAT_TRAP (debug) */
+extern long g_plat_frames;
 /* ------------------------------------------------------------------ game memory access */
 #define GA(a) ((uintptr_t)(uint32_t)(a))
 static inline uint8_t G8(uint32_t a, uint32_t o) { return *(const uint8_t *)GA(a + o); }
@@ -256,6 +258,7 @@ typedef struct {
     int vtx_done;
     /* game address of the parameter word being written (index buffer relocations) */
     uint32_t word_addr;
+    uint32_t exec_delta;  /* executed (CALLed) address - read address (VRAM blobs read from staging) */
     uint32_t idx_abs;      /* 0x227 resolved through the relocation table: absolute address */
     int idx_known, idx_u16;
     /* fragment-lighting LUT data words (0x1C8..0x1CF) */
@@ -291,7 +294,19 @@ static void uniform_word(Dec *d, uint32_t v) {
 
 static H3dVtx *emit_vertex_layout(Dec *d);
 
+static uint32_t g_tp_addr[512]; static unsigned g_tp_n; /* ALBW_TEXPARAM_TRACE */
 static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
+    { /* debug: ALBW_TEXPARAM_TRACE=1: where each texture-unit-0 parameter word lives in game memory */
+        static int tt = -1;
+        if (tt < 0) tt = getenv("ALBW_TEXPARAM_TRACE") != NULL;
+        { static int at = -1; if (at < 0) at = getenv("ALBW_ATEST_TRACE") != NULL;
+          if (at && (reg == 0x104 || reg == 0x100 || reg == 0x0E0)) fprintf(stderr, "atest: blob %#x reg %#x value %#x mask %x\n", (unsigned)d->word_addr, reg, v, mask); }
+        if (tt && (reg == 0x83 || reg == 0x93 || reg == 0x9B || reg == 0x84 || reg == 0x94 || reg == 0x9C)) {
+            fprintf(stderr, "texparam: reg %#x word %#x (exec %#x) value %#x mask %x\n", reg, (unsigned)d->word_addr,
+                    (unsigned)(d->word_addr + d->exec_delta), v, mask);
+            if (g_tp_n < 512) g_tp_addr[g_tp_n++] = d->word_addr + d->exec_delta;
+        }
+    }
     if (reg >= 0x300) return;
     uint32_t m = (mask & 1 ? 0xFFu : 0) | (mask & 2 ? 0xFF00u : 0) | (mask & 4 ? 0xFF0000u : 0) | (mask & 8 ? 0xFF000000u : 0);
     d->reg[reg] = (d->reg[reg] & ~m) | (v & m);
@@ -435,7 +450,7 @@ static void dec_finish(Dec *d) {
             op.u.ext.kind = H3D_TEXADDR;
             op.u.ext.a = d->reg[r[4]] << 3;
             op.u.ext.b = (d->reg[r[1]] >> 16 & 0x7FF) | (d->reg[r[1]] & 0x7FF) << 16;
-            op.u.ext.c = (d->reg[r[5]] & 0xF) | ((d->reg[r[3]] >> 16) & 0xF) << 8;
+            op.u.ext.c = (d->reg[r[5]] & 0xF) | ((d->reg[r[3]] >> 16) & 0xF) << 8 | ((d->reg[r[3]] >> 24) & 0xF) << 12; /* format, max / min level (LOD register) */
             ol_push(&d->ops, &op);
         }
         if (d->written[r[0]] || d->written[r[2]]) {
@@ -566,7 +581,9 @@ static uint32_t stage_src(uint32_t addr) {
 
 static int dec_walk(Dec *d, uint32_t addr, uint32_t words) {
     if (!addr || !words || words > (1u << 20)) return -1;
+    uint32_t exec_addr = addr;
     addr = stage_src(addr);
+    d->exec_delta = exec_addr - addr;
     uint32_t i = 0;
     while (i + 1 < words) {
         uint32_t p0 = G32(addr, 4 * i), h = G32(addr, 4 * i + 4);
@@ -586,8 +603,45 @@ static int dec_walk(Dec *d, uint32_t addr, uint32_t words) {
 
 static int g_blobs, g_blob_errors;
 
-/* decode one blob and register its ops; prefix ops (material extras) run first */
-static void convert_blob(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix) {
+/* debug (ALBW_H3D_MODELMAP): the value a blob writes to one register (last write), 0 if none */
+static uint32_t blob_reg(uint32_t addr, uint32_t words, uint32_t reg) {
+    if (!addr || !words) return 0;
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) return 0;
+    uint32_t v = 0;
+    if (!dec_walk(d, addr, words) && d->written[reg]) v = d->reg[reg];
+    free(d->ops.v);
+    free(d);
+    return v;
+}
+
+/* Material texture samplers: the blob's sampler words (0x83 / 0x93 / 0x9B) are a default
+ * (0x2220: repeat / repeat, nearest) in every material; the real state is the material's texture
+ * mapper (3 x 16 bytes: u8 sampler type, u8 wrap u, u8 wrap v, u8 mag filter (0 nearest,
+ * 1 linear), u32 min filter (0 nearest, 1 nearest-mip-nearest, 2 nearest-mip-linear, 3 linear,
+ * 4 linear-mip-nearest, 5 linear-mip-linear), f32 LOD bias, u32 border colour), which the h3d
+ * runtime turns into the sampler words. Wrap values are the PICA ones (0 clamp edge, 1 border,
+ * 2 repeat, 3 mirror). Without it, the tree roots (u < 0, mirrored) wrapped onto the leaves and
+ * every texture was point-sampled. ALBW_NO_MAPPER=1 keeps the blob words (comparison). */
+static void apply_mapper(Dec *d, uint32_t mapper) {
+    static int off = -1;
+    if (off < 0) off = getenv("ALBW_NO_MAPPER") != NULL;
+    if (off || !mapper) return;
+    static const uint16_t preg[3] = {0x83, 0x93, 0x9B};
+    for (int k = 0; k < 3; k++) {
+        if (!d->written[preg[k]]) continue;
+        uint32_t p = mapper + 16 * (uint32_t)k;
+        uint32_t ws = G8(p, 1) & 3, wt = G8(p, 2) & 3, mag = G8(p, 3) & 1, mn = G32(p, 4);
+        if (mn > 5) continue;
+        uint32_t lin = mn >= 3, mip = mn == 2 || mn == 5;
+        uint32_t v = d->reg[preg[k]] & ~(0x2u | 0x4u | 0x700u | 0x7000u | 0x1000000u);
+        d->reg[preg[k]] = v | mag << 1 | lin << 2 | wt << 8 | ws << 12 | mip << 24;
+    }
+}
+
+/* decode one blob and register its ops; prefix ops (material extras) run first; mapper: the
+ * material's texture mapper for its texture blob (0 otherwise) */
+static void convert_blob_m(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix, uint32_t mapper) {
     if (!addr || !words) return;
     Dec *d = calloc(1, sizeof *d);
     if (!d) abort();
@@ -595,6 +649,7 @@ static void convert_blob(uint32_t addr, uint32_t words, const ROp *prefix, int n
     if (dec_walk(d, addr, words)) {
         g_blob_errors++;
     } else {
+        apply_mapper(d, mapper);
         dec_finish(d);
         h3d_blob_set(GA(addr), words * 4, d->ops.v, d->ops.n);
         g_blobs++;
@@ -602,12 +657,20 @@ static void convert_blob(uint32_t addr, uint32_t words, const ROp *prefix, int n
     free(d->ops.v);
     free(d);
 }
+static void convert_blob(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix) {
+    convert_blob_m(addr, words, prefix, nprefix, 0);
+}
 
 /* per-material prefix: the material's DefaultShader variant */
 static void material_prefix(uint32_t params, ROp pre[1], int *npre) {
     *npre = 0;
     uint32_t name = G32(params, 0x104);
     int variant = name ? h3d_variant_of_name((const char *)GA(name)) : -1;
+    { /* debug: ALBW_H3D_SHADERNAMES=1: each material's shader name once */
+        static int sn = -1;
+        if (sn < 0) sn = getenv("ALBW_H3D_SHADERNAMES") != NULL;
+        if (sn) fprintf(stderr, "h3d-shader: params %#x name '%s' -> variant %d\n", (unsigned)params, name ? (const char *)GA(name) : "(none)", variant);
+    }
     if (variant >= 0) {
         ROp op = op_new(ROP_EXT);
         op.u.ext.kind = H3D_PROGRAM;
@@ -743,7 +806,20 @@ void h3d_register_file(uint32_t resfile) {
         uint32_t mats = G32(m, 0x34), nmat = G32(m, 0x38);
         for (uint32_t k = 0; k < nmat && k < 4096; k++) {
             uint32_t mat = mats + k * msz, params = G32(mat, 0);
-            convert_blob(G32(mat, 0x10), G32(mat, 0x14), NULL, 0);
+            { /* ALBW_MAT_TRAP=<material name>: SIGTRAP once with g_mat_watch = &material texture ref 0 (+4) */
+                static const char *mt = (const char *)1;
+                static int done;
+                if (mt == (const char *)1) mt = getenv("ALBW_MAT_TRAP");
+                uint32_t nmp = G32(mat, version >= 0x21 ? 0x28 : 0x54);
+                if (mt && !done && nmp && g_plat_frames > 3000 && !strcmp((const char *)GA(nmp), mt)) {
+                    done = 1;
+                    g_mat_watch = (volatile uint32_t *)GA(mat + 4);
+                    fprintf(stderr, "mat-trap: %s mat %#x refs %#x %#x %#x\n", mt, mat, G32(mat, 4), G32(mat, 8), G32(mat, 12));
+                    raise(SIGTRAP);
+                }
+            }
+            /* texture mapper: v0x21 pointer at +0x18, v0x20 inline at +0x18 */
+            convert_blob_m(G32(mat, 0x10), G32(mat, 0x14), NULL, 0, version >= 0x21 ? G32(mat, 0x18) : mat + 0x18);
             if (params) {
                 ROp pre[1];
                 int npre;
@@ -753,6 +829,21 @@ void h3d_register_file(uint32_t resfile) {
             }
         }
         uint32_t meshes = G32(m, 0x40), nmesh = G32(m, 0x44);
+        if (getenv("ALBW_H3D_MODELMAP")) {
+            fprintf(stderr, "h3d-map: file %#x model %u %#x: %u materials, %u meshes\n", (unsigned)hdr, (unsigned)i, (unsigned)m,
+                    (unsigned)nmat, (unsigned)nmesh);
+            for (uint32_t k = 0; k < nmat && k < 64; k++) {
+                uint32_t mat = mats + k * msz;
+                fprintf(stderr, "h3d-map:   mat %u tex0 %#x tex1 %#x tex2 %#x\n", (unsigned)k,
+                        blob_reg(G32(mat, 0x10), G32(mat, 0x14), 0x85) << 3, blob_reg(G32(mat, 0x10), G32(mat, 0x14), 0x95) << 3,
+                        blob_reg(G32(mat, 0x10), G32(mat, 0x14), 0x9D) << 3);
+            }
+            for (uint32_t k = 0; k < nmesh && k < 256; k++) {
+                uint32_t me = meshes + k * 0x38;
+                fprintf(stderr, "h3d-map:   mesh %u: +0 %08x +4 %08x +20 %08x +24 %08x +28 %08x +2c %08x +30 %08x +34 %08x\n", (unsigned)k,
+                        G32(me, 0), G32(me, 4), G32(me, 0x20), G32(me, 0x24), G32(me, 0x28), G32(me, 0x2C), G32(me, 0x30), G32(me, 0x34));
+            }
+        }
         for (uint32_t k = 0; k < nmesh && k < 65536; k++) {
             uint32_t me = meshes + k * 0x38;
             convert_blob(G32(me, 0x08), G32(me, 0x0C), NULL, 0);
@@ -768,6 +859,12 @@ void h3d_register_file(uint32_t resfile) {
     for (uint32_t i = 0; i < tcnt && i < 65536; i++) {
         uint32_t t = G32(ttbl, 4 * i);
         if (!t) continue;
+        if (getenv("ALBW_H3D_MODELMAP")) { /* texture: unit-0 blob address register, name (+0x18) */
+            uint32_t np = G32(t, 0x1C);   /* name (bch.c: texture +0x1C) */
+            const char *nm = (np > hdr && np - hdr < 0x1000000u) ? (const char *)GA(np) : "?";
+            fprintf(stderr, "h3d-map: file %#x texture %u addr %#x %.48s\n", (unsigned)hdr, (unsigned)i,
+                    blob_reg(G32(t, 0), G32(t, 4), 0x85) << 3, nm);
+        }
         for (int u = 0; u < 3; u++) convert_blob(G32(t, 8 * u), G32(t, 8 * u + 4), NULL, 0);
     }
     int nluts = register_luts(cont);
@@ -1077,7 +1174,7 @@ static void model_trace(uint32_t elem) {
         if (j == nev && nev < 512) {
             void *fr[16];
             ever[nev++] = res;
-            fprintf(stderr, "h3d-models-bt: res %#x names:", res);
+            { extern long g_plat_frames; fprintf(stderr, "h3d-models-bt: frame %ld res %#x names:", g_plat_frames, res); }
             for (uint32_t w = 0; w < 24; w++) {   /* words of the ResModel that point at a C string */
                 uint32_t p = G32(res, 4 * w);
                 if (p < res - 0x200000u || p > res + 0x200000u) continue;   /* same file only */
@@ -1085,6 +1182,14 @@ static void model_trace(uint32_t elem) {
                 int l = 0;
                 while (l < 40 && str[l] >= 0x20 && str[l] < 0x7F) l++;
                 if (l >= 3 && str[l] == 0) fprintf(stderr, " +%#x \"%s\"", 4 * w, (const char *)str);
+            }
+            {
+                uint32_t np = G32(res, 0x84);   /* ResModel name (bch.c) */
+                const unsigned char *str = np ? (const unsigned char *)GA(np) : NULL;
+                int l = 0;
+                while (str && l < 40 && str[l] >= 0x20 && str[l] < 0x7F) l++;
+                if (str && l && str[l] == 0) fprintf(stderr, " name \"%s\"", (const char *)str);
+                fprintf(stderr, " skinned %u skel %#x", G8(G32(elem, 0x8C), 0x16B), G32(G32(elem, 0x8C), 0x24));
             }
             fprintf(stderr, "\n");
             backtrace_symbols_fd(fr, backtrace(fr, 16), 2);
@@ -1099,8 +1204,73 @@ static void model_trace(uint32_t elem) {
     }
 }
 
+volatile float *g_skel_watch; /* ALBW_SKEL_TRAP (debug) */
+volatile uint32_t g_model_watch; /* ALBW_MODEL_TRAP (debug) */
 void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
+    { /* ALBW_TEXPARAM_TRACE: re-read the decoded sampler words once, at platform frame 900 */
+        extern long g_plat_frames;
+        static int done;
+        if (g_tp_n && !done && g_plat_frames >= 900) {
+            done = 1;
+            unsigned changed = 0;
+            for (unsigned i = 0; i < g_tp_n; i++) {
+                uint32_t now = G32(g_tp_addr[i], 0);
+                if (now != 0x2220) {
+                    changed++;
+                    if (changed <= 3) {
+                        fprintf(stderr, "texparam-now: word %#x = %#x; around:", g_tp_addr[i], now);
+                        for (int k = -8; k < 8; k++) fprintf(stderr, " %08x", G32(g_tp_addr[i] + 4 * k, 0));
+                        fprintf(stderr, "\n");
+                    }
+                }
+            }
+            fprintf(stderr, "texparam-now: %u of %u words differ from 0x2220 at frame %ld\n", changed, g_tp_n, g_plat_frames);
+        }
+    }
     model_trace(elem);
+    { /* ALBW_MODEL_TRAP=<name>: once, SIGTRAP with g_model_watch = that model instance (gdb) */
+        static const char *mt = (const char *)1;
+        static int done;
+        if (mt == (const char *)1) mt = getenv("ALBW_MODEL_TRAP");
+        if (mt && !done) {
+            uint32_t res = G32(G32(elem, 0x90), 0x2C), np = G32(res, 0x84);
+            if (np && !strcmp((const char *)GA(np), mt)) { done = 1; g_model_watch = G32(elem, 0x8C); raise(SIGTRAP); }
+        }
+    }
+    { /* ALBW_SKEL_DUMP=<model name>: that model's skeleton (bone world matrices) every 60 frames */
+        static const char *want = (const char *)1;
+        if (want == (const char *)1) want = getenv("ALBW_SKEL_DUMP");
+        extern long g_plat_frames;
+        static long last = -1;
+        static uint32_t last_model;
+        uint32_t model = G32(elem, 0x8C), res = G32(G32(elem, 0x90), 0x2C), np = G32(res, 0x84);
+        if (want && np && !strcmp((const char *)GA(np), want) && g_plat_frames % 60 == 0 &&
+            (g_plat_frames != last || model != last_model)) {
+            last = g_plat_frames; last_model = model;
+            uint32_t skel = G32(model, 0x24), world = G32(skel, 0x14), bones = G32(res, 0x70), nb = G32(res, 0x74);
+            fprintf(stderr, "skel: frame %ld model %#x skel %#x bones %u\n", g_plat_frames, model, skel, nb);
+            { /* ALBW_SKEL_TRAP=1: once, SIGTRAP with g_skel_watch = &world.z of the instance (gdb watchpoint) */
+                static int trapped;
+                if (!trapped && getenv("ALBW_SKEL_TRAP")) { trapped = 1; g_skel_watch = (volatile float *)GA(model + 0x80 + 11 * 4); raise(SIGTRAP); }
+            }
+            {
+                const float *b8 = (const float *)GA(model + 0x80), *rr = (const float *)GA(model + 0xE0);
+                fprintf(stderr, "skel:   base+0x80 [%7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f] scale %g %g %g rotR [%6.3f %6.3f %6.3f | %6.3f %6.3f %6.3f | %6.3f %6.3f %6.3f] t134 %g t138 %g a154 %g a158 %g\n",
+                        b8[0], b8[1], b8[2], b8[3], b8[4], b8[5], b8[6], b8[7], b8[8], b8[9], b8[10], b8[11],
+                        GF(model, 0x74), GF(model, 0x78), GF(model, 0x7C), rr[0], rr[1], rr[2], rr[3], rr[4], rr[5], rr[6], rr[7], rr[8],
+                        GF(model, 0x134), GF(model, 0x138), GF(model, 0x154), GF(model, 0x158));
+                const float *w = (const float *)GA(model + 0x104);
+                fprintf(stderr, "skel:   model+0x104 [%7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f]\n",
+                        w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9], w[10], w[11]);
+            }
+            for (uint32_t b = 0; G8(model, 0x16B) && b < nb && b < 2; b++) {
+                const float *m = (const float *)GA(world + b * 0x30);
+                const char *bn = (const char *)GA(G32(bones + b * 0x64, 0x5C));
+                fprintf(stderr, "skel:   bone %u %-12s [%7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f]\n", b, bn,
+                        m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11]);
+            }
+        }
+    }
     uint32_t prev = G32(data_0070B960, 0x1C);
     if (!(data_00725BCC & 1) && func_00100174(&data_00725BCC)) data_00725BD0 = 0x006F61D0;
     if (prev) {
@@ -1124,6 +1294,34 @@ void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
     }
     uint32_t mesh = G32(elem, 0x90);
     int lists = (G32(model, 0x164) & 0x2000000u) != 0;
+    { /* debug ALBW_MESH_LIST=<model name>[,frame]: the meshes of that model drawn in one frame
+         (index, visibility node, material, list-drawn) and the model's mesh / node counts */
+        static const char *ml = (const char *)1; static long mf = 5400;
+        if (ml == (const char *)1) { ml = getenv("ALBW_MESH_LIST"); const char *c = ml ? strchr(ml, ',') : NULL; if (c) mf = atol(c + 1); }
+        extern long g_plat_frames;
+        uint32_t res = G32(mesh, 0x2C), np = res ? G32(res, 0x84) : 0;
+        if (ml && g_plat_frames == mf && np && !strncmp((const char *)GA(np), ml, strcspn(ml, ","))) {
+            uint32_t idx = (mesh - G32(res, 0x40)) / 0x38;
+            fprintf(stderr, "meshlist: f=%ld %s mesh %u/%u node %u mat %u lists %d nodes %u modelvis %#x\n", g_plat_frames,
+                    (const char *)GA(np), idx, G32(res, 0x44), G16(mesh, 4), G16(mesh, 0), lists, G32(res, 0x80),
+                    G32(model, 0x13C));
+            static int once;
+            if (!once) {
+                once = 1;
+                uint32_t mt = G32(res, 0x40), cn = G32(res, 0x68);
+                for (uint32_t i = 0; i < G32(res, 0x44); i++) {
+                    uint32_t me = mt + i * 0x38, cu = cn + i * 0x1C;
+                    fprintf(stderr, "meshall: %u node %u centre %.2f %.2f %.2f cull nodes %u boxes %u ib %u flags %#x\n", i, G16(me, 4),
+                            GF(me, 0x20), GF(me, 0x24), GF(me, 0x28), G32(cu, 4), G32(cu, 0xC), G32(cu, 0x14), G32(cu, 0x18));
+                }
+            }
+        }
+    }
+    { /* experiment: ALBW_NO_CULL_LISTS=1 draws every mesh of list-drawn (room) models */
+        static int nc = -1;
+        if (nc < 0) nc = getenv("ALBW_NO_CULL_LISTS") != NULL;
+        if (nc) lists = 0;
+    }
     if (G8(model, 0x16B)) {
         if (lists) func_00568224(mesh, ctx, G32(model, 0x24), element_list(elem, model), loc + 0x18);
         else func_005683D0(mesh, ctx, G32(model, 0x24), loc + 0x18);
@@ -1131,6 +1329,78 @@ void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
         if (lists) func_00568798(mesh, ctx, element_list(elem, model), 0);
         else func_005681C0(mesh, ctx, 0, y);
     }
+}
+
+/* USA 00387E58  draw one model's meshes with its own world matrix (render object +0xA8 model
+ * instance, CmdCtx *ctx, uniform locations, x): reached through a vtable (no static callers): the
+ * stencil shadow-volume models (cone_f / cone_b / cube / pyramid, material mat_shadow) and other
+ * single-model draws. The original writes the matrix as RAW uniform words (0x2C0 | f32, 12 floats
+ * via 001150CC: 16 words) - dropped by the renderer, so these meshes drew with a stale matrix.
+ * Same logic, matrix as a recorded op (as 00170558): model +0x30 visible; unskinned: world
+ * (+0x104) -> location +0x1A (UnivReg); skinned: identity (static, guarded) -> +0x0A (WrldMtx); then
+ * every mesh of the ResModel (model +0x50 -> +8: +0x40 meshes, +0x44 count) through 005681C0 or
+ * 005683D0 (skeleton +0x24, UnivReg location +0x18). ALBW_H3D_387E58=0: the converted text
+ * behaviour is not kept (no fallback); ALBW_H3D_387E58_TRACE=1 counts calls. High. */
+void func_00387E58(uint32_t obj, uint32_t *ctx, uint32_t loc, uint32_t x) {
+    (void)x;
+    uint32_t model = G32(obj, 0xA8);
+    if (!model || !G8(model, 0x30)) return;
+    {
+        static int tr = -1; static unsigned n;
+        if (tr < 0) tr = getenv("ALBW_H3D_387E58_TRACE") != NULL;
+        if (tr && n++ % 300 == 0) {
+            uint32_t res = G32(G32(model, 0x50), 8), np = G32(res, 0x84);
+            fprintf(stderr, "h3d: 00387E58 #%u model %#x res %s skinned %u\n", n, model, np ? (const char *)GA(np) : "?", G8(model, 0x16B));
+        }
+    }
+    if (!G8(model, 0x16B)) {
+        float m[12];
+        read_mtx(model + 0x104, m, 12);
+        ctx_mtx34(ctx, G8(loc, 0x1A), m);
+    } else {
+        if (!(data_007270F4 & 1) && func_00100174(&data_007270F4)) {
+            static const float id[12] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0};
+            memcpy(data_007AF2A4, id, sizeof id);
+        }
+        ctx_mtx34(ctx, G8(loc, 0x0A), data_007AF2A4);
+    }
+    uint32_t res = G32(G32(model, 0x50), 8);
+    uint32_t meshes = res + 0x40;
+    int32_t n = (int32_t)G32(res, 0x44);
+    for (int32_t i = 0; i < n; i++) {
+        uint32_t mesh = G32(meshes, 0) + (uint32_t)i * 0x38;
+        if (!G8(model, 0x16B)) func_005681C0(mesh, ctx, 0, 0);
+        else func_005683D0(mesh, ctx, G32(model, 0x24), loc + 0x18);
+    }
+}
+
+/* USA 002C3870  draw a simple model with an object-owned matrix (obj, CmdCtx *ctx, uniform
+ * locations, ResModel holder: +8 -> +0x40 first mesh): when obj +0xA0 is set it clears it, sets
+ * +0xA6, rebuilds the matrix +0x34 = 001151F8(+0x64, +0x88) and scales its columns by
+ * +0x94 / +0x98 / +0x9C; then the matrix to location +0x1A (UnivReg) and 005681C0 on the first
+ * mesh. The original writes the matrix as RAW uniform words (dropped by the renderer: the mesh
+ * drew with a stale matrix); here a recorded op. Returns 0 (the ARM returns r0 as left by 005681C0; the one caller, 00518694's element loop, ignores it). Medium-high (from the
+ * Ghidra text; the column-scale order as written there). */
+int32_t func_001151F8(uint32_t *out, uint32_t *a, uint32_t *b);
+int32_t func_002C3870(uint32_t obj, uint32_t *ctx, uint32_t loc, uint32_t res) {
+    {
+        static int tr = -1; static unsigned n;
+        if (tr < 0) tr = getenv("ALBW_H3D_387E58_TRACE") != NULL;
+        if (tr && n++ % 300 == 0) fprintf(stderr, "h3d: 002C3870 #%u obj %#x\n", n, obj);
+    }
+    if (G8(obj, 0xA0)) {
+        *(uint8_t *)GA(obj + 0xA0) = 0;
+        *(uint8_t *)GA(obj + 0xA6) = 1;
+        func_001151F8((uint32_t *)GA(obj + 0x34), (uint32_t *)GA(obj + 0x64), (uint32_t *)GA(obj + 0x88));
+        float sx = GF(obj, 0x94), sy = GF(obj, 0x98), sz = GF(obj, 0x9C);
+        float *m = (float *)GA(obj + 0x34);
+        for (int r = 0; r < 3; r++) { m[4 * r] *= sx; m[4 * r + 1] *= sy; m[4 * r + 2] *= sz; }
+    }
+    float m[12];
+    read_mtx(obj + 0x34, m, 12);
+    ctx_mtx34(ctx, G8(loc, 0x1A), m);
+    func_005681C0(G32(G32(res, 8), 0x40), ctx, 0, 0);
+    return 0;
 }
 
 /* ================================================================== material / lighting uniforms */
@@ -1231,6 +1501,19 @@ void func_00170378(uint32_t elem, uint32_t *ctx, uint32_t *cache, const float *n
     ((int16_t *)cache)[3] = (int16_t)G16(env, 0x22);
     float m[12];
     memcpy(m, normal, sizeof m);
+    ctx_mtx34(ctx, G8(loc, 0x12), m);
+    static const float g[4] = {0, 0, 0, 1}, dir[4] = {0, 1, 0, 0};
+    ctx_floats(ctx, G8(loc, 0x22), g, 1);
+    ctx_floats(ctx, G8(loc, 0x2A), g, 1);
+    ctx_floats(ctx, G8(loc, 0x32), dir, 1);
+}
+
+/* NormMtx (location +0x12 of the shader's location table) = mtx (3x4), HslGCol = HslSCol =
+ * (0, 0, 0, 1), HslSDir = (0, 1, 0, 0): the uniform block of 00170378, also written as raw words
+ * by 00518694 (native/compilefix/func_00518694.c). */
+void albw_h3d_norm_hemi(uint32_t *ctx, uint32_t loc, const float *mtx) {
+    float m[12];
+    memcpy(m, mtx, sizeof m);
     ctx_mtx34(ctx, G8(loc, 0x12), m);
     static const float g[4] = {0, 0, 0, 1}, dir[4] = {0, 1, 0, 0};
     ctx_floats(ctx, G8(loc, 0x22), g, 1);

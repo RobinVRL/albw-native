@@ -15,7 +15,7 @@ extern int func_0051D2F4(int *param_1,int param_2,int param_3,int param_4,float 
 extern int func_00520FC0(void);
 extern int func_005211F4(int param_1,float fparam_0,float fparam_1);
 extern int func_0053F480(int param_1);
-extern int func_00556E94(int param_1);
+extern int func_00556E64(int param_1);
 extern int func_0058E2B8(int *param_1);
 extern int func_0065B158(undefined4 *param_1,undefined1 param_2);
 extern int func_0068C690(float *param_1);
@@ -74,7 +74,7 @@ undefined4 func_001B369C(int param_1)
   if (0x13 < *(ushort *)(param_1 + 0x918)) {
     iVar5 = *DAT_001b3940;
     iVar2 = func_0053F480(iVar5);
-    if ((iVar2 != 0) && (bVar1 = func_00556E94(iVar5), !bVar1)) {
+    if ((iVar2 != 0) && (bVar1 = func_00556E64(iVar5), !bVar1)) {
       iVar2 = func_00520FC0();
       fVar8 = *(float *)(iVar2 + 4) - *(float *)(param_1 + 0x3d4);
       if (fVar8 <= DAT_001b3944) {

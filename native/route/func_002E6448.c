@@ -13,7 +13,7 @@
 #include "route.h"
 
 extern uint32_t data_0070FB60[];
-int func_00556E94(int player);
+int func_00556E64(int player);
 int func_003521F0(void *p, int a);
 int func_004F70A8(char *self);
 uint32_t func_005568E8(int player);
@@ -33,7 +33,7 @@ void func_0015133C(int obj, void *m);
 
 void func_002E6448(char *self)
 {
-    func_003521F0(RAT(self, 0x324), func_00556E94((int)data_0070FB60[0]));
+    func_003521F0(RAT(self, 0x324), func_00556E64((int)data_0070FB60[0]));
     if (func_004F70A8(self) == 0)
         return;
     char *sm = RAT(self, 0x8BC);

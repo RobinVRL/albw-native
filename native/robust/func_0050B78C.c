@@ -1,11 +1,12 @@
+/* Renamed from func_0050B788.c (2026-11-16, BOOT_LOG 119): the body is EU 0050B764, which the corrected EU/USA map names USA 0050B78C. */
 /* USA 0050B788 <- EU 0050B764: constructor of the actor class aliased Object_0050B78C
  * (native/symbol_aliases.txt maps _ZN15Object_0050B78CC1EPv to it); a one-state ("cState_Wait")
- * actor with a model and an animation-slot set. Called as func_0050B788(this, params) by its
+ * actor with a model and an animation-slot set. Called as func_0050B78C(this, params) by its
  * factory 0060B2A0; returns this.
  *
  * What was wrong in the Ghidra version: the function table has a bogus extra start at USA 0050B78C
  * (EU 0050B768, the instruction after the push), so Ghidra cut this function into a 1-instruction
- * prologue and typed it `int func_0050B788(void)`: `this` and `params` became in_r0/in_r1
+ * prologue and typed it `int func_0050B78C(void)`: `this` and `params` became in_r0/in_r1
  * (uninitialised natively), i.e. the whole object was constructed at a garbage address. Also the
  * inlined changeState(0) called the state's enter PMF as `(*pcVar13)()` with no `this` (class B
  * pattern without the UNRECOVERED_JUMPTABLE name), and in_s0 / extraout_r1 were phantom arguments
@@ -54,7 +55,7 @@ void func_00168E9C(char *self, char *model, int force);
 void func_004D8AEC(float *p, uint32_t a, float *b);
 void func_004CEAF0(void *actor);
 
-void *func_0050B788(char *self, void *params) {
+void *func_0050B78C(char *self, void *params) {
     func_00150E40(self, params);
     FLD(self, 0x000, void *) = data_006EE930;
     FLD(self, 0x320, void *) = data_006EE930 + 0x54;

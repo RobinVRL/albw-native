@@ -35,8 +35,8 @@ extern int func_00520FC0(void);
 extern int func_00520FD4(void);
 extern int func_0052FBA0(int param_1,uint param_2);
 extern int func_0053F480(int param_1);
-extern int func_00556B94(int param_1);
-extern int func_00556E94(int param_1);
+extern int func_00556B54(int param_1);
+extern int func_00556E64(int param_1);
 extern int func_00556EAC(int param_1,int param_2);
 extern float fRam002f1024;
 extern float DAT_002f0bb4;
@@ -539,7 +539,7 @@ LAB_002f12b8:
     iVar7 = local_48;
   }
   if (iVar3 == 0 || iVar7 == 0) goto LAB_002f1320;
-  bVar1 = func_00556E94(iVar7);
+  bVar1 = func_00556E64(iVar7);
   iVar7 = _DAT_002f147c;
   if (bVar1) {
     param_1[0x2d6] = 0xf0;
@@ -551,7 +551,7 @@ LAB_002f1304:
     bVar1 = func_00556EAC(local_48,0);
     if ((((!bVar1) && (bVar1 = func_00556EAC(local_48,1), !bVar1)) &&
         (bVar1 = func_00556EAC(local_48,0x68), !bVar1)) &&
-       ((iVar7 = func_0053F480(local_48), iVar7 == 0 && (bVar1 = func_00556B94(local_48), !bVar1))))
+       ((iVar7 = func_0053F480(local_48), iVar7 == 0 && (bVar1 = func_00556B54(local_48), !bVar1))))
     {
       param_1[0x2d6] = 0;
       param_1[0x2d7] = (int)ALBW_AS_U32(fVar16);

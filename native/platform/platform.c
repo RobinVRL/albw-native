@@ -1,11 +1,22 @@
 /* SDL3 + OpenGL 3.3 platform layer. */
 #include "platform.h"
-void albw_sched_block_begin(void);  /* native/sdk/os.c */
-void albw_sched_block_end(void);
+/* native/sdk/os.c (app-core scheduler) in the game build; weak no-ops here so the platform layer
+ * also links on its own (asset viewer, Qt frontend, tests) */
+__attribute__((weak)) void albw_sched_block_begin(void) {}
+__attribute__((weak)) void albw_sched_block_end(void) {}
+/* the same for the renderer (native/render/render.c: internal resolution) and the profiler
+ * (native/runtime/prof.c), which builds without them (asset viewer, render tests) lack */
+#include "../render/render.h"
+__attribute__((weak)) int render_ready(void) { return 0; }
+__attribute__((weak)) int render_get_scale(void) { return 1; }
+__attribute__((weak)) void render_set_scale(int scale) { (void)scale; }
+__attribute__((weak)) void prof_frame(void) {}
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
 /* Screen layout engine (presets, custom layout, touch mapping), shared with the Qt frontend.
  * Compiled into this translation unit so the build scripts that compile platform.c alone
@@ -119,6 +130,8 @@ static int plat_windows_init(void);
 static void plat_set_windows(int separate, int save);
 static void plat_layout_changed(void);
 static void plat_layout_cursor(int which);
+static int g_menu_open, g_menu_sel, g_quit_req;   /* Esc menu (menu.c) */
+static char g_menu_note[160];
 
 typedef struct { GLuint fbo, color, depth; int w, h; } Target;
 static Target screens[2];
@@ -148,6 +161,24 @@ static void target_init(Target *t, int w, int h) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+/* Internal resolution (Esc menu, layout.cfg render_scale, --render-scale, ALBW_RENDER_SCALE):
+ * the renderer's surfaces and these screen targets are re-created at the new multiple. */
+static int g_want_render_scale;
+static void plat_apply_render_scale(int r) {
+    if (r < 1 || r > 8) return;
+    render_set_scale(r);
+    if (render_get_scale() != r) return;
+    for (int i = 0; i < 2; i++) {
+        Target *t = &screens[i];
+        glDeleteFramebuffers(1, &t->fbo);
+        glDeleteRenderbuffers(1, &t->depth);
+        glDeleteTextures(1, &t->color);
+        target_init(t, (i == SCREEN_TOP ? TOP_W : BOTTOM_W) * r, SCREEN_H * r);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    cfg.render_scale = r;
+}
+
 static const char *BLIT_VS =
     "#version 330 core\n"
     "uniform vec4 rect; out vec2 uv;\n"
@@ -161,7 +192,22 @@ static const char *BLIT_FS =
 int plat_init(const char *title, const PlatConfig *c) {
     cfg = *c;
     if (cfg.scale < 1) cfg.scale = 2;
-    if (cfg.render_scale < 1) cfg.render_scale = 1;
+    {
+        /* GPU on NVIDIA + Wayland: this 32-bit build's EGL needs the 32-bit egl-wayland platform
+         * library; without it EGL falls back to Mesa's software rasteriser (llvmpipe: ~20-25 fps,
+         * every core busy). X11 (XWayland) reaches the GPU through the 32-bit NVIDIA GLX, so
+         * prefer it in that case unless the user chose a driver (SDL_VIDEO_DRIVER). */
+        const char *drv = getenv("SDL_VIDEO_DRIVER");
+        if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
+            const char *libs[] = {"/usr/lib32/libnvidia-egl-wayland.so.1", "/usr/lib/i386-linux-gnu/libnvidia-egl-wayland.so.1"};
+            int have = 0;
+            for (size_t i = 0; i < sizeof libs / sizeof *libs; i++) have |= access(libs[i], F_OK) == 0;
+            if (!have) {
+                SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11,wayland");
+                fprintf(stderr, "platform: NVIDIA without 32-bit egl-wayland: using X11 for GPU OpenGL\n");
+            }
+        }
+    }
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return -1;
@@ -179,6 +225,12 @@ int plat_init(const char *title, const PlatConfig *c) {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
     snprintf(g_layout_base_title, sizeof g_layout_base_title, "%s", title);
     layout_load(&g_layout_cfg, NULL);  /* defaults if there is no layout.cfg yet */
+    {   /* internal resolution: ALBW_RENDER_SCALE, else --render-scale, else layout.cfg render_scale */
+        const char *rs = getenv("ALBW_RENDER_SCALE");
+        int r = rs && atoi(rs) >= 1 && atoi(rs) <= 8 ? atoi(rs) : c->render_scale >= 1 ? c->render_scale : g_layout_cfg.render_scale;
+        cfg.render_scale = r >= 1 && r <= 8 ? r : 1;
+        g_want_render_scale = cfg.render_scale;
+    }
     g_separate = g_layout_cfg.separate;
     const char *wm = getenv("ALBW_WINDOWS");  /* for this run only: not written to layout.cfg */
     if (wm && *wm) {
@@ -204,6 +256,12 @@ int plat_init(const char *title, const PlatConfig *c) {
     glGetIntegerv(GL_MINOR_VERSION, &minor);
     fprintf(stderr, "GL: %s | %s | %s (context %d.%d)\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER),
             glGetString(GL_VERSION), major, minor);
+    {
+        const char *rnd = (const char *)glGetString(GL_RENDERER);
+        if (rnd && (strstr(rnd, "llvmpipe") || strstr(rnd, "softpipe") || strstr(rnd, "SWR")))
+            fprintf(stderr, "GL: WARNING: software rasteriser (%s): expect ~20-25 fps and every core busy.\n"
+                    "    On NVIDIA + Wayland the 32-bit EGL needs lib32 egl-wayland; or run with SDL_VIDEO_DRIVER=x11.\n", rnd);
+    }
     if (major * 10 + minor < 33) {
         fprintf(stderr, "OpenGL %d.%d is too old: 3.3 is required.\n", major, minor);
         return -1;
@@ -487,6 +545,8 @@ static void plat_separate_cycle(int back) {
  * Where the two screens go in the joined window: presets or a custom layout, saved in layout.cfg.
  * (F5 and the separate-window meaning of F2-F4: see the window mode section above.)
  *   F1              frontend menu (input.cfg binding; input.c)
+ *   Escape          Esc menu: pause + window / layout / filter / fullscreen options, quit
+ *                   (menu.c; QUIT binding of input.cfg; ALBW_ESC_QUITS=1 restores quit-on-Esc)
  *   F2 / Shift+F2   next / previous preset
  *   F3              custom layout editor on/off (Esc also leaves it). In the editor:
  *                   left drag = move a screen, drag a corner or right drag = resize,
@@ -673,7 +733,7 @@ static void plat_layout_overlay(void) {
 }
 
 /* presented frames (plat_end_frame calls), the frame numbers of ALBW_SHOT and ALBW_PRESS */
-static long g_plat_frames;
+long g_plat_frames; /* platform frame counter (also read by debug traces) */
 
 /* ALBW_PRESS=<frame>:<button>[:<frames>][,...] (debug aid, headless runs): hold a 3DS button from
  * that presented frame on for <frames> frames (default 6). Buttons: A B X Y L R START SELECT UP
@@ -710,6 +770,7 @@ static uint32_t scripted_keys(void) {
 }
 
 int plat_poll(void) {
+    if (g_quit_req) return 0;   /* "Quit game" in the Esc menu */
     uint32_t prev = in.held;
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
@@ -720,7 +781,14 @@ int plat_poll(void) {
     /* buttons (keyboard kb, controllers gp), circle pad (+ its direction bits cp), C-stick,
      * motion, frontend menu: input.c, mapping from input.cfg */
     uint32_t kb, gp, cp;
-    if (!input_update(&in, &kb, &gp, &cp)) return 0;
+    if (!input_update(&in, &kb, &gp, &cp)) {   /* QUIT binding (Escape): the Esc menu, not an exit */
+        static int esc_quits = -1;
+        if (esc_quits < 0) esc_quits = getenv("ALBW_ESC_QUITS") != NULL;
+        if (esc_quits) return 0;
+        g_menu_open = 1;
+        g_menu_sel = 0;
+        g_menu_note[0] = 0;
+    }
     if (g_geom_dirty_ns && plat_ticks_ns() - g_geom_dirty_ns > 500000000ull) {  /* moves settled */
         g_geom_dirty_ns = 0;
         if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());
@@ -789,6 +857,11 @@ static void shot_maybe(void) {
     if (!init) { init = 1; spec = getenv("ALBW_SHOT"); }
     frame++;
     g_plat_frames = frame;
+    { /* ALBW_TRAP_FRAME=<n>: SIGTRAP once at presented frame n (gdb inspection of a given moment) */
+        static long trap = -2;
+        if (trap == -2) { const char *e = getenv("ALBW_TRAP_FRAME"); trap = e ? atol(e) : -1; }
+        if (trap > 0 && frame == trap) raise(SIGTRAP);
+    }
     if (!spec) return;
     int hit = 0;
     for (const char *s = spec; *s;) {
@@ -847,8 +920,11 @@ static void plat_composite(const Layout *l) {
     }
 }
 
+#include "menu.c"   /* Esc menu overlay (pauses the game inside plat_end_frame) */
+
 void plat_end_frame(void) {
     shot_maybe();
+    prof_frame();
     SDL_Window *last;   /* presented after the block below starts: may wait for vsync */
     if (!g_separate) {
         plat_layout_update();
@@ -876,6 +952,17 @@ void plat_end_frame(void) {
      * scheduling) the other game threads run meanwhile, as during a 3DS vblank wait */
     albw_sched_block_begin();
     if (last) SDL_GL_SwapWindow(last);
+    if (g_want_render_scale && render_ready()) {   /* the start scale, once the renderer is up */
+        if (g_want_render_scale != render_get_scale()) plat_apply_render_scale(g_want_render_scale);
+        g_want_render_scale = 0;
+    }
+    {   /* ALBW_RESCALE_AT=<frame>:<scale> (debug): the Esc menu's Resolution change at that frame */
+        static long at = -2; static int to;
+        static long nf;
+        if (at == -2) { const char *e = getenv("ALBW_RESCALE_AT"); at = e ? atol(e) : -1; to = e && strchr(e, ':') ? atoi(strchr(e, ':') + 1) : 0; }
+        if (at > 0 && ++nf == at && render_ready()) plat_apply_render_scale(to);
+    }
+    if (g_menu_open) menu_run();   /* Esc menu: the game is paused here until it closes */
 
     /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate) */
     next_frame_ns += 16666667ull;

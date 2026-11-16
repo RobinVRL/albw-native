@@ -585,6 +585,19 @@ static int alpha_only(const uint8_t *texmap) {
  * 00404CF0); b1..b6 = rotate/flip bits of each map (kept in material +0x6A, recomputed unless
  * +0x9E bit 2). High. */
 uint32_t *func_004018A8(uint8_t *d, uint32_t *p, uint8_t *m) {
+    { /* debug ALBW_LYT_MATS=<frame>: name-like strings in each material drawn that frame */
+        static long want = -2; extern long g_plat_frames;
+        if (want == -2) { const char *e = getenv("ALBW_LYT_MATS"); want = e ? atol(e) : -1; }
+        if (want >= 0 && g_plat_frames == want) {
+            fprintf(stderr, "lytmat: %p", (void *)m);
+            for (int o = 0; o < 0x60; o++) {
+                int l = 0;
+                while (o + l < 0x60 && m[o + l] >= 0x20 && m[o + l] < 0x7F) l++;
+                if (l >= 3 && m[o + l] == 0 && (o == 0 || m[o - 1] == 0)) { fprintf(stderr, " +%#x \"%s\"", o, (const char *)m + o); o += l; }
+            }
+            fprintf(stderr, "\n");
+        }
+    }
     int empty = B8(d, 0x30) == 0;
     uint32_t n = U32(m, 0x78) & 3;
     const uint8_t *maps = PTR(m, 0x7C);

@@ -87,6 +87,35 @@ To integrate (tools/build_decomp.py, reconvert_one.py):
 5. eu_fun_to_usa: build_decomp's eu2usa.update(extra) lets extra_functions.json override map entries; 128 extras sit at corrected map starts under guessed names (consistent today, see extra_function_aliases). Either keep them (no change in behaviour) or make the map win and drop those extras.
 6. Native sources with copied wrong names (20 references, mostly native/compilefix + native/route `func_00556E94`): listed under native_sources (WRONG = calls the EU function the Ghidra name pointed at); fix by hand.
 
+## Critical missing pieces (2026-11-16 audit; in recommended order)
+
+1. **Wrong function bodies from the pre-audit EU<->USA map** (tools/stale_map_scan.py): 119 linked
+   Ghidra texts are another function's body (e.g. 00521100 runs EU 00521084, not 005210D8), and
+   ~270 Ghidra callers use the old names. Corrected dumps are ready (build/ghidra_mapfix, 124 files,
+   120 compile); integrate per "EU/USA map fix: integration" above. Any of these can misbehave
+   anywhere in the game, so do this before chasing individual gameplay bugs.
+2. **Particle effects (nw::eft) do not exist at runtime**: the resources load (002E32DC JackAll at
+   boot, 002E3494 Demo at frame 183) and the per-frame manager runs (002E3DF4 -> 003F6FBC), but no
+   emitter is ever created or calculated (gdb: 0 calls to the emitter vtables 0x6EFDEC / 0x6EFE14 /
+   0x6EFE3C, their draws 003F43DC / 003F4D34 / 003F5498 / 003F5734 or the draw setup 003F0080 /
+   003F2E98 / 003F31AC through frame 2900). And even created emitters could not draw: the renderer
+   runs only recorded ops and skips raw PICA commands, and the eft producers (shader upload hash ->
+   RPROG_EFT, uniforms, draws) were never written (render/effects.c holds the GLSL only; the
+   stripe family, programs 14 / 17 / 19, is not written). Missing everywhere: the title fairy
+   trail, the dream nebula, sparkles, splashes, hits, item effects.
+3. **Unimplemented functions that stop the game when reached** (build/stubs.c tripwires):
+   func_001A3F04, 00200080, 00205E20, 002A0078, 002A018C, 0050B78C, plus the Ghidra intrinsics
+   __sqrtf / coprocessor_function / coprocessor_load in converted text and bogus targets
+   (1FF80000, FE6533C4, FE6D27C8, FEADFFF6, FEAE0002) that mark mis-converted calls.
+4. **Known converter defect classes not fully swept**: lost float arguments
+   (tools/lost_float_scan.py; 89 matched functions unverified), lost Vec3 / stack0x stores
+   (tools/stack0x_scan.py: 179 candidates unreviewed), bool-in-%al (boolret covers 689).
+5. **Other raw-command features dropped by the renderer**: fog (0x0E0 / 0x0E1), raw uniform
+   writers (00387E58, 00171510), shadow-marking draws on the flyover.
+6. **Gameplay beyond the first yard untested**: saving at the vane, Hyrule field, combat, items,
+   the item / map menus on the bottom screen, wall-merging (FlatLink models), dungeons, Lorule.
+7. Smaller visual items: fence flicker, SoliderPaint variant, grass 1-2 % dark, water look.
+
 ## Coordination with the 3D agent (top screen)
 
 Top-screen 2D now draws (BOOT_LOG 109): Mn_TitleLogoT is a LAYOUT (ZELDA logo, its 2D Triforce P_TriForce_00 and the light panes, animations InTriForce / InTitle), Mn_TitleT holds "(c) 2013 Nintendo"; TitleLogo.bch / TitleCamera.bch / title_triforce.bch are the 3D part (the big Triforce, camera, field). Left for the 3D agent: the large 3D Triforce still in front of the field at the title, the blue background instead of the overworld, and the black top behind the opening dialogue. Note for h3d: 001321B8 is the other caller of 005FF104, so its sub-buffer now runs too (it was dropped before).
@@ -102,8 +131,69 @@ Findings:
 3. Field actors (e.g. scene model 4) are hidden at state 2 by 004BFD14 -> 004CF478(model, 0) because 0014F794 (squared XY distance from *(data_00708998+0x18)+0x118 to the actor > its range +0x3AC, or room inactive 00581C9C) says not visible; this looks like genuine game behaviour (the reference point moves with the title camera), check after (2).
 4. Title flow: 0029B698 at title +0x194 (frame 0x19F) clears camera +0x94 and render env +0x2C1B (camera cut). The title camera in state 2 pans (ALBW_H3D_CAMTRACE: eye roughly (2, 26, 34) moving); compare its path with the reference once rooms draw.
 
-Next steps: (a) relink with func_00582014.c and confirm the overworld draws in state 2 (shots: ALBW_SHOT=600,1200,2000 ALBW_SHOT_DIR=...); (b) the 3D Triforce after the logo appears (TitleLogo.bch model 0 still drawn: find its hide / fade, probably the same alpha path 002C3EB4 or a visibility animation); (c) blue background = the sky / clear when no rooms draw, re-check after (a); (d) sweep other vtable calls that pass a float in s0 through Ghidra tail calls ("Could not recover jumptable" + indirect call with a float live in s0): same class as 00582014.
+Status 2026-11-15 (later): (a) done, BOOT_LOG 91b [3d]: the overworld draws in state 2 in every run; (b) done, BOOT_LOG 92 [3d]: the 3D Triforce flashes out (native 005670D8: lost float argument to the segment-cache handlers); the title top screen now matches the expected sequence (logo slides in, Triforce flash, final logo over the panning overworld); (c) resolved by (a). Left: (d) below, and compare timing / camera path with an emulator capture.
+Status 2026-11-15 (texture samplers, BOOT_LOG 99 [3d]): the h3d decoder now takes each material's sampler (wrap / filter) from its texture mapper instead of the blob's default 0x2220 words - trees match Azahar (root bulbs mirrored, not wrapped onto leaves), grass / terrain smooth instead of point-sampled. Ruled-out causes for this and other flyover issues: native/DIDNT_WORK.md. Open: canopy slightly darker than Azahar, shadow-marking draws missing, water look, fairy streak, decal flicker, fog (raw 0x0E0/0x0E1 dropped), Link's house interior dark. Viewer: ALBW_VIEWER_TEXFILE=World/Course/fld_o_Common.bch ./run.sh --viewer 'Archive/FieldLight10.szs#c640797a' shows the tree.
+Old next steps: (a) relink with func_00582014.c and confirm the overworld draws in state 2 (shots: ALBW_SHOT=600,1200,2000 ALBW_SHOT_DIR=...); (b) the 3D Triforce after the logo appears (TitleLogo.bch model 0 still drawn: find its hide / fade, probably the same alpha path 002C3EB4 or a visibility animation); (c) blue background = the sky / clear when no rooms draw, re-check after (a); (d) sweep other vtable calls that pass a float in s0 through Ghidra tail calls ("Could not recover jumptable" + indirect call with a float live in s0): same class as 00582014.
 Debug aids (native/sdk/h3d.c): ALBW_H3D_MODELS=1 (+ _BT=1 call chain of each model's first draw), ALBW_H3D_SCENE=1 (scene model list: flags +0x164, vis index, shown mask +0x168, element count), ALBW_H3D_SCENE_TRAP=1 (SIGTRAP once the scene has models, for gdb watchpoints; scripts build/shots3d/room*.gdb), ALBW_H3D_CAMTRACE=1. Private save: build/shots3d/race.sh. Note: tools/link.sh's DAT grep over build/decomp/ghidra_fallback is very slow under I/O load (40+ min seen).
+
+## Overnight plan (2026-11-15): title 1:1 -> opening cutscene -> gameplay
+
+Working rules: one game / emulator / gdb run at a time, ALBW_JOBS=2, no parallel agents (RAM);
+every fix gets a BOOT_LOG entry, every disproven cause a native/DIDNT_WORK.md row; no commits
+unless asked. Ground truth = Azahar (`./run_reference.sh`): burst captures (`import -window <id>
+-crop 400x240+440+30` in a loop, ~14 fps) matched to our ALBW_SHOT frames by image distance, and
+its GDB stub (qt-config use_gdbstub=true, port 24689, EU addresses) for memory / matrices.
+Restore the emulator config afterwards (scratchpad qt-config.gdb.bak).
+
+Done tonight: texture-mapper samplers (99), texture-scroll + no-tangent frame from the real
+DVLE via tools/pica_disasm.py (100), per-material light environment (101), soldier z
+(004BC850 lost stack store, 102).
+
+1. **Systemic: lost Vec3 stack stores** (class of 102). Scan the EU code for
+   `ldm rX, {a,b,c}` + `stm sp, {a,b,c}` (and vldm/vstm of 3 words to sp) whose converted
+   stage-2 text stores fewer words into that frame slot; fix each in native/compilefix from the
+   stage-2 text (build/decomp/ghidra_fallback/ghidra_analyzed5_v4) + the missing store. Actor
+   positions, velocities and camera targets all go through this pattern: high gameplay value.
+2. **Title flyover remainder** (automated matched-frame report: per-region colour / position
+   diffs vs the emulator burst): fence-edge seams (if still visible), fairy streak, shadows
+   (the stencil-marking draws are missing), fog (raw 0x0E0/0x0E1 dropped), decal flicker,
+   grass ~1-2 % dark, "SoliderPaint" colour, Triforce flash.
+3. **Opening cutscene after the title** (Demo1: new game -> name entry -> Begin): capture it in
+   both, match, fix differences in order of size (missing models, positions, lighting, camera,
+   timing). Input recipe via ALBW_PRESS (record it in BOOT_LOG).
+4. **Link's house / gameplay** (IndoorLight1, then outdoors): interior darkness (fragment
+   lighting / light set), walking, NPCs, doors, sword, items, 2D wall merge, menus, saving;
+   boot loop (tools/boot_loop.py) for every stop; sanitizer run (ALBW_SANITIZE=1) per stage.
+5. **Escape menu / GUI options** (user request): Esc opens a menu bar overlay (window layout,
+   filtering, controls, save/load, quit) instead of quitting.
+6. Software-renderer speed and the right-eye second pass (stereo off unless 3D is wanted).
+
+Progress:
+- iter 1: step 1 done - lost-Vec3 sweep: 00249620 fixed (BOOT_LOG 103), no other real losses among 20 flagged sites; title clean.
+- iter 2: step 2 - shadows fixed (00518694 lost vtable-call args; natives 002C3870 / 00387E58; BOOT_LOG 104); matched-frame diffs now mostly edges; open: SoliderPaint variant texture (blue in Azahar).
+- iter 3: step 3 started - cutscene recipe found (ALBW_PRESS / Azahar xdotool); idr_Common.bch now loads (004AC000 lost break, BOOT_LOG 105); open: black fade overlay + camera at the dialogue, name cut to 'L', dream backdrop missing.
+- iter 4: dialogue: name expansion verified correct; the typewriter reveal stalls after a wait tag (Hey, L / empty boxes) - next: the reveal update; cutscene does advance with A (room visible, lit). Tools: ALBW_TRAP_FRAME=<n>.
+- iter 5: dialogue stall = 16-char TextBox buffer (capacity from layout; emulator gets 256 via the text provider, ours builds the window without one); fixed systemic 8-byte literal-pool constants (gen_data, BOOT_LOG 106). Next: the missing text provider in the message-window build.
+- iter 6: "Hey, Link!" fixed (tiny DAT_0000xxxx constants now absolute symbols, BOOT_LOG 107); next: the following dialogue boxes are still empty.
+- iter 6b: later dialogue boxes empty: message window state 2 waits for its animation controller (+0xDC) to go idle; it holds at state 3 and no out-animation is requested - next: compare with Azahar.
+- iter 7: opening dialogue plays through (boolret combined-bool adapters, BOOT_LOG 108); next: top screen black for parts of the cutscene (fade / camera), dream backdrop.
+- iter 8: house dialogue black: a sky-dome draw (prog 3/105, m_vr, depth always+write) blacks the lower screen and occludes the room; camera and culling ruled out. Next: which vr model / its visibility after the dream. Tools: ALBW_H3D_DUMP_FROM, ALBW_NO_CULL_LISTS.
+- iter 9: corrected: the sky box is not the occluder; the room's floor/bed meshes are not drawn at the close camera (mesh/room visibility). Tools: ALBW_MODEL_TRAP=<name> (g_model_watch), frame in ALBW_H3D_MODELS_BT. Emulator gdbstub detach/reattach automation not working yet.
+- iter 10: dream draws all fail depth (clear 0, LESS, no backdrop drawn first); the dream backdrop (nebula) is missing - next: find it.
+- iter 11: dream visible (depth clear 1.0 lost through 0049F3C4, BOOT_LOG 109); remaining: red nebula particles, room dark around the bed at "Hey, Link!".
+- iter 12: Link model scale fixed (0028C068 s16-s18, BOOT_LOG 110); house camera looks at (0,0,0) instead of the bed - next: camera target.
+- iter 13: house bed scene matches Azahar (0030C144 lost shot position, BOOT_LOG 111); open: yellow '>' bar drawn on the top screen during dialogue, Link's sleeping face, dream nebula; tools/stack0x_scan.py lists 179 similar candidates.
+- iter 14: MILESTONE gameplay: the whole wake-up dialogue plays, control is handed over (~frame 8800, hearts HUD), Link walks (circle pad) and leaves the house: loading screen -> outdoors, Gulley's next line (recipe: ALBW_PRESS=1800:START,2200:A,2500:DOWN,2650:A, A every 300 frames 5500..8500, then 9000:CRIGHT:90,9150:CDOWN:120,9330:CLEFT:90,9480:CDOWN:150,9640:CRIGHT:25,9680:CDOWN:300). Open: yellow '>' pill of the message window (DIDNT_WORK).
+- iter 15: dialogue pill fixed (004371D8 byte return, BOOT_LOG 112): house dialogue == Azahar. Lead: tools/boolret.py misses FUN_-labelled bodies and shared-epilogue byte returns - extend it (scan FUN_ labels with func_ aliases, allow jumps that land on epilogues after setcc/movb paths).
+- iter 16: tools/boolret.py covers jump-in byte returns and FUN_ labels (+108 adapters, BOOT_LOG 113), full regression sequence unchanged. Pre-existing (files from 2026-11-14, unrelated to the link): native/hot/test misc2 -m64 segfaults.
+- iter 17: outdoors playable: Gulley's vane scene (camera pan), free walking with hearts HUD, leaving the yard is blocked by Gulley's 'spin the vane' line (game logic OK); no crash up to frame ~17000. Saving at the vane not reached: identical ALBW_PRESS scripts end with Link at different spots after ~frame 14000 (run-to-run timing variance), so blind scripts cannot line him up; test the vane interactively or add a position-aware input driver. Next: (5) Esc menu.
+- iter 18: step 5 done: Esc menu (pause overlay with window / layout / filter / fullscreen / editor / reload controls / quit; BOOT_LOG 114). link.sh now rebuilds platform.c when an #included file changes (link64.sh: not yet).
+- iter 19: Link's open eyes in bed: eye texture swaps work (blink seen), but nothing requests the closed frame in the bed scene (DIDNT_WORK); asset_test ALBW_BCH_COUNTS=<file> lists BCH section counts (native/assets/build.sh needs an absolute OUT).
+- iter 20: eye-frame writer not caught by a write watch (DIDNT_WORK); heap addresses shift with relinks - re-read them with the debug switches before each gdb session. End of the overnight run.
+- 2026-11-16: Link's eyes closed in bed (BOOT_LOG 115, lost s0 frame in the material-animation apply 00567588 / 001699A0; matches Azahar c32); Esc menu Resolution 1x-8x live (BOOT_LOG 116). Note: X11 window creation hangs in SDL_ShowWindow on this desktop today; test runs use SDL_VIDEO_DRIVER=wayland (software GL, slow).
+- 2026-11-16: optimization pass (BOOT_LOG 117): ALBW_PROFILE sampling profiler + tools/prof_report.py; op pool hashes only used bytes; the port's own code is ~0.15 core, the rest is the GL driver. X11 hang = KDE session locked (windows not mapped).
+- 2026-11-16: review + fragility audit (BOOT_LOG 118): 6 fixes (menu rescale, texture LOD clamp, 64-bit varargs, viewer/test links, misc2 test); biggest open fragility: 119 functions linked with a stale-map Ghidra body (tools/stale_map_scan.py) - do the EU/USA map fix integration next. Fairy light streak at the logo: still missing (checked vs Azahar e001).
+- 2026-11-16: map fix integrated (BOOT_LOG 119: 0 wrong bodies linked, the six missing functions resolved); particles part 1 (BOOT_LOG 120): emitter sets now created/calculated as in Azahar (stripped __asm in the name search); part 2 = draw path (raw PICA -> native eft producers).
 
 ## Lost stack stores (lostframe class) left in stage-2 text
 

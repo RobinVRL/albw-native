@@ -39,7 +39,10 @@
  * read with 32-bit fields (OBJ_*), addresses widened through uintptr_t (gfx.c keeps GPU memory
  * below 2 GiB). */
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <execinfo.h>
 
 #include "../render/render.h"
 #include "../render/texdecode.h"
@@ -447,6 +450,25 @@ uint32_t *func_00561808(const int32_t *sh, uint32_t *p, int32_t mode) { return p
  * returning through ADDR1. Writes 4 words: the marker and a writable size slot (+ padding) so the
  * caller's later patch lands in our block. High. */
 uint32_t *func_003CC230(uint32_t *p, uint32_t *size_slot, uint32_t target, uint32_t size) {
+    { /* debug: ALBW_REC_TRACE=<first>-<last> (platform frames): every recorded CALL, with its slot */
+        static long lo = -2, hi = -1;
+        if (lo == -2) {
+            const char *e = getenv("ALBW_REC_TRACE");
+            lo = -1;
+            if (e) { char *x; lo = strtol(e, &x, 10); hi = *x == '-' ? atol(x + 1) : lo; }
+        }
+        extern long g_plat_frames;
+        if (lo >= 0 && g_plat_frames >= lo && g_plat_frames <= hi) {
+            fprintf(stderr, "rec: f=%ld p=%p target=%#x size=%u\n", g_plat_frames, (void *)p, target, size);
+            static long bt = -2;
+            if (bt == -2) { const char *e = getenv("ALBW_REC_BT"); bt = e ? (long)strtoul(e, NULL, 16) : -1; }
+            if (bt >= 0 && (uint32_t)bt == target) {
+                void *fr[16];
+                int n = backtrace(fr, 16);
+                backtrace_symbols_fd(fr, n, 2);
+            }
+        }
+    }
     ROp op = op_new(ROP_CALL);
     op.u.call.addr = (uintptr_t)target;
     op.u.call.size = size;

@@ -26,7 +26,9 @@
  *     lights stored downward from c79, 6 registers each) and hemisphere lighting (b5,
  *     mix(HslGCol, HslSCol, dot(HslSDir.xyz, n) * HslSDir.w + HslSDir.w) * MatDiff).
  *   - texcoord 0..2 (programs 0..3 output 3, 2, 1, 0 of them): attribute uv (b9..b11; TexcMap
- *     selects aTexCoord0/1/2) through the 2x3 texture matrix rows (x, y, translation in z);
+ *     selects aTexCoord0/1/2) as (u, v, 1, 1) (DVLE 316-323: `mov r6.zw, c93.xxyy`) dotted with the
+ *     texture matrix rows swizzled .xywz: u m0 + v m1 + m3 + m2 (the translation is m3, written by
+ *     003FA8AC; reading it as (u, v, 0, 1) dropped it: texture scroll animations stood still);
  *     otherwise generated: TexcMap 3 = cube reflection vector, 4 = sphere map (n * 0.5 + 0.5),
  *     else projection of the world position (texture 0: + TexTran.xy * q; texture 1: / q +
  *     TexTran.zw), texture 1/2 generation only when b13/b14.
@@ -126,11 +128,11 @@ const char RENDER_VS_H3D[] =
     "  lit = true;\n"
     "}\n"
     "vec2 uv_src(float map){\n"
-    "  if (map != 1.0 && map != 2.0) return c[8].x * v4.xy;\n"
-    "  if (map == 1.0) return c[8].y * v5.xy;\n"
-    "  return c[8].z * v6.xy;\n"
+    "  vec2 r = (map != 1.0 && map != 2.0) ? c[8].x * v4.xy : (map == 1.0) ? c[8].y * v5.xy : c[8].z * v6.xy;\n"
+    "#ifdef H3D_FLIPV\n  r.y = 1.0 - r.y;\n#endif\n"
+    "  return r;\n"
     "}\n"
-    "vec4 sphere(){ return vec4(r14.xy * 0.5 + 0.5, 0.0, 1.0); }\n"
+    "vec4 sphere(){ return vec4(r14.xy * 0.5 + 0.5, 1.0, 1.0); }\n"
     "vec4 reflection(){ vec3 e = normalize(-r15.xyz); return vec4(2.0 * dot(e, r14) * r14 - e, 0.0); }\n"
     "void main(){\n"
     "  p = vec4(v0.xyz * c[7].x + c[6].xyz, 1.0); n = v1.xyz * c[7].y; t = v2.xyz * c[7].z;\n"
@@ -176,7 +178,7 @@ const char RENDER_VS_H3D[] =
     "  {\n"
     "    float map = c[10].x; vec4 o;\n"
     "    if (B(9)) {\n"
-    "      vec4 r6 = vec4(uv_src(map), 0.0, 1.0);\n"
+    "      vec4 r6 = vec4(uv_src(map), 1.0, 1.0);\n"
     "      o = vec4(dot(c[11].xywz, r6), dot(c[12].xywz, r6), 0.0, 0.0);\n"
     "    } else if (map != 3.0 && map != 4.0) {\n"
     "      vec3 q = vec3(dot(c[11], r10), dot(c[12], r10), dot(c[13], r10));\n"
@@ -195,7 +197,7 @@ const char RENDER_VS_H3D[] =
     "  {\n"
     "    float map = c[10].y;\n"
     "    if (B(10)) {\n"
-    "      vec4 r6 = vec4(uv_src(map), 0.0, 1.0);\n"
+    "      vec4 r6 = vec4(uv_src(map), 1.0, 1.0);\n"
     "      v_tc1 = vec2(dot(c[14].xywz, r6), dot(c[15].xywz, r6));\n"
     "    } else if (B(13)) {\n"
     "      if (map != 3.0 && map != 4.0) {\n"
@@ -212,7 +214,7 @@ const char RENDER_VS_H3D[] =
     "  {\n"
     "    float map = c[10].z;\n"
     "    if (B(11)) {\n"
-    "      vec4 r6 = vec4(uv_src(map), 0.0, 1.0);\n"
+    "      vec4 r6 = vec4(uv_src(map), 1.0, 1.0);\n"
     "      v_tc2 = vec2(dot(c[17].xywz, r6), dot(c[18].xywz, r6));\n"
     "    } else if (B(14)) {\n"
     "      vec4 r6 = sphere();\n"
@@ -223,8 +225,10 @@ const char RENDER_VS_H3D[] =
     "}\n";
 
 void h3d_variant_defines(int variant, char *buf, size_t n) {
-    snprintf(buf, n, "#define H3D_SKIN %d\n#define H3D_LIGHT %d\n#define H3D_PROG %d\n", variant & 7,
-             (variant >> 3) & 3, (variant >> 5) & 3);
+    static int fv = -1; /* experiment: ALBW_H3D_FLIPV=1 flips the v of the model texture coordinates */
+    if (fv < 0) fv = getenv("ALBW_H3D_FLIPV") != NULL;
+    snprintf(buf, n, "#define H3D_SKIN %d\n#define H3D_LIGHT %d\n#define H3D_PROG %d\n%s", variant & 7,
+             (variant >> 3) & 3, (variant >> 5) & 3, fv ? "#define H3D_FLIPV 1\n" : "");
 }
 
 int h3d_variant_of_name(const char *name) {
@@ -463,13 +467,45 @@ static void dump_draw(const H3dVtx *v, const Ibuf *ib, const ROp *op, const uint
     static long left = -2;
     if (left == -2) { const char *e = getenv("ALBW_H3D_DUMP"); left = e ? atol(e) : -1; }
     if (left <= 0) return;
+    { /* ALBW_H3D_DUMP_FROM=<presented frame>: only dump from that frame on */
+        static long from = -2;
+        extern long g_plat_frames;
+        if (from == -2) { const char *e = getenv("ALBW_H3D_DUMP_FROM"); from = e ? atol(e) : -1; }
+        if (from > 0 && g_plat_frames < from) return;
+    }
     uint16_t b;
     const float *c = render_vs_floats(&b);
     int var = 0, prog = render_current_program(&var);
     static int only = -2;
     if (only == -2) { const char *e = getenv("ALBW_H3D_DUMP_VAR"); only = e ? atoi(e) : -1; }
     if (only >= 0 && var != only) return;
+    static long only_tex = -2; /* ALBW_H3D_DUMP_TEX=<hex>: only draws sampling that texture on unit 0 */
+    if (only_tex == -2) { const char *e = getenv("ALBW_H3D_DUMP_TEX"); only_tex = e ? (long)strtoul(e, NULL, 16) : -1; }
+    if (only_tex >= 0 && render_texunit(0)->addr != (uintptr_t)only_tex) return;
     left--;
+    { /* ALBW_H3D_DUMP_BIN=<dir>: raw vertices / indices / uniforms of the dumped draw */
+        const char *dir = getenv("ALBW_H3D_DUMP_BIN");
+        if (dir) {
+            char path[512];
+            snprintf(path, sizeof path, "%s/draw%ld.bin", dir, left);
+            FILE *f = fopen(path, "wb");
+            if (f) {
+                uint32_t hdr[8] = {op->u.ext.c, op->u.ext.b, (uint32_t)ib->u16, ib->max_index, v->stride, b, (uint32_t)var,
+                                   (uint32_t)v->nattr};
+                fwrite(hdr, 4, 8, f);
+                for (int i = 0; i < v->nattr; i++) {
+                    uint32_t a[4] = {v->attr[i].reg, v->attr[i].type | (uint32_t)v->attr[i].fixed << 8, v->attr[i].comps,
+                                     v->attr[i].offset};
+                    fwrite(a, 4, 4, f);
+                }
+                fwrite(c, 4, 96 * 4, f);
+                fwrite(idx, ib->u16 ? 2 : 1, op->u.ext.b, f);
+                fwrite((const void *)(uintptr_t)v->addr, v->stride, ib->max_index + 1, f);
+                fclose(f);
+                fprintf(stderr, "h3d-dump: wrote %s\n", path);
+            }
+        }
+    }
     fprintf(stderr, "h3d-dump: draw prim %u count %u u16 %d idx %p max %u vtx %#x stride %u base %#x prog %d/%d b %#x\n",
             op->u.ext.c, op->u.ext.b, ib->u16, (const void *)idx, ib->max_index, v->addr, v->stride, v->base, prog, var, b);
     for (int i = 0; i < v->nattr; i++)
@@ -606,6 +642,35 @@ static void snap_maybe(void) {
 }
 
 static void draw(const ROp *op) {
+    { /* debug (ALBW_H3D_VTXTRACE): draws whose layout has a colour attribute but colour scale c7.w = 0 */
+        static int vt = -1; static unsigned with_col, zero_scale, total;
+        if (vt < 0) vt = getenv("ALBW_H3D_VTXTRACE") != NULL;
+        { /* ALBW_VTX_FOR_TEX=<hex>: layout + bools of the draws sampling that texture on unit 0 */
+            static long want = -2;
+            if (want == -2) { const char *e = getenv("ALBW_VTX_FOR_TEX"); want = e ? (long)strtoul(e, NULL, 16) : -1; }
+            const RTexUnit *u0 = render_texunit(0);
+            static unsigned shown;
+            if (want >= 0 && g_cur && u0->addr == (uintptr_t)want && shown++ < 8) {
+                uint16_t bools = 0; render_vs_floats(&bools);
+                char line[512]; int o = 0;
+                for (int i = 0; i < g_cur->nattr && i < 12; i++) {
+                    const H3dAttr *a = &g_cur->attr[i];
+                    o += snprintf(line + o, sizeof line - (size_t)o, a->fixed ? " v%u=const" : " v%u:t%u x%u@%u", a->reg, a->type, a->comps, a->offset);
+                }
+                fprintf(stderr, "vtx-for-tex: draw count %u stride %u bools %#x prog variant %d:%s\n", (unsigned)op->u.ext.b, g_cur->stride, bools,
+                        g_mat_variant, line);
+            }
+        }
+        if (vt && g_cur) {
+            int col = 0;
+            for (int i = 0; i < g_cur->nattr && i < 12; i++) if (g_cur->attr[i].reg == 3 && !g_cur->attr[i].fixed) col = 1;
+            const float *c = render_vs_floats(NULL);
+            total++;
+            if (col) { with_col++; if (c[7 * 4 + 3] == 0.0f) zero_scale++; }
+            if (total % 20000 == 0)
+                fprintf(stderr, "h3d-vtx: draws %u, with a colour attribute %u, of those colour scale 0: %u\n", total, with_col, zero_scale);
+        }
+    }
     H3dVtx *v = g_cur;
     if (!v || !v->addr || !v->stride || !op->u.ext.b) { g_st.dropped++; return; }
     uintptr_t ia = op->flags & 1 ? (uintptr_t)op->u.ext.a : index_addr(v, op->u.ext.a);
@@ -806,7 +871,29 @@ static void ext_op(const ROp *op) {
     if (!gl_ok()) return;
     const uint32_t a = op->u.ext.a, b = op->u.ext.b, c = op->u.ext.c;
     switch (op->u.ext.kind) {
-    case H3D_VTX: g_cur = (H3dVtx *)op->u.ext.ptr; break;
+    case H3D_VTX:
+        g_cur = (H3dVtx *)op->u.ext.ptr;
+        { /* debug: ALBW_H3D_VTXTRACE=1: each vertex layout once (buffers, attributes, constants) */
+            static int vt = -1;
+            static const void *seen[4096]; static unsigned nseen;
+            if (vt < 0) vt = getenv("ALBW_H3D_VTXTRACE") != NULL;
+            int known = 0;
+            for (unsigned i = 0; vt && i < nseen; i++) if (seen[i] == g_cur) { known = 1; break; }
+            if (vt && !known && g_cur && nseen < 4096) {
+                seen[nseen++] = g_cur;
+                char line[512]; int o = 0;
+                for (int i = 0; i < g_cur->nattr && i < 12; i++) {
+                    const H3dAttr *a = &g_cur->attr[i];
+                    if (a->fixed)
+                        o += snprintf(line + o, sizeof line - (size_t)o, " v%u=const(%g %g %g %g)", a->reg, (double)a->value[0],
+                                      (double)a->value[1], (double)a->value[2], (double)a->value[3]);
+                    else
+                        o += snprintf(line + o, sizeof line - (size_t)o, " v%u:t%u x%u@%u", a->reg, a->type, a->comps, a->offset);
+                }
+                fprintf(stderr, "h3d-vtx: %p buffers %u stride %u attrs %u:%s\n", (void *)g_cur, g_cur->nbuffers, g_cur->stride, g_cur->nattr, line);
+            }
+        }
+        break;
     case H3D_DRAW: draw(op); break;
     case H3D_TEXADDR: {
         RTexUnit *u = render_texunit(op->unit);
@@ -815,6 +902,7 @@ static void ext_op(const ROp *op) {
         u->h = (uint16_t)(b >> 16);
         u->fmt = (uint8_t)(c & 0xFF);
         u->max_level = (uint8_t)((c >> 8) & 0xF);
+        u->min_level = (uint8_t)((c >> 12) & 0xF);
         break;
     }
     case H3D_TEXPARAM: {

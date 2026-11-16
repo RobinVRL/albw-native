@@ -15,7 +15,7 @@ extern char s_cf_0023d4c8[];
 extern int func_0023D2BC(int *param_1,int param_2);
 extern int func_00291518(int param_1,undefined4 param_2,float fparam_0);
 extern int func_004EA104(int param_1,int *param_2,int param_3);
-extern int func_005211BC(int param_1);
+extern int func_00521184(int param_1);
 extern int func_005568E8(int param_1);
 extern int *DAT_0023d4c0;
 extern undefined DAT_0023d4c4;
@@ -42,7 +42,7 @@ void func_0023D438(int *param_1,int *param_2)
   #define local_14 (*(char * *)(albw_frame + 0xc))
   piVar1 = DAT_0023d4c0;
   if ((*DAT_0023d4c0 != 0) && (iVar2 = func_005568E8(*DAT_0023d4c0), *param_2 == iVar2)) {
-    iVar2 = func_005211BC((int)param_1);
+    iVar2 = func_00521184((int)param_1);
     iVar2 = func_00291518(*piVar1,iVar2 + -0x80000000,ALBW_AS_F32(_DAT_0023d4c4));
     if (iVar2 != 0) {
       local_14 = s_cf_0023d4c8;

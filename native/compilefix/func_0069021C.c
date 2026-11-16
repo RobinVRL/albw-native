@@ -6,6 +6,7 @@
  * file-select frame: boot stop 95c). The 4 calls now assign the variable Ghidra reads afterwards.
  * CLASS float return typed void (s0 read by the caller). Confidence: high. */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 
 extern float func_003FD364(int param_1,float *param_2,uint param_3,undefined2 param_4,float fparam_0);
 extern float func_005670A0(float *param_1,float fparam_0);

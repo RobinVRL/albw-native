@@ -121,7 +121,9 @@ typedef void GLvoid;
     X(void, glGenRenderbuffers, (GLsizei, GLuint *)) \
     X(void, glBindRenderbuffer, (GLenum, GLuint)) \
     X(void, glRenderbufferStorage, (GLenum, GLenum, GLsizei, GLsizei)) \
-    X(void, glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint))
+    X(void, glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint)) \
+    X(void, glDeleteFramebuffers, (GLsizei, const GLuint *)) \
+    X(void, glDeleteRenderbuffers, (GLsizei, const GLuint *))
 
 #define GL_DECLARE(ret, name, args) extern ret (*name) args;
 GL_FUNCS(GL_DECLARE)

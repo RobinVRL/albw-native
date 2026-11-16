@@ -9,6 +9,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 #include "compilefix.h"
 
 extern int func_00100118(int param_1,undefined *param_2,int param_3,int param_4);

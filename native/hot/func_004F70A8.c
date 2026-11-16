@@ -62,7 +62,7 @@ int func_0034CA24(uint32_t *dmg);
 int func_004FBD44(uint32_t *self, uint32_t *dmg, int a, int b);
 int func_00542B24(int ride);
 uint32_t func_0014E2A0(char *self, uint32_t c, uint32_t a3, uint32_t a4, uint32_t a5, int t);
-int func_00521100(int self, int *out);
+int func_005210AC(int self, int *out);
 float func_00581B58(int mgr, int a, int b);
 int func_00520EE4(int self);
 int func_00588BE4(int self);
@@ -187,7 +187,7 @@ hp:
         uint32_t g = W(data_00709DF8, 0);
         if (!(g != 0 && FLD(P(g), 0x18, uint8_t) == 9 && W(P(g), 0x1C) == 2)) {
             W(self, 0x5A0) &= ~0x40u;
-            if (func_00521100((int)self_w, &v) == 0 && FLD(P(W(self, 0x510)), 4, uint8_t) == 0) {
+            if (func_005210AC((int)self_w, &v) == 0 && FLD(P(W(self, 0x510)), 4, uint8_t) == 0) {
                 float r = func_00581B58((int)W(data_0070C8E0, 0), FLD(self, 0x54, int16_t), v);
                 if (gp_f2i_bits(r) > 0x40400000)
                     W(self, 0x5A0) |= 0x40;

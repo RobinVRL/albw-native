@@ -6,6 +6,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 #include "compilefix.h"
 
 extern float func_00115154(float *param_1,float *param_2,uint param_3);

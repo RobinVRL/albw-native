@@ -8,6 +8,19 @@ B=build
 # no FMA contraction (VFPv2 vmla rounds the product), see native/gameplay/AUDIT.md
 FPFLAGS=(-msse2 -mfpmath=sse -ffp-contract=off)
 CFLAGS=(-m32 -std=gnu11 -O2 -g -Wall -Wextra -Wno-unused-parameter -fno-strict-aliasing "${FPFLAGS[@]}")
+# ALBW_SANITIZE=1: AddressSanitizer + UndefinedBehaviorSanitizer on the native layer (platform,
+# runtime, SDK replacements, native game functions) -> build/albw-san, objects in build/nobj-san;
+# the decompiled objects stay uninstrumented (ASan still checks their malloc / memcpy / memset
+# calls). The normal build/albw is untouched.
+NOBJ=$B/nobj OUT=$B/albw LDSAN=()
+if [[ "${ALBW_SANITIZE:-0}" == 1 ]]; then
+    # globals not instrumented: the link renames / patches objects after compilation and ASan's global
+    # registration then reads a broken descriptor at start-up (odr-violation + nested crash)
+    SAN=(-fsanitize=address,undefined -fno-sanitize=alignment,function,vptr -fno-sanitize-recover=address -fno-omit-frame-pointer -mllvm -asan-globals=0)
+    CFLAGS+=("${SAN[@]}")
+    LDSAN=("${SAN[@]}")
+    NOBJ=$B/nobj-san OUT=$B/albw-san
+fi
 SDL=$(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags --libs sdl3)
 
 mkdir -p $B/native
@@ -19,7 +32,7 @@ fi
 NATIVE=()
 for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c native/audio/fx.c native/audio/output.c $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c native/gameplay/*.c native/compilefix/*.c native/framework/*.c native/core/*.c native/route/*.c 2>/dev/null) $(git ls-files native/hot | grep -E "^native/hot/[^/]+\.c$"); do
     # one object per source path (native/render/h3d.c and native/sdk/h3d.c share a basename)
-    o=$B/nobj/${f%.c}.o
+    o=$NOBJ/${f%.c}.o
     mkdir -p "$(dirname "$o")"
     EXTRA=()
     [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
@@ -30,7 +43,13 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
         [[ "${ALBW_REAL_SND:-1}" != 0 ]] && EXTRA+=(-DALBW_REAL_SND)
         rm -f "$o"
     fi
-    [[ -f "$o" && "$o" -nt "$f" ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
+    stale=0
+    [[ -f "$o" && "$o" -nt "$f" ]] || stale=1
+    # platform.c #includes layout.c, input.c, menu.c (+ menu_font.h): rebuild when any changed
+    if [[ "$f" == native/platform/platform.c && $stale == 0 ]]; then
+        for inc in native/platform/{layout,input,menu}.c native/platform/{menu_font,layout,gl}.h native/render/render.h; do [[ "$inc" -nt "$o" ]] && stale=1; done
+    fi
+    [[ $stale == 0 ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
         $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")
 done
@@ -95,14 +114,14 @@ clang --target=i686-linux-gnu -c $B/thunks.s -o $B/native/thunks.o
 NATIVE+=($B/native/thunks.o)
 python3 tools/gen_stubs.py $B/albw_game.o "${NATIVE[@]}" > $B/stubs.c
 clang "${CFLAGS[@]}" -w -c $B/stubs.c -o $B/native/stubs.o
-clang -m32 -no-pie -o $B/albw "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -rdynamic
+clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -rdynamic
 # i386 only: float results come back in x87 st(0); direct calls that ignore one (void/int
 # prototype of a float-returning function) would leak x87 slots until every float is NaN.
 # Relink with pop adapters and redirect those call sites (tools/x87check.py; ALBW_X87FIX=0: off)
 if [[ "${ALBW_X87FIX:-1}" != 0 ]]; then
-    python3 tools/x87check.py --thunks $B/albw > $B/x87pop.s 2>/dev/null
+    python3 tools/x87check.py --thunks $OUT > $B/x87pop.s 2>/dev/null
     clang --target=i686-linux-gnu -c $B/x87pop.s -o $B/native/x87pop.o
-    clang -m32 -no-pie -o $B/albw "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -rdynamic
-    python3 tools/x87check.py --patch $B/albw
+    clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -rdynamic
+    python3 tools/x87check.py --patch $OUT
 fi
-echo "linked $B/albw ($(du -h $B/albw | cut -f1))"
+echo "linked $OUT ($(du -h $OUT | cut -f1))"

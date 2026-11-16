@@ -37,7 +37,9 @@ int main(int argc, char **argv) {
 static int game_main(void *p) {
     int argc = ((struct MainArgs *)p)->argc;
     char **argv = ((struct MainArgs *)p)->argv;
-    PlatConfig cfg = {2, 1, 1};
+    runtime_install_crash_handler();
+    prof_init();
+    PlatConfig cfg = {2, 0, 1};   /* render_scale 0: layout.cfg (Esc menu) decides */
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--scale") && i + 1 < argc) cfg.scale = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--render-scale") && i + 1 < argc) cfg.render_scale = atoi(argv[++i]);

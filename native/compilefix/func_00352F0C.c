@@ -21,7 +21,7 @@
 
 extern uint32_t data_0070FB60[], data_00708998[];
 int func_0058A44C(int self);
-int func_00556E94(int obj);
+int func_00556E64(int obj);
 void func_001E8440(int obj, float *v, float bits_r2);
 int func_001151F8(uint32_t *dst, uint32_t *rot, uint32_t *trans);
 int func_004CEAF0(int obj);
@@ -37,7 +37,7 @@ void func_00352F0C(char *self, int a2)
 {
     int moving = func_0058A44C((int)GPTR_OF(self));
     char *pl = GPTR_TO(char, data_0070FB60[0]);
-    if (pl != 0 && func_00556E94((int)GPTR_OF(pl)) == 0) {
+    if (pl != 0 && func_00556E64((int)GPTR_OF(pl)) == 0) {
         char *m = GPTR_TO(char, data_00708998[0]);
         if (m == 0)
             return; /* EU 00353220: no tail call */

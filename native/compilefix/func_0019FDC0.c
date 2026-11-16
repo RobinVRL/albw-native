@@ -9,6 +9,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 #include "compilefix.h"
 /* callee named FUN_<EU> in the dump: prototype from its own Ghidra signature */
 extern void func_004F500C(int *param_1,undefined4 param_2,undefined4 param_3,float *param_4);

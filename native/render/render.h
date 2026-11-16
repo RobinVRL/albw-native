@@ -243,6 +243,9 @@ void render_exec_op(const ROp *op);
 
 /* end of a host frame: op-pool housekeeping (gfx.c calls it at SwapBuffers) */
 void render_frame_end(void);
+/* internal resolution: multiples of the 3DS screens (1..8, ALBW_RENDER_SCALE at start), changeable between frames */
+int render_get_scale(void);
+void render_set_scale(int scale);
 
 /* ------------------------------------------------------------------ immediate API (GL thread)
  * What the ops do; also usable directly by native replacements that run on the GL thread at

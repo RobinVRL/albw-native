@@ -313,8 +313,12 @@ def main():
                     lbl = code_string_label(v) if w.startswith(".long 0x") else None
                     if lbl:  # a pointer to a string stored among the code: point at a copy of it
                         w = ".long " + lbl
+                    # + the next pool word raw: Ghidra types 8-byte literals (`double DAT_001680e8` =
+                    # 32.0 in the text-provider clamp of 00167E44) by their first address; with one
+                    # word emitted the high half came from whatever symbol followed (0.0: dialogue
+                    # text boxes got a 16-character buffer, BOOT_LOG 106 [3d])
                     out += ["    .section .rodata.albw_pool,\"a\"", "    .p2align 2", "    .globl %s" % sym,
-                            "%s:" % sym, "    " + w]
+                            "%s:" % sym, "    " + w, "    .long 0x%08X" % rd(addr + 4)]
             else:
                 nbad += 1; unplaceable.append(sym)
                 continue

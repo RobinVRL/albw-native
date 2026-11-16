@@ -23,7 +23,7 @@ extern int func_002F3468(int param_1,int param_2);
 extern int func_0033CF40(int param_1);
 extern int func_00520FC0(void);
 extern int func_0052FCA4(int param_1,undefined4 *param_2,int *param_3);
-extern int func_00556E94(int param_1);
+extern int func_00556E64(int param_1);
 extern float func_006640EC(undefined4 *param_1,undefined1 param_2,float fparam_0);
 extern int func_0068C690(float *param_1);
 extern int func_0068C794(float *param_1,float fparam_0,float fparam_1,float fparam_2,float fparam_3);
@@ -115,7 +115,7 @@ int * func_002EF93C(int *param_1)
   #define local_98 (*(int *)(albw_frame + 0x78))
   #define local_94 (*(char * *)(albw_frame + 0x7c))
   local_ec = *DAT_002efcf4;
-  if ((local_ec == 0) || (bVar5 = func_00556E94(local_ec), !bVar5)) {
+  if ((local_ec == 0) || (bVar5 = func_00556E64(local_ec), !bVar5)) {
     bVar5 = false;
   }
   else {

@@ -15,6 +15,18 @@ int func_00521078(uint32_t self);
 int func_004C07D8(uint32_t self);
 int func_0034C8F0(uint32_t self, uint32_t model, uint32_t hit);
 int func_004C0350(uint32_t self);
+int func_0056D40C(uint32_t self, uint32_t out, uint32_t idx);
+int func_0058ACC8(uint32_t self, float f);
+float func_0051CF68(uint32_t t, float a, float b, float dt);
+int func_00166150(uint32_t self);
+int func_0017222C(uint32_t self, uint32_t state, uint32_t a, uint32_t b);
+int func_002973C4(uint32_t self, uint32_t i);
+float func_0048F288(uint32_t self, float unused);
+char data_006C3AB8[256 * 16];
+int func_00172018(int self, int x) { (void)self; (void)x; return 0; }
+static uint32_t g_this; static float g_val;
+static int vthis(void *self) { g_this = gp_u32(self); return 0x55; }
+static void vval(void *self, float v) { g_this = gp_u32(self); g_val = v; }
 
 static int n_cc8; static uint32_t cc8_v, cc8_arg;
 int func_004A1CC8(int h, uint32_t v, int arg) { (void)h; n_cc8++; cc8_v = v; cc8_arg = (uint32_t)arg; return 0; }
@@ -127,8 +139,44 @@ static void t_damage_merge(void)
     F(s, 0x834) = gp_u2f(0x7FC00000u); func_004C0350(w(s)); CHECK_F(F(s, 0x834), 1.005f);
 }
 
+static void t_pass4(void)
+{
+    /* 0056D40C: ARM shifts >= 32 give 0, so bit 0 is not counted again at k = 32 */
+    char *t = obj(0x40), *out = obj(4);
+    W(t, 0) = 1; W(t, 4) = 0x11; W(t, 8) = 0x22;
+    CHECK(func_0056D40C(w(t), w(out), 0) == 1 && W(out, 0) == 0x11, "idx 0");
+    CHECK(func_0056D40C(w(t), w(out), 32) == 0, "idx 32 not present (x86 C: bit 0 again)");
+    /* 0058ACC8: NaN frame -> 0 */
+    char *s = obj(0x420), *sk = obj(0x20), *l = obj(0x20);
+    W(s, 0x410) = w(sk); W(sk, 0x14) = w(l); F(l, 8) = 10.0f; F(l, 0xC) = 2.0f; F(l, 0x14) = 3.0f;
+    CHECK(func_0058ACC8(w(s), 2.5f) == 1, "in range");
+    CHECK(func_0058ACC8(w(s), gp_u2f(0x7FC00000u)) == 0, "NaN -> 0");
+    /* 0051CF68: NaN parameter -> vcvt 0 -> table entry 0 */
+    /* the timer lives in low memory (obj): a 32-bit game word cannot hold a 64-bit stack address */
+    float *tv = (float *)obj(16);
+    *tv = gp_u2f(0x7FC00000u);
+    F(data_006C3AB8, 8) = 0.5f; F(data_006C3AB8, 0xC) = 0.0f;
+    CHECK_F(func_0051CF68(w(tv), 2.0f, 4.0f, 0.0f), 3.0f);
+    F(data_006C3AB8 + 0xC0 * 16, 8) = 1.0f;     /* t = 0 -> i = -2^30 -> entry 0xC0 */
+    *tv = -1.0f;
+    CHECK_F(func_0051CF68(w(tv), 2.0f, 4.0f, 0.0f), 4.0f); CHECK_F(*tv, 0.0f);
+    /* dropped-this virtuals */
+    char *o = obj(16), *vt = obj(16); W(vt, 0) = gp_u32((void *)vthis); W(o, 0) = w(vt);
+    char *a = obj(0x100); W(a, 0x14) = w(o); g_this = 0;
+    func_00166150(w(a)); CHECK_U(g_this, w(o));
+    char *sc = obj(0x300); W(sc, 0x74 + 3 * 0x10) = w(vt);
+    CHECK(func_0017222C(w(sc), 3, 1, 2) == 0x55, "delegate"); CHECK_U(g_this, w(sc) + 0x74 + 0x30);
+    CHECK_U(func_0017222C(w(sc), 9, 1, 2), w(sc));
+    char *h = obj(0x10), *q = obj(0x200); W(h, 0x4C) = w(q); W(q, 0xE8 + 0x10) = w(vt);
+    CHECK(func_002973C4(w(h), 1) == 0x55 && g_this == w(q) + 0xF8, "sub state");
+    char *ft = obj(0x40), *cb = obj(8), *cvt = obj(8); W(cvt, 0) = gp_u32((void *)vval); W(cb, 0) = w(cvt);
+    W(ft, 0x10) = 2; F(ft, 4) = 1.0f; F(ft, 0xC) = 0.25f; W(ft, 0x14) = w(cb);
+    func_0048F288(w(ft), 0.0f); CHECK_U(g_this, w(cb)); CHECK_F(g_val, 0.75f);
+}
+
 int main(void)
 {
+    t_pass4();
     t_damage_merge();
     t_effect();
     run_low(t_anim);

@@ -27,5 +27,7 @@ run actor $H/test/actor_test.c $H/func_004C03B8.c $H/func_004D838C.c $H/func_004
     $G/func_00115C54.c $G/func_00115C70.c $G/func_00115D70.c $G/func_00115DAC.c
 run misc2 $H/test/misc2_test.c $H/func_00352210.c $H/func_004FABDC.c $H/func_004FC07C.c \
     $H/func_004C01E4.c $H/func_004356B4.c $H/func_0054DDF4.c $H/func_00521078.c $H/func_004C07D8.c \
-    $H/func_0034C8F0.c $H/func_004C0350.c
+    $H/func_0034C8F0.c $H/func_004C0350.c \
+    $H/func_0056D40C.c $H/func_0058ACC8.c $H/func_0051CF68.c $H/func_00166150.c $H/func_0017222C.c \
+    $H/func_002973C4.c $H/func_0048F288.c
 exit $fail

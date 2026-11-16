@@ -5,6 +5,8 @@
 #   ./run.sh --link          relink first (after code changes; ~10 s), then run
 #   ./run.sh --gdb           run under gdb (shows where it stops)
 #   ./run.sh --viewer [model [index]]   asset viewer: draws a model + texture decoded from your ROM
+#                            e.g. the title tree (textures in a second file):
+#   ALBW_VIEWER_TEXFILE=World/Course/fld_o_Common.bch ./run.sh --viewer 'Archive/FieldLight10.szs#c640797a'
 #   ./run.sh --scale 3       window size multiplier (default 2), other args are passed through
 #   ./run.sh --qt [--demo | viewer args]   Qt frontend (64-bit) with the asset viewer as content
 #                            (or the platform test scene); the game attaches to it once 64-bit
@@ -31,8 +33,14 @@ fi
 : "${ALBW_ROM:=/path/to/your/game.3ds}"
 export ALBW_ROM
 # prefer native Wayland when available (the 32-bit SDL needs lib32-libxkbcommon + lib32-libdecor);
-# fall back to X11 otherwise
-if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && -e /usr/lib32/libxkbcommon.so.0 ]]; then
+# fall back to X11 otherwise. On NVIDIA, 32-bit EGL on Wayland also needs the 32-bit egl-wayland
+# platform library: without it EGL falls back to Mesa's software rasteriser (llvmpipe, ~25 fps,
+# all CPU cores busy), while X11/XWayland gets the GPU through the 32-bit NVIDIA GLX.
+WAYLAND_GL_OK=1
+if [[ -e /proc/driver/nvidia/version ]] && ! compgen -G "/usr/lib32/libnvidia-egl-wayland.so*" >/dev/null; then
+    WAYLAND_GL_OK=0
+fi
+if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && -e /usr/lib32/libxkbcommon.so.0 && $WAYLAND_GL_OK == 1 ]]; then
     export SDL_VIDEO_DRIVER=wayland
 fi
 
@@ -41,8 +49,8 @@ if [[ "${1:-}" == "--viewer" ]]; then
     shift
     : "${ALBW_ROM:=/path/to/your/game.3ds}"
     export ALBW_ROM
-    native/assets/build.sh build/assets >/dev/null
-    exec build/assets/viewer "$@"
+    native/assets/build.sh "$PWD/build/assets" >/dev/null   # (the script cd's into native/assets)
+    exec build/assets/viewer64 "$@"
 fi
 for a in "$@"; do
     case "$a" in

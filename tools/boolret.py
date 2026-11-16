@@ -24,13 +24,67 @@ funcs = collections.OrderedDict(); cur = None
 for line in dis.splitlines():
     m = re.match(r'^[0-9a-f]+ <(.+)>:$', line)
     if m: cur = m.group(1); funcs.setdefault(cur, []); continue
-    m = re.match(r'^\s+[0-9a-f]+:\s+(\S+)\s*(.*)$', line)
-    if m and cur: funcs[cur].append((m.group(1), m.group(2).strip()))
+    m = re.match(r'^\s+([0-9a-f]+):\s+(\S+)\s*(.*)$', line)
+    if m and cur: funcs[cur].append((m.group(2), m.group(3).strip(), int(m.group(1), 16)))
+
+# a 0/1 result in %al / %eax (the forms a C bool return compiles to)
+def bool_write(op, arg):
+    if op.startswith('set') and arg == '%al': return True
+    if op == 'movb' and re.fullmatch(r'\$0x[01], %al', arg): return True
+    if op == 'xorl' and arg == '%eax, %eax': return True
+    if op == 'movl' and re.fullmatch(r'\$0x[01], %eax', arg): return True
+    return False
+
+def writes_eax(op, arg):
+    if op.startswith(('cmp', 'test', 'push', 'call', 'j', 'ret')): return False
+    return bool(re.search(r'(^|, )%(e?ax|al)$', arg))
+
+JUMP_BYTE = [False]   # set by jumps_ok: some jump-in path's last write was a byte form (setcc / movb %al)
+
+def jumps_ok(ins, lo, hi):
+    """Every jump into the epilogue (addresses lo..hi) must come from a path whose last %eax/%al
+    write is a 0/1 form (a three-way comparator does `mov $-1, %eax; jne epilogue` after a
+    `setne %al` that falls through: 00429F14, whose -1 the adapter turned into 255, reversing the
+    scene draw-list sort every frame: BOOT_LOG 93 [3d])."""
+    for k, (op, arg, addr) in enumerate(ins):
+        if not op.startswith('j'): continue
+        m = re.match(r'(?:0x)?([0-9a-f]+)\b', arg)
+        if not m: continue
+        t = int(m.group(1), 16)
+        if not (lo <= t <= hi): continue
+        for b in range(k - 1, -1, -1):
+            if ins[b][0].startswith('call'):
+                break   # a callee's result passed through (zero-extending it stays harmless)
+            if writes_eax(ins[b][0], ins[b][1]):
+                if not bool_write(ins[b][0], ins[b][1]): return False
+                if ins[b][1].endswith('%al'): JUMP_BYTE[0] = True
+                break
+        else:
+            return False
+    return True
+
+def setcc_byte_regs(ins, j):
+    """The two byte registers combined at ins[j] (and/or %Xl, %al) both got their last value from
+    a setcc (or a 0/1 movb) earlier in the function (no call in between)."""
+    regs = set(re.findall(r'%([abcd]l)', ins[j][1]))
+    found = set()
+    for b in range(j - 1, -1, -1):
+        op, arg, _ = ins[b]
+        if op.startswith('call') or op.startswith('j'): break
+        for r in list(regs - found):
+            if arg.endswith('%' + r):
+                if (op.startswith('set') and arg == '%' + r) or (op == 'movb' and re.fullmatch(r'\$0x[01], %' + r, arg)) \
+                        or (op in ('andb', 'orb', 'and', 'or') and re.fullmatch(r'%[abcd]l, %' + r, arg)):
+                    found.add(r)
+                else:
+                    return False
+        if found == regs: return True
+    return False
 
 def byte_return(ins):
     seen_byte = False
     rets = 0
-    for i, (op, arg) in enumerate(ins):
+    for i, (op, arg, _) in enumerate(ins):
         if op not in ('retl', 'retq', 'ret'): continue
         rets += 1
         j = i - 1
@@ -38,10 +92,23 @@ def byte_return(ins):
                           (ins[j][0] in ('addl', 'leal', 'addq', 'leaq') and ins[j][1].endswith(SP))):
             j -= 1
         if j < 0: return False
-        op2, a2 = ins[j]
+        op2, a2, _ = ins[j]
+        # jumps landing between the result write and the ret take other paths' %eax
+        lo = ins[j + 1][2] if j + 1 < len(ins) else ins[i][2]
+        JUMP_BYTE[0] = False
+        if not jumps_ok(ins, lo, ins[i][2]): return False
+        # byte results that reach the epilogue by a jump (FUN_004371d8: `mov $1, %al; ...; setne
+        # %al; jmp epilogue` after a fall-through `xor %eax, %eax`: BOOT_LOG 112 [3d])
+        if JUMP_BYTE[0]: seen_byte = True
         if op2.startswith('set') and a2 == '%al':
             seen_byte = True
         elif op2 == 'movb' and re.fullmatch(r'\$0x[01], %al', a2):
+            seen_byte = True
+        elif op2 in ('andb', 'orb', 'and', 'or') and re.fullmatch(r'%[abcd]l, %al', a2) and setcc_byte_regs(ins, j):
+            # two bools combined in byte registers (`setne %al; and %dl, %al`, matched C++
+            # `a && b && c`): %eax above %al still holds whatever was loaded into it (the object
+            # pointer in Object5246::test = 005246D8: the typing state of the message window read
+            # "done" and every dialogue box after the first stayed empty, BOOT_LOG 108 [3d])
             seen_byte = True
         elif op2 == 'xorl' and a2 == '%eax, %eax':
             pass
@@ -51,7 +118,14 @@ def byte_return(ins):
             return False
     return rets > 0 and seen_byte
 
-cands = {f for f, ins in funcs.items() if re.fullmatch(r'func_[0-9A-F]{8}', f) and byte_return(ins)}
+def func_name(label):
+    """func_X for a func_X label, or for a converted body labelled FUN_x (lowercase, the converter's
+    local symbol) whose weak alias func_X sits at the same address (004371D8, BOOT_LOG 112)."""
+    if re.fullmatch(r'func_[0-9A-F]{8}', label): return label
+    m = re.fullmatch(r'FUN_([0-9a-f]{8})', label)
+    return 'func_' + m.group(1).upper() if m else None
+
+cands = {func_name(f) for f, ins in funcs.items() if func_name(f) and byte_return(ins)}
 native = set(open(native_defs).read().split())
 cands -= native
 # defining object of each weak func_X

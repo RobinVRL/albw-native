@@ -4,6 +4,10 @@
 
 /* print "FATAL: ...", the native backtrace, and abort */
 _Noreturn void runtime_fatal(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+/* native/runtime/crash.c: crash reports (signal, pc, frame, backtrace) to stderr + crash.log */
+void runtime_install_crash_handler(void);
+void prof_init(void);    /* ALBW_PROFILE=<file>: sampling CPU profiler (prof.c) */
+void prof_frame(void);   /* once per presented frame: periodic dump */
 
 /* thread-local SDK block (see intrinsics.c) */
 uintptr_t albw_tls(void);

@@ -74,9 +74,19 @@ const char RENDER_FS_FRAGLIGHT[] =
     "  prim = vec4(0.0); sec = vec4(0.0);\n"
     "  int n = fl_cfg.x; if (n == 0) return;\n"
     "  vec3 N = normalize(v_normal), V = normalize(v_view);\n"
-    "  vec3 T = v_tangent - N * dot(N, v_tangent);\n"
-    "  if (dot(T, T) < 1e-8) T = abs(N.x) < 0.9 ? cross(N, vec3(1.0, 0.0, 0.0)) : cross(N, vec3(0.0, 1.0, 0.0));\n"
-    "  T = normalize(T); vec3 B = cross(N, T);\n"
+    "  vec3 T = v_tangent - N * dot(N, v_tangent), B;\n"
+    /* no tangent: the DefaultShader's quaternion from the normal alone (DVLE code 186-202:
+       q = (n.xy / 2s, s, 0), s = sqrt((1 + n.z) / 2); q = (1, 0, 0, 0) when 1 + n.z <= 0), i.e. the
+       frame q rotates x / y onto - for a flat normal (0, 0, 1): T = -x, B = -y */
+    "  if (dot(T, T) < 1e-8) {\n"
+    "    float k = 1.0 + N.z;\n"
+    "    if (k > 1e-4) {\n"
+    "      T = vec3(-N.z - N.y * N.y / k, N.x * N.y / k, N.x);\n"
+    "      B = vec3(N.x * N.y / k, -N.z - N.x * N.x / k, N.y);\n"
+    "    } else { T = vec3(1.0, 0.0, 0.0); B = vec3(0.0, -1.0, 0.0); }\n"
+    "  } else {\n"
+    "    T = normalize(T); B = cross(N, T);\n"
+    "  }\n"
     "  int bm = (fl_cfg.z >> 4) & 3;\n"
     "  if (bm != 0) {\n"
     "    int bs = (fl_cfg.z >> 6) & 3; vec4 bt = bs == 0 ? t0 : bs == 1 ? t1 : t2;\n"
@@ -235,7 +245,20 @@ void fraglight_reset(void) {
 }
 
 const FLEnv *fraglight_env(void) { return &S.env; }
+/* debug (ALBW_LIGHT_TRACE): hash of the lighting state a draw sees (env, lights, LUT inputs and
+ * bindings, LUT content generation) */
+uint64_t fraglight_state_hash(void) {
+    uint64_t h = 1469598103934665603ull;
+    const unsigned char *parts[4] = {(const void *)&S.env, (const void *)S.light, (const void *)&S.in, (const void *)S.bound};
+    const size_t sizes[4] = {sizeof S.env, sizeof S.light, sizeof S.in, sizeof S.bound};
+    for (int k = 0; k < 4; k++)
+        for (size_t i = 0; i < sizes[k]; i++) h = (h ^ parts[k][i]) * 1099511628211ull;
+    return (h ^ g_lut_gen) * 1099511628211ull;
+}
 void fraglight_debug_print(FILE *f) {
+    fprintf(f, "h3d-dump:   env enable %u n %u amb %u %u %u config %u lut_off %#x spot %#x da %#x\n", S.env.enable,
+            S.env.nlights, S.env.ambient[0], S.env.ambient[1], S.env.ambient[2], S.env.config, S.env.lut_off,
+            S.env.spot_mask, S.env.da_mask);
     for (int k = 0; k < S.env.nlights && k < 8; k++) {
         const LightState *l = &S.light[S.env.perm[k] & 7];
         fprintf(f, "h3d-dump:   light %u: dif %u %u %u amb %u %u %u s0 %u %u %u s1 %u %u %u dir %u pos %g %g %g\n",
@@ -247,6 +270,16 @@ void fraglight_debug_print(FILE *f) {
     for (int i = 0; i < 24; i++) if (S.bound[i]) fprintf(f, " %d->%u", i, S.bound[i]);
     fprintf(f, " | in abs %#x sel %u %u %u %u %u %u %u\n", S.in.abs, S.in.sel[0], S.in.sel[1], S.in.sel[2], S.in.sel[3],
             S.in.sel[4], S.in.sel[5], S.in.sel[6]);
+    fprintf(f, "h3d-dump:   fresnel sel %u bump mode %u unit %u renorm %u clamp %u scales %u %u %u %u\n", S.env.fresnel_sel,
+            S.env.bump_mode, S.env.bump_sel, S.env.bump_renorm, S.env.clamp_highlights, S.in.scale[0], S.in.scale[1],
+            S.in.scale[2], S.in.scale[3]);
+    for (int i = 0; i < 24; i++) {
+        uint32_t h = S.bound[i];
+        if (!h || h > g_nlut) continue;
+        fprintf(f, "h3d-dump:   lut %d (blob %#lx):", i, (unsigned long)g_lut[h - 1].blob);
+        for (int k = 0; k < 256; k += 16) fprintf(f, " %.3f", g_lut[h - 1].e[k][0]);
+        fprintf(f, " | 255 %.3f\n", g_lut[h - 1].e[255][0]);
+    }
 }
 
 void fraglight_exec(const ROp *op) {

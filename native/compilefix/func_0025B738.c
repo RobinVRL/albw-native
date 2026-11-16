@@ -1,3 +1,4 @@
+/* Renamed from func_0025B74C.c (2026-11-16, BOOT_LOG 119): the body is EU 0025B760, which the corrected EU/USA map names USA 0025B738. */
 /* compilefix: USA 0025B74C (EU 0025B760), Ghidra-derived (build/ghidra_analyzed4).
  * Failed to compile: conflicting types for 'func_0025B738'
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
@@ -12,7 +13,7 @@ extern int func_001DF8F8(int param_1,int *param_2);
 
 // USA 0025B74C <- EU 0025B760 [EDITED REGION: check by hand] (Ghidra, non-matching)
 
-void func_0025B74C(int param_1,int *param_2)
+void func_0025B738(int param_1,int *param_2)
 
 {
   if (*(int *)(param_1 + 0x10) != 0) {

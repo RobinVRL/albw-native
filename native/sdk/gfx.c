@@ -332,6 +332,19 @@ static void present_now(float shown[2][4], const void *const shown_mem[2]) {
     plat_end_frame();
     render_frame_end();
     G.presents++;
+    { /* debug: ALBW_FRAME_TRACE=1: per present, the work since the last one and the shown buffers */
+        static int ft = -1;
+        static RStats prev;
+        if (ft < 0) ft = getenv("ALBW_FRAME_TRACE") != NULL;
+        if (ft) {
+            RStats rs = render_stats();
+            gfx_log("frame %llu: draws %llu fills %llu xfers %llu | top %p bottom %p",
+                    (unsigned long long)G.presents, (unsigned long long)(rs.draws - prev.draws),
+                    (unsigned long long)(rs.fills - prev.fills), (unsigned long long)(rs.transfers - prev.transfers),
+                    shown_mem[0], shown_mem[1]);
+            prev = rs;
+        }
+    }
     G.last_present = now_ns();
     if (G.presents == 1)
         gfx_log("first frame presented (top %.2f %.2f %.2f, bottom %.2f %.2f %.2f)", shown[0][0], shown[0][1],
@@ -539,6 +552,9 @@ static void exec_request(CmdList *l, const Request *r) {
     case RQ_CMD3D:
         l->run_bytes += r->u.cmd.size;
         /* PICA words are never read: only the native markers of the replaced producers run */
+        { static int ft = -1; if (ft < 0) ft = getenv("ALBW_FRAME_TRACE") != NULL;
+          if (ft > 0) fprintf(stderr, "render: dump: CHUNK list %u req %u %#lx +%u\n", l->id, l->req_run,
+                              (unsigned long)r->u.cmd.addr, (unsigned)r->u.cmd.size); }
         render_exec_cmds((const void *)r->u.cmd.addr, r->u.cmd.size);
         break;
     case RQ_FILL:
@@ -550,6 +566,9 @@ static void exec_request(CmdList *l, const Request *r) {
         break;
     case RQ_B2L: {
         DisplayBuffer *b = dbuf_at(r->u.xfer.dst);
+        { static int ft = -1; if (ft < 0) ft = getenv("ALBW_FRAME_TRACE") != NULL;
+          if (ft) gfx_log("  B2L %#x -> %#x%s (%dx%d)", (unsigned)r->u.xfer.src, (unsigned)r->u.xfer.dst,
+                          b ? " [display]" : "", r->u.xfer.dw, r->u.xfer.dh); }
         if (b) frame_into(b, r->u.xfer.src, r->u.xfer.sfmt);
         render_transfer((const void *)r->u.xfer.src, r->u.xfer.sw, r->u.xfer.sh, r->u.xfer.sfmt,
                         (void *)r->u.xfer.dst, r->u.xfer.dw, r->u.xfer.dh, r->u.xfer.dfmt, r->u.xfer.flip,

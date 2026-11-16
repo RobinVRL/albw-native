@@ -48,6 +48,7 @@
 #include "../render/fraglight.h"
 #include "../render/render.h"
 
+extern long g_plat_frames;
 #define GA(a) ((uintptr_t)(uint32_t)(a))
 static inline uint8_t G8(uint32_t a, uint32_t o) { return *(const uint8_t *)GA(a + o); }
 static inline uint32_t G32(uint32_t a, uint32_t o) { uint32_t v; memcpy(&v, (const void *)GA(a + o), 4); return v; }
@@ -317,6 +318,48 @@ static void material_blobs(int32_t *mat, int32_t *cur, const uint16_t *state) {
     func_003CC090(ctx, G32(params, 0xC8), G32(params, 0xCC) << 2, 0);
     func_003CC090(ctx, (uint32_t)mat[4], (uint32_t)mat[5] << 2, 0);
     for (uint32_t k = 0; k < 3; k++) func_003CC090(ctx, G32(st, 0x13C + 8 * k), G32(st, 0x140 + 8 * k) << 2, 0);
+    { /* ALBW_MATSTATE=<material name>: the per-instance texture-unit blobs of that material (once per 120 binds) */
+        static const char *want = (const char *)1;
+        static unsigned n;
+        if (want == (const char *)1) want = getenv("ALBW_MATSTATE");
+        uint32_t nm = G32((uint32_t)GPTR_OF(mat), 0x28);
+        int any = want && !strcmp(want, "*");
+        uint32_t t0b = G32(st, 0x13C), t0w = G32(st, 0x140), t0 = 0;
+        for (uint32_t i = 0; any && t0b && i + 1 < t0w; i += 2)
+            if ((G32(t0b, 4 * (i + 1)) & 0xFFFF) == 0x85) t0 = G32(t0b, 4 * i);
+        if (want && nm && (any ? ((!t0b || !t0) && g_plat_frames > 3500 && n++ < 200) : (!strcmp((const char *)GA(nm), want) && n++ % 120 == 0))) {
+            if (any) fprintf(stderr, "matstate: name %s\n", (const char *)GA(nm));
+            fprintf(stderr, "matstate: %s mat %#x st %#x blob %#x/%u", want, (unsigned)GPTR_OF(mat), (unsigned)st, (unsigned)mat[4], (unsigned)mat[5]);
+            for (uint32_t k = 0; k < 3; k++) {
+                uint32_t b = G32(st, 0x13C + 8 * k), w = G32(st, 0x140 + 8 * k), tex = 0;
+                for (uint32_t i = 0; b && i + 1 < w; i += 2)
+                    if ((G32(b, 4 * (i + 1)) & 0xFFFF) == 0x85 + 0x10 * k - (k == 2 ? 8 : 0)) tex = G32(b, 4 * i) << 3;
+                fprintf(stderr, " | unit%u blob %#x/%u tex %#x", k, b, w, tex);
+            }
+            fprintf(stderr, "\n");
+        }
+    }
+}
+
+/* The original caches each material's environment command block (built by the stale path with
+ * the material's own light colours (00564DA0) and flags (env_from_material)) and CALLs it while the
+ * cache is valid. The native code records the environment from the light-set object instead, which
+ * holds whatever the last rebuilt material wrote: other materials' bump mode / bump texture /
+ * Fresnel selector / LUT config and specular colours leaked into cached binds (stones on the title
+ * flyover drew with the water's bump mapping from an unbound unit: much darker than Azahar). So the
+ * cached path records what the material's block holds: its colours and flags applied to a copy of
+ * the set, then the set restored (game memory unchanged). ALBW_ENV_SHARED=1: old behaviour. */
+static void env_record_material(int32_t *mat, int32_t *cur, uint16_t *state, int32_t *envarr, uint32_t set,
+                                uint32_t params) {
+    static int shared = -1;
+    if (shared < 0) shared = getenv("ALBW_ENV_SHARED") != NULL;
+    if (shared) { env_record(cur, set + 4, state, envarr, params); return; }
+    uint8_t save[0x278];
+    memcpy(save, (const void *)GA(set), sizeof save);
+    func_00564DA0(mat, envarr, (int32_t)GPTR_OF(state));
+    env_from_material(set, params);
+    env_record(cur, set + 4, state, envarr, params);
+    memcpy((void *)GA(set), save, sizeof save);
 }
 
 /* USA 005655D0  material bind, light environment rebuilt when needed (ResMaterial *mat, CmdCtx
@@ -342,7 +385,7 @@ void func_005655D0(int32_t *mat, int32_t *cur, uint16_t *state, int32_t *envarr)
             W32(st, 0x10, 0);
             state[0] = (uint16_t)((state[0] & 0xFEFF) | 0x80);
         } else {
-            env_record(cur, E, state, envarr, params);
+            env_record_material(mat, cur, state, envarr, set, params);
         }
     }
     material_blobs(mat, cur, state);
@@ -356,9 +399,9 @@ void func_00564C14(int32_t *mat, int32_t *cur, uint16_t *state, int32_t *envarr)
     if (!(state[0] & 1)) {
         unlit(cur, state, envarr, params);
     } else {
-        uint32_t E = (uint32_t)envarr[0] + (uint32_t)state[0x10] * 0x278 + 4;
+        uint32_t set = (uint32_t)envarr[0] + (uint32_t)state[0x10] * 0x278, E = set + 4;
         func_00565A10(mat, cur, (int32_t)E);
-        env_record(cur, E, state, envarr, params);
+        env_record_material(mat, cur, state, envarr, set, params);
     }
     material_blobs(mat, cur, state);
 }

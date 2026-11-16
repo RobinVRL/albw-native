@@ -6,6 +6,7 @@
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
 #include "ghidra_types.h"
+#include "../include/ghidra_concat44.h"
 #include "compilefix.h"
 undefined4 func_003009F4(uint *param_1,uint param_2,int param_3);
 undefined4 func_0010057A(uint *param_1,undefined4 param_2,undefined4 *param_3);
