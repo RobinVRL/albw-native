@@ -32,7 +32,7 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 
 ## Builds and tools
 - [ ] Other possible false pointer relocations in game data (BOOT_LOG 131 sweep: 0x006F83xx string-table words, 006B26EC = 006F00CD, 006B2AB8 = 00790085): check each against its users
-- [ ] Save states that load in later builds (today a relink makes every state refuse to load)
+- [x] Save states load in later builds (runtime/ss_convert.c, BOOT_LOG 132; refused only when a function on a saved stack changed)
 - [ ] Link keeps walking down by himself after Gulley's "spin the vane" line (user report; recheck after BOOT_LOG 131)
 - [ ] 64-bit build: tools/link64.sh needs native/wraps.txt (eft / fog wrappers) and native/names.txt support
 - [ ] link64.sh: rebuild platform.c when its included files change (as link.sh)

@@ -1857,6 +1857,13 @@ typedef struct {
 
 int albw_os_ss_persistent(void) { return pmem_fixed() && !g_slots_volatile; }
 
+/* the thread record's layout, for save states of other builds (runtime/ss_convert.c) */
+void albw_os_ss_thr_layout(uint32_t *size, uint32_t *len_off, uint32_t *sp_off) {
+    *size = sizeof(OsThrHdr);
+    *len_off = offsetof(OsThrHdr, len);
+    *sp_off = offsetof(OsThrHdr, cap) + offsetof(SsCap, sp);
+}
+
 /* main game thread's thread-locals (its stack: savestate.c) */
 void albw_os_ss_main_tls(void *buf, size_t n, int restore) {
     if (n < sizeof(SsCap)) return;

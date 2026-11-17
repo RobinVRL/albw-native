@@ -22,7 +22,7 @@ import os, re, sys
 EXCLUDE = [
     r"/native/platform/", r"/native/render/", r"/native/audio/output\.o$", r"/native/audio/fx\.o$",
     r"/native/audio/mixer\.o$",
-    r"/native/runtime/(prof|crash|fatal|entry|lowmem|savestate|ss_ctx|pmem)\.o$",
+    r"/native/runtime/(prof|crash|fatal|entry|lowmem|savestate|ss_ctx|ss_convert|pmem)\.o$",
     r"/native/sdk/(os|gfx|fs|memory|snd|light)\.o$",
 ]
 
@@ -44,7 +44,7 @@ def main():
             out_sec = re.match(r"^(\S+)", line).group(1)
             pending = None
             continue
-        if out_sec not in (".data", ".bss"):
+        if out_sec not in (".data", ".bss", ".albw_rw", ".albw_zi"):
             continue
         ms = re.match(r"^\s+(%s)\s+albw_data$" % num, line)
         if ms:
@@ -66,7 +66,7 @@ def main():
         if not m:
             continue
         sec, addr, size, obj = m
-        if not (sec.startswith(".data") or sec.startswith(".bss") or sec == "COMMON"):
+        if not (sec.startswith(".data") or sec.startswith(".bss") or sec in (".albw_rw", ".albw_zi") or sec == "COMMON"):
             continue
         addr, size = int(addr, 16), int(size, 16)
         obj = obj.strip()

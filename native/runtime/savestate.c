@@ -17,13 +17,15 @@
  * audio device, input) is never part of a state.
  *
  * Requests (F6 / F7 / F8, Esc menu File, ALBW_SS_AT) run at the next frame end on the main thread
- * (albw_ss_frame_point, from plat_end_frame). A state from another build is refused (binary hash). */
+ * (albw_ss_frame_point, from plat_end_frame). A state from another build is converted on load
+ * (ss_convert.c: symbols, ranges and code recorded in a trailer at save time). */
 #define _GNU_SOURCE
 #include <dirent.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +37,7 @@
 
 #include "runtime.h"
 #include "savestate.h"
+#include "ss_convert.h"
 
 /* the parts (sdk/os.c, sdk/gfx.c, sdk/fs.c, sdk/memory.c, sdk/light.c, render/) */
 int albw_os_ss_park_all(int timeout_ms, char *why, size_t whylen);
@@ -46,6 +49,7 @@ int albw_os_ss_persistent(void);
 void albw_os_ss_main_tls(void *buf, size_t n, int restore);
 size_t albw_os_ss_main_tls_size(void);
 void albw_gfx_ss_write(SsBuf *b);
+void albw_os_ss_thr_layout(uint32_t *size, uint32_t *len_off, uint32_t *sp_off);
 int albw_gfx_ss_check(SsBuf *b, char *why, size_t whylen);
 void albw_gfx_ss_load(SsBuf *b);
 void albw_gfx_vram(uint8_t **base, size_t *size);
@@ -194,6 +198,20 @@ static void note(const char *fmt, ...) {
 }
 
 typedef struct { AlbwCtx ctx; uintptr_t sp, base; uint32_t len; } MainHdr;
+
+/* for ss_convert.c: the records' layout and the saved ranges */
+static void ss_layout(SsLayout *l) {
+    l->mh_size = sizeof(MainHdr);
+    l->mh_len_off = offsetof(MainHdr, len);
+    l->mh_sp_off = offsetof(MainHdr, sp);
+    albw_os_ss_thr_layout(&l->th_size, &l->th_len_off, &l->th_sp_off);
+}
+static SsRangeInfo *ss_range_info(void) {
+    SsRangeInfo *r = calloc(g_nranges ? g_nranges : 1, sizeof *r);
+    for (int i = 0; r && i < g_nranges; i++)
+        r[i] = (SsRangeInfo){(uint32_t)(uintptr_t)g_ranges[i].p, (uint32_t)g_ranges[i].n, g_ranges[i].name};
+    return r;
+}
 #define TAG(a, b, c, d) ((uint32_t)(a) | (uint32_t)(b) << 8 | (uint32_t)(c) << 16 | (uint32_t)(d) << 24)
 
 static void put_blob(SsBuf *b, uint32_t tag, void *p, size_t n) { ss_section(b, tag, p, n); free(p); }
@@ -249,6 +267,13 @@ static __attribute__((noinline)) void do_save(int slot) {
     albw_os_ss_main_tls(tls, tls_n, 0);
     put_blob(&b, TAG('M', 'T', 'L', 'S'), tls, tls_n);
     write_body(&b);
+    {   /* what a later build needs to convert this state */
+        SsLayout lay;
+        ss_layout(&lay);
+        SsRangeInfo *ri = ss_range_info();
+        if (ri) ss_convert_write_trailer(&b, &lay, ri, g_nranges);
+        free(ri);
+    }
     if (b.err) { free(b.p); note("Save state %d failed: out of memory", slot + 1); return; }
     uLongf packed = compressBound(b.n);
     uint8_t *z = malloc(packed);
@@ -289,14 +314,14 @@ static void main_restore_tramp(void *p) {
     albw_ctx_jump(&g_lmh->ctx, 1);
 }
 
-static int read_state(int slot, SsBuf *b, char *why, size_t whylen) {
+static int read_state(int slot, SsBuf *b, char *why, size_t whylen, int *other_build) {
     char path[4200];
     slot_path(slot, path, sizeof path);
     FILE *f = fopen(path, "rb");
     if (!f) { snprintf(why, whylen, "empty"); return -1; }
     FileHdr h;
     if (fread(&h, sizeof h, 1, f) != 1 || memcmp(h.magic, "ALBWSTA1", 8)) { fclose(f); snprintf(why, whylen, "not a state file"); return -1; }
-    if (h.build != build_hash()) { fclose(f); snprintf(why, whylen, "made by another build of the game"); return -1; }
+    *other_build = h.build != build_hash();
     if (h.session && h.session != g_session) { fclose(f); snprintf(why, whylen, "made by an earlier run that had no fixed addresses"); return -1; }
     uint8_t *z = malloc(h.packed ? h.packed : 1);
     b->p = malloc(h.raw ? h.raw : 1);
@@ -320,7 +345,21 @@ static void do_load(int slot) {
     char why[200];
     free(g_lb.p);
     memset(&g_lb, 0, sizeof g_lb);
-    if (read_state(slot, &g_lb, why, sizeof why)) { note("Cannot load state %d: %s", slot + 1, why); return; }
+    int other = 0;
+    if (read_state(slot, &g_lb, why, sizeof why, &other)) { note("Cannot load state %d: %s", slot + 1, why); return; }
+    if (other) {   /* another build: rewrite it for this one (ss_convert.c) */
+        SsLayout lay;
+        ss_layout(&lay);
+        SsRangeInfo *ri = ss_range_info();
+        int bad = !ri || ss_convert(&g_lb, &lay, ri, g_nranges, why, sizeof why);
+        free(ri);
+        if (bad) {
+            note("Cannot load state %d: %s", slot + 1, why);
+            free(g_lb.p);
+            memset(&g_lb, 0, sizeof g_lb);
+            return;
+        }
+    }
     SsBuf *b = &g_lb;
     /* 1. check every part before anything changes */
     size_t n;
@@ -432,7 +471,7 @@ int albw_ss_slot_info(int slot, char *buf, size_t n) {
     time_t w = (time_t)h.when;
     localtime_r(&w, &tm);
     snprintf(buf, n, "%04d-%02d-%02d %02d:%02d%s", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
-             g_exe[0] && h.build != build_hash() ? " (old build)" : "");
+             g_exe[0] && h.build != build_hash() ? " (older build)" : "");
     return 1;
 }
 

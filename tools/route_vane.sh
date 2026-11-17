@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Make a save state of the CURRENT build at the weather-vane save prompt ("Save your progress?"),
-# so the save flow can be tested with F7 / ALBW_ROUTE 'load N' right away. States only load in the
-# binary that wrote them: run this again after every relink.
+# so the save flow can be tested with F7 / ALBW_ROUTE 'load N' right away. Later builds convert the
+# state on load (runtime/ss_convert.c); run this again only if a load is refused.
 #
 #   tools/route_vane.sh [slot]        default slot 9 (file slot9.state, F8 to it, F7 to load)
 #
