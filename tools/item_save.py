@@ -14,9 +14,9 @@ github.com/Brionjv/TLOZ-A-Link-Between-Worlds-Save-Editor, Form1.vb; checked aga
   0xD8 / 0xD9 fruits, 0xDA-0xDE bottles, 0xDF Ravio's bracelet
   0x18E rupees (u16)
   0xDFC CRC-32 (zlib) of bytes 0x000-0xDFB, little-endian
-Values seen in the port (BOOT_LOG 139): sword 1 shows a sword on B but the Gear screen has none,
-sword 2 = a sword in the Gear screen; shield 1 = shield in the Gear screen. Item values are not
-decoded yet (World/Byaml/GetItem.byaml has 97 items, normal / Lv2 / rental variants).
+Editing these bytes alone does NOT give a usable sword (BOOT_LOG 141: the original game in Azahar
+does not swing with such a save either). Use real saves for gameplay tests: the speedrun saves in
+~/.local/share/albw-port/fixtures/il_saves (sword 2..5 = levels, items 1..3).
 """
 import argparse
 import os
