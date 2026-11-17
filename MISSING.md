@@ -55,7 +55,7 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] House candle flame appears briefly when Link gets off the bed, then vanishes (recheck after BOOT_LOG 130)
 - [ ] Hyrule field / town
 - [x] Sword: slash, charge, spin (BOOT_LOG 141); shield (R) raise / block (BOOT_LOG 144)
-- [ ] Functions compiled to no instructions (run on into the next function when called): 0022F32C, 004100E4 (Ghidra, UB in the body), 003F0010 (Ghidra fragment on the caller's r4), 003D2C58, 0048C028__impl (work8/perm_local permuter sources), 0013066C overridden; 003248BC fixed (BOOT_LOG 144). Scan: objdump for symbols with only nop/xchg
+- [x] Functions compiled to no instructions: all 7 resolved, link-time check added (BOOT_LOG 145)
 - [x] Items: bombs, bow, boomerang, hookshot, fire / ice / sand / tornado rods, hammer, lamp, net, hint glasses (BOOT_LOG 142-143)
 - [ ] Item effects render wrong: fire rod flame dark red, black streaks behind projectiles, tornado = huge triangles (particles, BOOT_LOG 143)
 - [ ] Combat against enemies

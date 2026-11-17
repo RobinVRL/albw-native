@@ -150,6 +150,9 @@ NOT_POINTER_TABLES = [
     (0x006B26EC, 4, 1, (0,)), (0x006B2AB8, 4, 1, (0,)),
     (0x006F8300, 4, 1, (0,)),
     (0x00721C78, 4, 1, (0,)),
+    # 12 rising numbers (0x863BC, 0x112AAC, ... 0x68B32A; steps of ~0x8C700, some odd): two of them
+    # (0x22F32C, 0x4E50AC) land inside code and were relocated (BOOT_LOG 145)
+    (0x006A37C0, 4, 12, (0,)),
 ]
 
 
