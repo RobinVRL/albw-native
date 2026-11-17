@@ -54,8 +54,11 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Weather vane bird body: grainy / blocky texture vs Azahar (not filtering)
 - [ ] House candle flame appears briefly when Link gets off the bed, then vanishes (recheck after BOOT_LOG 130)
 - [ ] Hyrule field / town
-- [ ] Combat (sword, enemies)
-- [ ] Items and the bottom-screen menus (Gear / Items)
+- [x] Sword: slash, charge, spin (BOOT_LOG 141)
+- [x] Items: bombs, bow, boomerang, hookshot, fire / ice / sand / tornado rods, hammer, lamp, net, hint glasses (BOOT_LOG 142-143)
+- [ ] Item effects render wrong: fire rod flame dark red, black streaks behind projectiles, tornado = huge triangles (particles, BOOT_LOG 143)
+- [ ] Combat against enemies
+- [x] Items and the bottom-screen menus (Gear / Items): open, select, equip to Y (BOOT_LOG 140-143)
 - [ ] Wall merging (FlatLink models)
 - [ ] First dungeon
 - [ ] Lorule
