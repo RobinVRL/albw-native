@@ -61,6 +61,9 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Lorule
 - [ ] Sound effects / music in gameplay
 
+- [x] Pick up / carry / throw a pot (BOOT_LOG 136)
+- [ ] Save states from an older build: text built after the load uses wrong glyphs (BOOT_LOG 136)
+
 ## Frontend
 - [x] Esc menu with window / layout / filter / fullscreen / resolution (BOOT_LOG 114, 116)
 - [x] Save states in memory (F6 / F7 / F8, File menu; BOOT_LOG 124, checked by the user)

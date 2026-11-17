@@ -461,6 +461,25 @@ static int heap_target_ok(const Conv *c, const Sec *os, uint32_t v, uint32_t off
     return v > c->old.ro_addr && q[-1] == 0 && q[0] >= 0x20 && q[0] < 0x7F;
 }
 
+/* debug: ALBW_SS_CONVERT_OFF=kind[:heap|:range|:stack],... leaves those rewrites out (kinds: func, ret,
+ * data, str) - for bisecting a bad conversion */
+static int conv_off(const char *kind, int pol) {
+    static const char *e;
+    static int init;
+    if (!init) { init = 1; e = getenv("ALBW_SS_CONVERT_OFF"); }
+    if (!e) return 0;
+    const char *pn = pol == P_HEAP ? "heap" : pol == P_RANGE ? "range" : "stack";
+    char want1[32], want2[32];
+    snprintf(want1, sizeof want1, "%s:%s", kind, pn);
+    snprintf(want2, sizeof want2, "%s", kind);
+    for (const char *q = e; *q;) {
+        size_t n = strcspn(q, ",");
+        if ((strlen(want1) == n && !strncmp(q, want1, n)) || (strlen(want2) == n && !strncmp(q, want2, n))) return 1;
+        q += n + (q[n] == ',');
+    }
+    return 0;
+}
+
 static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
     if (v < c->old_lo || v >= c->old_hi) return v;
     const Sec *os = sec_of(&c->old, v);
@@ -482,7 +501,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
     if (os->flags & SHF_EXECINSTR) {
         if (!s) return v;
         if (off == 0) {
-            if (n) { c->mapped++; logw(c, at, v, n->addr, "func", s->name, 0); return n->addr; }
+            if (n && !conv_off("func", pol)) { c->mapped++; logw(c, at, v, n->addr, "func", s->name, 0); return n->addr; }
             return v;
         }
         if (pol != P_STACK) return v;
@@ -504,7 +523,9 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         logw(c, at, v, n->addr + off, "ret", s->name, off);
         return n->addr + off;
     }
-    if ((pol == P_HEAP || pol == P_RANGE) && !heap_target_ok(c, os, v, off, pol == P_RANGE)) {
+    static int loose = -1;
+    if (loose < 0) loose = getenv("ALBW_SS_CONVERT_LOOSE") != NULL;   /* debug: no heap target rules */
+    if (!loose && (pol == P_HEAP || pol == P_RANGE) && !heap_target_ok(c, os, v, off, pol == P_RANGE)) {
         c->unmapped++;
         logw(c, at, v, v, "skip", s ? s->name : os->name, off);
         return v;
@@ -512,9 +533,10 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
     /* a string literal has no symbol; an unsized label before it (asm / pool label, size taken up to
      * the next symbol) would map it by offset into whatever follows that label in this build: string
      * starts in .rodata that are not inside a sized object are matched by their bytes below */
-    int lit = !strcmp(os->name, ".rodata") && (!s || !s->sized) && v > c->old.ro_addr && c->old.ro &&
+    /* (a pointer to a label's own start - a literal-pool word DAT_*, PTR_* - maps by the label) */
+    int lit = !strcmp(os->name, ".rodata") && (!s || (!s->sized && off != 0)) && v > c->old.ro_addr && c->old.ro &&
               v - c->old.ro_addr < c->old.ro_size && c->old.ro[v - c->old.ro_addr - 1] == 0;
-    if (n && !lit && (off < n->size || !n->size)) { c->mapped++; logw(c, at, v, n->addr + off, "data", s->name, off); return n->addr + off; }
+    if (n && !lit && (off < n->size || !n->size) && !conv_off("data", pol)) { c->mapped++; logw(c, at, v, n->addr + off, "data", s->name, off); return n->addr + off; }
     /* a string literal (no symbol): the same bytes in this build's .rodata */
     if (c->old.ro && v >= c->old.ro_addr && v - c->old.ro_addr < c->old.ro_size && c->cur->ro) {
         const char *str = (const char *)c->old.ro + (v - c->old.ro_addr);
@@ -529,7 +551,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
                 if (!tail) tail = q;
             }
             if (!hit) hit = tail;
-            if (hit) {
+            if (hit && !conv_off("str", pol)) {
                 uint32_t w = c->cur->ro_addr + (uint32_t)(hit - hay);
                 c->strings++;
                 logw(c, at, v, w, "str", str, 0);
@@ -654,6 +676,7 @@ int ss_convert(SsBuf *st, const SsLayout *lay, const SsRangeInfo *cur, int ncur,
             continue;
         }
         if (strcmp(oname, "static")) { lost += on; continue; }
+        if (conv_off("statics", P_RANGE)) continue;   /* debug: keep this run's values */
         for (int s = 0; s < c->old.nsym; s++) {
             const Sym *x = &c->old.sym[s];
             if (x->exec || x->addr < oa || x->addr >= oa + on) continue;

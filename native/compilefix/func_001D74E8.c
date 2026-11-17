@@ -51,7 +51,9 @@ undefined4 func_001D74E8(int *param_1)
   if ((uVar2 & 1) != 0) {
     pcVar5 = *(code **)(pcVar5 + *(int *)((int)piVar6 + ((int)uVar2 >> 1)));
   }
-  (*pcVar5)();
+  /* EU 1D7520: r0 = this->[0x4E8] + (adj >> 1) - the state function's `this` (the text called it
+   * without arguments: throwing a pot crashed in the state 001D76D8 on NULL + 0x3E0, BOOT_LOG 136) */
+  (*(void (*)(int *))pcVar5)((int *)((int)piVar6 + ((int)uVar2 >> 1)));
   iVar3 = param_1[0x135] + 1;
   param_1[0x135] = iVar3;
   if (param_1[0x139] != 0) {
@@ -110,9 +112,11 @@ LAB_001d761c:
   if (((char)param_1[0x136] != '\0') || (uVar2 = param_1[0x153], (uint)param_1[0x152] < uVar2)) {
     pfVar4 = (float *)(param_1 + 0x132);
     func_00115C54((float *)(param_1 + 0xf4),(float *)(param_1 + 0xf4),pfVar4);
-    uVar2 = extraout_r1;
   }
-  func_00169A80((int *)param_1[0x146],uVar2,(undefined4)(uintptr_t)(pfVar4),piVar6);
+  /* EU 1D7664: only r0 is set for 00169A80 (r1-r3 are leftovers). The text passed the uninitialised
+   * `extraout_r1`, which let clang drop the rest of the function: it fell through into the next one
+   * (001DC4C8) - throwing a pot crashed (BOOT_LOG 136) */
+  func_00169A80((int *)param_1[0x146],0,0,(int *)0);
   func_00168E9C((int *)param_1[0x146],param_1[0x103],(int *)0x0);
   func_0037CDA8(param_1);
   local_20 = ALBW_AS_U32(ALBW_AS_F32(param_1[0xf4]));
