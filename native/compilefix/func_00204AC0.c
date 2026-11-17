@@ -61,6 +61,16 @@ extern char s_SE_BuzzBlob_ELEC_00204eac[];
 /* WARNING: Removing unreachable block (ram,0x00204d88) */
 /* WARNING: Removing unreachable block (ram,0x00204d94) */
 
+#ifndef ALBW_APPROACH_DEFINED
+#define ALBW_APPROACH_DEFINED
+/* inlined two-sided approach (tools/approach_fix.py, BOOT_LOG 150): v -> t by s, no overshoot */
+static float albw_approach(float v, float t, float s) {
+    float n;
+    if (v < t) { n = v + s; return (t <= n || v > n) ? t : n; }
+    if (v > t) { n = v - s; if (n <= t) return t; return n <= v ? n : t; }
+    return v;
+}
+#endif
 void func_00204AC0(int *param_1)
 
 {
@@ -151,11 +161,7 @@ void func_00204AC0(int *param_1)
     if ((DAT_00204edc <= fVar8) && (fVar9 = fVar8, DAT_00204ee0 < fVar8)) {
       fVar9 = DAT_00204ee0;
     }
-    fVar9 = fVar10 + fVar9;
-    if ((DAT_00204ec4 <= fVar9) || (fVar9 < fVar10)) {
-      *pfVar3 = DAT_00204ec4;
-      goto LAB_00204d98;
-    }
+    fVar9 = albw_approach(fVar10, DAT_00204ec4, fVar9);   /* two-sided (BOOT_LOG 150) */
   }
   else {
     fVar10 = *pfVar3;
@@ -167,11 +173,7 @@ void func_00204AC0(int *param_1)
     if ((DAT_00204edc <= fVar8) && (fVar9 = fVar8, DAT_00204ee0 < fVar8)) {
       fVar9 = DAT_00204ee0;
     }
-    fVar9 = fVar10 + fVar9;
-    if ((DAT_00204ed4 <= fVar9) || (fVar9 < fVar10)) {
-      *pfVar3 = DAT_00204ed4;
-      goto LAB_00204d98;
-    }
+    fVar9 = albw_approach(fVar10, DAT_00204ed4, fVar9);   /* two-sided (BOOT_LOG 150) */
   }
   *pfVar3 = fVar9;
 LAB_00204d98:

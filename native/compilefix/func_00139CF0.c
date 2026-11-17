@@ -79,6 +79,16 @@ extern undefined4 _DAT_0013a178;
 /* WARNING: Removing unreachable block (ram,0x00139ff8) */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
+#ifndef ALBW_APPROACH_DEFINED
+#define ALBW_APPROACH_DEFINED
+/* inlined two-sided approach (tools/approach_fix.py, BOOT_LOG 150): v -> t by s, no overshoot */
+static float albw_approach(float v, float t, float s) {
+    float n;
+    if (v < t) { n = v + s; return (t <= n || v > n) ? t : n; }
+    if (v > t) { n = v - s; if (n <= t) return t; return n <= v ? n : t; }
+    return v;
+}
+#endif
 void func_00139CF0(int *param_1)
 
 {
@@ -201,13 +211,7 @@ void func_00139CF0(int *param_1)
     func_001507D8((int)param_1,&local_58,0);
   }
   pfVar8 = (float *)(param_1 + 0x120);
-  fVar9 = *pfVar8 + DAT_0013a18c;
-  if ((ALBW_AS_F32(param_1[0x121]) <= fVar9) || (fVar9 < *pfVar8)) {
-    *pfVar8 = ALBW_AS_F32(param_1[0x121]);
-  }
-  else {
-    *pfVar8 = fVar9;
-  }
+  *pfVar8 = albw_approach(*pfVar8, ALBW_AS_F32(param_1[0x121]), DAT_0013a18c);   /* two-sided (BOOT_LOG 150) */
   pfVar8 = (float *)(param_1 + 0x122);
   *(undefined1 *)(param_1 + 0x128) = 0;
   *(undefined1 *)((int)param_1 + 0x4a2) = 0;
