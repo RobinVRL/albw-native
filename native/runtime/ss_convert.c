@@ -41,7 +41,7 @@
 #if UINTPTR_MAX == 0xFFFFFFFFu
 /* ------------------------------------------------------------------ images */
 typedef struct { uint32_t addr, size, flags; char name[24]; } Sec;
-typedef struct { uint32_t addr, size; const char *name, *file; uint8_t exec; } Sym;
+typedef struct { uint32_t addr, size; const char *name, *file; uint8_t exec, sized; } Sym;
 typedef struct {
     Sec sec[96];
     int nsec;
@@ -100,6 +100,7 @@ static int image_syms(Image *im, const Elf32_Sym *st, uint32_t n, const char *st
         d->name = nm;
         d->file = bind == STB_LOCAL ? file : NULL;
         d->exec = (sc->flags & SHF_EXECINSTR) != 0;
+        d->sized = s->st_size != 0;
     }
     qsort(im->sym, im->nsym, sizeof *im->sym, cmp_sym);
     /* unsized symbols (asm labels, game-data labels): up to the next symbol or the section end */
@@ -447,7 +448,7 @@ static int after_call(const uint8_t *code, uint32_t start, uint32_t size, uint32
  * audio, input), .eh_frame, the dynamic symbol tables. In .rodata the target must be an object or
  * a string start. Measured on a title -> vane state: the loose rule rewrote ~1,500 random heap
  * words into host statics (menu_vtx, draw.before, the audio ring ...); this one rewrites none. */
-static int heap_target_ok(const Conv *c, const Sec *os, uint32_t v, uint32_t off) {
+static int heap_target_ok(const Conv *c, const Sec *os, uint32_t v, uint32_t off, int statics) {
     for (int r = 0; r < c->nrng; r++) {
         uint32_t a = rd32(c->rnga + r * 32), n = rd32(c->rnga + r * 32 + 4);
         if (v >= a && v - a < n) return 1;
@@ -456,6 +457,7 @@ static int heap_target_ok(const Conv *c, const Sec *os, uint32_t v, uint32_t off
     if (off == 0) return 1;
     if (!c->old.ro || v < c->old.ro_addr || v - c->old.ro_addr >= c->old.ro_size) return 0;
     const uint8_t *q = c->old.ro + (v - c->old.ro_addr);
+    if (statics) return q[0] >= 0x20 && q[0] < 0x7F;   /* static data may point at a merged string tail */
     return v > c->old.ro_addr && q[-1] == 0 && q[0] >= 0x20 && q[0] < 0x7F;
 }
 
@@ -502,23 +504,31 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         logw(c, at, v, n->addr + off, "ret", s->name, off);
         return n->addr + off;
     }
-    if (pol == P_HEAP && !heap_target_ok(c, os, v, off)) {
+    if ((pol == P_HEAP || pol == P_RANGE) && !heap_target_ok(c, os, v, off, pol == P_RANGE)) {
         c->unmapped++;
         logw(c, at, v, v, "skip", s ? s->name : os->name, off);
         return v;
     }
-    if (n && (off < n->size || !n->size)) { c->mapped++; logw(c, at, v, n->addr + off, "data", s->name, off); return n->addr + off; }
+    /* a string literal has no symbol; an unsized label before it (asm / pool label, size taken up to
+     * the next symbol) would map it by offset into whatever follows that label in this build: string
+     * starts in .rodata that are not inside a sized object are matched by their bytes below */
+    int lit = !strcmp(os->name, ".rodata") && (!s || !s->sized) && v > c->old.ro_addr && c->old.ro &&
+              v - c->old.ro_addr < c->old.ro_size && c->old.ro[v - c->old.ro_addr - 1] == 0;
+    if (n && !lit && (off < n->size || !n->size)) { c->mapped++; logw(c, at, v, n->addr + off, "data", s->name, off); return n->addr + off; }
     /* a string literal (no symbol): the same bytes in this build's .rodata */
     if (c->old.ro && v >= c->old.ro_addr && v - c->old.ro_addr < c->old.ro_size && c->cur->ro) {
         const char *str = (const char *)c->old.ro + (v - c->old.ro_addr);
         size_t room = c->old.ro_size - (v - c->old.ro_addr);
         size_t len = strnlen(str, room < 512 ? room : 512);
-        if (len >= 2 && len < 512 && (v == c->old.ro_addr || str[-1] == 0)) {
+        if (len >= 2 && len < 512 && (v == c->old.ro_addr || str[-1] == 0 || pol == P_RANGE)) {
             const char *hay = (const char *)c->cur->ro;
             size_t hn = c->cur->ro_size;
-            const char *hit = NULL;
-            for (const char *q = memmem(hay, hn, str, len + 1); q; q = memmem(q + 1, hn - (size_t)(q + 1 - hay), str, len + 1))
+            const char *hit = NULL, *tail = NULL;   /* a string start, else a merged tail ("In" in "...In") */
+            for (const char *q = memmem(hay, hn, str, len + 1); q; q = memmem(q + 1, hn - (size_t)(q + 1 - hay), str, len + 1)) {
                 if (q == hay || q[-1] == 0) { hit = q; break; }
+                if (!tail) tail = q;
+            }
+            if (!hit) hit = tail;
             if (hit) {
                 uint32_t w = c->cur->ro_addr + (uint32_t)(hit - hay);
                 c->strings++;
@@ -639,7 +649,7 @@ int ss_convert(SsBuf *st, const SsLayout *lay, const SsRangeInfo *cur, int ncur,
         if (whole >= 0) {
             memcpy(nb[whole], od[r], on);
             c->log_tag = TAG('R', 'N', 'G', 'S');
-            reloc(c, nb[whole], on, cur[whole].addr, P_HEAP);
+            reloc(c, nb[whole], on, cur[whole].addr, P_RANGE);
             moved += on;
             continue;
         }
@@ -657,7 +667,7 @@ int ss_convert(SsBuf *st, const SsLayout *lay, const SsRangeInfo *cur, int ncur,
                     uint8_t *dst = nb[i] + (y->addr - cur[i].addr);
                     memcpy(dst, od[r] + (x->addr - oa), len);
                     c->log_tag = TAG('R', 'N', 'G', 'S');
-                    reloc(c, dst, len, y->addr, P_HEAP);
+                    reloc(c, dst, len, y->addr, P_RANGE);
                     moved += len;
                     done = 1;
                 }

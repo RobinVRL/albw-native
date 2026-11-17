@@ -844,7 +844,7 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
     if (log_every < 0) { const char *l = getenv("ALBW_PLAYER_LOG"); log_every = l ? atol(l) : 0; }
     const float *pp = route_player_pos();
     if (log_every > 0 && pp && g_plat_frames % log_every == 0)
-        fprintf(stderr, "player f=%ld pos %.3f %.3f %.3f\n", g_plat_frames, pp[0], pp[1], pp[2]);
+        fprintf(stderr, "player f=%ld pos %.3f %.3f %.3f obj %p\n", g_plat_frames, pp[0], pp[1], pp[2], albw_dbg_player);
     if (!cur || !*cur) return 0;
     while (*cur == ';' || *cur == ' ') cur++;
     if (!*cur) return 0;

@@ -4,7 +4,10 @@
  * step after it): tmp = velocity * speed (00115D70 into sp+0x30), `ldm sp+0x30, {r0-r2}; stm sp+4`,
  * then position += sp+4 (00115C54). The text copied only y / z (local_1f28 = sp+8 / sp+0xC), so x at
  * sp+4 (stack0xffffe0d4) was stale: Link never moved along x under velocity (flow dash to Gulley,
- * BOOT_LOG 127). Confidence: high (instruction-level). */
+ * BOOT_LOG 127). Confidence: high (instruction-level).
+ * Second fix (BOOT_LOG 135): the ledge / step-down candidate (EU 1EC818..1EC844) read the x / y words
+ * of sp+0 after 00115D70 / 00115C54 from stale registers: Link's position became (2e15, 13551, z)
+ * at the yard's south ledge and he never dropped down. */
 // MAPFIX-INTEGRATED v1
 #include "ghidra_types.h"
 
@@ -1262,13 +1265,16 @@ LAB_001ec3c4:
             if (fVar5 <= ALBW_AS_F32(local_1e00)) {
               if (ALBW_AS_F32(local_1e00) <= fVar55) {
                 func_00115D70((float *)&stack0xffffe0d0,(float *)&local_1e4c,ALBW_AS_F32(local_1e00));
+                /* EU 1EC824..1EC82C: ldm sp, {r0, r1, r3}; stm sp+0x84 - the whole result is copied;
+                 * the text took x / y from stale registers (BOOT_LOG 135) */
                 local_1ea4 = local_1f28[0];
-                local_1eac = ppppppppppppfVar85;
-                local_1ea8 = pppppppppppfVar9;
+                local_1eac = (float ************)(uintptr_t)stack0xffffe0d0;
+                local_1ea8 = (float ***********)(uintptr_t)stack0xffffe0d4;
                 func_00115C54((float *)&stack0xffffe0d0,(float *)local_1dd8,(float *)&local_1eac);
+                /* EU 1EC83C..1EC844: vldr s2, [sp]; s1, [sp, #4]; s0, [sp, #8] */
                 pppppppppppfVar15 = local_1f28[0];
-                pppppppppppfVar74 = pppppppppppfVar9;
-                pppppppppppfVar49 = (float ***********)ppppppppppppfVar85;
+                pppppppppppfVar74 = (float ***********)(uintptr_t)stack0xffffe0d4;
+                pppppppppppfVar49 = (float ***********)(uintptr_t)stack0xffffe0d0;
               }
               else {
                 fVar5 = (ALBW_AS_F32(pppppppppppfVar83[0xc]) - ALBW_AS_F32(local_1dcc)) *
