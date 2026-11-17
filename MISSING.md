@@ -54,7 +54,8 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Weather vane bird body: grainy / blocky texture vs Azahar (not filtering)
 - [ ] House candle flame appears briefly when Link gets off the bed, then vanishes (recheck after BOOT_LOG 130)
 - [ ] Hyrule field / town
-- [x] Sword: slash, charge, spin (BOOT_LOG 141)
+- [x] Sword: slash, charge, spin (BOOT_LOG 141); shield (R) raise / block (BOOT_LOG 144)
+- [ ] Matched permuter sources that read uninitialised perm_* dummies may compile to nothing (003248BC did): scan for empty functions
 - [x] Items: bombs, bow, boomerang, hookshot, fire / ice / sand / tornado rods, hammer, lamp, net, hint glasses (BOOT_LOG 142-143)
 - [ ] Item effects render wrong: fire rod flame dark red, black streaks behind projectiles, tornado = huge triangles (particles, BOOT_LOG 143)
 - [ ] Combat against enemies
