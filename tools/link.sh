@@ -35,7 +35,7 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
     o=$NOBJ/${f%.c}.o
     mkdir -p "$(dirname "$o")"
     EXTRA=()
-    [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -DALBW_V4 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I$B/decomp/shared/include -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
+    [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -DALBW_V4 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I$B/decomp/shared/include -I../albw-decomp-ai/shared/include -ftrivial-auto-var-init=zero -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
     # sound: the real nn::snd layer (native/sdk/snd.c + native/audio) by default; with
     # ALBW_REAL_SND=0 the silent stopgap in snd_silent.c instead (its dsp:: part is always used)
     if [[ "${ALBW_REAL_SND:-1}" == 0 && ( "$f" == native/sdk/snd.c || "$f" == native/audio/* ) ]]; then continue; fi
@@ -145,6 +145,8 @@ if [[ "${ALBW_X87FIX:-1}" != 0 ]]; then
     clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -lz -rdynamic "${NAMES[@]}" -Wl,-Map=$OUT.map
     python3 tools/x87check.py --patch $OUT
 fi
+# functions that run on into the next one (uninitialised Ghidra register stand-ins, BOOT_LOG 137)
+python3 tools/fallthrough_bin.py $OUT || echo "link: WARNING: functions without a return (above)"
 # save states: the static ranges that hold game state (native/runtime/savestate.c, tools/gen_ssmap.py)
 python3 tools/gen_ssmap.py $OUT.map $OUT > $OUT.ssmap || echo "link: gen_ssmap failed (save states unavailable)"
 echo "linked $OUT ($(du -h $OUT | cut -f1))"
