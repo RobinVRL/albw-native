@@ -805,6 +805,8 @@ static uint32_t scripted_keys(void) {
  *                   and goes on; after 1800 frames it gives up (prints "route: FAILED", route stops)
  *   wait N          N frames
  *   press BTN [N]   hold a button (ALBW_PRESS names, incl. CUP..) N frames (default 6), then 1 frame off
+ *   touch X Y [N]   touch the bottom screen at (X, Y) (0..319, 0..239) for N frames (default 6), then
+ *                   1 frame off
  *   save S | load S save state slot S
  *   log             print Link's position
  *   quit            leave the game
@@ -827,6 +829,7 @@ static uint32_t route_button(const char *name, size_t n) {
         if (strlen(names[k].name) == n && !strncmp(names[k].name, name, n)) return names[k].bit;
     return 0;
 }
+static int g_route_touch, g_route_tx, g_route_ty;   /* touch step: applied in plat_poll */
 /* returns the buttons to hold this frame; *pad_x / *pad_y get an analogue circle pad (or stay 0) */
 static uint32_t route_step(int *pad_x, int *pad_y) {
     static const char *spec, *cur;
@@ -860,7 +863,15 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
     int done = 0;
     uint32_t keys = 0;
     (void)n;
-    if (!strcmp(op, "at")) {
+    g_route_touch = 0;
+    if (!strcmp(op, "touch")) {
+        long hold = 6;
+        int tx = 0, ty = 0;
+        int k = sscanf(rest, " %d %d %ld", &tx, &ty, &hold);
+        if (k < 3) hold = 6;
+        if (el < hold) { g_route_touch = 1; g_route_tx = tx; g_route_ty = ty; }
+        done = el >= hold + 1;
+    } else if (!strcmp(op, "at")) {
         done = g_plat_frames >= atol(rest);
     } else if (!strcmp(op, "wait")) {
         done = el >= atol(rest);
@@ -997,6 +1008,11 @@ int plat_poll(void) {
         in.cpad_y = (int16_t)rpy;
     }
     sk |= rk;
+    if (g_route_touch) {   /* ALBW_ROUTE touch step */
+        in.touch = 1;
+        in.touch_x = g_route_tx;
+        in.touch_y = g_route_ty;
+    }
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;

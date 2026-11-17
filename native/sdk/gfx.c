@@ -578,6 +578,9 @@ static void exec_request(CmdList *l, const Request *r) {
     case RQ_L2B:
         break; /* linear -> tiled conversion of a capture: no host-side meaning in Tier A */
     case RQ_COPY:
+        { static int ft = -1; if (ft < 0) ft = getenv("ALBW_FRAME_TRACE") != NULL;
+          if (ft) gfx_log("  COPY %#lx -> %#lx size %#x (list %u req %u)", (unsigned long)r->u.copy.src,
+                          (unsigned long)r->u.copy.dst, (unsigned)r->u.copy.size, l->id, l->req_run); }
         render_block_copy((const void *)r->u.copy.src, (void *)r->u.copy.dst, r->u.copy.size);
         texture_copy(r->u.copy.src, r->u.copy.dst, r->u.copy.size, r->u.copy.sw, r->u.copy.sgap,
                      r->u.copy.dw, r->u.copy.dgap);

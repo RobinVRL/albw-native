@@ -61,7 +61,9 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Lorule
 - [ ] Sound effects / music in gameplay
 
-- [x] Pick up / carry / throw a pot (BOOT_LOG 136)
+- [x] Pick up / carry / throw a pot (BOOT_LOG 136), bushes, read signs, Gear / Items menus by touch (BOOT_LOG 138)
+- [ ] Menu open: blurred top background shows the bottom menu's shapes (BOOT_LOG 138)
+- [ ] 27 native decompiled files read hidden register inputs (in_r0..in_r3) that only work with leftover stack values (BOOT_LOG 137 / DIDNT_WORK): give each its real parameters
 - [ ] Save states from an older build: text built after the load uses wrong glyphs (BOOT_LOG 136)
 
 ## Frontend
