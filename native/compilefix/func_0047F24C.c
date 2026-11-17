@@ -21,8 +21,8 @@ undefined4 func_0047F24C(int param_1)
   int iVar2;
   uint uVar3;
   code *pcVar4;
-  uint extraout_r1;
-  uint extraout_r1_00;
+  uint extraout_r1 = 0;
+  uint extraout_r1_00 = 0;
   uint uVar5;
   
   iVar2 = func_00532BA0(*(int *)(param_1 + 0x10c) + 0x30);

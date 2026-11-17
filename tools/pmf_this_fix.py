@@ -19,7 +19,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CALL = re.compile(r'\(\*(pcVar\d+|UNRECOVERED_JUMPTABLE)\)\(\);')
+CALL = re.compile(r'\(\*(pcVar\d+|UNRECOVERED_JUMPTABLE|\(code \*\)\*\w+|\(code \*\)\w+)\)\(\);')
 
 
 def _find_this(text):
@@ -96,6 +96,12 @@ def main():
             continue
         for i, fn, t in fixes:
             lines[i] = lines[i].replace('(*%s)();' % fn, '(*(int (*)(int *))%s)(%s);   /* this restored (pmf_this_fix) */' % (fn, t))
+        # Ghidra's extraout_* stand-ins (registers a callee leaves untouched) start at 0: read
+        # uninitialised they let clang drop paths (fall-through, BOOT_LOG 137)
+        for k, l in enumerate(lines):
+            m = re.match(r'^(\s*[A-Za-z_][\w ]*?\s*\**\s*extraout_\w+);\s*$', l)
+            if m:
+                lines[k] = m.group(1) + ' = 0;'
         hdr = ('/* compilefix: %s, the converted stage-2 text (%s) with `this` restored in %d\n'
                ' * member-function-pointer call(s) by tools/pmf_this_fix.py (BOOT_LOG 140): this = BASE + (adj >> 1).\n'
                ' * Further arguments of those calls are as Ghidra printed them. */\n') % (base[:-2], p, len(fixes))
