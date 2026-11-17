@@ -9,6 +9,9 @@
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
+/* BOOT_LOG 137: the extraout_r* stand-ins (registers the ARM leaves untouched; their values are
+ * only passed on as unused extra arguments, e.g. to 00169A80, which reads r0 only) start at 0:
+ * uninitialised, clang dropped the rest of the function (it fell through into the next one). */
 #include "ghidra_types.h"
 #include "../include/ghidra_concat44.h"
 #include "compilefix.h"
@@ -63,17 +66,17 @@ undefined4 func_00306564(int param_1)
   undefined4 *puVar4;
   int iVar5;
   uint uVar6;
-  float extraout_r1;
-  float extraout_r1_00;
-  float extraout_r1_01;
-  float extraout_r1_02;
-  float extraout_r1_03;
-  float extraout_r1_04;
-  float extraout_r1_05;
-  float extraout_r1_06;
-  float extraout_r1_07;
-  float extraout_r1_08;
-  undefined4 extraout_r1_09;
+  float extraout_r1 = 0;
+  float extraout_r1_00 = 0;
+  float extraout_r1_01 = 0;
+  float extraout_r1_02 = 0;
+  float extraout_r1_03 = 0;
+  float extraout_r1_04 = 0;
+  float extraout_r1_05 = 0;
+  float extraout_r1_06 = 0;
+  float extraout_r1_07 = 0;
+  float extraout_r1_08 = 0;
+  undefined4 extraout_r1_09 = 0;
   int *piVar7;
   code *pcVar8;
   undefined4 uVar9;

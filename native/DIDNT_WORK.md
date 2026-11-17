@@ -313,3 +313,5 @@ Fog (BOOT_LOG 122):
 | the candle flame is invisible because the eft range was wrong (BOOT_LOG 130) | after the fix the sconce set draws (2 emitters, glow only); the flame shape Azahar shows is a different element |
 | the candle flame is rejected by depth / alpha / stencil / culling | ALBW_EFT_FRAG=d / a / c / s change nothing; only b (blend off) shows the glow quad: the glow is drawn and simply faint (alpha 0.25 / 0.58) |
 | ALBW_EFT_SETLOG / ALBW_EFT_TRACE print nothing after a state load | debug statics of saved modules are restored with the state (off at save time); read the env per call or set from gdb (SAVESTATES.md) |
+
+| -ftrivial-auto-var-init=zero for all native decompiled files (link.sh), to stop fall-throughs (BOOT_LOG 137) | relink + pot route | Link crashed on his first step: 27 native files (e.g. compilefix 0064268C) read hidden register inputs in_r0..in_r3 that worked with leftover stack values and became NULL. Reverted; fix such files one by one (each needs its real parameters) |
