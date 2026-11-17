@@ -31,6 +31,9 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Water look (deeper blue / highlights in Azahar)
 
 ## Builds and tools
+- [ ] Other possible false pointer relocations in game data (BOOT_LOG 131 sweep: 0x006F83xx string-table words, 006B26EC = 006F00CD, 006B2AB8 = 00790085): check each against its users
+- [ ] Save states that load in later builds (today a relink makes every state refuse to load)
+- [ ] Link keeps walking down by himself after Gulley's "spin the vane" line (user report; recheck after BOOT_LOG 131)
 - [ ] 64-bit build: tools/link64.sh needs native/wraps.txt (eft / fog wrappers) and native/names.txt support
 - [ ] link64.sh: rebuild platform.c when its included files change (as link.sh)
 - [ ] Function names: extend native/names.txt as functions are identified (51 names so far)
@@ -42,10 +45,10 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [x] Dream: Link holding a sword and shield is correct (Azahar shows the same)
 - [ ] Dream: nebula background missing behind the Triforce and Link (Azahar: red clouds); monster shot shows pinkish streaks instead of dark red clouds; Link's shield not visible in the close-up (eft emitters end early: PLAN handover)
 - [x] House: at "Wake up!" Gulley turns to face the screen (dropped look-at argument in 0030D6D0, BOOT_LOG 129; route run frames 6290-6410)
-- [ ] B button does not work (save prompt)
+- [x] Weather-vane save prompt never came up / crashed: gen_data relocated two kinds of non-pointer words - the action-info table's class|anim words (action 0x95 'touch telephone' + 14 more rows: tools/gen_data.py NOT_POINTER_TABLES) and 3-character strings ("Out": tools/gen_data.py short3). Verified: route run touches the vane, map message, Save -> Saving complete, Save_0.bin rewritten, Continue spawns Link at the vane (BOOT_LOG 131)
 - [x] Title, new game, name entry, opening dream, Link's house, leaving the house, Gulley's vane line
 - [x] Save file written on new game, loaded with Continue
-- [ ] Save at the weather vane (interactive)
+- [x] Save at the weather vane (BOOT_LOG 131; tools/route_vane.sh makes a state at the prompt)
 - [x] Weather vane sleep bubbles (eft draw range, BOOT_LOG 130)
 - [ ] Weather vane bird body: grainy / blocky texture vs Azahar (not filtering)
 - [ ] House candle flame appears briefly when Link gets off the bed, then vanishes (recheck after BOOT_LOG 130)

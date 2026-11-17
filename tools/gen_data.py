@@ -100,6 +100,13 @@ def text_words(ws, is_ptr=None):
     def narrow(w):
         bs = [(w >> (8 * i)) & 0xFF for i in range(4)]
         return _pr(bs[0]) and all(_pr(x) or x == 0 for x in bs)
+    def short3(w):
+        # a whole 3-character string at a string boundary: "Out\0" = 0x0074754F (an odd address in
+        # .bss) was relocated; the layout animation "<layout>_Out.bflan" was then not found and the
+        # weather-vane save prompt crashed (003E6600 on a NULL resource). Pointers are never odd
+        # here unless they point at bytes, and then not right after a NUL-ended word.
+        bs = [(w >> (8 * i)) & 0xFF for i in range(4)]
+        return bs[3] == 0 and all(_pr(x) for x in bs[:3]) and w & 1 == 1
     def full(w):  # four printable characters: certainly inside a narrow string
         return all(_pr((w >> (8 * i)) & 0xFF) for i in range(4))
     n = len(ws)
@@ -113,6 +120,33 @@ def text_words(ws, is_ptr=None):
             continue
         elif narrow(ws[i]) and ((i > 0 and f[i - 1]) or (i + 1 < n and f[i + 1])):
             out[i] = True
+        elif short3(ws[i]) and (i == 0 or ws[i - 1] >> 24 == 0):
+            out[i] = True
+    return out
+
+
+# Tables with a known row layout whose integer fields can look like data addresses: the words
+# listed are never pointers. (address, row size, rows, word offsets in a row)
+#   007111A8: player action-info table (178 x 16 bytes: u8 class, s16 anim at +2, u32 flags at +4;
+#     +8 / +0xC are filled by the static initialiser 005C88D4). Word 0 = anim << 16 | class, so
+#     anims 0x6A..0x7B made 0x006A0009..0x007A0017 - inside .rodata/.data - and were relocated:
+#     15 rows (0x09, 0x49, 0x78, 0x79, 0x7B, 0x7C, 0x89, 0x95, 0x9C-0xA2) got a native address
+#     as class / anim; touching the weather vane (action 0x95) crashed in 002908B8 (class 0xB5).
+#     halfword_table_words() does not catch them: the neighbouring words are 0, not 16-bit pairs.
+NOT_POINTER_TABLES = [
+    (0x007111A8, 16, 178, (0, 4)),
+]
+
+
+def not_pointer_words(base, n):
+    """Indexes (in a section starting at base with n words) of words NOT_POINTER_TABLES marks."""
+    out = set()
+    for addr, row, rows, offs in NOT_POINTER_TABLES:
+        for r in range(rows):
+            for o in offs:
+                i = (addr + r * row + o - base) // 4
+                if 0 <= i < n:
+                    out.add(i)
     return out
 
 
@@ -223,7 +257,8 @@ def main():
             for i in range(n):
                 if half[i]:
                     print("halfword table word %08X = %08X" % (base + 4 * i, ws[i]))
-        text = [t or h for t, h in zip(text, half)]
+        fixed = not_pointer_words(base, n)
+        text = [t or h or i in fixed for i, (t, h) in enumerate(zip(text, half))]
         for off in range(0, size - size % 4, 4):
             w = ws[off // 4]
             s = ".long 0x%08X" % w if text[off // 4] else word(base + off, w)

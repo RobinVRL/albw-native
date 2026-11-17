@@ -307,9 +307,14 @@ extern float DAT_001fe148;
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
+/* the player actor of the last update (debug: ALBW_ROUTE autopilot / ALBW_PLAYER_LOG in
+ * platform.c read its position at +0x30) */
+void *albw_dbg_player;
+
 undefined4 func_001EA96C(float ***********param_1,float *param_2)
 
 {
+  albw_dbg_player = (void *)param_1;
   _Alignas(8) unsigned char albw_frame[0x1f30]; /* entry_sp - 0x1f30 .. entry_sp + 0x0 */
 #define stack0xffffe0d0 (*(undefined4 *)(albw_frame + 0x0))
 #define stack0xffffe0d4 (*(undefined4 *)(albw_frame + 0x4))

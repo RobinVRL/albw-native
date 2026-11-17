@@ -13,6 +13,7 @@ __attribute__((weak)) void render_set_scale(int scale) { (void)scale; }
 __attribute__((weak)) void prof_frame(void) {}
 #include <SDL3/SDL.h>
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -795,6 +796,140 @@ static uint32_t scripted_keys(void) {
     return keys;
 }
 
+/* ALBW_ROUTE (debug aid, headless runs): a closed-loop input script that steers Link by his real
+ * position, so it reaches the same spot whatever the timing variance (blind ALBW_PRESS routes miss:
+ * DIDNT_WORK iteration 17). Steps separated by ';', run one after another:
+ *   at F            wait for presented frame F
+ *   goto X Z [TOL]  circle pad towards world (X, Z) until within TOL (default 0.3); when Link stops
+ *                   getting closer for 90 frames (walked into something) it prints "route: blocked"
+ *                   and goes on; after 1800 frames it gives up (prints "route: FAILED", route stops)
+ *   wait N          N frames
+ *   press BTN [N]   hold a button (ALBW_PRESS names, incl. CUP..) N frames (default 6), then 1 frame off
+ *   save S | load S save state slot S
+ *   log             print Link's position
+ *   quit            leave the game
+ * Link's position: the object of the player update 001EA96C (albw_dbg_player), +0x30 x / y / z
+ * (the words its velocity step integrates).
+ * Pad mapping (screen up = -Z, right = +X) can be flipped with ALBW_ROUTE_AXES=<sx><sz>, e.g. "+-".
+ * ALBW_PLAYER_LOG=N prints the position every N frames. Example (yard state -> vane):
+ *   ALBW_ROUTE='at 30;goto 4 12;goto 4 15 0.2;press CDOWN 10;press A;wait 120;save 9;quit' */
+__attribute__((weak)) void *albw_dbg_player;
+static const float *route_player_pos(void) {
+    return albw_dbg_player ? (const float *)((const char *)albw_dbg_player + 0x30) : NULL;
+}
+static uint32_t route_button(const char *name, size_t n) {
+    static const struct { const char *name; uint32_t bit; } names[] = {
+        {"A", KEY_A}, {"B", KEY_B}, {"X", KEY_X}, {"Y", KEY_Y}, {"L", KEY_L}, {"R", KEY_R},
+        {"START", KEY_START}, {"SELECT", KEY_SELECT}, {"UP", KEY_DUP}, {"DOWN", KEY_DDOWN},
+        {"LEFT", KEY_DLEFT}, {"RIGHT", KEY_DRIGHT},
+        {"CUP", KEY_CPAD_UP}, {"CDOWN", KEY_CPAD_DOWN}, {"CLEFT", KEY_CPAD_LEFT}, {"CRIGHT", KEY_CPAD_RIGHT}};
+    for (size_t k = 0; k < sizeof names / sizeof names[0]; k++)
+        if (strlen(names[k].name) == n && !strncmp(names[k].name, name, n)) return names[k].bit;
+    return 0;
+}
+/* returns the buttons to hold this frame; *pad_x / *pad_y get an analogue circle pad (or stay 0) */
+static uint32_t route_step(int *pad_x, int *pad_y) {
+    static const char *spec, *cur;
+    static int init, sx = 1, sz = -1;
+    static long t0 = -1, best_f;
+    static float best_d;
+    *pad_x = *pad_y = 0;
+    if (!init) {
+        init = 1;
+        cur = spec = getenv("ALBW_ROUTE");
+        const char *ax = getenv("ALBW_ROUTE_AXES");
+        if (ax && ax[0] && ax[1]) { sx = ax[0] == '-' ? -1 : 1; sz = ax[1] == '-' ? -1 : 1; }
+    }
+    static long log_every = -1;
+    if (log_every < 0) { const char *l = getenv("ALBW_PLAYER_LOG"); log_every = l ? atol(l) : 0; }
+    const float *pp = route_player_pos();
+    if (log_every > 0 && pp && g_plat_frames % log_every == 0)
+        fprintf(stderr, "player f=%ld pos %.3f %.3f %.3f\n", g_plat_frames, pp[0], pp[1], pp[2]);
+    if (!cur || !*cur) return 0;
+    while (*cur == ';' || *cur == ' ') cur++;
+    if (!*cur) return 0;
+    char op[16] = {0}, arg[16] = {0};
+    double a = 0, b = 0, c = 0;
+    int n = sscanf(cur, " %15[^ ;]", op);
+    const char *rest = cur + strcspn(cur, " ;");
+    size_t len = strcspn(cur, ";");
+    char step[128];
+    snprintf(step, sizeof step, "%.*s", (int)(len < 127 ? len : 127), cur);
+    if (t0 < 0) { t0 = g_plat_frames; best_d = 1e30f; best_f = g_plat_frames; }
+    long el = g_plat_frames - t0;
+    int done = 0;
+    uint32_t keys = 0;
+    (void)n;
+    if (!strcmp(op, "at")) {
+        done = g_plat_frames >= atol(rest);
+    } else if (!strcmp(op, "wait")) {
+        done = el >= atol(rest);
+    } else if (!strcmp(op, "press")) {
+        long hold = 6;
+        int k = sscanf(rest, " %15[^ ;] %ld", arg, &hold);
+        if (k < 1) hold = 6;
+        uint32_t bit = route_button(arg, strlen(arg));
+        if (el < hold) keys = bit;
+        done = el >= hold + 1;
+        if (bit & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_CPAD_LEFT | KEY_CPAD_RIGHT) && el < hold) {
+            *pad_x = (bit & KEY_CPAD_RIGHT ? 156 : 0) - (bit & KEY_CPAD_LEFT ? 156 : 0);
+            *pad_y = (bit & KEY_CPAD_UP ? 156 : 0) - (bit & KEY_CPAD_DOWN ? 156 : 0);
+        }
+    } else if (!strcmp(op, "goto")) {
+        c = 0.3;
+        sscanf(rest, "%lf %lf %lf", &a, &b, &c);
+        if (!pp) {
+            if (el > 1800) { fprintf(stderr, "route: FAILED %s (no player)\n", step); cur = ""; return 0; }
+        } else {
+            float dx = (float)a - pp[0], dz = (float)b - pp[2];
+            float d = sqrtf(dx * dx + dz * dz);
+            if (d < best_d - 0.05f) { best_d = d; best_f = g_plat_frames; }
+            if (d <= c) {
+                fprintf(stderr, "route: reached (%.2f, %.2f) at f=%ld pos %.3f %.3f %.3f\n", a, b, g_plat_frames,
+                        pp[0], pp[1], pp[2]);
+                done = 1;
+            } else if (el > 1800) {
+                fprintf(stderr, "route: FAILED %s at f=%ld pos %.3f %.3f %.3f (timeout)\n", step,
+                        g_plat_frames, pp[0], pp[1], pp[2]);
+                cur = "";
+                return 0;
+            } else if (g_plat_frames - best_f > 90) {   /* walked into something: go on from here */
+                fprintf(stderr, "route: blocked %s at f=%ld pos %.3f %.3f %.3f\n", step, g_plat_frames, pp[0],
+                        pp[1], pp[2]);
+                done = 1;
+            } else {
+                /* full deflection far away, slower in the last unit so it does not overshoot */
+                float m = d > 1.0f ? 156.0f : 60.0f + 96.0f * d;
+                float px = sx * dx / d * m, py = sz * dz / d * m;
+                *pad_x = (int)px;
+                *pad_y = (int)py;
+                if (*pad_x > 40) keys |= KEY_CPAD_RIGHT;
+                if (*pad_x < -40) keys |= KEY_CPAD_LEFT;
+                if (*pad_y > 40) keys |= KEY_CPAD_UP;
+                if (*pad_y < -40) keys |= KEY_CPAD_DOWN;
+            }
+        }
+    } else if (!strcmp(op, "save") || !strcmp(op, "load")) {
+        if (albw_ss_request) albw_ss_request(op[0] == 's' ? 1 : 2, atoi(rest));
+        fprintf(stderr, "route: %s at f=%ld\n", step, g_plat_frames);
+        done = 1;
+    } else if (!strcmp(op, "log")) {
+        if (pp) fprintf(stderr, "route: f=%ld pos %.3f %.3f %.3f\n", g_plat_frames, pp[0], pp[1], pp[2]);
+        else fprintf(stderr, "route: f=%ld no player\n", g_plat_frames);
+        done = 1;
+    } else if (!strcmp(op, "quit")) {
+        fprintf(stderr, "route: quit at f=%ld\n", g_plat_frames);
+        g_quit_req = 1;
+        done = 1;
+    } else {
+        fprintf(stderr, "route: unknown step '%s', route stopped\n", step);
+        cur = "";
+        return 0;
+    }
+    if (done) { cur += len; t0 = -1; }
+    return keys;
+}
+
 int plat_poll(void) {
     if (g_quit_req) return 0;   /* "Quit game" in the Esc menu */
     uint32_t prev = in.held;
@@ -855,6 +990,13 @@ int plat_poll(void) {
         in.cpad_x = (int16_t)((sk & KEY_CPAD_RIGHT ? 156 : 0) - (sk & KEY_CPAD_LEFT ? 156 : 0));
         in.cpad_y = (int16_t)((sk & KEY_CPAD_UP ? 156 : 0) - (sk & KEY_CPAD_DOWN ? 156 : 0));
     }
+    int rpx, rpy;
+    uint32_t rk = route_step(&rpx, &rpy);   /* ALBW_ROUTE autopilot */
+    if (rpx || rpy) {
+        in.cpad_x = (int16_t)rpx;
+        in.cpad_y = (int16_t)rpy;
+    }
+    sk |= rk;
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
