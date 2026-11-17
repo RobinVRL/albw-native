@@ -33,7 +33,7 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 ## Builds and tools
 - [ ] Other possible false pointer relocations in game data (BOOT_LOG 131 sweep: 0x006F83xx string-table words, 006B26EC = 006F00CD, 006B2AB8 = 00790085): check each against its users
 - [x] Save states load in later builds (runtime/ss_convert.c, BOOT_LOG 132; refused only when a function on a saved stack changed)
-- [ ] Link keeps walking down by himself after Gulley's "spin the vane" line (user report; recheck after BOOT_LOG 131)
+- [x] Link kept walking down by himself after Gulley's "spin the vane" line: 002D8484 DemoWalkToTarget lost stores (BOOT_LOG 133)
 - [ ] 64-bit build: tools/link64.sh needs native/wraps.txt (eft / fog wrappers) and native/names.txt support
 - [ ] link64.sh: rebuild platform.c when its included files change (as link.sh)
 - [ ] Function names: extend native/names.txt as functions are identified (51 names so far)
@@ -41,7 +41,7 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 ## Gameplay (untested beyond the first yard)
 - [x] Link's head missing outdoors: CONCAT44 of SQRT doubles converted values (BOOT_LOG 126, checked by the user)
 - [x] Follow-Gulley dash (Link slides into Gulley) + the camera pan after it: small-integer return read as int (0054B260 u8), BOOT_LOG 128, checked in a route run (frames 10360-10690 match Azahar)
-- [ ] Walking off the yard's bottom edge before spinning the vane loops (recheck after BOOT_LOG 128)
+- [x] Walking off the yard's edge before spinning the vane loops (same cause: BOOT_LOG 133)
 - [x] Dream: Link holding a sword and shield is correct (Azahar shows the same)
 - [ ] Dream: nebula background missing behind the Triforce and Link (Azahar: red clouds); monster shot shows pinkish streaks instead of dark red clouds; Link's shield not visible in the close-up (eft emitters end early: PLAN handover)
 - [x] House: at "Wake up!" Gulley turns to face the screen (dropped look-at argument in 0030D6D0, BOOT_LOG 129; route run frames 6290-6410)

@@ -15,14 +15,11 @@ int func_002D55D0(uint32_t self_w, uint32_t next) {
     int32_t n = (int32_t)next;
     {   /* debug: ALBW_STATE_TRACE=1: every state change (object, old -> new, caller, frame);
          * =<hex object>: only that state machine */
-        static int on = -1;
-        static uint32_t only;
-        if (on < 0) {
-            const char *e = getenv("ALBW_STATE_TRACE");
-            on = e != NULL;
-            only = e ? (uint32_t)strtoul(e, NULL, 16) : 0;
-            if (only == 1) only = 0;
-        }
+        /* read on every call: a static cache would come back from a save state as "off" */
+        const char *e = getenv("ALBW_STATE_TRACE");
+        int on = e != NULL;
+        uint32_t only = e ? (uint32_t)strtoul(e, NULL, 16) : 0;
+        if (only == 1) only = 0;
         if (on && (!only || only == self_w)) {
             extern long g_plat_frames __attribute__((weak));
             fprintf(stderr, "state: f=%ld sm %#x %d -> %d from %p\n", &g_plat_frames ? g_plat_frames : 0L, self_w,
