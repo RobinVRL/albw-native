@@ -31,10 +31,11 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [ ] Water look (deeper blue / highlights in Azahar)
 
 ## Builds and tools
-- [ ] Other possible false pointer relocations in game data (BOOT_LOG 131 sweep: 0x006F83xx string-table words, 006B26EC = 006F00CD, 006B2AB8 = 00790085): check each against its users
+- [x] Other false pointer relocations in game data: 29 odd targets checked (BOOT_LOG 134): 6 fixed (Shift-JIS text, "Jump", a number table), 23 are real pointers into tail-merged strings
 - [x] Save states load in later builds (runtime/ss_convert.c, BOOT_LOG 132; refused only when a function on a saved stack changed)
 - [x] Link kept walking down by himself after Gulley's "spin the vane" line: 002D8484 DemoWalkToTarget lost stores (BOOT_LOG 133)
-- [ ] 64-bit build: tools/link64.sh needs native/wraps.txt (eft / fog wrappers) and native/names.txt support
+- [x] 64-bit build: tools/link64.sh has wraps.txt / names.txt / zlib / fixed game data (BOOT_LOG 134)
+- [ ] 64-bit boot: stops at frame 184 (NULL in func_00394794) - build/decomp64 objects date from 2026-11-16; needs the 64-bit reconversion (ALBW_V4_STAGE=1 tools/build_decomp64_v4.sh) with master's fixes, then BOOT_LOG64
 - [ ] link64.sh: rebuild platform.c when its included files change (as link.sh)
 - [ ] Function names: extend native/names.txt as functions are identified (51 names so far)
 

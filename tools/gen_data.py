@@ -136,8 +136,20 @@ def text_words(ws, is_ptr=None):
 #     15 rows (0x09, 0x49, 0x78, 0x79, 0x7B, 0x7C, 0x89, 0x95, 0x9C-0xA2) got a native address
 #     as class / anim; touching the weather vane (action 0x95) crashed in 002908B8 (class 0xB5).
 #     halfword_table_words() does not catch them: the neighbouring words are 0, not 16-bit pairs.
+#   single words (BOOT_LOG 134 sweep: odd "pointers" that are not string starts, checked by context;
+#   no code references them):
+#     006A0438 / 006A0448, 006B26EC / 006B2AB8: inside Shift-JIS text (0x006A81F5 = F5 81 6A 00 ...);
+#     006F8300: "ump\0" of the string "Jump" (the word before ends with 'J');
+#     00721C78: 0x0075577F in a table of increasing values (000F553A, 002F55FF, 005156C0, 0075577F,
+#       009A583A, 00C258F1) paired with 0x29xxFFxx words.
+#   The other odd targets of that sweep (0x006F83xx..0x006F9Dxx: "Wall", "Ice", "Close", "Kakariko",
+#   "boomerang", ...) are real pointers into tail-merged strings and stay relocated.
 NOT_POINTER_TABLES = [
     (0x007111A8, 16, 178, (0, 4)),
+    (0x006A0438, 4, 1, (0,)), (0x006A0448, 4, 1, (0,)),
+    (0x006B26EC, 4, 1, (0,)), (0x006B2AB8, 4, 1, (0,)),
+    (0x006F8300, 4, 1, (0,)),
+    (0x00721C78, 4, 1, (0,)),
 ]
 
 
