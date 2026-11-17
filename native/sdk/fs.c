@@ -1215,5 +1215,38 @@ void albw_fs_ss_load(SsBuf *b) {
         }
     }
     memcpy(archives, arch, sizeof archives);
+    /* the archive roots were the saving run's ALBW_SAVE_DIR: move them to this run's, so a save after
+     * loading a state goes where this run's saves go (suffixes: arch_host_dir_locked) */
+    const char *root = save_root_locked();
+    for (int i = 0; i < MAX_ARCHIVES; i++) {
+        if (archives[i].kind != ARCH_HOST) continue;
+        const char *d = archives[i].dir, *suf = NULL;
+        static const char *const keys[] = {"/savedata", "/sdmc", "/extdata/", "/sharedext/"};
+        for (size_t k = 0; k < sizeof keys / sizeof keys[0]; k++)
+            for (const char *q = strstr(d, keys[k]); q; q = strstr(q + 1, keys[k]))
+                if (!suf || q > suf) suf = q;
+        if (!suf) continue;
+        char nd[PATH_MAX];
+        if (snprintf(nd, sizeof nd, "%s%s", root, suf) >= (int)sizeof nd) continue;
+        if (strcmp(nd, d)) {
+            if (!strcmp(suf, "/savedata")) {   /* the format record goes with it (mount check) */
+                char of[PATH_MAX], nf[PATH_MAX];
+                struct stat st;
+                snprintf(of, sizeof of, "%.*s/savedata.format", (int)(suf - d), d);
+                snprintf(nf, sizeof nf, "%s/savedata.format", root);
+                FILE *in = stat(nf, &st) != 0 ? fopen(of, "rb") : NULL;
+                if (in) {
+                    FILE *out = fopen(nf, "wb");
+                    char buf[4096];
+                    size_t k;
+                    while (out && (k = fread(buf, 1, sizeof buf, in)) > 0) fwrite(buf, 1, k, out);
+                    if (out) fclose(out);
+                    fclose(in);
+                }
+            }
+            snprintf(archives[i].dir, sizeof archives[i].dir, "%s", nd);
+            if (mkdir_p(nd) != 0) fs_warn("cannot create archive directory %s: %s", nd, strerror(errno));
+        }
+    }
     pthread_mutex_unlock(&fs_lock);
 }

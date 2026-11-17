@@ -72,5 +72,5 @@ ALBW_SS_CONVERT_LOG=<file> lists every rewritten word (part, offset, old -> new,
 Checked: a state at the vane save prompt from build A loaded in build B (new code in platform.c, new
 statics in sdk/eft.c) and build C (both reverted): 6,579 pointers, 120 return addresses, 6,179 strings
 remapped, 831 KB statics moved; Save -> "Saving complete." in both.
-Note: the fs archive root is saved by value, so "Save" after loading writes into the ALBW_SAVE_DIR of the
-run that made the state.
+The fs archive roots are moved to this run's ALBW_SAVE_DIR on load (sdk/fs.c albw_fs_ss_load, with
+savedata.format), so a Save after loading a state writes where this run's saves go.
