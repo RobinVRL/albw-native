@@ -1,6 +1,9 @@
 /* USA 00466004 <- EU 00465FDC (stage-2 Ghidra text) with a dropped indirect-call argument restored
  * (CLASS indirect call dropped arg, BOOT_LOG 129): vtable +0x18 (allocate size, alignment) at EU 00466444 gets
- * r1 = 0x8000, r2 = 0x80 (mov r2, #128 at 00466430); Ghidra printed (piVar12,0x8000). */
+ * r1 = 0x8000, r2 = 0x80 (mov r2, #128 at 00466430); Ghidra printed (piVar12,0x8000).
+ * Also two string-object method calls without `this` (EU 466134, 4662C8: r0 = the object whose vtable
+ * was just stored) - the castle door (StageOut) crashed in 00691BD0, BOOT_LOG 147 - and the inline
+ * physical -> virtual conversion of entry +8 made identity (as 001139F8 is natively). */
 #include "ghidra_types.h"
 
 extern int func_00100174(int *param_1);
@@ -172,7 +175,7 @@ LAB_004660e8:
   iVar11 = DAT_0046631c;
   *(undefined1 *)((int)local_2d0 + uVar8) = 0;
   local_2dc = iVar11;
-  (**(code **)(iVar11 + 8))();
+  (**(code **)(iVar11 + 8))(&local_2dc);   /* EU 466128: r0 = sp+4, the string just given its vtable (BOOT_LOG 147) */
   iVar16 = 0;
   do {
     if (*(char *)((int)local_2d8 + iVar16) == '\0') {
@@ -234,7 +237,7 @@ LAB_0046627c:
   puVar6 = local_1bc;
   *(undefined1 *)((int)local_1b4 + uVar8) = 0;
   local_1c0 = iVar11;
-  (**(code **)(iVar11 + 8))();
+  (**(code **)(iVar11 + 8))(&local_1c0);   /* EU 4662BC: r0 = sp+0x120 (BOOT_LOG 147) */
   iVar17 = 0;
   do {
     if (*(char *)((int)local_1bc + iVar17) == '\0') {
@@ -411,6 +414,11 @@ LAB_004664fc:
               else {
                 iVar16 = uVar2 + 0xf4000000;
               }
+              /* the block above is the inline inverse of GetPhysicalAddr (001139F8): physical FCRAM
+               * / VRAM -> virtual. Natively 001139F8 is the identity (sdk/gfx.c), so the inverse is too;
+               * its 3DS range checks turned every host pointer into 0, and 00468030 later ORed a
+               * 0x8000-byte bitmap from address 0 (crash entering the castle door, BOOT_LOG 147) */
+              iVar16 = (int)uVar2;
               *(int *)(puVar15 + 4) = iVar16;
               local_44 = (char *)local_38[7];
               local_48 = local_9c;
