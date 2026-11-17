@@ -2242,6 +2242,13 @@ int render_exec_cmds(const void *addr, uint32_t size) {
         if (e) { char *x; g_raw_lo = strtol(e, &x, 10); g_raw_hi = *x == '-' ? atol(x + 1) : g_raw_lo; }
     }
     if (!addr || size < 8 || !render_ready()) return 0;
+    /* a range reaching 4 GiB is a bad size (seen in the 64-bit build: size = 0 - addr from a caller's
+     * zero end pointer); the 32-bit build skipped it only because addr + size wrapped to 0 */
+    if ((uint64_t)(uintptr_t)addr + size >= 0x100000000ull) {
+        static int warned;
+        if (!warned++) fprintf(stderr, "render: command range %p + %#x reaches 4 GiB: skipped\n", addr, size);
+        return 0;
+    }
     uintptr_t a = ((uintptr_t)addr + 3) & ~(uintptr_t)3, e = (uintptr_t)addr + size;
     int n = 0;
     lock();

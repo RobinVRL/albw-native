@@ -109,6 +109,15 @@ for n in sys.stdin.read().split():
     m=re.match(r'^func_([0-9A-F]{8})$',n)
     if m and 0x693000<=int(m.group(1),16)<0x7AFE34: print(n,'data_'+m.group(1))" >> $B/aliases64.txt
 [[ -s $B/aliases64.txt ]] && llvm-objcopy --redefine-syms=$B/aliases64.txt $B/albw64_game.o
+# wrapped decomp functions (native/wraps.txt, as link.sh): the decompiled body stays reachable as
+# func_<ADDR>__decomp for the native func_<ADDR> wrapper (native/sdk/eft.c, fog)
+if [[ -s native/wraps.txt ]]; then
+    WRAP=()
+    for f in $(grep -v '^#' native/wraps.txt | awk '{print $1}'); do
+        WRAP+=(--add-symbol "${f}__decomp=.text.${f}:0,global,function")
+    done
+    llvm-objcopy "${WRAP[@]}" $B/albw64_game.o
+fi
 llvm-objcopy --remove-section=.init_array --remove-section=.rela.init_array \
              --remove-section=.ctors --remove-section=.rela.ctors $B/albw64_game.o
 
@@ -138,5 +147,11 @@ python3 tools/gen_stubs.py $B/albw64_game.o "${NATIVE[@]}" "${DEFS[@]}" > $B/stu
 clang "${CFLAGS[@]}" -w -c $B/stubs64.c -o $O/stubs.o
 OUT=$B/albw64
 [[ $FE == qt ]] && OUT=$B/albw64-qt
-clang -m64 -no-pie -o $OUT "${NATIVE[@]}" $O/stubs.o $B/albw64_game.o "${LIBS[@]}" -lm -rdynamic
+# descriptive names (native/names.txt) as aliases, and the game data at fixed addresses (as link.sh)
+llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" $B/albw64_game.o 2>/dev/null | sort -u > $B/defined64_syms.txt
+NAMES=($(python3 tools/gen_names.py native/names.txt $B/defined64_syms.txt))
+NAMES+=(-Wl,--section-start=.albw_ro=0x30000000 -Wl,--section-start=.albw_rw=0x30100000
+        -Wl,--section-start=.albw_zi=0x30200000)
+clang -m64 -no-pie -o $OUT "${NATIVE[@]}" $O/stubs.o $B/albw64_game.o "${LIBS[@]}" -lm -lz -rdynamic "${NAMES[@]}" \
+    -Wl,-Map=$OUT.map
 echo "linked $OUT ($(du -h $OUT | cut -f1))"
