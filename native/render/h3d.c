@@ -280,13 +280,29 @@ static void *xrealloc(void *p, size_t n) {
     return q;
 }
 
+/* The registry the recorded ops point into (vertex layouts, blob ops) lives in the fixed arena
+ * (runtime/pmem.c, persistent save states); weak: tests and tools without it use the C heap. */
+extern void *pmem_calloc(size_t a, size_t b) __attribute__((weak));
+extern void *pmem_realloc(void *p, size_t n) __attribute__((weak));
+extern void pmem_free(void *p) __attribute__((weak));
+static void *pc(size_t a, size_t b) {
+    void *p = pmem_calloc ? pmem_calloc(a ? a : 1, b) : calloc(a ? a : 1, b);
+    if (!p) { fprintf(stderr, "h3d: out of memory\n"); abort(); }
+    return p;
+}
+static void *pr(void *p, size_t n) {
+    void *q = pmem_realloc ? pmem_realloc(p, n ? n : 1) : realloc(p, n ? n : 1);
+    if (!q) { fprintf(stderr, "h3d: out of memory\n"); abort(); }
+    return q;
+}
+static void pf(void *p) { if (pmem_free) pmem_free(p); else free(p); }
+
 static size_t bhash(uintptr_t a, size_t cap) { return (size_t)((a >> 2) * 2654435761u) & (cap - 1); }
 
 static void blob_rehash(size_t cap) {
     Blob *old = g_blob;
     size_t oldcap = g_capblob;
-    g_blob = calloc(cap, sizeof *g_blob);
-    if (!g_blob) abort();
+    g_blob = pc(cap, sizeof *g_blob);
     g_capblob = cap;
     for (size_t i = 0; i < oldcap; i++) {
         if (!old[i].addr) continue;
@@ -294,7 +310,7 @@ static void blob_rehash(size_t cap) {
         while (g_blob[h].addr) h = (h + 1) & (cap - 1);
         g_blob[h] = old[i];
     }
-    free(old);
+    pf(old);
 }
 
 static Blob *blob_find(uintptr_t addr) {
@@ -319,20 +335,19 @@ void h3d_blob_set(uintptr_t addr, uint32_t bytes, const ROp *ops, int n) {
         g_nblob++;
         g_st.blobs++;
     } else {
-        free(b->ops);
+        pf(b->ops);
     }
     b->bytes = bytes;
     b->n = n;
-    b->ops = n ? xrealloc(NULL, sizeof *ops * (size_t)n) : NULL;
+    b->ops = n ? pc((size_t)n, sizeof *ops) : NULL;
     if (n) memcpy(b->ops, ops, sizeof *ops * (size_t)n);
     pthread_mutex_unlock(&g_mx);
 }
 
 H3dVtx *h3d_vtx_new(void) {
-    H3dVtx *v = calloc(1, sizeof *v);
-    if (!v) abort();
+    H3dVtx *v = pc(1, sizeof *v);
     pthread_mutex_lock(&g_mx);
-    if (g_nvtx == g_capvtx) { g_capvtx = g_capvtx ? g_capvtx * 2 : 256; g_vtx = xrealloc(g_vtx, g_capvtx * sizeof *g_vtx); }
+    if (g_nvtx == g_capvtx) { g_capvtx = g_capvtx ? g_capvtx * 2 : 256; g_vtx = pr(g_vtx, g_capvtx * sizeof *g_vtx); }
     g_vtx[g_nvtx++] = v;
     pthread_mutex_unlock(&g_mx);
     return v;
@@ -342,7 +357,7 @@ void h3d_forget_range(uintptr_t lo, uintptr_t hi) {
     pthread_mutex_lock(&g_mx);
     size_t keep = 0;
     for (size_t i = 0; i < g_capblob; i++)
-        if (g_blob[i].addr >= lo && g_blob[i].addr < hi) { free(g_blob[i].ops); g_blob[i].ops = NULL; g_blob[i].addr = 0; }
+        if (g_blob[i].addr >= lo && g_blob[i].addr < hi) { pf(g_blob[i].ops); g_blob[i].ops = NULL; g_blob[i].addr = 0; }
         else if (g_blob[i].addr) keep++;
     g_nblob = keep;
     if (g_capblob) blob_rehash(g_capblob);
@@ -356,6 +371,38 @@ void h3d_forget_range(uintptr_t lo, uintptr_t hi) {
 }
 
 H3dStats h3d_stats(void) { return g_st; }
+
+/* save states: the registry statics (the objects are in the fixed arena, saved by savestate.c) */
+typedef struct {
+    Blob *blob; size_t nblob, capblob;
+    H3dVtx **vtx; size_t nvtx, capvtx;
+    int mat_variant;
+    H3dStats st;
+} H3dSsState;
+size_t h3d_ss_state(void *buf, size_t n, int restore) {
+    if (!buf) return sizeof(H3dSsState);
+    if (n != sizeof(H3dSsState)) return 0;
+    H3dSsState *x = buf;
+    pthread_mutex_lock(&g_mx);
+    if (!restore) {
+        *x = (H3dSsState){g_blob, g_nblob, g_capblob, g_vtx, g_nvtx, g_capvtx, g_mat_variant, g_st};
+    } else {
+        g_blob = x->blob; g_nblob = x->nblob; g_capblob = x->capblob;
+        g_vtx = x->vtx; g_nvtx = x->nvtx; g_capvtx = x->capvtx;
+        g_mat_variant = x->mat_variant;
+        g_st = x->st;
+        g_cur = NULL;
+        for (size_t i = 0; i < g_nvtx; i++) {   /* GL names of the saving run: made again on use */
+            g_vtx[i]->vbo = g_vtx[i]->vao = 0;
+            g_vtx[i]->verts = 0;
+            g_vtx[i]->dirty = 1;
+        }
+        g_nib = 0;                                /* index buffers: GL caches, rebuilt on use */
+        if (g_ibh) memset(g_ibh, 0, g_capibh * sizeof *g_ibh);
+    }
+    pthread_mutex_unlock(&g_mx);
+    return sizeof(H3dSsState);
+}
 
 /* ================================================================== GL side */
 
@@ -682,7 +729,10 @@ static void draw(const ROp *op) {
         vtx_upload(v, v->verts > ib->max_index + 1 && !v->dirty ? v->verts : ib->max_index + 1);
     /* the model's own program: the material's DefaultShader variant, unless a shader bind of an
        h3d program (ROP_PROGRAM with a registered DVLE) selected one since */
-    if (render_current_program(NULL) != RPROG_H3D_DEFAULT) render_set_program_variant(RPROG_H3D_DEFAULT, g_mat_variant);
+    /* flag 2: a draw of a live-translated block (nw::eft, sdk/h3d.c h3d_translate_live) keeps the
+       program its block bound (RPROG_EFT) */
+    if (!(op->flags & 2) && render_current_program(NULL) != RPROG_H3D_DEFAULT)
+        render_set_program_variant(RPROG_H3D_DEFAULT, g_mat_variant);
     static int noat = -2;
     if (noat == -2) { const char *e = getenv("ALBW_H3D_NOATEST"); noat = e ? atoi(e) : -1; }
     if (noat >= 0) { /* debug: alpha test off for one variant */

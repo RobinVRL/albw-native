@@ -431,6 +431,7 @@ CONCAT44_NEW = """/* (port) CONCAT44 pieces are 32-bit register words: a float p
  * a VFP register pair) contributes its bits, never its value converted to an integer */
 #ifndef __cplusplus
 #define ALBW_PIECE32(x) _Generic((x), float: albw_piece32_f((float)_Generic((x), float: (x), default: 0.0f)), \\
+    double: albw_piece32_f((float)_Generic((x), double: (x), default: 0.0)), \\
     default: (uint32_t)(x))
 static inline uint32_t albw_piece32_f(float f) { uint32_t u; __builtin_memcpy(&u, &f, 4); return u; }
 #define CONCAT44(a, b) ((uint64_t)(((uint64_t)ALBW_PIECE32(a) << 32) | ALBW_PIECE32(b)))
@@ -439,10 +440,48 @@ static inline uint32_t albw_piece32_f(float f) { uint32_t u; __builtin_memcpy(&u
 #endif"""
 
 
+# (port) the narrow piece macros take a float / double piece's BITS too (Ghidra's SUB43(fVar, 0),
+# CONCAT31(SUB43(fVar, 1), ..), ZEXT48(fVar), SUB84(dVar, 0)): with a plain (uint32_t) cast they
+# converted the value - Link's head (003790A0: CONCAT44(SQRT(..), SQRT(..)), BOOT_LOG 126).
+PIECES_TAIL = """
+/* (port) bit-exact pieces for float / double arguments (see CONCAT44 above; BOOT_LOG 126) */
+#ifndef __cplusplus
+static inline uint64_t albw_piece64_d(double d) { uint64_t u; __builtin_memcpy(&u, &d, 8); return u; }
+#define ALBW_PIECE64(x) _Generic((x), double: albw_piece64_d((double)_Generic((x), double: (x), default: 0.0)), \\
+    float: (uint64_t)albw_piece32_f((float)_Generic((x), float: (x), default: 0.0f)), default: (uint64_t)(x))
+#undef SUB41
+#undef SUB42
+#undef SUB43
+#undef SUB81
+#undef SUB82
+#undef SUB84
+#undef ZEXT48
+#undef SEXT48
+#undef CONCAT31
+#undef CONCAT22
+#undef CONCAT13
+#define SUB41(x, n) ((uint8_t)(ALBW_PIECE32(x) >> ((n) * 8)))
+#define SUB42(x, n) ((uint16_t)(ALBW_PIECE32(x) >> ((n) * 8)))
+#define SUB43(x, n) (ALBW_PIECE32(x) >> ((n) * 8) & 0xFFFFFFu)
+#define SUB81(x, n) ((uint8_t)(ALBW_PIECE64(x) >> ((n) * 8)))
+#define SUB82(x, n) ((uint16_t)(ALBW_PIECE64(x) >> ((n) * 8)))
+#define SUB84(x, n) ((uint32_t)(ALBW_PIECE64(x) >> ((n) * 8)))
+#define ZEXT48(x) ((uint64_t)ALBW_PIECE32(x))
+#define SEXT48(x) ((int64_t)(int32_t)ALBW_PIECE32(x))
+#define CONCAT31(a, b) ((uint32_t)((ALBW_PIECE32(a) << 8) | (uint8_t)ALBW_PIECE32(b)))
+#define CONCAT22(a, b) ((uint32_t)(((uint32_t)(uint16_t)ALBW_PIECE32(a) << 16) | (uint16_t)ALBW_PIECE32(b)))
+#define CONCAT13(a, b) ((uint32_t)(((uint32_t)(uint8_t)ALBW_PIECE32(a) << 24) | (ALBW_PIECE32(b) & 0xFFFFFF)))
+#endif
+"""
+
+
 def header_rewrite(name, text):
     """Port-side fixes of the mirrored ghidra_types.h (the decomp repository is never modified)."""
     if name == "ghidra_types.h" and CONCAT44_OLD in text:
         text = text.replace(CONCAT44_OLD, CONCAT44_NEW)
+    if name == "ghidra_types.h" and "BOOT_LOG 126" not in text:
+        i = text.rstrip().rfind("#endif")   # inside the include guard
+        text = text[:i] + PIECES_TAIL + text[i:]
     return text
 
 

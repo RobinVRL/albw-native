@@ -1,15 +1,25 @@
-/* Esc menu overlay of the SDL backend (#included by platform.c after its layout section).
+/* Esc menu bar of the SDL backend (#included by platform.c after its layout section).
  *
- * The QUIT binding (Escape by default, input.cfg) opens this menu instead of ending the game;
- * closing the window still quits. While the menu is open the game is paused: plat_end_frame()
- * runs menu_run(), which keeps redrawing the last game frame with the menu on top and handles
- * input until the menu closes (the calling game thread is blocked like during a vblank wait).
+ * The QUIT binding (Escape by default, input.cfg) opens a menu bar across the top of the window
+ * instead of ending the game; closing the window still quits. While it is open the game is paused:
+ * plat_end_frame() runs menu_run(), which keeps redrawing the last game frame with the bar on top
+ * and handles input until the menu closes (the game thread is blocked like during a vblank wait).
  *
- * Items: Resume, Windows (separate / joined), Layout preset, Swap screens, Filter, Integer scale,
- * Resolution (internal render scale 1x..8x, render_set_scale), Fullscreen, Edit layout (the F3 mouse editor), Reload controls (input.cfg), Quit.
- * Keys: Up / Down select, Left / Right / Enter change or activate, Escape / Backspace close.
- * Gamepad: D-pad, A (south) activates, B (east) / Start close. Mouse: hover selects, click
- * activates, a click outside the panel closes. Changes are saved to layout.cfg as with F2-F5.
+ * Menus:
+ *  File   Resume, State slot (1..10), Save state (F6), Load state (F7) - native/runtime/savestate.c,
+ *         Reload controls (input.cfg), Quit game
+ *  Video  Windows (separate / joined), Layout preset, Swap screens, Filter, Integer scale,
+ *         Resolution (internal render scale 1x..8x), Fullscreen, Edit layout (the F3 mouse editor),
+ *         Menu style (this menu as a bar across the top or as a centered panel with the same tabs)
+ *  Debug  Particles, Fog, Show FPS (window title), Speed (25 % .. unlimited). The retail code has
+ *         no hidden debug menu to expose (searched: the only developer leftovers are the course
+ *         list's E3Field / Test* names, whose course files are not on the ROM, the Dbg:* heaps and
+ *         the event flag name cmn_debug_goal_on), so this menu holds the port's own switches.
+ *
+ * Keys: Left / Right switch menus, Up / Down select, Enter / Space (or +) changes forward, - (or
+ * Shift+Enter) backward, Escape / Backspace close. Gamepad: D-pad, A changes, Y backward, B / Start
+ * close. Mouse: click a title to open its menu, click an item (right click: backward), click
+ * outside closes. Video changes are saved to layout.cfg as with F2-F5.
  *
  * Text: native/platform/menu_font.h (tools/gen_menu_font.py), one textured-quad program. */
 #include "menu_font.h"
@@ -24,7 +34,22 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_COUNT };
+
+typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
+static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_QUIT};
+static const int menu_video_items[] = {MI_WINDOWS, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
+static const int menu_debug_items[] = {MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
+static const char *const menu_debug_notes[] = {"Game debug menus: none in the retail code", "(dev courses E3Field / Test*: not on the ROM)",
+                                               NULL};
+#define MENU_N(a) ((int)(sizeof(a) / sizeof(a)[0]))
+static const MenuDef menu_defs[] = {
+    {"File", menu_file_items, MENU_N(menu_file_items), NULL},
+    {"Video", menu_video_items, MENU_N(menu_video_items), NULL},
+    {"Debug", menu_debug_items, MENU_N(menu_debug_items), menu_debug_notes},
+};
+#define MENU_COUNT MENU_N(menu_defs)
+static const int menu_speeds[] = {25, 50, 100, 200, 0};   /* Debug > Speed, percent (0 = unlimited) */
 
 static const char *MENU_VS =
     "#version 330 core\n"
@@ -113,28 +138,100 @@ static void menu_label(int i, char *buf, size_t n) {
     case MI_EDIT: snprintf(buf, n, "Edit layout with the mouse (F3)"); break;
     case MI_CONTROLS: snprintf(buf, n, "Reload controls (input.cfg)"); break;
     case MI_QUIT: snprintf(buf, n, "Quit game"); break;
+    case MI_STYLE: snprintf(buf, n, "Menu style     < %s >", g_layout_cfg.menu_centered ? "Centered" : "Bar"); break;
+    case MI_SS_SLOT: {
+        char info[64] = "unavailable";
+        if (albw_ss_slot_info) albw_ss_slot_info(g_ss_slot, info, sizeof info);
+        snprintf(buf, n, "State slot     < %d: %s >", g_ss_slot + 1, info);
+        break;
+    }
+    case MI_SS_SAVE: snprintf(buf, n, "Save state  (F6)"); break;
+    case MI_SS_LOAD: snprintf(buf, n, "Load state  (F7)"); break;
+    case MI_DBG_EFT: snprintf(buf, n, "Particles      < %s >", g_dbg_eft_off ? "Off" : "On"); break;
+    case MI_DBG_FOG: snprintf(buf, n, "Fog            < %s >", g_dbg_fog_off ? "Off" : "On"); break;
+    case MI_DBG_FPS: snprintf(buf, n, "Show FPS       < %s >", g_dbg_show_fps ? "On (title bar)" : "Off"); break;
+    case MI_DBG_SPEED:
+        if (g_dbg_speed) snprintf(buf, n, "Speed          < %d %% >", g_dbg_speed);
+        else snprintf(buf, n, "Speed          < Unlimited >");
+        break;
     default: buf[0] = 0;
     }
 }
 
-/* panel geometry for a window of ww x wh pixels: origin, scale, row height */
-static void menu_geom(int ww, int wh, float *px, float *py, float *pw, float *ph, float *s, float *row) {
+/* geometry for a window of ww x wh pixels. Bar style: the tab bar spans the window's top edge
+ * and the open menu drops down under its title. Centered style: one panel in the middle, the
+ * same tab bar along its top and the open menu filling the panel (sized for the largest menu, so
+ * switching tabs does not resize it). */
+typedef struct {
+    float s, row, bar_h;           /* text scale, item row height, bar height */
+    float bx, by, bw;              /* the tab bar */
+    float tx[MENU_COUNT + 1];      /* title x positions (tx[m] .. tx[m + 1]) */
+    float dx, dy, dw, dh;          /* dropdown of the current menu (centered: the panel body) */
+    int nnotes;
+} MenuGeom;
+
+/* width (characters) and height (pixels) of menu m's dropdown */
+static void menu_size(int m, float row, size_t *chars, float *h, int *nnotes) {
+    const MenuDef *d = &menu_defs[m];
+    char buf[96];
+    size_t longest = 24;
+    for (int k = 0; k < d->n; k++) {
+        menu_label(d->items[k], buf, sizeof buf);
+        if (strlen(buf) > longest) longest = strlen(buf);
+    }
+    int nn = 0;
+    for (const char *const *t = d->notes; t && *t; t++, nn++)
+        if (strlen(*t) * 0.75 > longest) longest = (size_t)(strlen(*t) * 0.75) + 1;
+    *chars = longest + 3;
+    *h = d->n * row + row * 0.5f + (nn ? (nn + 0.5f) * row * 0.8f : 0);
+    *nnotes = nn;
+}
+
+static void menu_geom(int ww, int wh, MenuGeom *g) {
     float sc = wh / 540.0f;
     if (sc < 0.6f) sc = 0.6f;
     if (sc > 2.0f) sc = 2.0f;
-    *s = sc;
-    *row = MENU_FONT_H * sc * 1.5f;
-    char buf[96];
-    size_t longest = 30;
-    for (int i = 0; i < MI_COUNT; i++) {
-        menu_label(i, buf, sizeof buf);
-        if (strlen(buf) > longest) longest = strlen(buf);
+    g->s = sc;
+    g->row = MENU_FONT_H * sc * 1.5f;
+    g->bar_h = MENU_FONT_H * sc * 1.7f;
+    float cw = MENU_FONT_W * sc;
+    size_t chars;
+    float h;
+    menu_size(g_menu_cur, g->row, &chars, &h, &g->nnotes);
+    if (!g_layout_cfg.menu_centered) {
+        g->bx = 0, g->by = 0, g->bw = (float)ww;
+        g->dw = chars * cw;
+        g->dh = h;
+    } else {
+        size_t mc = 0;
+        float mh = 0;
+        for (int m = 0; m < MENU_COUNT; m++) {
+            size_t c; float hh; int nn;
+            menu_size(m, g->row, &c, &hh, &nn);
+            if (c > mc) mc = c;
+            if (hh > mh) mh = hh;
+        }
+        g->bw = mc * cw;
+        if (g->bw > ww - 8) g->bw = (float)(ww - 8);
+        g->dh = mh;
+        g->bx = (ww - g->bw) * 0.5f;
+        g->by = (wh - g->bar_h - mh) * 0.5f;
+        if (g->by < 0) g->by = 0;
+        g->dw = g->bw;
     }
-    *pw = (longest + 3) * MENU_FONT_W * sc;
-    if (*pw > ww - 8) *pw = (float)(ww - 8);
-    *ph = (MI_COUNT + 3) * *row;
-    *px = (ww - *pw) * 0.5f;
-    *py = (wh - *ph) * 0.5f;
+    float x = g->bx + cw;
+    for (int m = 0; m < MENU_COUNT; m++) {
+        g->tx[m] = x;
+        x += (strlen(menu_defs[m].title) + 3) * cw;
+    }
+    g->tx[MENU_COUNT] = x;
+    if (!g_layout_cfg.menu_centered) {
+        if (g->dw > ww - 8) g->dw = (float)(ww - 8);
+        g->dx = g->tx[g_menu_cur] - cw * 0.5f;
+        if (g->dx + g->dw > ww - 4) g->dx = ww - 4 - g->dw;
+        if (g->dx < 4) g->dx = 4;
+    } else g->dx = g->bx;
+    g->dy = g->by + g->bar_h;
 }
 
 static void menu_activate(int i, int dir) {
@@ -177,22 +274,59 @@ static void menu_activate(int i, int dir) {
                  input_config_path());
         break;
     case MI_QUIT: g_quit_req = 1; g_menu_open = 0; break;
+    case MI_STYLE: g_layout_cfg.menu_centered ^= 1; plat_layout_changed(); break;
+    case MI_SS_SLOT: g_ss_slot = (g_ss_slot + (dir < 0 ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI; break;
+    case MI_SS_SAVE:
+    case MI_SS_LOAD:   /* runs at the next frame end (the game continues from here) */
+        if (!albw_ss_request) { snprintf(g_menu_note, sizeof g_menu_note, "Save states are not available here"); break; }
+        albw_ss_request(i == MI_SS_SAVE ? 1 : 2, g_ss_slot);
+        g_menu_open = 0;
+        break;
+    case MI_DBG_EFT:
+        g_dbg_eft_off ^= 1;
+        snprintf(g_menu_note, sizeof g_menu_note, "Particles %s from the next frame", g_dbg_eft_off ? "off" : "on");
+        break;
+    case MI_DBG_FOG: g_dbg_fog_off ^= 1; break;
+    case MI_DBG_FPS: g_dbg_show_fps ^= 1; break;
+    case MI_DBG_SPEED: {
+        int n = MENU_N(menu_speeds), k = 0;
+        while (k < n && menu_speeds[k] != g_dbg_speed) k++;
+        if (k == n) k = 2;
+        g_dbg_speed = menu_speeds[(k + (dir < 0 ? n - 1 : 1)) % n];
+        break;
+    }
     }
 }
 
-static void menu_move(int d) { g_menu_sel = (g_menu_sel + d + MI_COUNT) % MI_COUNT; }
+static void menu_move(int d) {
+    int n = menu_defs[g_menu_cur].n;
+    g_menu_sel = (g_menu_sel + d + n) % n;
+}
+static void menu_switch(int d) {
+    g_menu_cur = (g_menu_cur + d + MENU_COUNT) % MENU_COUNT;
+    g_menu_sel = 0;
+    g_menu_note[0] = 0;
+}
+static void menu_do(int dir) { menu_activate(menu_defs[g_menu_cur].items[g_menu_sel], dir); }
 
-/* mouse position (window pixels of the menu window) -> item, -1 outside the items, -2 outside the panel */
+/* mouse position (window pixels of the menu window) -> 0..n-1 item of the open menu, 1000 + m the
+ * title of menu m, -1 on the bar / dropdown but not on an item, -2 outside both */
 static int menu_hit(float mx, float my) {
     SDL_Window *mw = menu_window();
-    float pd = SDL_GetWindowPixelDensity(mw), px, py, pw, ph, s, row;
+    float pd = SDL_GetWindowPixelDensity(mw);
     int ww, wh;
     SDL_GetWindowSizeInPixels(mw, &ww, &wh);
-    menu_geom(ww, wh, &px, &py, &pw, &ph, &s, &row);
+    MenuGeom g;
+    menu_geom(ww, wh, &g);
     mx *= pd, my *= pd;
-    if (mx < px || mx > px + pw || my < py || my > py + ph) return -2;
-    int i = (int)((my - (py + 2 * row)) / row);
-    return i >= 0 && i < MI_COUNT ? i : -1;
+    if (my >= g.by && my < g.by + g.bar_h && mx >= g.bx && mx < g.bx + g.bw) {
+        for (int m = 0; m < MENU_COUNT; m++)
+            if (mx >= g.tx[m] - MENU_FONT_W * g.s * 0.5f && mx < g.tx[m + 1] - MENU_FONT_W * g.s * 0.5f) return 1000 + m;
+        return -1;
+    }
+    if (mx < g.dx || mx > g.dx + g.dw || my < g.dy || my > g.dy + g.dh) return -2;
+    int i = (int)((my - (g.dy + g.row * 0.25f)) / g.row);
+    return i >= 0 && i < menu_defs[g_menu_cur].n ? i : -1;
 }
 
 static void menu_event(const SDL_Event *e) {
@@ -201,21 +335,27 @@ static void menu_event(const SDL_Event *e) {
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED: g_quit_req = 1; g_menu_open = 0; return;
     case SDL_EVENT_KEY_DOWN: {
         SDL_Keycode k = e->key.key;
+        int back = (e->key.mod & SDL_KMOD_SHIFT) != 0;
         if (k == SDLK_ESCAPE || k == SDLK_BACKSPACE) { if (!e->key.repeat) g_menu_open = 0; }
         else if (k == SDLK_UP) menu_move(-1);
         else if (k == SDLK_DOWN) menu_move(1);
-        else if (k == SDLK_LEFT) { if (g_menu_sel != MI_RESUME && g_menu_sel != MI_QUIT) menu_activate(g_menu_sel, -1); }
-        else if (k == SDLK_RIGHT) { if (g_menu_sel != MI_RESUME && g_menu_sel != MI_QUIT) menu_activate(g_menu_sel, 1); }
-        else if ((k == SDLK_RETURN || k == SDLK_KP_ENTER || k == SDLK_SPACE) && !e->key.repeat) menu_activate(g_menu_sel, 1);
+        else if (k == SDLK_LEFT) menu_switch(-1);
+        else if (k == SDLK_RIGHT || k == SDLK_TAB) menu_switch(back ? -1 : 1);
+        else if (k == SDLK_MINUS || k == SDLK_KP_MINUS) menu_do(-1);
+        else if (k == SDLK_PLUS || k == SDLK_EQUALS || k == SDLK_KP_PLUS) menu_do(1);
+        else if ((k == SDLK_RETURN || k == SDLK_KP_ENTER || k == SDLK_SPACE) && !e->key.repeat) menu_do(back ? -1 : 1);
         return;
     }
     case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
         switch (e->gbutton.button) {
         case SDL_GAMEPAD_BUTTON_DPAD_UP: menu_move(-1); break;
         case SDL_GAMEPAD_BUTTON_DPAD_DOWN: menu_move(1); break;
-        case SDL_GAMEPAD_BUTTON_DPAD_LEFT: if (g_menu_sel != MI_RESUME && g_menu_sel != MI_QUIT) menu_activate(g_menu_sel, -1); break;
-        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: if (g_menu_sel != MI_RESUME && g_menu_sel != MI_QUIT) menu_activate(g_menu_sel, 1); break;
-        case SDL_GAMEPAD_BUTTON_SOUTH: menu_activate(g_menu_sel, 1); break;
+        case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: menu_switch(-1); break;
+        case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: menu_switch(1); break;
+        case SDL_GAMEPAD_BUTTON_SOUTH: menu_do(1); break;
+        case SDL_GAMEPAD_BUTTON_NORTH: menu_do(-1); break;
         case SDL_GAMEPAD_BUTTON_EAST:
         case SDL_GAMEPAD_BUTTON_START: g_menu_open = 0; break;
         default: break;
@@ -224,13 +364,16 @@ static void menu_event(const SDL_Event *e) {
     case SDL_EVENT_MOUSE_MOTION:
         if (e->motion.windowID == SDL_GetWindowID(menu_window())) {
             int i = menu_hit(e->motion.x, e->motion.y);
-            if (i >= 0) g_menu_sel = i;
+            if (i >= 1000 && i - 1000 != g_menu_cur) { g_menu_cur = i - 1000; g_menu_sel = 0; }   /* hover switches */
+            else if (i >= 0 && i < 1000) g_menu_sel = i;
         }
         return;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (e->button.button == SDL_BUTTON_LEFT && e->button.windowID == SDL_GetWindowID(menu_window())) {
+        if ((e->button.button == SDL_BUTTON_LEFT || e->button.button == SDL_BUTTON_RIGHT) &&
+            e->button.windowID == SDL_GetWindowID(menu_window())) {
             int i = menu_hit(e->button.x, e->button.y);
-            if (i >= 0) { g_menu_sel = i; menu_activate(i, 1); }
+            if (i >= 1000) { g_menu_cur = i - 1000; g_menu_sel = 0; }
+            else if (i >= 0) { g_menu_sel = i; menu_do(e->button.button == SDL_BUTTON_RIGHT ? -1 : 1); }
             else if (i == -2) g_menu_open = 0;
         }
         return;
@@ -242,25 +385,48 @@ static void menu_event(const SDL_Event *e) {
 }
 
 static void menu_draw(int ww, int wh) {
-    float px, py, pw, ph, s, row;
-    menu_geom(ww, wh, &px, &py, &pw, &ph, &s, &row);
+    MenuGeom g;
+    menu_geom(ww, wh, &g);
+    float s = g.s, cw = MENU_FONT_W * s, th = MENU_FONT_H * s;
+    const MenuDef *d = &menu_defs[g_menu_cur];
     menu_nv = 0;
-    menu_rect(0, 0, (float)ww, (float)wh, 0, 0, 0, 0.45f);                         /* dim the game */
-    menu_rect(px, py, pw, ph, 0.08f, 0.10f, 0.12f, 0.92f);                           /* panel */
-    menu_rect(px, py, pw, 2 * s, 0.85f, 0.70f, 0.25f, 1);                            /* gold rule */
-    menu_text(px + row * 0.6f, py + row * 0.45f, s, "Paused", 0.95f, 0.85f, 0.45f, 1);
-    char buf[96];
-    for (int i = 0; i < MI_COUNT; i++) {
-        float y = py + (2 + i) * row;
-        if (i == g_menu_sel) menu_rect(px + 4 * s, y, pw - 8 * s, row, 0.85f, 0.70f, 0.25f, 0.25f);
-        menu_label(i, buf, sizeof buf);
-        int dim = i == MI_SWAP && g_separate;   /* swap only arranges the joined window */
-        float c = dim ? 0.5f : 1.0f;
-        menu_text(px + row * 0.6f, y + (row - MENU_FONT_H * s) * 0.5f, s, buf, c, c, c, 1);
+    menu_rect(0, 0, (float)ww, (float)wh, 0, 0, 0, g_layout_cfg.menu_centered ? 0.45f : 0.30f);   /* dim the game */
+    menu_rect(g.bx, g.by, g.bw, g.bar_h, 0.08f, 0.10f, 0.12f, 0.96f);                    /* bar */
+    menu_rect(g.bx, g.by + g.bar_h - 2 * s, g.bw, 2 * s, 0.85f, 0.70f, 0.25f, 1);        /* gold rule */
+    for (int m = 0; m < MENU_COUNT; m++) {
+        if (m == g_menu_cur)
+            menu_rect(g.tx[m] - cw * 0.5f, g.by, g.tx[m + 1] - g.tx[m], g.bar_h - 2 * s, 0.85f, 0.70f, 0.25f, 0.35f);
+        float c = m == g_menu_cur ? 1.0f : 0.8f;
+        menu_text(g.tx[m] + cw, g.by + (g.bar_h - th) * 0.5f, s, menu_defs[m].title, c, c * (m == g_menu_cur ? 0.9f : 1), c * (m == g_menu_cur ? 0.6f : 1), 1);
     }
-    const char *hint = g_menu_note[0] ? g_menu_note : "Up/Down select   Left/Right/Enter change   Esc resume";
-    float hs = s * 0.75f;
-    menu_text(px + row * 0.6f, py + ph - row * 0.9f, hs, hint, 0.7f, 0.7f, 0.7f, 1);
+    {   /* a note from the last action, else the keys: bar style on the bar's right, centered style
+         * under the panel */
+        const char *hint = g_menu_note[0] ? g_menu_note : "Paused   Left/Right menus   Enter change   Esc resume";
+        float hs = s * 0.75f, w = strlen(hint) * MENU_FONT_W * hs;
+        if (!g_layout_cfg.menu_centered) {
+            float x = ww - w - cw;
+            if (x > g.tx[MENU_COUNT] + cw) menu_text(x, (g.bar_h - MENU_FONT_H * hs) * 0.5f, hs, hint, 0.7f, 0.7f, 0.7f, 1);
+        } else {
+            float y = g.dy + g.dh + g.row * 0.3f;
+            menu_rect(g.bx, y - g.row * 0.15f, g.bw, MENU_FONT_H * hs + g.row * 0.3f, 0.08f, 0.10f, 0.12f, 0.85f);
+            menu_text(g.bx + (g.bw - w) * 0.5f > g.bx ? g.bx + (g.bw - w) * 0.5f : g.bx, y, hs, hint, 0.7f, 0.7f, 0.7f, 1);
+        }
+    }
+    menu_rect(g.dx, g.dy, g.dw, g.dh, 0.08f, 0.10f, 0.12f, 0.94f);                       /* dropdown */
+    char buf[96];
+    for (int k = 0; k < d->n; k++) {
+        int i = d->items[k];
+        float y = g.dy + g.row * 0.25f + k * g.row;
+        if (k == g_menu_sel) menu_rect(g.dx + 4 * s, y, g.dw - 8 * s, g.row, 0.85f, 0.70f, 0.25f, 0.25f);
+        menu_label(i, buf, sizeof buf);
+        float c = i == MI_SWAP && g_separate ? 0.5f : 1.0f;   /* swap only arranges the joined window */
+        menu_text(g.dx + cw, y + (g.row - th) * 0.5f, s, buf, c, c, c, 1);
+    }
+    for (int k = 0; k < g.nnotes; k++) {
+        float hs = s * 0.75f;
+        float y = g.dy + g.row * 0.25f + d->n * g.row + g.row * 0.3f + k * g.row * 0.8f;
+        menu_text(g.dx + cw, y, hs, d->notes[k], 0.55f, 0.55f, 0.55f, 1);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, ww, wh);

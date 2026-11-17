@@ -1,0 +1,439 @@
+/* Save states of the native port (design: native/SAVESTATES.md).
+ *
+ * A state is the whole game at the end of a frame, written to <state dir>/slot<N>.state and loadable
+ * by any later run of the same binary:
+ *  - game memory: the heap and device-memory regions, VRAM, the game's data / bss and the static
+ *    data of every native module that holds game state (<binary>.ssmap from the link map, plus
+ *    ranges modules register: the sound voices);
+ *  - the fixed arena (runtime/pmem.c): kernel objects, scheduler records, command lists and
+ *    buffers, display buffers, model vertex layouts and blob ops, decoder tables;
+ *  - by value: the kernel tables and every game thread's registers, stack and thread-locals
+ *    (sdk/os.c), the nngx state (sdk/gfx.c), the file tables (sdk/fs.c), the renderer's op pool,
+ *    model-blob registry, lighting LUT / material registries and light side table;
+ *  - the main thread's registers and stack, taken here at the frame end.
+ * Everything a state points into is at a fixed address in every run (non-PIE binary, VRAM at its
+ * 3DS address, pmem areas), so loading is: check everything, write it all back, let every thread
+ * jump back into its saved frame. The renderer re-reads textures; host state (window, GL objects,
+ * audio device, input) is never part of a state.
+ *
+ * Requests (F6 / F7 / F8, Esc menu File, ALBW_SS_AT) run at the next frame end on the main thread
+ * (albw_ss_frame_point, from plat_end_frame). A state from another build is refused (binary hash). */
+#define _GNU_SOURCE
+#include <dirent.h>
+#include <errno.h>
+#include <pthread.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
+#include <zlib.h>
+
+#include "runtime.h"
+#include "savestate.h"
+
+/* the parts (sdk/os.c, sdk/gfx.c, sdk/fs.c, sdk/memory.c, sdk/light.c, render/) */
+int albw_os_ss_park_all(int timeout_ms, char *why, size_t whylen);
+void albw_os_ss_release_all(void);
+void albw_os_ss_write(SsBuf *b);
+int albw_os_ss_check(SsBuf *b, char *why, size_t whylen);
+void albw_os_ss_load(SsBuf *b);
+int albw_os_ss_persistent(void);
+void albw_os_ss_main_tls(void *buf, size_t n, int restore);
+size_t albw_os_ss_main_tls_size(void);
+void albw_gfx_ss_write(SsBuf *b);
+int albw_gfx_ss_check(SsBuf *b, char *why, size_t whylen);
+void albw_gfx_ss_load(SsBuf *b);
+void albw_gfx_vram(uint8_t **base, size_t *size);
+void albw_fs_ss_write(SsBuf *b);
+int albw_fs_ss_check(SsBuf *b, char *why, size_t whylen);
+void albw_fs_ss_load(SsBuf *b);
+int albw_mem_ss_region(int i, uint8_t **base, uint32_t *committed);
+int albw_mem_ss_resize(int i, uint32_t committed);
+size_t light_ss_export(void **out);
+int light_ss_import(const void *in, size_t n);
+size_t render_pool_export(void **out);
+int render_pool_import(const void *in, size_t n);
+size_t fraglight_export(void **out);
+int fraglight_import(const void *in, size_t n);
+size_t h3d_ss_state(void *buf, size_t n, int restore);
+void render_ss_loaded(void);
+
+/* ------------------------------------------------------------------ ranges */
+typedef struct { const char *name; uint8_t *p; size_t n; } Range;
+static Range g_ranges[256];
+static int g_nranges, g_ranges_ok = -1;
+static char g_ranges_err[200];
+static pthread_mutex_t g_reg_m = PTHREAD_MUTEX_INITIALIZER;
+
+void albw_ss_add_range(const char *name, void *p, size_t n) {
+    pthread_mutex_lock(&g_reg_m);
+    if (g_nranges < (int)(sizeof g_ranges / sizeof g_ranges[0])) g_ranges[g_nranges++] = (Range){name, p, n};
+    pthread_mutex_unlock(&g_reg_m);
+}
+
+extern char albw_data[];
+static char g_exe[4096];
+static int load_ssmap(void) {
+    char path[4200];
+    ssize_t n = readlink("/proc/self/exe", g_exe, sizeof g_exe - 1);
+    if (n <= 0) { snprintf(g_ranges_err, sizeof g_ranges_err, "cannot find the binary"); return -1; }
+    g_exe[n] = 0;
+    snprintf(path, sizeof path, "%s.ssmap", g_exe);
+    FILE *f = fopen(path, "r");
+    if (!f) { snprintf(g_ranges_err, sizeof g_ranges_err, "no %s (relink with tools/link.sh)", path); return -1; }
+    char line[600], name[512];
+    unsigned long a, s;
+    int ok = 0, nr = 0;
+    while (fgets(line, sizeof line, f)) {
+        if (sscanf(line, "albw_data %lx", &a) == 1) { ok = a == (unsigned long)(uintptr_t)albw_data; continue; }
+        if (sscanf(line, "%lx %lx %511s", &a, &s, name) == 3 && s) {
+            albw_ss_add_range("static", (void *)(uintptr_t)a, s);
+            nr++;
+        }
+    }
+    fclose(f);
+    if (!ok) { snprintf(g_ranges_err, sizeof g_ranges_err, "%s is from another build (relink)", path); return -1; }
+    if (!nr) { snprintf(g_ranges_err, sizeof g_ranges_err, "%s lists no ranges", path); return -1; }
+    return 0;
+}
+
+/* the binary's identity: FNV-1a 64 of its file (a state only fits the build that wrote it) */
+static uint64_t g_build;
+static uint64_t build_hash(void) {
+    if (g_build) return g_build;
+    FILE *f = fopen(g_exe, "rb");
+    uint64_t h = 1469598103934665603ull;
+    if (f) {
+        static uint8_t buf[1 << 16];
+        size_t n;
+        while ((n = fread(buf, 1, sizeof buf, f)) > 0)
+            for (size_t i = 0; i < n; i++) { h ^= buf[i]; h *= 1099511628211ull; }
+        fclose(f);
+    }
+    return g_build = h | 1;
+}
+static uint64_t g_session;   /* states of a run without fixed addresses load only in that run */
+
+/* ------------------------------------------------------------------ host threads (sound) */
+static pthread_mutex_t g_host_m = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t g_host_cv = PTHREAD_COND_INITIALIZER;
+static int g_host_busy, g_host_hold;
+
+void albw_ss_host_enter(void) {
+    pthread_mutex_lock(&g_host_m);
+    while (g_host_hold) pthread_cond_wait(&g_host_cv, &g_host_m);
+    g_host_busy++;
+    pthread_mutex_unlock(&g_host_m);
+}
+void albw_ss_host_leave(void) {
+    pthread_mutex_lock(&g_host_m);
+    g_host_busy--;
+    pthread_cond_broadcast(&g_host_cv);
+    pthread_mutex_unlock(&g_host_m);
+}
+static void host_hold(int on) {
+    pthread_mutex_lock(&g_host_m);
+    g_host_hold = on;
+    if (on) while (g_host_busy) pthread_cond_wait(&g_host_cv, &g_host_m);
+    pthread_cond_broadcast(&g_host_cv);
+    pthread_mutex_unlock(&g_host_m);
+}
+
+/* ------------------------------------------------------------------ files */
+typedef struct {
+    char magic[8];             /* "ALBWSTA1" */
+    uint64_t build, session;   /* session 0: loadable by any run of the build */
+    int64_t when;
+    int64_t frame;
+    uint64_t raw, packed;
+} FileHdr;
+
+static void state_dir(char *out, size_t n) {
+    const char *e = getenv("ALBW_STATE_DIR");
+    if (e && *e) { snprintf(out, n, "%s", e); return; }
+    const char *x = getenv("XDG_DATA_HOME"), *h = getenv("HOME");
+    if (x && *x) snprintf(out, n, "%s/albw-port/states", x);
+    else snprintf(out, n, "%s/.local/share/albw-port/states", h ? h : ".");
+}
+static void slot_path(int slot, char *out, size_t n) {
+    char d[3800];
+    state_dir(d, sizeof d);
+    snprintf(out, n, "%s/slot%d.state", d, slot + 1);
+}
+static int mkdirs(const char *p) {
+    char t[4096];
+    snprintf(t, sizeof t, "%s", p);
+    for (char *q = t + 1; *q; q++)
+        if (*q == '/') { *q = 0; mkdir(t, 0755); *q = '/'; }
+    return mkdir(t, 0755) == 0 || errno == EEXIST ? 0 : -1;
+}
+
+/* ------------------------------------------------------------------ state */
+static int g_req, g_req_slot;
+static char g_note[240];
+static uintptr_t g_main_base;
+static uint8_t *g_main_alt;
+#define MAIN_ALT (512u << 10)
+#define REDZONE 256u
+extern long g_plat_frames __attribute__((weak));
+
+void albw_ss_set_main_base(uintptr_t base) { g_main_base = base; }
+
+static void note(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+static void note(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(g_note, sizeof g_note, fmt, ap);
+    va_end(ap);
+    fprintf(stderr, "savestate: %s\n", g_note);
+}
+
+typedef struct { AlbwCtx ctx; uintptr_t sp, base; uint32_t len; } MainHdr;
+#define TAG(a, b, c, d) ((uint32_t)(a) | (uint32_t)(b) << 8 | (uint32_t)(c) << 16 | (uint32_t)(d) << 24)
+
+static void put_blob(SsBuf *b, uint32_t tag, void *p, size_t n) { ss_section(b, tag, p, n); free(p); }
+
+/* everything except the main thread (MAIN, written first by do_save) */
+static void write_body(SsBuf *b) {
+    ss_put_u32(b, TAG('R', 'N', 'G', 'S'));
+    ss_put_u32(b, (uint32_t)g_nranges);
+    for (int i = 0; i < g_nranges; i++) { ss_put_u32(b, (uint32_t)g_ranges[i].n); ss_put(b, g_ranges[i].p, g_ranges[i].n); }
+    for (int i = 0; i < 2; i++) {
+        uint8_t *base; uint32_t n;
+        albw_mem_ss_region(i, &base, &n);
+        ss_section(b, TAG('M', 'E', 'M', '0' + i), base, n);
+    }
+    uint8_t *vb; size_t vn;
+    albw_gfx_vram(&vb, &vn);
+    ss_section(b, TAG('V', 'R', 'A', 'M'), vb, vn);
+    size_t an = pmem_arena_used();
+    size_t asz;
+    ss_section(b, TAG('A', 'R', 'N', 'A'), pmem_area(PMEM_ARENA, &asz), an);
+    size_t hn = h3d_ss_state(NULL, 0, 0);
+    void *hs = malloc(hn);
+    h3d_ss_state(hs, hn, 0);
+    put_blob(b, TAG('H', '3', 'D', 'R'), hs, hn);
+    void *p;
+    size_t n = render_pool_export(&p);
+    put_blob(b, TAG('P', 'O', 'O', 'L'), p, n);
+    n = fraglight_export(&p);
+    put_blob(b, TAG('F', 'L', 'R', 'G'), p, n);
+    n = light_ss_export(&p);
+    put_blob(b, TAG('L', 'S', 'I', 'D'), p, n);
+    albw_fs_ss_write(b);
+    albw_gfx_ss_write(b);
+    albw_os_ss_write(b);
+}
+
+static __attribute__((noinline)) void do_save(int slot) {
+    MainHdr mh;
+    size_t tls_n = albw_os_ss_main_tls_size();
+    if (albw_ctx_save(&mh.ctx) != 0) {   /* here again through a load of this state */
+        render_ss_loaded();
+        note("Loaded state %d", slot + 1);
+        return;
+    }
+    mh.sp = albw_ctx_sp(&mh.ctx) - REDZONE;
+    mh.base = g_main_base;
+    mh.len = (uint32_t)(mh.base - mh.sp);
+    SsBuf b = {0};
+    ss_put_u32(&b, TAG('M', 'A', 'I', 'N'));
+    ss_put(&b, &mh, sizeof mh);
+    ss_put(&b, (const void *)mh.sp, mh.len);
+    void *tls = calloc(1, tls_n);
+    albw_os_ss_main_tls(tls, tls_n, 0);
+    put_blob(&b, TAG('M', 'T', 'L', 'S'), tls, tls_n);
+    write_body(&b);
+    if (b.err) { free(b.p); note("Save state %d failed: out of memory", slot + 1); return; }
+    uLongf packed = compressBound(b.n);
+    uint8_t *z = malloc(packed);
+    if (!z || compress2(z, &packed, b.p, b.n, 1) != Z_OK) {
+        free(z); free(b.p);
+        note("Save state %d failed: compression", slot + 1);
+        return;
+    }
+    FileHdr h = {"ALBWSTA", build_hash(), pmem_fixed() && albw_os_ss_persistent() ? 0 : g_session, (int64_t)time(NULL),
+                 &g_plat_frames ? g_plat_frames : 0, b.n, packed};
+    memcpy(h.magic, "ALBWSTA1", 8);
+    char path[4200], tmp[4300], dir[3800];
+    state_dir(dir, sizeof dir);
+    mkdirs(dir);
+    slot_path(slot, path, sizeof path);
+    snprintf(tmp, sizeof tmp, "%s.tmp", path);
+    FILE *f = fopen(tmp, "wb");
+    int ok = f && fwrite(&h, sizeof h, 1, f) == 1 && fwrite(z, 1, packed, f) == packed;
+    if (f && fclose(f)) ok = 0;
+    if (ok) ok = rename(tmp, path) == 0;
+    else unlink(tmp);
+    if (ok) note("Saved state %d (%.0f MB)%s", slot + 1, packed / 1048576.0, h.session ? " - this run only" : "");
+    else note("Save state %d failed: cannot write %s (%s)", slot + 1, path, strerror(errno));
+    free(z);
+    free(b.p);
+}
+
+/* ---- load */
+static SsBuf g_lb;            /* the state being loaded (alive while threads restore from it) */
+static const MainHdr *g_lmh;
+static const uint8_t *g_lmain;
+
+uintptr_t albw_os_ss_canary(void);
+static void main_restore_tramp(void *p) {
+    (void)p;
+    albw_canary_set(albw_os_ss_canary());   /* the restored frames carry the saving run's canary */
+    memcpy((void *)g_lmh->sp, g_lmain, g_lmh->len);
+    albw_ctx_jump(&g_lmh->ctx, 1);
+}
+
+static int read_state(int slot, SsBuf *b, char *why, size_t whylen) {
+    char path[4200];
+    slot_path(slot, path, sizeof path);
+    FILE *f = fopen(path, "rb");
+    if (!f) { snprintf(why, whylen, "empty"); return -1; }
+    FileHdr h;
+    if (fread(&h, sizeof h, 1, f) != 1 || memcmp(h.magic, "ALBWSTA1", 8)) { fclose(f); snprintf(why, whylen, "not a state file"); return -1; }
+    if (h.build != build_hash()) { fclose(f); snprintf(why, whylen, "made by another build of the game"); return -1; }
+    if (h.session && h.session != g_session) { fclose(f); snprintf(why, whylen, "made by an earlier run that had no fixed addresses"); return -1; }
+    uint8_t *z = malloc(h.packed ? h.packed : 1);
+    b->p = malloc(h.raw ? h.raw : 1);
+    if (!z || !b->p || fread(z, 1, h.packed, f) != h.packed) {
+        fclose(f); free(z); free(b->p); b->p = NULL;
+        snprintf(why, whylen, "cannot read the file");
+        return -1;
+    }
+    fclose(f);
+    uLongf raw = h.raw;
+    int zr = uncompress(b->p, &raw, z, h.packed);
+    free(z);
+    if (zr != Z_OK || raw != h.raw) { free(b->p); b->p = NULL; snprintf(why, whylen, "damaged file"); return -1; }
+    b->n = b->cap = raw;
+    b->rd = 0;
+    b->err = 0;
+    return 0;
+}
+
+static void do_load(int slot) {
+    char why[200];
+    free(g_lb.p);
+    memset(&g_lb, 0, sizeof g_lb);
+    if (read_state(slot, &g_lb, why, sizeof why)) { note("Cannot load state %d: %s", slot + 1, why); return; }
+    SsBuf *b = &g_lb;
+    /* 1. check every part before anything changes */
+    size_t n;
+#define FAIL(...) do { snprintf(why, sizeof why, __VA_ARGS__); goto fail; } while (0)
+    if (ss_get_u32(b) != TAG('M', 'A', 'I', 'N')) FAIL("damaged state");
+    g_lmh = ss_peek(b, sizeof(MainHdr));
+    if (!g_lmh || !(g_lmain = ss_peek(b, g_lmh->len))) FAIL("damaged state (main thread)");
+    if (g_lmh->base != g_main_base) FAIL("the main thread's stack differs (another build?)");
+    const void *mtls = ss_get_section(b, TAG('M', 'T', 'L', 'S'), &n);
+    if (!mtls || n != albw_os_ss_main_tls_size()) FAIL("damaged state (main thread)");
+    if (ss_get_u32(b) != TAG('R', 'N', 'G', 'S') || ss_get_u32(b) != (uint32_t)g_nranges) FAIL("the saved data ranges differ");
+    size_t rng_at = b->rd;
+    for (int i = 0; i < g_nranges; i++)
+        if (ss_get_u32(b) != g_ranges[i].n || !ss_peek(b, g_ranges[i].n)) FAIL("the saved data ranges differ");
+    const void *mem[2];
+    size_t memn[2];
+    for (int i = 0; i < 2; i++)
+        if (!(mem[i] = ss_get_section(b, TAG('M', 'E', 'M', '0' + i), &memn[i]))) FAIL("damaged state (memory)");
+    size_t vn;
+    const void *vram = ss_get_section(b, TAG('V', 'R', 'A', 'M'), &vn);
+    size_t an;
+    const void *arena = ss_get_section(b, TAG('A', 'R', 'N', 'A'), &an);
+    size_t hn;
+    const void *h3 = ss_get_section(b, TAG('H', '3', 'D', 'R'), &hn);
+    size_t pn, fn, ln;
+    const void *pool = ss_get_section(b, TAG('P', 'O', 'O', 'L'), &pn);
+    const void *flr = ss_get_section(b, TAG('F', 'L', 'R', 'G'), &fn);
+    const void *lsd = ss_get_section(b, TAG('L', 'S', 'I', 'D'), &ln);
+    if (!vram || !arena || !h3 || !pool || !flr || !lsd || b->err) FAIL("damaged state");
+    if (hn != h3d_ss_state(NULL, 0, 0)) FAIL("damaged state (models)");
+    size_t fs_at = b->rd;
+    if (albw_fs_ss_check(b, why, sizeof why) || albw_gfx_ss_check(b, why, sizeof why)) goto fail;
+    size_t os_at = b->rd;
+    if (albw_os_ss_check(b, why, sizeof why)) goto fail;
+    for (int i = 0; i < 2; i++)
+        if (albw_mem_ss_resize(i, (uint32_t)memn[i])) FAIL("memory resize failed");
+    /* 2. write back (no way back from here) */
+    for (int i = 0; i < 2; i++) {
+        uint8_t *base; uint32_t c;
+        albw_mem_ss_region(i, &base, &c);
+        memcpy(base, mem[i], memn[i]);
+    }
+    uint8_t *vb; size_t vsz;
+    albw_gfx_vram(&vb, &vsz);
+    memcpy(vb, vram, vn < vsz ? vn : vsz);
+    b->rd = rng_at;
+    for (int i = 0; i < g_nranges; i++) { ss_get_u32(b); memcpy(g_ranges[i].p, ss_peek(b, g_ranges[i].n), g_ranges[i].n); }
+    pmem_arena_restore(arena, an);
+    h3d_ss_state((void *)h3, hn, 1);
+    if (render_pool_import(pool, pn) || fraglight_import(flr, fn) || light_ss_import(lsd, ln))
+        runtime_fatal("savestate: renderer state of slot %d is damaged (the game state is already replaced)", slot + 1);
+    b->rd = fs_at;
+    albw_fs_ss_load(b);
+    albw_gfx_ss_load(b);
+    b->rd = os_at;
+    albw_os_ss_load(b);   /* the other threads are back in their saved waits (still parked) */
+    albw_os_ss_main_tls((void *)mtls, albw_os_ss_main_tls_size(), 1);
+    albw_ctx_run_on(g_main_alt + MAIN_ALT, main_restore_tramp, NULL);   /* -> do_save's second return */
+fail:
+    note("Cannot load state %d: %s", slot + 1, why);
+    free(g_lb.p);
+    memset(&g_lb, 0, sizeof g_lb);
+#undef FAIL
+}
+
+/* main game thread, end of a frame (plat_end_frame), holding the app core */
+void albw_ss_frame_point(void) {
+    if (!g_req) return;
+    int op = g_req, slot = g_req_slot;
+    g_req = 0;
+    if (g_ranges_ok < 0) {
+        g_ranges_ok = load_ssmap() == 0;
+        while (!g_session) g_session = ((uint64_t)rand() << 32 ^ (uint64_t)time(NULL) << 16 ^ (uint64_t)getpid()) | 1;
+    }
+    if (!g_ranges_ok) { note("Save states unavailable: %s", g_ranges_err); return; }
+    if (!g_main_base) { note("Save states unavailable: no main stack bounds"); return; }
+    if (!g_main_alt && !(g_main_alt = malloc(MAIN_ALT))) { note("Save states unavailable: out of memory"); return; }
+    char why[200];
+    host_hold(1);
+    if (albw_os_ss_park_all(3000, why, sizeof why)) {
+        host_hold(0);
+        note("Cannot %s state %d now: %s", op == SS_SAVE ? "save" : "load", slot + 1, why);
+        return;
+    }
+    if (op == SS_SAVE) do_save(slot);
+    else do_load(slot);
+    albw_os_ss_release_all();
+    host_hold(0);
+}
+
+void albw_ss_request(int op, int slot) {
+    if (slot < 0 || slot >= SS_SLOTS) return;
+    g_req_slot = slot;
+    g_req = op;
+}
+
+int albw_ss_slot_info(int slot, char *buf, size_t n) {
+    char path[4200];
+    slot_path(slot, path, sizeof path);
+    FILE *f = fopen(path, "rb");
+    FileHdr h;
+    if (!f || fread(&h, sizeof h, 1, f) != 1 || memcmp(h.magic, "ALBWSTA1", 8)) {
+        if (f) fclose(f);
+        snprintf(buf, n, "empty");
+        return 0;
+    }
+    fclose(f);
+    struct tm tm;
+    time_t w = (time_t)h.when;
+    localtime_r(&w, &tm);
+    snprintf(buf, n, "%04d-%02d-%02d %02d:%02d%s", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min,
+             g_exe[0] && h.build != build_hash() ? " (old build)" : "");
+    return 1;
+}
+
+const char *albw_ss_note(void) { return g_note; }

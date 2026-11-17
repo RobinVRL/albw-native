@@ -31,10 +31,15 @@ int main(int argc, char **argv) {
     /* x86-64 low-4GB mode: the game runs on a low stack (game code keeps stack addresses in
      * 32-bit words), same thread; on i386 game_main is called directly (runtime/lowmem.c) */
     struct MainArgs a = {argc, argv};
+    pmem_init();   /* fixed-address areas before anything else maps memory (save states) */
     return albw_run_on_low_stack(game_main, &a, 16u << 20);
 }
 
+void albw_ss_set_main_base(uintptr_t base);   /* savestate.c */
+
 static int game_main(void *p) {
+    /* the saved part of the main thread's stack ends here (frames above: the ucontext start) */
+    albw_ss_set_main_base((uintptr_t)__builtin_frame_address(0));
     int argc = ((struct MainArgs *)p)->argc;
     char **argv = ((struct MainArgs *)p)->argv;
     runtime_install_crash_handler();
@@ -78,5 +83,7 @@ static int game_main(void *p) {
     func_00100C90();
     fprintf(stderr, "game returned\n");
     plat_shutdown();
-    return 0;
+    /* exit here, not through the ucontext start frames above (after a state load this stack's
+     * lower frames came from the saving run) */
+    exit(0);
 }

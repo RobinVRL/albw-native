@@ -16,7 +16,7 @@ extern undefined4 DAT_001893c8;
 #include "compilefix.h"
 
 extern int func_00150A84(int *param_1,int *param_2,int param_3);
-extern float func_00151148(int param_1,int param_2);
+extern int func_00151148(int param_1,int param_2);
 extern int func_004CF478(int param_1,int param_2);
 extern int func_004D80A4(float *param_1,uint param_2,float fparam_0);
 extern float fRam00189398;

@@ -63,34 +63,27 @@ int albw_thread_create_low(pthread_t *out, const pthread_attr_t *attr_in, void *
 #endif
 }
 
-/* Run fn(arg) on the calling thread with a low stack (the main thread's own stack is near the
- * top of the address space on x86-64). Same thread: SDL / Qt keep their main-thread state.
- * On i386 fn is called directly. */
-#if defined(__x86_64__)
+/* Run fn(arg) on the calling thread on the fixed main-thread stack (pmem.c slot 0: at the same
+ * address in every run, for persistent save states; low memory, as x86-64 also needs). Same thread:
+ * SDL / Qt keep their main-thread state. */
 static ucontext_t g_ret_ctx, g_low_ctx;
 static int (*g_low_fn)(void *);
 static void *g_low_arg;
 static int g_low_result;
 static void low_trampoline(void) { g_low_result = g_low_fn(g_low_arg); }
-#endif
 
 int albw_run_on_low_stack(int (*fn)(void *), void *arg, size_t stack_size) {
-#if defined(__x86_64__)
-    size_t guard = 0x10000;
-    uint8_t *m = albw_low_map(stack_size + guard, PROT_READ | PROT_WRITE, MAP_NORESERVE);
-    if (!m) runtime_fatal("low stack: mmap of %zu bytes failed (%s)", stack_size, strerror(errno));
-    mprotect(m, guard, PROT_NONE);
+    void *lo = NULL;
+    uint8_t *top = pmem_stack_slot(0, &lo, NULL);
+    if (!top) runtime_fatal("main stack: no fixed stack slot");
+    stack_size = (size_t)(top - (uint8_t *)lo);
     g_low_fn = fn;
     g_low_arg = arg;
     getcontext(&g_low_ctx);
-    g_low_ctx.uc_stack.ss_sp = m + guard;
+    g_low_ctx.uc_stack.ss_sp = lo;
     g_low_ctx.uc_stack.ss_size = stack_size;
     g_low_ctx.uc_link = &g_ret_ctx;
     makecontext(&g_low_ctx, low_trampoline, 0);
     swapcontext(&g_ret_ctx, &g_low_ctx);
     return g_low_result;
-#else
-    (void)stack_size;
-    return fn(arg);
-#endif
 }

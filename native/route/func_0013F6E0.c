@@ -9,7 +9,7 @@
 #include "route.h"
 
 uint32_t func_004CF478(void *self, int32_t a, int32_t b);
-float func_00151148(int obj, int a);
+int func_00151148(int obj, int a);
 void func_0013F1D0(char *self, int a);
 void func_0014064C(char *self);
 

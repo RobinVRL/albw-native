@@ -93,6 +93,8 @@ ROp fraglight_op(int kind, const void *payload, size_t n);
 /* ---- execution (GL thread, render.c) */
 void fraglight_exec(const ROp *op);
 void fraglight_reset(void);
+size_t fraglight_export(void **out);           /* save states: LUT / material registries */
+int fraglight_import(const void *in, size_t n);
 
 /* the hand-written GLSL (fragment program part, inside #if FL; see fraglight.c) */
 extern const char RENDER_FS_FRAGLIGHT[];

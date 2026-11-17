@@ -25,6 +25,7 @@
  *   large_ratio 2.50000       large_top / pip: big screen size relative to the small one
  *   keep_aspect 1             custom: keep 5:3 / 4:3 when resizing (and letterbox inside the box)
  *   render_scale 1            internal resolution: 1..8 x the 3DS screens (ALBW_RENDER_SCALE overrides)
+ *   menu_style bar            Esc menu: bar (across the top) or centered (a panel in the middle)
  *   snap 1                    custom editor: snap to window edges/centre, the other screen, integer sizes
  *   custom_front bottom       screen drawn last (on top) where custom rectangles overlap
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
@@ -67,6 +68,7 @@ typedef struct {
     int keep_aspect;
     int snap;
     int render_scale;        /* 1..8 internal resolution multiple */
+    int menu_centered;       /* Esc menu style: 0 bar across the top, 1 centered panel */
     int custom_front;        /* LAYOUT_SCREEN_TOP / _BOTTOM */
     LayoutRect custom[2];    /* normalized to the window */
     int custom_visible[2];

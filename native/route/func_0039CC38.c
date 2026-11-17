@@ -8,7 +8,7 @@
  * table +0x428, owner +0x420, anim +0x41C; word copies of the position).  Confidence: high. */
 #include "route.h"
 
-float func_00151148(int obj, int a);
+int func_00151148(int obj, int a);
 int func_00115C54(float *out, float *a, float *b);
 void func_0039CAF0(char *self);
 void func_004356B4(int obj);

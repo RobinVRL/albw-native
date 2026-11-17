@@ -93,6 +93,33 @@ static Side *side(uintptr_t key) {
     return &g_side[h];
 }
 
+/* save states: the side table by value (entries keyed by game addresses, no pointers) */
+size_t light_ss_export(void **out) {
+    size_t n = 8 + g_count * sizeof(Side);
+    uint8_t *b = malloc(n), *q = b + 8;
+    if (!b) { *out = NULL; return 0; }
+    uint32_t c = (uint32_t)g_count;
+    memcpy(b, "LSD1", 4); memcpy(b + 4, &c, 4);
+    for (size_t i = 0; i < g_cap; i++) if (g_side[i].key) { memcpy(q, &g_side[i], sizeof(Side)); q += sizeof(Side); }
+    *out = b;
+    return n;
+}
+int light_ss_import(const void *in, size_t n) {
+    const uint8_t *b = in;
+    uint32_t c;
+    if (n < 8 || memcmp(b, "LSD1", 4)) return -1;
+    memcpy(&c, b + 4, 4);
+    if (n != 8 + (size_t)c * sizeof(Side)) return -1;
+    free(g_side);
+    g_side = NULL; g_cap = g_count = 0;
+    for (uint32_t i = 0; i < c; i++) {
+        Side e;
+        memcpy(&e, b + 8 + (size_t)i * sizeof(Side), sizeof e);
+        *side(e.key) = e;
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------------ recording */
 
 static uint32_t *rec(uint32_t *p, int kind, const void *payload, size_t n) {

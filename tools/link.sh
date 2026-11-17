@@ -35,7 +35,7 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
     o=$NOBJ/${f%.c}.o
     mkdir -p "$(dirname "$o")"
     EXTRA=()
-    [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
+    [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -DALBW_V4 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I$B/decomp/shared/include -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
     # sound: the real nn::snd layer (native/sdk/snd.c + native/audio) by default; with
     # ALBW_REAL_SND=0 the silent stopgap in snd_silent.c instead (its dsp:: part is always used)
     if [[ "${ALBW_REAL_SND:-1}" == 0 && ( "$f" == native/sdk/snd.c || "$f" == native/audio/* ) ]]; then continue; fi
@@ -87,6 +87,16 @@ for n in sys.stdin.read().split():
     m=re.match(r'^func_([0-9A-F]{8})$',n)
     if m and 0x693000<=int(m.group(1),16)<0x7AFE34: print(n,'data_'+m.group(1))" >> $B/aliases.txt
 [[ -s $B/aliases.txt ]] && llvm-objcopy --redefine-syms=$B/aliases.txt $B/albw_game.o
+# wrapped decomp functions (native/wraps.txt): the decompiled body stays reachable as
+# func_<ADDR>__decomp (its -ffunction-sections section start) for a native func_<ADDR> wrapper,
+# whose strong definition replaces the decomp's weak one for every caller (native/sdk/eft.c)
+if [[ -s native/wraps.txt ]]; then
+    WRAP=()
+    for f in $(grep -v '^#' native/wraps.txt | awk '{print $1}'); do
+        WRAP+=(--add-symbol "${f}__decomp=.text.${f}:0,global,function")
+    done
+    llvm-objcopy "${WRAP[@]}" $B/albw_game.o
+fi
 # the game runs its static constructors itself (albw_ctors, in its own order): drop the native
 # constructor lists the C++ sources generated, so nothing game-side runs before main()
 llvm-objcopy --remove-section=.init_array --remove-section=.rel.init_array \
@@ -113,15 +123,24 @@ print('.section .note.GNU-stack,\\\"\\\",@progbits')" > $B/thunks.s
 clang --target=i686-linux-gnu -c $B/thunks.s -o $B/native/thunks.o
 NATIVE+=($B/native/thunks.o)
 python3 tools/gen_stubs.py $B/albw_game.o "${NATIVE[@]}" > $B/stubs.c
+# a port helper macro (ALBW_*) that a file used without its definition became a call: never stub it
+if grep -q '__asm__("ALBW_' $B/stubs.c; then
+    echo "link: undefined port helper macro(s) used as functions:"; grep -o '__asm__("ALBW_[A-Za-z0-9_]*' $B/stubs.c | sort -u; exit 1
+fi
 clang "${CFLAGS[@]}" -w -c $B/stubs.c -o $B/native/stubs.o
-clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -rdynamic
+# descriptive names (native/names.txt) as aliases of the func_<ADDR> they name
+llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" $B/albw_game.o 2>/dev/null | sort -u > $B/defined_syms.txt
+NAMES=($(python3 tools/gen_names.py native/names.txt $B/defined_syms.txt))
+clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -lz -rdynamic "${NAMES[@]}" -Wl,-Map=$OUT.map
 # i386 only: float results come back in x87 st(0); direct calls that ignore one (void/int
 # prototype of a float-returning function) would leak x87 slots until every float is NaN.
 # Relink with pop adapters and redirect those call sites (tools/x87check.py; ALBW_X87FIX=0: off)
 if [[ "${ALBW_X87FIX:-1}" != 0 ]]; then
     python3 tools/x87check.py --thunks $OUT > $B/x87pop.s 2>/dev/null
     clang --target=i686-linux-gnu -c $B/x87pop.s -o $B/native/x87pop.o
-    clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -rdynamic
+    clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $B/native/x87pop.o $SDL -lm -lz -rdynamic "${NAMES[@]}" -Wl,-Map=$OUT.map
     python3 tools/x87check.py --patch $OUT
 fi
+# save states: the static ranges that hold game state (native/runtime/savestate.c, tools/gen_ssmap.py)
+python3 tools/gen_ssmap.py $OUT.map $OUT > $OUT.ssmap || echo "link: gen_ssmap failed (save states unavailable)"
 echo "linked $OUT ($(du -h $OUT | cut -f1))"

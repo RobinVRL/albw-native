@@ -102,6 +102,8 @@
 #define GL_ONE_MINUS_CONSTANT_ALPHA 0x8004
 #define GL_CLEAR 0x1500
 #define GL_UNSIGNED_INT 0x1405
+#define GL_RG 0x8227
+#define GL_RG32F 0x8230
 
 #define RGL_FUNCS(X) \
     X(void, BlitFramebuffer, (GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLint, GLbitfield, GLenum)) \
@@ -122,6 +124,7 @@
     X(void, Uniform1iv, (GLint, GLsizei, const GLint *)) \
     X(void, Uniform4iv, (GLint, GLsizei, const GLint *)) \
     X(void, Uniform2i, (GLint, GLint, GLint)) \
+    X(void, Uniform3f, (GLint, GLfloat, GLfloat, GLfloat)) \
     X(void, Uniform4f, (GLint, GLfloat, GLfloat, GLfloat, GLfloat)) \
     X(void, VertexAttrib4f, (GLuint, GLfloat, GLfloat, GLfloat, GLfloat)) \
     X(void, DisableVertexAttribArray, (GLuint)) \
@@ -140,6 +143,7 @@ RGL_FUNCS(RGL_DEFINE)
 
 /* ================================================================== small helpers */
 
+extern int g_dbg_fog_off __attribute__((weak));   /* platform.c: Debug > Fog off */
 static bool g_trace;
 static void rlog(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 static void rlog(const char *fmt, ...) {
@@ -214,6 +218,7 @@ typedef struct {
 typedef struct {
     GLuint prog;
     GLint c, b, tev_src, tev_cmb, tev_const, tev_buf, tev_bufcol, alpha, texcfg, tex[3], texcube, scale;
+    GLint fog, fog_color, fog_lut;
     bool fl;           /* fragment lighting compiled in */
     FLLoc fll;
 } Program;
@@ -237,6 +242,7 @@ static struct {
     int vp[4];
     bool scissor; int sc[4];
     RFragState frag; bool frag_dirty;
+    struct { uint8_t mode, flip; float rgb[3]; uint32_t key, tex_key; GLuint tex; } fog;
     RTexUnit unit[3]; int tex_enable, tex2_tc1;
     RTev tev; bool tev_dirty;
     int prog_id;
@@ -270,7 +276,8 @@ static const char FS_HEAD[] =
     "out vec4 o_color;\n"
     "uniform sampler2D tex0, tex1, tex2; uniform samplerCube texcube0;\n"
     "uniform ivec4 tev_src[6]; uniform ivec4 tev_cmb[6]; uniform vec4 tev_const[6];\n"
-    "uniform ivec2 tev_buf; uniform vec4 tev_bufcol; uniform ivec4 alpha_test; uniform ivec4 texcfg;\n";
+    "uniform ivec2 tev_buf; uniform vec4 tev_bufcol; uniform ivec4 alpha_test; uniform ivec4 texcfg;\n"
+    "uniform ivec2 fog; uniform vec3 fog_color; uniform sampler2D fog_lut;\n";
 static const char FS_TEV[] =
     "vec4 t0 = vec4(0.0), t1 = vec4(0.0), t2 = vec4(0.0), prev = vec4(0.0), buf = vec4(0.0), k = vec4(0.0);\n"
     "vec4 fprim = vec4(0.0), fsec = vec4(0.0);\n"
@@ -338,6 +345,14 @@ static const char FS_TEV[] =
     "    if (i < 4 && ((tev_buf.y >> i) & 1) != 0) next.a = prev.a;\n"
     "  }\n"
     "  if (alpha_test.x != 0 && !test(alpha_test.y, int(prev.a * 255.0 + 0.5), alpha_test.z)) discard;\n"
+    /* PICA fog (register 0xE0 mode 5): factor from the 128-entry LUT indexed by the window depth
+       (flipped when 0xE0 bit 16 is set), colour = mix(fog colour, colour, factor); alpha kept */
+    "  if (fog.x == 5) {\n"
+    "    float z = clamp(fog.y != 0 ? 1.0 - gl_FragCoord.z : gl_FragCoord.z, 0.0, 1.0) * 128.0;\n"
+    "    float zi = min(floor(z), 127.0);\n"
+    "    vec2 e = texelFetch(fog_lut, ivec2(int(zi), 0), 0).rg;\n"
+    "    prev.rgb = mix(fog_color, prev.rgb, clamp(e.x + e.y * (z - zi), 0.0, 1.0));\n"
+    "  }\n"
     "  o_color = prev;\n"
     /* debug (ALBW_FS_DEBUG): 1 texture 0, 2 vertex colour, 3 fragment-lighting diffuse */
     "#if DBGOUT == 1 && FL\n  if (texcfg.x != 0) o_color = vec4(t0.rgb, 1.0);\n#elif DBGOUT == 2 && FL\n  if (texcfg.x != 0) o_color = vec4(v_color.rgb, 1.0);\n"
@@ -395,6 +410,7 @@ static char *fs_source(bool fl) {
 }
 
 #define FL_LUT_UNIT 4   /* texture unit of the fragment-lighting LUT texture */
+#define FOG_LUT_UNIT 6  /* texture unit of the fog LUT (128 x 1 RG32F) */
 
 static void program_init(Program *p, const char *vs, bool fl) {
     /* gl_program aborts with the log on a compile error: these sources are fixed */
@@ -414,6 +430,10 @@ static void program_init(Program *p, const char *vs, bool fl) {
     p->alpha = glGetUniformLocation(g, "alpha_test");
     p->texcfg = glGetUniformLocation(g, "texcfg");
     p->scale = glGetUniformLocation(g, "res_scale");
+    p->fog = glGetUniformLocation(g, "fog");
+    p->fog_color = glGetUniformLocation(g, "fog_color");
+    p->fog_lut = glGetUniformLocation(g, "fog_lut");
+    if (p->fog_lut >= 0) glUniform1i(p->fog_lut, FOG_LUT_UNIT);
     static const char *tn[3] = {"tex0", "tex1", "tex2"};
     for (int i = 0; i < 3; i++) {
         p->tex[i] = glGetUniformLocation(g, tn[i]);
@@ -1389,6 +1409,18 @@ int render_draw_bind(void) {
     if (!R.cur_fbo) { WARN_ONCE("draw without a render target (dropped)"); unlock(); return 0; }
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     if (R.frag_dirty) apply_frag();
+    {   /* experiment: ALBW_EFT_FRAG=<letters> for particle draws (RPROG_EFT): d depth test off, a alpha
+           test off, b blending off, c culling off, s stencil off (which test rejects a particle draw) */
+        static const char *ef = (const char *)1;
+        if (ef == (const char *)1) ef = getenv("ALBW_EFT_FRAG");
+        if (ef && R.prog_id == RPROG_EFT) {
+            if (strchr(ef, 'd')) glDisable(GL_DEPTH_TEST);
+            if (strchr(ef, 'b')) glDisable(GL_BLEND);
+            if (strchr(ef, 'c')) glDisable(GL_CULL_FACE);
+            if (strchr(ef, 's')) glDisable(GL_STENCIL_TEST);
+            R.frag_dirty = true;
+        }
+    }
     Program *p = cur_program();
     glUseProgram(p->prog);
     R.tev_dirty = R.vsf_dirty = true;
@@ -1434,6 +1466,55 @@ void render_disable_attribs(void) {
     for (int i = 0; i < RENDER_MAX_ATTRIBS; i++) R.attr[i].array = false;
 }
 
+/* fog LUTs registered by the producers (sdk/h3d.c decoder), by content key */
+typedef struct { uint32_t key; float lut[128][2]; } FogLut;
+static FogLut *g_fog_luts; static size_t g_nfog, g_capfog;
+static pthread_mutex_t g_fog_mx = PTHREAD_MUTEX_INITIALIZER;
+
+void render_fog_lut_set(uint32_t key, const float lut[128][2]) {
+    if (!key) return;
+    pthread_mutex_lock(&g_fog_mx);
+    size_t i = 0;
+    while (i < g_nfog && g_fog_luts[i].key != key) i++;
+    if (i == g_nfog) {
+        VEC_PUSH(g_fog_luts, g_nfog, g_capfog);
+        g_fog_luts[g_nfog].key = key;
+        memcpy(g_fog_luts[g_nfog].lut, lut, sizeof g_fog_luts[0].lut);
+        g_nfog++;
+    }
+    pthread_mutex_unlock(&g_fog_mx);
+}
+
+/* the current fog LUT on FOG_LUT_UNIT; 0 when there is none */
+static int fog_bind(void) {
+    if (!R.fog.key) return 0;
+    if (!R.fog.tex) {
+        glGenTextures(1, &R.fog.tex);
+        glActiveTexture(GL_TEXTURE0 + FOG_LUT_UNIT);
+        glBindTexture(GL_TEXTURE_2D, R.fog.tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    glActiveTexture(GL_TEXTURE0 + FOG_LUT_UNIT);
+    glBindTexture(GL_TEXTURE_2D, R.fog.tex);
+    if (R.fog.tex_key != R.fog.key) {
+        int found = 0;
+        pthread_mutex_lock(&g_fog_mx);
+        for (size_t i = 0; i < g_nfog; i++)
+            if (g_fog_luts[i].key == R.fog.key) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, 128, 1, 0, GL_RG, GL_FLOAT, g_fog_luts[i].lut);
+                found = 1;
+                break;
+            }
+        pthread_mutex_unlock(&g_fog_mx);
+        if (!found) return 0;
+        R.fog.tex_key = R.fog.key;
+    }
+    return 1;
+}
+
 static void upload_uniforms(Program *p) {
     if (R.vsf_dirty || R.tev_dirty) {
         glUniform4fv(p->c, RENDER_VS_FLOATS, R.vsf);
@@ -1462,6 +1543,10 @@ static void upload_uniforms(Program *p) {
                      R.tev.buf_color[2] / 255.f, R.tev.buf_color[3] / 255.f);
     }
     GLint at[4] = {R.frag.alpha_test, R.frag.alpha_func, R.frag.alpha_ref, 0};
+    {   static const char *ef = (const char *)1;   /* ALBW_EFT_FRAG 'a' (see render_draw_bind) */
+        if (ef == (const char *)1) ef = getenv("ALBW_EFT_FRAG");
+        if (ef && strchr(ef, 'a') && R.prog_id == RPROG_EFT) at[0] = 0;
+    }
     {   /* experiment: ALBW_ATEST_TEX=<hex addr>: enable the configured alpha test for draws sampling that texture */
         static long want = -2;
         if (want == -2) { const char *e = getenv("ALBW_ATEST_TEX"); want = e ? (long)strtoul(e, NULL, 16) : -1; }
@@ -1472,6 +1557,11 @@ static void upload_uniforms(Program *p) {
         }
     }
     rglUniform4iv(p->alpha, 1, at);
+    if (p->fog >= 0) {
+        int on = R.fog.mode == 5 && !(&g_dbg_fog_off && g_dbg_fog_off) && fog_bind();   /* Esc menu Debug > Fog */
+        rglUniform2i(p->fog, on ? 5 : 0, R.fog.flip);
+        if (on) rglUniform3f(p->fog_color, R.fog.rgb[0], R.fog.rgb[1], R.fog.rgb[2]);
+    }
     GLint tc[4] = {R.tex_enable, R.tex2_tc1, (R.unit[0].type == 1 || R.unit[0].type == 4) ? 1 : R.unit[0].type == 3 ? 2 : 0, 0};
     rglUniform4iv(p->texcfg, 1, tc);
     if (p->fl) fraglight_upload(&p->fll, FL_LUT_UNIT);
@@ -1744,6 +1834,7 @@ static size_t op_len(const ROp *op) {
     case ROP_DRAW: return OP_LEN(draw);
     case ROP_CALL: return OP_LEN(call);
     case ROP_EXT: return OP_LEN(ext);
+    case ROP_FOG: return OP_LEN(fog);
     default: return sizeof *op;   /* ROP_FL and anything new: the whole op */
     }
 }
@@ -1871,6 +1962,75 @@ void render_frame_end(void) {
     unlock();
 }
 
+/* save states (native/runtime/savestate.c): the op pool by value. The markers in game memory (model
+ * blobs translated at load, pinned) name pool slots, so a loaded state needs the pool exactly as it
+ * was: same slots, generations and ops. Entry: gen, live, pinned, op length, op bytes. */
+size_t render_pool_export(void **out) {
+    lock();
+    size_t n = 8;
+    for (uint32_t s = 0; s < g_npool; s++) n += 4 + (g_pool[s].live ? op_len(&g_pool[s].op) : 0);
+    uint8_t *b = malloc(n), *q = b;
+    if (b) {
+        memcpy(q, "POOL", 4); memcpy(q + 4, &g_npool, 4); q += 8;
+        for (uint32_t s = 0; s < g_npool; s++) {
+            const PoolEnt *p = &g_pool[s];
+            uint16_t len = p->live ? (uint16_t)op_len(&p->op) : 0;
+            q[0] = p->gen; q[1] = p->live; memcpy(q + 2, &len, 2);
+            q[1] |= (uint8_t)(p->pinned << 1);
+            q += 4;
+            memcpy(q, &p->op, len);
+            q += len;
+        }
+    }
+    unlock();
+    *out = b;
+    return b ? n : 0;
+}
+
+int render_pool_import(const void *in, size_t n) {
+    const uint8_t *q = in, *end = q + n;
+    uint32_t np;
+    if (n < 8 || memcmp(q, "POOL", 4)) return -1;
+    memcpy(&np, q + 4, 4);
+    q += 8;
+    if (np > POOL_MAX) return -1;
+    lock();
+    if (np > g_cappool) { g_cappool = np; g_pool = xrealloc(g_pool, g_cappool * sizeof *g_pool); }
+    g_npool = np;
+    g_nfree = 0;
+    g_live = 0;
+    int bad = 0;
+    for (uint32_t s = 0; s < np && !bad; s++) {
+        uint16_t len;
+        if (q + 4 > end) { bad = 1; break; }
+        PoolEnt *p = &g_pool[s];
+        memset(p, 0, sizeof *p);
+        p->gen = q[0];
+        p->live = q[1] & 1;
+        p->pinned = (q[1] >> 1) & 1;
+        memcpy(&len, q + 2, 2);
+        q += 4;
+        if (len > sizeof p->op || q + len > end) { bad = 1; break; }
+        memcpy(&p->op, q, len);
+        q += len;
+        if (p->live) {
+            p->hash = op_hash(&p->op);
+            p->last_frame = R.frame;
+            g_live++;
+        } else {
+            VEC_PUSH(g_free, g_nfree, g_capfree);
+            g_free[g_nfree++] = s;
+        }
+    }
+    if (bad) { g_npool = 0; g_nfree = 0; g_live = 0; }
+    uint32_t cap = g_hcap ? g_hcap : 8192;
+    while (g_live * 2 >= cap) cap *= 2;   /* size first: a full open-addressing table never finds a slot */
+    htab_rebuild(cap);
+    R.st.ops_pooled = g_live;
+    unlock();
+    return bad ? -1 : 0;
+}
+
 static int exec_depth;
 
 void render_exec_op(const ROp *op) {
@@ -1968,6 +2128,13 @@ void render_exec_op(const ROp *op) {
         if (R.ext.op) R.ext.op(op);
         break;
     case ROP_FL: fraglight_exec(op); break;
+    case ROP_FOG:
+        R.fog.mode = op->u.fog.mode;
+        R.fog.flip = op->u.fog.flip;
+        for (int c = 0; c < 3; c++) R.fog.rgb[c] = op->u.fog.rgb[c] / 255.f;
+        if (op->u.fog.key) R.fog.key = op->u.fog.key;
+        R.frag_dirty = R.tev_dirty = true;
+        break;
     case ROP_VS_FLOAT: render_set_vs_float(op->u.vsf.reg, op->u.vsf.v, op->unit); break;
     case ROP_VS_BOOL: render_set_vs_bool(op->u.vsb.mask); break;
     case ROP_ATTRIB:
@@ -1978,7 +2145,24 @@ void render_exec_op(const ROp *op) {
             render_set_attrib_const(op->unit, op->u.attrib.konst);
         break;
     case ROP_DRAW:
-        if (op->u.draw.indexed)
+        if (op->u.draw.indexed && (op->flags & 0x80)) {
+            /* index address from a PICA index register (28-bit offset, base 0: sdk/h3d.c live
+               translation): the top bits are those of the bound vertex arrays (same allocation) */
+            uintptr_t low = op->u.draw.indices & 0x0FFFFFFFu, ia = low;
+            for (int a = 0; a < RENDER_MAX_ATTRIBS; a++)
+                if (R.attr[a].array && R.attr[a].ptr) {
+                    uintptr_t top = R.attr[a].ptr & ~(uintptr_t)0x0FFFFFFFu, best = top | low;
+                    for (int k = -1; k <= 1; k += 2) {
+                        uintptr_t c = (uintptr_t)((intptr_t)top + k * (intptr_t)0x10000000) | low;
+                        uintptr_t dc = c > R.attr[a].ptr ? c - R.attr[a].ptr : R.attr[a].ptr - c;
+                        uintptr_t db = best > R.attr[a].ptr ? best - R.attr[a].ptr : R.attr[a].ptr - best;
+                        if (dc < db) best = c;
+                    }
+                    ia = best;
+                    break;
+                }
+            if (ia != low) render_draw_indexed(op->u.draw.prim, (const void *)ia, op->u.draw.index_u16, op->u.draw.count);
+        } else if (op->u.draw.indexed)
             render_draw_indexed(op->u.draw.prim, (const void *)op->u.draw.indices, op->u.draw.index_u16, op->u.draw.count);
         else
             render_draw(op->u.draw.prim, op->u.draw.first, op->u.draw.count);
@@ -2019,7 +2203,39 @@ static void raw_flush(void) {
     memset(g_raw_cnt, 0, sizeof g_raw_cnt);
 }
 
+/* debug: ALBW_RAW_DUMP=<frame>: list, in stream order, the raw (non-marker) PICA writes of the
+ * ranges executed in that frame - "reg=value" per write, markers as "[op type]" - to find the
+ * producers that still write raw commands (they are never executed: see the header). */
+static long g_rawdump = -2;
+static void raw_dump_range(const void *addr, uint32_t size) {
+    if (g_rawdump == -2) { const char *e = getenv("ALBW_RAW_DUMP"); g_rawdump = e ? atol(e) : -1; }
+    if (g_rawdump < 0 || (long)R.frame != g_rawdump) return;
+    const uint32_t *w = (const uint32_t *)(((uintptr_t)addr + 3) & ~(uintptr_t)3);
+    uint32_t n = size / 4, i = 0;
+    fprintf(stderr, "rawdump: range %p %u words\n", addr, n);
+    char line[1024]; int o = 0;
+    while (i + 1 < n) {
+        uint32_t p0 = w[i], h = w[i + 1];
+        if (h == RENDER_MARK) {
+            const ROp *op = pool_get(p0);
+            o += snprintf(line + o, sizeof line - (size_t)o, " [op%u]", op ? op->type : 99u);
+            i += 2;
+        } else {
+            uint32_t reg = h & 0xFFFF, mask = (h >> 16) & 0xF, cnt = (h >> 20) & 0xFF, cons = h >> 31;
+            if (reg >= 0x300 || !mask || i + 2 + cnt > n) { o += snprintf(line + o, sizeof line - (size_t)o, " ?%08x", h); i += 1; }
+            else {
+                o += snprintf(line + o, sizeof line - (size_t)o, " %03x=%x", reg, p0);
+                if (cnt) o += snprintf(line + o, sizeof line - (size_t)o, "+%u%s", cnt, cons ? "c" : "");
+                i += 2 + cnt; if (i & 1) i++;
+            }
+        }
+        if (o > 900) { fprintf(stderr, "rawdump:%s\n", line); o = 0; }
+    }
+    if (o) fprintf(stderr, "rawdump:%s\n", line);
+}
+
 int render_exec_cmds(const void *addr, uint32_t size) {
+    raw_dump_range(addr, size);
     if (g_raw_on < 0) {
         const char *e = getenv("ALBW_RAW_TRACE");
         g_raw_on = e != NULL;
@@ -2064,3 +2280,10 @@ int render_exec_cmds(const void *addr, uint32_t size) {
 }
 
 RStats render_stats(void) { return R.st; }
+
+/* save states (native/runtime/savestate.c): game memory was replaced - re-read every texture
+ * (large ones are otherwise re-uploaded only when announced by render_mem_written). The op pool
+ * needs nothing: markers of pinned ops (model data) stay valid, per-frame ops are re-recorded. */
+void render_ss_loaded(void) {
+    for (size_t i = 0; i < R.ntex; i++) { R.tex[i].dirty = true; R.tex[i].hash = 0; }
+}

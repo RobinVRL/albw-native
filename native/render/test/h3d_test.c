@@ -82,6 +82,7 @@ void func_003FC8DC(uint32_t resfile, uint32_t *b0, uint32_t *b1, uint32_t a, uin
 void func_005FFDC0(void) {}
 void func_006003D8(uint32_t pname, uint32_t *out) { *out = 0; }
 int32_t func_001151F8(uint32_t *m, uint32_t *rot, uint32_t *pos) { (void)m; (void)rot; (void)pos; return 0; }   /* sdk/h3d.c 002C3870 (matrix rebuild; not exercised by this test) */
+void *func_00600660(uint32_t area) { (void)area; return (void *)(uintptr_t)0x1F000000u; }   /* sdk/h3d.c live_pa: nngxGetVramStartAddr (live eft translation; not exercised here) */
 void func_00601378(int32_t bytes) {}
 void func_005FFF7C(uint32_t size) {}
 uint32_t *func_003CC124(uint32_t *c, uint32_t p) { c[0] = c[1] = c[2] = p; c[3] = c[4] = 0; return c; }

@@ -88,8 +88,14 @@ def byte_return(ins):
         if op not in ('retl', 'retq', 'ret'): continue
         rets += 1
         j = i - 1
+        # flag-only instructions between the result write and the ret (`movb $1, %al; testb ..;
+        # je other; ret`: 00552FC0 isOnGround, whose 0x...01 %eax made 00553720 refuse Link's
+        # interaction with the weather vane: BOOT_LOG 131) are stepped over too; conditional
+        # jumps leave this path (their targets' rets are checked on their own)
         while j >= 0 and (ins[j][0] in ('popl', 'popq', 'pop') or
-                          (ins[j][0] in ('addl', 'leal', 'addq', 'leaq') and ins[j][1].endswith(SP))):
+                          (ins[j][0] in ('addl', 'leal', 'addq', 'leaq') and ins[j][1].endswith(SP)) or
+                          ins[j][0].startswith(('test', 'cmp')) or
+                          (ins[j][0].startswith('j') and not ins[j][0].startswith('jmp'))):
             j -= 1
         if j < 0: return False
         op2, a2, _ = ins[j]
@@ -126,6 +132,48 @@ def func_name(label):
     return 'func_' + m.group(1).upper() if m else None
 
 cands = {func_name(f) for f, ins in funcs.items() if func_name(f) and byte_return(ins)}
+EXT = {f: 'movzbl %al, %eax' for f in cands}
+# Small integer returns declared in the linked source (BOOT_LOG 128): u8 / s8 / u16 / s16 results
+# come back in %al / %ax with the upper bits of %eax undefined (0054B260 `u8` = word >> 16 left in
+# %eax: the flow's rail-move test read 0x164 for 100 and Link never dashed). The ARM returns the
+# whole r0 extended; the converted callers read the whole register.
+SMALL = [
+    # explicit unsigned byte types only: `bool` comes from the machine-code check above; plain `char`
+    # or a wrongly declared `bool` in a matched source would truncate a real int / pointer
+    (r'(?:u8|uint8_t|unsigned\s+char|byte|undefined1|uchar)', 'movzbl %al, %eax'),
+    (r'(?:s8|int8_t|signed\s+char)', 'movsbl %al, %eax'),
+    (r'(?:u16|uint16_t|unsigned\s+short|ushort|undefined2|word)', 'movzwl %ax, %eax'),
+    (r'(?:s16|int16_t|short|signed\s+short)', 'movswl %ax, %eax'),
+]
+def src_of(o):
+    rel = o.split('/build/decomp/obj/', 1)[-1]
+    if rel.endswith('.final.o'): rel = rel[:-len('.final.o')]
+    return ('build/decomp/' + rel) if rel.startswith('ghidra_fallback/') else ('../albw-decomp-ai/' + rel)
+n_small = 0
+for o in open(objs_txt).read().split():
+    mo = re.search(r'func_([0-9A-F]{8})', os.path.basename(o))
+    if not mo: continue
+    addr = mo.group(1); f = 'func_' + addr
+    sp = src_of(o)
+    mode = os.environ.get('ALBW_SMALLRET', 'all')   # all / matched / ghidra / none (bisecting aid)
+    if mode == 'none' or (mode == 'matched' and 'ghidra_fallback' in sp) or (mode == 'ghidra' and 'ghidra_fallback' not in sp):
+        continue
+    try: text = open(sp, errors='replace').read()
+    except OSError: continue
+    short = addr.lstrip('0') or '0'
+    # the definition whose name carries this address (func_X, f_X, Class::func_X, f_XXXXXX ...)
+    md = re.search(r'^[ \t]*(?:static\s+|inline\s+|extern\s+"C"\s+)*((?:const\s+)?[A-Za-z_][\w\s]*?)\s*\b[\w:]*?(?:%s|%s)\w*\s*\([^;{]*\)\s*(?:const\s*)?\{' % (addr, short), text, re.M | re.I)
+    if not md: continue
+    rt = re.sub(r'\b(static|inline|extern|const|volatile|virtual)\b', ' ', md.group(1)).strip()
+    if '*' in md.group(1) or '&' in md.group(1): continue
+    kinds = os.environ.get('ALBW_SMALLRET_KINDS')   # e.g. "movzbl,movswl" (bisecting aid)
+    for pat, ins in SMALL:
+        if kinds and ins.split()[0] not in kinds.split(','): continue
+        if re.fullmatch(pat, rt):
+            if f not in EXT: n_small += 1
+            EXT.setdefault(f, ins)
+            cands.add(f)
+            break
 native = set(open(native_defs).read().split())
 cands -= native
 # defining object of each weak func_X
@@ -156,13 +204,13 @@ for f in sorted(owner):
         body = ['  push %rbx', '  sub $128, %rsp']
         for i in range(16):
             body += ['  mov %d(%%rsp), %%r11' % (144 + 8 * i), '  mov %%r11, %d(%%rsp)' % (8 * i)]
-        body += ['  call %s__bool' % f, '  movzbl %al, %eax', '  add $128, %rsp', '  pop %rbx', '  ret']
+        body += ['  call %s__bool' % f, '  ' + EXT.get(f, 'movzbl %al, %eax'), '  add $128, %rsp', '  pop %rbx', '  ret']
         out += ['.weak %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f] + body
         continue
     out += ['.weak %s' % f, '.type %s,@function' % f, '.p2align 4', '%s:' % f,
             '  push %esi', '  push %edi', '  sub $84, %esp', '  lea 96(%esp), %esi',  # entry esp = 12 mod 16: 2 pushes + 84 -> call at 0 mod 16
             '  mov %esp, %edi', '  mov $16, %ecx', '  cld', '  rep movsl',
-            '  call %s__bool' % f, '  movzbl %al, %eax', '  add $84, %esp', '  pop %edi', '  pop %esi', '  ret']
+            '  call %s__bool' % f, '  ' + EXT.get(f, 'movzbl %al, %eax'), '  add $84, %esp', '  pop %edi', '  pop %esi', '  ret']
 out.append('.section .note.GNU-stack,"",@progbits')
 open(out_s, 'w').write('\n'.join(out) + '\n')
-print('boolret: %d bool-returning functions get zero-extending adapters (%d objects)' % (len(owner), len(by_obj)))
+print('boolret: %d bool / small-integer returning functions get extending adapters (%d objects; %d from declared small return types)' % (len(owner), len(by_obj), n_small))

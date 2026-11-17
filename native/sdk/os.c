@@ -61,12 +61,23 @@ void albw_fp_set_3ds_mode(void) { _mm_setcsr(_mm_getcsr() | 0x8040u); }
 
 static void monotonic_now(struct timespec *ts) { clock_gettime(CLOCK_MONOTONIC, ts); }
 
-static uint64_t system_tick(void) {
+static uint64_t raw_tick(void) {
     struct timespec ts;
     monotonic_now(&ts);
     return (uint64_t)ts.tv_sec * (uint64_t)TICKS_PER_SECOND +
            (uint64_t)ts.tv_nsec * (uint64_t)TICKS_PER_SECOND / 1000000000ull;
 }
+/* save states: loading sets the offset so the game clock continues from the saved tick */
+static int64_t g_tick_offset;
+static uint64_t system_tick(void) { return raw_tick() + (uint64_t)g_tick_offset; }
+
+/* save states (section at the end): park point of the waits below */
+static atomic_int g_ss_phase;   /* 0 run, 1 every game thread parks at its next wait */
+static void ss_park(pthread_mutex_t *held);
+static void ss_thread_register(int slot, uintptr_t base);
+static int slot_thread_create(pthread_t *pt, void *(*fn)(void *), void *arg, int *slot_out);
+static void slot_attach(int slot);
+static void ss_thread_finished(void);
 
 /* absolute CLOCK_MONOTONIC deadline ns from now */
 static struct timespec deadline_after(int64_t ns) {
@@ -124,6 +135,7 @@ static uint32_t current_thread_id(void) {
  * ALBW_SCHED=parallel: off (every thread runs freely, the old behaviour) for A/B tests. */
 typedef struct SchedRec {
     struct SchedRec *next;   /* ready list link */
+    struct SchedRec *all_next; /* every SchedRec ever made (save states; never freed) */
     int32_t prio;
     int core;                /* 0 app core, 1 system core */
     bool queued;             /* in the ready list */
@@ -135,6 +147,7 @@ static pthread_mutex_t g_sched_m = PTHREAD_MUTEX_INITIALIZER;
 static struct { SchedRec *running; SchedRec *ready; } g_core[2];
 static _Thread_local SchedRec *t_sched;
 static int g_sched_mode = -1;  /* -1 unknown, 0 parallel, 1 priority */
+static SchedRec *g_all_sched;  /* g_sched_m */
 
 static bool sched_on(void) {
     if (g_sched_mode < 0) {
@@ -167,16 +180,26 @@ static void dispatch_locked(int core) {
 
 /* g_sched_m held: block until this thread owns its core */
 static void wait_turn_locked(SchedRec *r) {
-    while (g_core[r->core].running != r) pthread_cond_wait(&r->cv, &g_sched_m);
+    /* a pending save / load parks the thread here even when its core is free (system-core
+     * threads coming back from a sleep would otherwise run on without ever waiting) */
+    if (atomic_load(&g_ss_phase)) ss_park(&g_sched_m);
+    while (g_core[r->core].running != r) {
+        if (atomic_load(&g_ss_phase)) { ss_park(&g_sched_m); continue; }
+        pthread_cond_wait(&r->cv, &g_sched_m);
+    }
 }
 
 static SchedRec *sched_new(int32_t prio, int core, uint32_t id) {
-    SchedRec *r = calloc(1, sizeof *r);
+    SchedRec *r = pmem_calloc(1, sizeof *r);   /* fixed arena: saved states point to it */
     if (!r) runtime_fatal("os: out of memory");
     pthread_cond_init(&r->cv, NULL);
     r->prio = prio;
     r->core = core == 1 ? 1 : 0;
     r->id = id;
+    pthread_mutex_lock(&g_sched_m);
+    r->all_next = g_all_sched;
+    g_all_sched = r;
+    pthread_mutex_unlock(&g_sched_m);
     return r;
 }
 
@@ -253,6 +276,8 @@ void albw_sched_main_thread(void) {
     dispatch_locked(0);
     wait_turn_locked(r);
     pthread_mutex_unlock(&g_sched_m);
+    slot_attach(0);                 /* slot 0: the main game thread's fixed stack (runtime/lowmem.c) */
+    ss_thread_register(0, 0);       /* save / load run on it (savestate.c keeps its stack) */
 }
 
 /* for other native areas: wrap a host blocking call made on a game thread (vblank sleeps,
@@ -280,7 +305,9 @@ typedef struct Waiter {
 static struct { pthread_mutex_t m; Waiter *head; } g_park[PARK_BUCKETS] = {
     [0 ... PARK_BUCKETS - 1] = { PTHREAD_MUTEX_INITIALIZER, NULL },
 };
-static _Thread_local Waiter t_waiter;
+static _Thread_local Waiter t_waiter_local;   /* threads without a stack slot (host threads) */
+static _Thread_local Waiter *t_wp;            /* game threads: the record in their slot data */
+static inline Waiter *my_waiter(void) { return t_wp ? t_wp : &t_waiter_local; }
 
 static unsigned park_bucket(const void *addr) {
     uintptr_t a = (uintptr_t)addr >> 2;
@@ -294,7 +321,7 @@ enum { ARB_SIGNAL = 0, ARB_WAIT_LT = 1, ARB_DEC_WAIT_LT = 2, ARB_WAIT_LT_TIMEOUT
  * ns < 0: no timeout. */
 static uint32_t arb_wait(_Atomic int32_t *addr, int32_t value, bool decrement, int64_t ns) {
     unsigned b = park_bucket((const void *)addr);
-    Waiter *w = &t_waiter;
+    Waiter *w = my_waiter();
     if (!w->cv_ready) { cond_init_monotonic(&w->cv); w->cv_ready = true; }
     pthread_mutex_lock(&g_park[b].m);
     int32_t v = atomic_load(addr);
@@ -312,6 +339,7 @@ static uint32_t arb_wait(_Atomic int32_t *addr, int32_t value, bool decrement, i
     if (ns >= 0) dl = deadline_after(ns);
     sched_release();   /* blocking: the next ready game thread runs (bucket -> sched lock order) */
     while (!w->woken) {
+        if (atomic_load(&g_ss_phase)) { ss_park(&g_park[b].m); continue; }
         if (ns < 0) {
             pthread_cond_wait(&w->cv, &g_park[b].m);
         } else if (pthread_cond_timedwait(&w->cv, &g_park[b].m, &dl) == ETIMEDOUT && !w->woken) {
@@ -362,11 +390,12 @@ enum { K_THREAD = 1, K_MUTEX, K_EVENT, K_SEMAPHORE, K_ARBITER };
 enum { RESET_ONESHOT = 0, RESET_STICKY = 1, RESET_PULSE = 2 };
 
 struct OsObject {
+    struct OsObject *all_next; /* every object ever made (save states; objects are never freed) */
     int kind;
     int refs; /* handles + (for threads) the running thread itself */
     union {
         struct { bool done; int32_t prio; int32_t core; uint32_t id;
-                 void (*entry)(void *); uintptr_t arg; SchedRec *sched; } th;
+                 void (*entry)(void *); uintptr_t arg; SchedRec *sched; int slot; } th;
         struct { uint32_t owner; uint32_t count; } mtx;
         struct { bool signaled; int32_t reset; } ev;
         struct { int32_t count, max; } sem;
@@ -380,6 +409,8 @@ static pthread_once_t g_obj_once = PTHREAD_ONCE_INIT;
 static OsObject *g_slot[MAX_HANDLES];
 static uint16_t g_gen[MAX_HANDLES];
 static unsigned g_next_slot = 1;
+static OsObject *g_all_objs;   /* g_obj_lock */
+static void obj_track_locked(OsObject *o) { o->all_next = g_all_objs; g_all_objs = o; }
 
 static void obj_init_once(void) { cond_init_monotonic(&g_obj_cv); }
 static void obj_lock(void) { pthread_once(&g_obj_once, obj_init_once); pthread_mutex_lock(&g_obj_lock); }
@@ -387,7 +418,7 @@ static void obj_unlock(void) { pthread_mutex_unlock(&g_obj_lock); }
 
 /* g_obj_lock held */
 static void obj_release_locked(OsObject *o) {
-    if (--o->refs == 0) free(o);
+    --o->refs;   /* not freed at 0: a save state may hold (and restore) a pointer to it; they are small */
 }
 
 /* g_obj_lock held; takes one reference of o for the new handle */
@@ -410,12 +441,13 @@ static uint32_t handle_alloc_locked(OsObject *o, uint32_t *out) {
 /* g_obj_lock held */
 static OsObject *ensure_self_locked(void) {
     if (!t_self) {
-        OsObject *o = calloc(1, sizeof *o);
+        OsObject *o = pmem_calloc(1, sizeof *o);
         if (!o) runtime_fatal("os: out of memory");
         o->kind = K_THREAD;
         o->refs = 1; /* the thread itself; never dropped for threads not started here */
         o->u.th.prio = DEFAULT_PRIORITY;
         o->u.th.id = current_thread_id();
+        obj_track_locked(o);
         t_self = o;
     }
     return t_self;
@@ -430,13 +462,16 @@ static OsObject *handle_get_locked(uint32_t h) {
 }
 
 static uint32_t new_object(int kind, uint32_t *out, OsObject **res) {
-    OsObject *o = calloc(1, sizeof *o);
+    OsObject *o = pmem_calloc(1, sizeof *o);
     if (!o) return RES_OUT_OF_HANDLES;
     o->kind = kind;
     obj_lock();
     uint32_t r = handle_alloc_locked(o, out);
-    if (r != RES_OK) free(o);
-    else if (res) *res = o;
+    if (r != RES_OK) pmem_free(o);
+    else {
+        obj_track_locked(o);
+        if (res) *res = o;
+    }
     obj_unlock();
     return r;
 }
@@ -493,6 +528,7 @@ static uint32_t wait_objects(int32_t *out_index, const uint32_t *handles, int32_
         if (hit >= 0) { if (out_index) *out_index = hit; break; }
         if (ns == 0) { res = RES_TIMEOUT; break; }
         if (!released) { sched_release(); released = true; }  /* obj -> sched lock order */
+        if (atomic_load(&g_ss_phase)) { ss_park(&g_obj_lock); continue; }
         if (ns < 0) pthread_cond_wait(&g_obj_cv, &g_obj_lock);
         else if (pthread_cond_timedwait(&g_obj_cv, &g_obj_lock, &dl) == ETIMEDOUT) {
             /* one last check, then time out */
@@ -642,6 +678,7 @@ static pthread_once_t g_thread_key_once = PTHREAD_ONCE_INIT;
 
 static void thread_finished(void *p) {
     OsObject *o = p;
+    ss_thread_finished();
     sched_release();     /* the next ready game thread runs */
     t_sched = NULL;
     obj_lock();
@@ -655,19 +692,37 @@ static void thread_key_init(void) {
     if (pthread_key_create(&g_thread_key, thread_finished)) runtime_fatal("os: pthread_key_create");
 }
 
+static void ss_thread_register(int slot, uintptr_t base);
+static void ss_thread_finished(void);
+
+/* a game thread's slot data (runtime/pmem.c): its SDK TLS block and its wait record */
+static void slot_attach(int slot) {
+    void *data = NULL;
+    if (slot < 0 || !pmem_stack_slot(slot, NULL, &data)) return;
+    albw_tls_set(data);
+    t_wp = (Waiter *)((uint8_t *)data + 0x200);
+}
+
 static void *thread_main(void *p) {
+    /* the saved part of this thread's stack ends here (above: the libc thread start) */
+    uintptr_t base = (uintptr_t)__builtin_frame_address(0);
     OsObject *o = p;
     t_self = o;
     t_id = o->u.th.id;
     pthread_setspecific(g_thread_key, o);
+    t_sched = o->u.th.sched;
+    slot_attach(o->u.th.slot);
+    ss_thread_register(o->u.th.slot, base);
     if (o->u.th.sched) {   /* queued by the creator: wait for the first turn */
         t_sched = o->u.th.sched;
         pthread_mutex_lock(&g_sched_m);
         wait_turn_locked(t_sched);
         pthread_mutex_unlock(&g_sched_m);
     }
-    o->u.th.entry((void *)o->u.th.arg);
-    return NULL;
+    o->u.th.entry((void *)t_self->u.th.arg);
+    /* never return into the libc frames above `base`: after a state load they belong to another
+     * run (callee-saved registers restored from the saved frames) */
+    pthread_exit(NULL);
 }
 
 /* USA 00103C80  nn::svc::CreateThread(Handle *out, ThreadFunc entry, uintptr_t arg,
@@ -680,7 +735,7 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
                        int32_t priority, int32_t core) {
     (void)stack_top;
     if (priority < 0 || priority > 0x3F) return RES_OUT_OF_RANGE;
-    OsObject *o = calloc(1, sizeof *o);
+    OsObject *o = pmem_calloc(1, sizeof *o);
     if (!o) return RES_OUT_OF_HANDLES;
     o->kind = K_THREAD;
     o->refs = 1; /* the running thread */
@@ -701,22 +756,13 @@ uint32_t func_00103C80(uint32_t *out, void (*entry)(void *), uintptr_t arg, uint
     }
     obj_lock();
     uint32_t h = 0, r = handle_alloc_locked(o, &h);
+    if (r == RES_OK) obj_track_locked(o);
     obj_unlock();
-    if (r != RES_OK) { free(o); return r; }
+    if (r != RES_OK) { pmem_free(o); return r; }
     pthread_once(&g_thread_key_once, thread_key_init);
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_attr_setstacksize(&attr, 1u << 20);
     pthread_t pt;
-#if defined(__x86_64__)
-    /* low-4GB mode: the stack (game code keeps stack addresses in 32-bit words) and glibc's
-     * static TLS of the thread live in low memory (native/runtime/lowmem.c) */
-    int err = albw_thread_create_low(&pt, &attr, thread_main, o, 1u << 20);
-#else
-    int err = pthread_create(&pt, &attr, thread_main, o);
-#endif
-    pthread_attr_destroy(&attr);
+    o->u.th.slot = -1;
+    int err = slot_thread_create(&pt, thread_main, o, &o->u.th.slot);
     if (err) {
         if (o->u.th.sched) {        /* never ran: take it off the ready list / the core */
             SchedRec *sr = o->u.th.sched;
@@ -1530,3 +1576,447 @@ void *func_0049C008(void *self) {
 
 /* USA 0049C004 (EU 0049BFDC)  alias entry of the same destructor (a `mov r0,r0` before it). */
 void *func_0049C004(void *self) { return func_0049C008(self); }
+
+/* ================================================================== save states (savestate.c)
+ * Every game thread runs on a fixed stack slot (runtime/pmem.c; slot 0 the main thread) and keeps
+ * its SDK TLS block and wait record in the slot's data; kernel objects and scheduler records live in
+ * the fixed arena. So a state written by one run can be loaded by a later run of the same binary.
+ *
+ * Save / load run on the main thread at a frame end (savestate.c):
+ *  1. park: g_ss_phase = 1 and every wait is woken; each game thread, at its next wait (scheduler
+ *     turn, address wait, handle wait), calls ss_park with the wait's mutex held: it records its
+ *     registers (albw_ctx_save) and its stack from there up to its entry frame (thread_main's frame:
+ *     above it are libc's thread-start frames, which are the current run's), then sleeps.
+ *  2. save: the kernel's static tables (handle slots, object / scheduler lists, ready lists, wait
+ *     queues, thread ids, the clock) and every parked thread's capture go into the state (the arena
+ *     itself, i.e. the objects, is saved by savestate.c).
+ *     load: the tables are written back (after the arena), the scheduler condvars re-initialised,
+ *     and per saved slot a thread restores itself: the live thread of that slot, or a new thread
+ *     started on it ("vessel"); it takes the mutex of the saved wait, moves to a side stack, copies
+ *     its stack back and jumps into its saved ss_park. Live threads of slots the state does not have
+ *     stay parked for good (zombies; their slots stay taken).
+ *  3. release: g_ss_phase = 0, every thread returns from ss_park into its wait and re-checks it. */
+typedef struct {
+    AlbwCtx ctx;
+    uintptr_t sp;
+    size_t len;
+    uint8_t *stack;
+    pthread_mutex_t *mu;           /* the wait mutex held at the park point (a static of this file) */
+    uint32_t tid;
+    OsObject *self;
+    SchedRec *sched;
+    Waiter waiter;                 /* the slot's wait record (cv / cv_ready: the current run's) */
+    uint8_t tls[0x200];
+} SsCap;
+
+typedef struct SsThr {
+    struct SsThr *next;
+    int slot;
+    uintptr_t base, top;           /* the saved stack part ends at base; top = the slot's stack top */
+    pthread_t pt;
+    bool finished, main;
+    uint32_t tid;
+    int32_t prio, core;
+    pthread_cond_t cv;
+    atomic_int parked, park_gen, cmd;   /* cmd: 1 restore from `from`, 2 stay parked (zombie) */
+    pthread_mutex_t *mu_now;
+    SsCap cap;
+    size_t cap_cap;
+    const SsCap *from;
+    uint8_t *alt;
+} SsThr;
+
+static pthread_mutex_t g_ss_m = PTHREAD_MUTEX_INITIALIZER;
+static SsThr *g_ss_thr;
+static _Thread_local SsThr *t_ss;
+#define SS_ALT_STACK (256u << 10)
+#define SS_REDZONE 256u
+#define MAX_SLOTS 64
+static struct { bool used; bool joinable; pthread_t pt; } g_slots[MAX_SLOTS];   /* g_ss_m */
+static bool g_slots_volatile;   /* a thread had no fixed slot: states cannot be written to disk */
+void albw_os_ss_release_all(void);
+
+/* start fn(arg) on a free fixed stack slot (a finished thread's slot is reused once it is joined) */
+static int slot_thread_create(pthread_t *pt, void *(*fn)(void *), void *arg, int *slot_out) {
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    int slot = -1;
+    pthread_mutex_lock(&g_ss_m);
+    int n = pmem_stack_slots();
+    if (n > MAX_SLOTS) n = MAX_SLOTS;
+    for (int k = 1; k < n && slot < 0; k++) {
+        if (g_slots[k].used && g_slots[k].joinable) {   /* finished: free once its thread is gone */
+            bool done = false;
+            for (SsThr *t = g_ss_thr; t; t = t->next) if (t->slot == k) { done = t->finished; break; }   /* newest first */
+            if (done && pthread_tryjoin_np(g_slots[k].pt, NULL) == 0) g_slots[k].used = false;
+        }
+        if (!g_slots[k].used) slot = k;
+    }
+    void *lo = NULL;
+    uint8_t *top = slot > 0 ? pmem_stack_slot(slot, &lo, NULL) : NULL;
+    if (top) {
+        pthread_attr_setstack(&attr, lo, (size_t)(top - (uint8_t *)lo));
+        g_slots[slot].used = true;
+    } else {
+        slot = -1;
+        g_slots_volatile = true;
+        pthread_attr_setstacksize(&attr, 1u << 20);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+        fprintf(stderr, "os: no free fixed stack slot: save states of this run stay in memory\n");
+    }
+    *slot_out = slot;
+    int err = pthread_create(pt, &attr, fn, arg);
+    if (slot > 0) {
+        if (err) g_slots[slot].used = false;
+        else { g_slots[slot].pt = *pt; g_slots[slot].joinable = true; }
+    }
+    pthread_mutex_unlock(&g_ss_m);
+    pthread_attr_destroy(&attr);
+    return err;
+}
+
+static void ss_thread_register(int slot, uintptr_t base) {
+    if (t_ss) return;
+    SsThr *t = calloc(1, sizeof *t);
+    if (!t) runtime_fatal("os: out of memory");
+    t->slot = slot;
+    t->base = base;
+    t->main = slot == 0;
+    void *lo;
+    t->top = slot >= 0 ? (uintptr_t)pmem_stack_slot(slot, &lo, NULL) : 0;
+    t->pt = pthread_self();
+    t->tid = current_thread_id();
+    t->prio = t_self ? t_self->u.th.prio : DEFAULT_PRIORITY;
+    t->core = t_self ? t_self->u.th.core : 0;
+    cond_init_monotonic(&t->cv);
+    t->alt = malloc(SS_ALT_STACK);
+    pthread_mutex_lock(&g_ss_m);
+    t->next = g_ss_thr;
+    g_ss_thr = t;
+    pthread_mutex_unlock(&g_ss_m);
+    t_ss = t;
+}
+
+static void ss_thread_finished(void) {
+    if (t_ss) t_ss->finished = true;
+}
+
+static void ss_capture_tls(SsCap *c) {
+    c->tid = t_id;
+    c->self = t_self;
+    c->sched = t_sched;
+    c->waiter = *my_waiter();
+    memcpy(c->tls, (const void *)albw_tls(), sizeof c->tls);
+}
+
+static void ss_restore_tls(const SsCap *c) {
+    t_id = c->tid;
+    t_self = c->self;
+    t_sched = c->sched;
+    pthread_setspecific(g_thread_key, c->self);
+    Waiter *w = my_waiter();
+    pthread_cond_t cv = w->cv;
+    bool ready = w->cv_ready;
+    *w = c->waiter;
+    w->cv = cv;
+    w->cv_ready = ready;
+    memcpy((void *)albw_tls(), c->tls, sizeof c->tls);
+}
+
+static uintptr_t g_ss_canary;   /* of the state being loaded */
+uintptr_t albw_os_ss_canary(void) { return g_ss_canary; }
+
+static void ss_restore_tramp(void *p) {
+    SsThr *t = p;
+    const SsCap *c = t->from;
+    if (g_ss_canary) albw_canary_set(g_ss_canary);   /* the restored frames carry the saving run's */
+    memcpy((void *)c->sp, c->stack, c->len);
+    ss_restore_tls(c);
+    albw_ctx_jump(&c->ctx, 1);
+}
+
+static void ss_park(pthread_mutex_t *held) {
+    SsThr *t = t_ss;
+    if (!t || t->main) return;
+    volatile pthread_mutex_t *mu = held;
+    if (albw_ctx_save(&t->cap.ctx) == 0) {
+        uintptr_t sp = albw_ctx_sp(&t->cap.ctx) - SS_REDZONE;
+        uintptr_t end = t->base ? t->base : t->top;
+        size_t len = end > sp ? end - sp : 0;
+        if (len > t->cap_cap) {
+            free(t->cap.stack);
+            t->cap.stack = malloc(len);
+            t->cap_cap = t->cap.stack ? len : 0;
+        }
+        if (t->cap.stack) memcpy(t->cap.stack, (const void *)sp, len);
+        t->cap.sp = sp;
+        t->cap.len = t->cap.stack ? len : 0;
+        t->cap.mu = (pthread_mutex_t *)mu;
+        ss_capture_tls(&t->cap);
+    }
+    t = t_ss;
+    t->mu_now = (pthread_mutex_t *)mu;
+    if (atomic_load(&t->cmd) != 2) atomic_store(&t->cmd, 0);
+    atomic_fetch_add(&t->park_gen, 1);
+    atomic_store(&t->parked, 1);
+    for (;;) {
+        int cmd = atomic_load(&t->cmd);
+        if (cmd == 1) {
+            atomic_store(&t->parked, 0);
+            const SsCap *c = t->from;
+            if (c->mu != (pthread_mutex_t *)mu) {
+                pthread_mutex_unlock((pthread_mutex_t *)mu);
+                pthread_mutex_lock(c->mu);
+            }
+            albw_ctx_run_on(t->alt + SS_ALT_STACK, ss_restore_tramp, t);
+        }
+        if (cmd != 2 && !atomic_load(&g_ss_phase)) break;
+        pthread_cond_wait(&t->cv, (pthread_mutex_t *)mu);
+    }
+    atomic_store(&t->parked, 0);
+}
+
+static void ss_wake_all(void) {
+    pthread_mutex_lock(&g_sched_m);
+    for (SchedRec *r = g_all_sched; r; r = r->all_next) pthread_cond_broadcast(&r->cv);
+    pthread_mutex_unlock(&g_sched_m);
+    for (int b = 0; b < PARK_BUCKETS; b++) {
+        pthread_mutex_lock(&g_park[b].m);
+        for (Waiter *w = g_park[b].head; w; w = w->next) if (w->cv_ready) pthread_cond_broadcast(&w->cv);
+        pthread_mutex_unlock(&g_park[b].m);
+    }
+    obj_lock();
+    pthread_cond_broadcast(&g_obj_cv);
+    obj_unlock();
+}
+
+static void ss_signal(SsThr *t) {
+    pthread_mutex_t *mu = t->mu_now;
+    if (mu) pthread_mutex_lock(mu);
+    pthread_cond_broadcast(&t->cv);
+    if (mu) pthread_mutex_unlock(mu);
+}
+
+static bool ss_live(const SsThr *t) { return !t->main && !t->finished && atomic_load(&t->cmd) != 2; }
+
+int albw_os_ss_park_all(int timeout_ms, char *why, size_t whylen) {
+    if (!t_ss || !t_ss->main) { snprintf(why, whylen, "not on the main game thread"); return -1; }
+    if (!sched_on()) { snprintf(why, whylen, "needs the app-core scheduler (ALBW_SCHED)"); return -1; }
+    atomic_store(&g_ss_phase, 1);
+    for (int ms = 0;; ms++) {
+        ss_wake_all();
+        int missing = 0;
+        uint32_t mtid = 0;
+        int32_t mprio = -1, mcore = -1;
+        pthread_mutex_lock(&g_ss_m);
+        for (SsThr *t = g_ss_thr; t; t = t->next)
+            if (!t->main && !t->finished && !atomic_load(&t->parked)) { missing++; mtid = t->tid; mprio = t->prio; mcore = t->core; }
+        pthread_mutex_unlock(&g_ss_m);
+        if (!missing) return 0;
+        if (ms >= timeout_ms) {
+            snprintf(why, whylen, "%d game thread(s) did not reach a wait (thread %u, priority 0x%x, core %d)", missing,
+                     mtid, (unsigned)mprio, (int)mcore);
+            albw_os_ss_release_all();
+            return -1;
+        }
+        struct timespec ts = {0, 1000000};
+        nanosleep(&ts, NULL);
+    }
+}
+
+void albw_os_ss_release_all(void) {
+    atomic_store(&g_ss_phase, 0);
+    pthread_mutex_lock(&g_ss_m);
+    for (SsThr *t = g_ss_thr; t; t = t->next)
+        if (!t->main && atomic_load(&t->parked)) ss_signal(t);
+    pthread_mutex_unlock(&g_ss_m);
+}
+
+/* ---- serialisation: tag 'OSK1' tables, then per thread 'OSTH' */
+typedef struct {
+    OsObject *slot[MAX_HANDLES];
+    uint16_t gen[MAX_HANDLES];
+    unsigned next_slot;
+    OsObject *all_objs;
+    SchedRec *all_sched;
+    struct { SchedRec *running, *ready; } core[2];
+    Waiter *park_head[PARK_BUCKETS];
+    unsigned next_tid;
+    uint64_t tick;
+    uint32_t nthr;
+    uintptr_t base_off;
+    uintptr_t canary;              /* the saving run's stack-protector canary */            /* slot top - base of the threads (libc thread-start frames) */
+} OsTables;
+
+typedef struct {
+    int32_t slot;
+    uint32_t len;
+    uintptr_t base;
+    SsCap cap;                     /* stack: follows (len bytes) */
+} OsThrHdr;
+
+int albw_os_ss_persistent(void) { return pmem_fixed() && !g_slots_volatile; }
+
+/* main game thread's thread-locals (its stack: savestate.c) */
+void albw_os_ss_main_tls(void *buf, size_t n, int restore) {
+    if (n < sizeof(SsCap)) return;
+    if (restore) ss_restore_tls((const SsCap *)buf);
+    else ss_capture_tls((SsCap *)buf);
+}
+size_t albw_os_ss_main_tls_size(void) { return sizeof(SsCap); }
+
+/* all other game threads parked */
+void albw_os_ss_write(SsBuf *b) {
+    OsTables *t = calloc(1, sizeof *t);
+    if (!t) { b->err = 1; return; }
+    obj_lock();
+    memcpy(t->slot, g_slot, sizeof t->slot);
+    memcpy(t->gen, g_gen, sizeof t->gen);
+    t->next_slot = g_next_slot;
+    t->all_objs = g_all_objs;
+    obj_unlock();
+    pthread_mutex_lock(&g_sched_m);
+    t->all_sched = g_all_sched;
+    for (int c = 0; c < 2; c++) { t->core[c].running = g_core[c].running; t->core[c].ready = g_core[c].ready; }
+    pthread_mutex_unlock(&g_sched_m);
+    for (int k = 0; k < PARK_BUCKETS; k++) {
+        pthread_mutex_lock(&g_park[k].m);
+        t->park_head[k] = g_park[k].head;
+        pthread_mutex_unlock(&g_park[k].m);
+    }
+    t->next_tid = atomic_load(&g_next_thread_id);
+    t->tick = system_tick();
+    t->canary = albw_canary_get();
+    pthread_mutex_lock(&g_ss_m);
+    for (SsThr *x = g_ss_thr; x; x = x->next)
+        if (ss_live(x)) { t->nthr++; if (x->base && x->top) t->base_off = x->top - x->base; }
+    ss_section(b, 0x314B534Fu, t, sizeof *t);   /* "OSK1" */
+    for (SsThr *x = g_ss_thr; x; x = x->next) {
+        if (!ss_live(x)) continue;
+        OsThrHdr h = {x->slot, (uint32_t)x->cap.len, x->base, x->cap};
+        h.cap.stack = NULL;
+        ss_put_u32(b, 0x4854534Fu);   /* "OSTH" */
+        ss_put(b, &h, sizeof h);
+        ss_put(b, x->cap.stack, x->cap.len);
+    }
+    pthread_mutex_unlock(&g_ss_m);
+    free(t);
+}
+
+/* parse the os part of a state (b at its start); 0 if it can be loaded into this run */
+int albw_os_ss_check(SsBuf *b, char *why, size_t whylen) {
+    size_t n;
+    const OsTables *t = ss_get_section(b, 0x314B534Fu, &n);
+    if (!t || n != sizeof *t) { snprintf(why, whylen, "damaged state (kernel tables)"); return -1; }
+    uintptr_t off = 0;
+    pthread_mutex_lock(&g_ss_m);
+    for (SsThr *x = g_ss_thr; x; x = x->next) if (!x->main && x->base && x->top) off = x->top - x->base;
+    pthread_mutex_unlock(&g_ss_m);
+    for (uint32_t i = 0; i < t->nthr; i++) {
+        if (ss_get_u32(b) != 0x4854534Fu) { snprintf(why, whylen, "damaged state (threads)"); return -1; }
+        const OsThrHdr *h = ss_peek(b, sizeof *h);
+        if (!h || !ss_peek(b, h->len)) { snprintf(why, whylen, "damaged state (thread stack)"); return -1; }
+        if (h->slot <= 0 || h->slot >= MAX_SLOTS || !h->base) { snprintf(why, whylen, "the state has a thread without a fixed stack"); return -1; }
+        if (off && t->base_off && off != t->base_off) { snprintf(why, whylen, "thread start frames differ (another libc?)"); return -1; }
+    }
+    return 0;
+}
+
+typedef struct { int slot; const SsCap *cap; SsThr *t; atomic_int ready; } Vessel;
+
+static void *vessel_main(void *p) {
+    uintptr_t base = (uintptr_t)__builtin_frame_address(0);
+    Vessel *v = p;
+    slot_attach(v->slot);
+    ss_thread_register(v->slot, base);
+    SsThr *t = t_ss;
+    t->from = v->cap;
+    v->t = t;
+    pthread_mutex_lock(v->cap->mu);
+    atomic_store(&v->ready, 1);
+    albw_ctx_run_on(t->alt + SS_ALT_STACK, ss_restore_tramp, t);
+}
+
+/* after the arena and game memory were restored; b at the os part (checked) */
+void albw_os_ss_load(SsBuf *b) {
+    size_t n;
+    const OsTables *t = ss_get_section(b, 0x314B534Fu, &n);
+    obj_lock();
+    memcpy(g_slot, t->slot, sizeof g_slot);
+    memcpy(g_gen, t->gen, sizeof g_gen);
+    g_next_slot = t->next_slot;
+    g_all_objs = t->all_objs;
+    obj_unlock();
+    pthread_mutex_lock(&g_sched_m);
+    g_all_sched = t->all_sched;
+    for (SchedRec *r = g_all_sched; r; r = r->all_next) pthread_cond_init(&r->cv, NULL);   /* no waiters now */
+    for (int c = 0; c < 2; c++) { g_core[c].running = t->core[c].running; g_core[c].ready = t->core[c].ready; }
+    pthread_mutex_unlock(&g_sched_m);
+    for (int k = 0; k < PARK_BUCKETS; k++) {
+        pthread_mutex_lock(&g_park[k].m);
+        g_park[k].head = t->park_head[k];
+        pthread_mutex_unlock(&g_park[k].m);
+    }
+    atomic_store(&g_next_thread_id, t->next_tid);
+    g_tick_offset = (int64_t)(t->tick - raw_tick());
+    g_ss_canary = t->canary;
+    /* the captures (kept alive in a static copy: the threads read them while restoring) */
+    static SsCap *caps;
+    static uint8_t **stacks;
+    static uint32_t ncaps;
+    for (uint32_t i = 0; i < ncaps; i++) free(stacks[i]);
+    free(caps); free(stacks);
+    ncaps = t->nthr;
+    caps = calloc(ncaps ? ncaps : 1, sizeof *caps);
+    stacks = calloc(ncaps ? ncaps : 1, sizeof *stacks);
+    int slot_of[MAX_SLOTS];
+    for (int k = 0; k < MAX_SLOTS; k++) slot_of[k] = -1;
+    for (uint32_t i = 0; i < ncaps; i++) {
+        ss_get_u32(b);
+        const OsThrHdr *h = ss_peek(b, sizeof *h);
+        caps[i] = h->cap;
+        stacks[i] = malloc(h->len ? h->len : 1);
+        memcpy(stacks[i], ss_peek(b, h->len), h->len);
+        caps[i].stack = stacks[i];
+        caps[i].len = h->len;
+        slot_of[h->slot] = (int)i;
+    }
+    pthread_mutex_lock(&g_ss_m);
+    for (SsThr *x = g_ss_thr; x; x = x->next) {   /* live threads: restore or stay parked */
+        if (x->main || x->finished) continue;
+        int i = x->slot > 0 && x->slot < MAX_SLOTS ? slot_of[x->slot] : -1;
+        if (i < 0) { atomic_store(&x->cmd, 2); continue; }
+        slot_of[x->slot] = -1;
+        int gen = atomic_load(&x->park_gen);
+        x->from = &caps[i];
+        atomic_store(&x->cmd, 1);
+        ss_signal(x);
+        while (atomic_load(&x->park_gen) == gen) { struct timespec ts = {0, 200000}; nanosleep(&ts, NULL); }
+    }
+    for (int k = 1; k < MAX_SLOTS; k++) {   /* saved slots without a live thread: start one there */
+        if (slot_of[k] < 0) continue;
+        if (g_slots[k].used && g_slots[k].joinable) pthread_join(g_slots[k].pt, NULL);   /* a finished thread */
+        static Vessel v;
+        memset(&v, 0, sizeof v);
+        v.slot = k;
+        v.cap = &caps[slot_of[k]];
+        void *lo = NULL;
+        uint8_t *top = pmem_stack_slot(k, &lo, NULL);
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setstack(&attr, lo, (size_t)(top - (uint8_t *)lo));
+        pthread_t pt;
+        pthread_mutex_unlock(&g_ss_m);   /* the vessel registers itself */
+        int err = pthread_create(&pt, &attr, vessel_main, &v);
+        pthread_attr_destroy(&attr);
+        if (err) runtime_fatal("savestate: cannot start a thread for slot %d", k);
+        while (!atomic_load(&v.ready)) { struct timespec ts = {0, 100000}; nanosleep(&ts, NULL); }
+        SsThr *vt = v.t;
+        while (atomic_load(&vt->park_gen) == 0) { struct timespec ts = {0, 200000}; nanosleep(&ts, NULL); }
+        pthread_mutex_lock(&g_ss_m);
+        g_slots[k].used = true;
+        g_slots[k].joinable = true;
+        g_slots[k].pt = pt;
+    }
+    pthread_mutex_unlock(&g_ss_m);
+}

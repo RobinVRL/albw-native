@@ -202,6 +202,39 @@ int fraglight_material_get(uintptr_t key, FLLutCfg *cfg) {
     return ok;
 }
 
+/* save states (native/runtime/savestate.c): the LUT and material registries by value (recorded
+ * FL ops refer to LUTs by index + 1) */
+size_t fraglight_export(void **out) {
+    pthread_mutex_lock(&g_mx);
+    size_t n = 12 + (size_t)g_nlut * sizeof *g_lut + g_nmat * sizeof *g_mat;
+    uint8_t *b = malloc(n);
+    if (b) {
+        uint32_t nl = g_nlut, nm = (uint32_t)g_nmat;
+        memcpy(b, "FLR1", 4); memcpy(b + 4, &nl, 4); memcpy(b + 8, &nm, 4);
+        memcpy(b + 12, g_lut, (size_t)nl * sizeof *g_lut);
+        memcpy(b + 12 + (size_t)nl * sizeof *g_lut, g_mat, nm * sizeof *g_mat);
+    }
+    pthread_mutex_unlock(&g_mx);
+    *out = b;
+    return b ? n : 0;
+}
+int fraglight_import(const void *in, size_t n) {
+    const uint8_t *b = in;
+    uint32_t nl, nm;
+    if (n < 12 || memcmp(b, "FLR1", 4)) return -1;
+    memcpy(&nl, b + 4, 4); memcpy(&nm, b + 8, 4);
+    if (n != 12 + (size_t)nl * sizeof *g_lut + (size_t)nm * sizeof *g_mat) return -1;
+    pthread_mutex_lock(&g_mx);
+    if (nl > g_caplut) { g_caplut = nl; g_lut = xrealloc(g_lut, g_caplut * sizeof *g_lut); }
+    if (nm > g_capmat) { g_capmat = nm; g_mat = xrealloc(g_mat, g_capmat * sizeof *g_mat); }
+    g_nlut = nl; g_nmat = nm;
+    memcpy(g_lut, b + 12, (size_t)nl * sizeof *g_lut);
+    memcpy(g_mat, b + 12 + (size_t)nl * sizeof *g_lut, (size_t)nm * sizeof *g_mat);
+    g_lut_gen++;
+    pthread_mutex_unlock(&g_mx);
+    return 0;
+}
+
 ROp fraglight_op(int kind, const void *payload, size_t n) {
     ROp op;
     memset(&op, 0, sizeof op);

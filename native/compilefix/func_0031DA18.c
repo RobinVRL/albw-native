@@ -36,7 +36,7 @@ extern int func_0031D578(int param_1,undefined4 param_2,undefined4 param_3,int *
 extern int func_00498624(undefined4 *param_1);
 extern float func_004CE804(int param_1,int param_2,int param_3,int param_4,float fparam_0);
 extern int func_004CF478(int param_1,int param_2);
-extern float func_004CF864(int param_1,uint param_2,uint param_3,float fparam_0);
+extern int func_004CF864(int param_1,uint param_2,uint param_3,float fparam_0);
 extern int func_00504D48(int param_1,int param_2);
 extern int func_00533400(int param_1,int *param_2);
 extern int func_0066552C(undefined4 *param_1,undefined1 param_2);

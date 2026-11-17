@@ -13,7 +13,7 @@
 #include "hot.h"
 
 int func_004CF478(uint32_t model, int32_t state);
-float func_00151148(int obj, int arg);   /* converted definition returns float (tail call 002C34A4) */
+int func_00151148(int obj, int arg);   /* returns int (native/hot/func_00151148.c, BOOT_LOG 95b) */
 
 int func_004BC7BC(uint32_t self_w)
 {

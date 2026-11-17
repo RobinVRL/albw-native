@@ -410,12 +410,12 @@ static DisplayBuffer *dbuf_find(uint32_t id) {
 }
 
 static DisplayBuffer *dbuf_create(uint32_t id) {
-    DisplayBuffer *b = calloc(1, sizeof *b);
+    DisplayBuffer *b = pmem_calloc(1, sizeof *b);   /* fixed arena (persistent save states) */
     if (!b) runtime_fatal("gfx: out of memory");
     b->id = id;
     if (G.ndbufs == G.capdbufs) {
         G.capdbufs = G.capdbufs ? G.capdbufs * 2 : 16;
-        G.dbufs = realloc(G.dbufs, G.capdbufs * sizeof *G.dbufs);
+        G.dbufs = pmem_realloc(G.dbufs, G.capdbufs * sizeof *G.dbufs);
         if (!G.dbufs) runtime_fatal("gfx: out of memory");
     }
     G.dbufs[G.ndbufs++] = b;
@@ -610,15 +610,15 @@ static Callback kick(CmdList *l) {
 }
 
 static CmdList *list_new(uint32_t id) {
-    CmdList *l = calloc(1, sizeof *l);
+    CmdList *l = pmem_calloc(1, sizeof *l);
     if (!l) runtime_fatal("gfx: out of memory");
     l->id = id;
     return l;
 }
 
 static void list_free_storage(CmdList *l) {
-    if (l->map_size) munmap(l->buf, l->map_size);
-    free(l->req);
+    if (l->map_size) pmem_free(l->buf);
+    pmem_free(l->req);
     l->buf = NULL;
     l->req_rec = NULL;
     l->req = NULL;
@@ -643,7 +643,7 @@ static CmdList *list_create(uint32_t id) {
     CmdList *l = list_new(id);
     if (G.nlists == G.caplists) {
         G.caplists = G.caplists ? G.caplists * 2 : 16;
-        G.lists = realloc(G.lists, G.caplists * sizeof *G.lists);
+        G.lists = pmem_realloc(G.lists, G.caplists * sizeof *G.lists);
         if (!G.lists) runtime_fatal("gfx: out of memory");
     }
     G.lists[G.nlists++] = l;
@@ -1042,11 +1042,12 @@ void func_005FF850(uint32_t bufsize, uint32_t reqcount) {
         list_free_storage(l);
         size_t bufpart = page_round(bufsize + 0x100); /* + slack for a sloppy final word pair */
         l->map_size = bufpart + page_round((size_t)reqcount * REQ_RECORD_SIZE + 1);
-        l->buf = low_map(l->map_size);
+        l->buf = pmem_calloc(1, l->map_size);   /* fixed arena: the game keeps the write pointer */
+        if (!l->buf) runtime_fatal("gfx: out of memory");
         l->req_rec = l->buf + bufpart;
         l->buf_size = bufsize;
         l->req_max = reqcount;
-        l->req = calloc(reqcount ? reqcount : 1, sizeof *l->req);
+        l->req = pmem_calloc(reqcount ? reqcount : 1, sizeof *l->req);
         if (!l->req) runtime_fatal("gfx: out of memory");
         list_reset(l);
         G.cur = l->buf;
@@ -1070,13 +1071,13 @@ void func_005FF938(void *obj, uint32_t bufsize, void *buf, uint32_t reqcount, vo
     OBJ_U32(obj, 0x2C) = 0x300;
     if (reqarray) memset(reqarray, 0, (size_t)reqcount * REQ_RECORD_SIZE);
     CmdList *l = list_explicit(obj);
-    free(l->req);
+    pmem_free(l->req);
     l->buf = buf;
     l->buf_size = bufsize;
     l->map_size = 0;
     l->req_rec = reqarray;
     l->req_max = reqcount;
-    l->req = calloc(reqcount ? reqcount : 1, sizeof *l->req);
+    l->req = pmem_calloc(reqcount ? reqcount : 1, sizeof *l->req);
     if (!l->req) runtime_fatal("gfx: out of memory");
     list_reset(l);
     unlock();
@@ -1095,7 +1096,7 @@ void func_005FF9AC(int32_t n, const uint32_t *ids) {
             if (G.bound == l) { G.bound = NULL; G.cur = G.end = NULL; }
             if (ids[i] < G.next_list_id) G.next_list_id = ids[i];
             list_free_storage(l);
-            free(l);
+            pmem_free(l);
             G.lists[k] = G.lists[--G.nlists];
             break;
         }
@@ -1505,11 +1506,12 @@ void func_005FFAF0(uint32_t format, uint32_t width, uint32_t height, uint32_t ar
     if (b) {
         if (b->map_size) {
             render_display_unregister(b->mem);
-            munmap(b->mem, b->map_size);
+            pmem_free(b->mem);
         }
         b->bytes = bpp * width * height;
         b->map_size = page_round(b->bytes ? b->bytes : 1);
-        b->mem = low_map(b->map_size);
+        b->mem = pmem_calloc(1, b->map_size);
+        if (!b->mem) runtime_fatal("gfx: out of memory");
         render_display_register(b->mem, b->bytes, (int)width, (int)height, fmt_to_pica(format));
         b->format = format;
         b->width = width;
@@ -1624,3 +1626,34 @@ void albw_gfx_service(void) {
 /* typed views of the bound command buffer, for retyped (64-bit clean) callers */
 void *albw_gfx_cmdbuf_current(void) { return G.cur; }
 void albw_gfx_cmdbuf_set(void *p) { lock(); G.cur = p; unlock(); }
+
+/* ================================================================== save states (savestate.c)
+ * The command lists, their buffers and requests and the display buffers are in the fixed arena
+ * (runtime/pmem.c), saved as a whole by savestate.c; here only the state struct G (which points
+ * into the arena). After a load the renderer learns the display buffers again. */
+void albw_gfx_vram(uint8_t **base, size_t *size) { ensure_init(); *base = g_vram; *size = VRAM_SIZE; }
+
+void albw_gfx_ss_write(SsBuf *b) {
+    lock();
+    ss_section(b, 0x31584647u, &G, sizeof G);   /* "GFX1" */
+    unlock();
+}
+
+int albw_gfx_ss_check(SsBuf *b, char *why, size_t whylen) {
+    size_t n;
+    if (!ss_get_section(b, 0x31584647u, &n) || n != sizeof G) { snprintf(why, whylen, "damaged state (graphics)"); return -1; }
+    return 0;
+}
+
+void albw_gfx_ss_load(SsBuf *b) {
+    size_t n;
+    const void *g = ss_get_section(b, 0x31584647u, &n);
+    lock();
+    memcpy(&G, g, sizeof G);
+    G.dirty = true;
+    for (size_t i = 0; i < G.ndbufs; i++) {
+        DisplayBuffer *d = G.dbufs[i];
+        if (d->mem) render_display_register(d->mem, d->bytes, (int)d->width, (int)d->height, fmt_to_pica(d->format));
+    }
+    unlock();
+}

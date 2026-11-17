@@ -130,8 +130,23 @@ static int plat_windows_init(void);
 static void plat_set_windows(int separate, int save);
 static void plat_layout_changed(void);
 static void plat_layout_cursor(int which);
-static int g_menu_open, g_menu_sel, g_quit_req;   /* Esc menu (menu.c) */
+static int g_menu_open, g_menu_sel, g_menu_cur, g_quit_req;   /* Esc menu bar (menu.c): open, item, menu */
 static char g_menu_note[160];
+/* Debug menu switches (menu.c): read by sdk/eft.c and render/render.c through weak references, so
+ * builds without the platform layer see them as off. Speed: percent of 60 Hz, 0 = unlimited. */
+int g_dbg_eft_off, g_dbg_fog_off;
+static int g_dbg_show_fps, g_dbg_speed = 100;
+/* save states (native/runtime/savestate.c; weak: the asset viewer has none): F6 save, F7 load,
+ * F8 next slot, File menu */
+__attribute__((weak)) void albw_ss_request(int op, int slot);
+__attribute__((weak)) void albw_ss_frame_point(void);
+__attribute__((weak)) int albw_ss_slot_info(int slot, char *buf, size_t n);
+__attribute__((weak)) const char *albw_ss_note(void);
+#define SS_SLOTS_UI 10
+static int g_ss_slot;
+static char g_title_fps[160];
+static const char *g_title_msg;   /* save-state outcome, shown for a few seconds */
+static int g_title_dirty;   /* " - 59.9 fps" while Debug > Show FPS is on, + a save-state message */
 
 typedef struct { GLuint fbo, color, depth; int w, h; } Target;
 static Target screens[2];
@@ -566,14 +581,14 @@ static void plat_layout_update(void) {
 static void plat_layout_title(void) {
     char t[512];
     if (g_separate && win_bottom) {
-        snprintf(t, sizeof t, "%s - Top", g_layout_base_title);
+        snprintf(t, sizeof t, "%s - Top%s", g_layout_base_title, g_title_fps);
         SDL_SetWindowTitle(win, t);
-        snprintf(t, sizeof t, "%s - Bottom", g_layout_base_title);
+        snprintf(t, sizeof t, "%s - Bottom%s", g_layout_base_title, g_title_fps);
         SDL_SetWindowTitle(win_bottom, t);
         return;
     }
-    if (!g_layout_editing && g_layout_cfg.preset == LAYOUT_DEFAULT && !g_layout_cfg.swap) snprintf(t, sizeof t, "%s", g_layout_base_title);
-    else snprintf(t, sizeof t, "%s  [%s%s]%s", g_layout_base_title, layout_preset_name(g_layout_cfg.preset),
+    if (!g_layout_editing && g_layout_cfg.preset == LAYOUT_DEFAULT && !g_layout_cfg.swap) snprintf(t, sizeof t, "%s%s", g_layout_base_title, g_title_fps);
+    else snprintf(t, sizeof t, "%s%s  [%s%s]%s", g_layout_base_title, g_title_fps, layout_preset_name(g_layout_cfg.preset),
                   g_layout_cfg.swap && g_layout_cfg.preset != LAYOUT_CUSTOM ? ", swapped" : "",
                   g_layout_editing ? "  LAYOUT EDITOR: drag = move, corner/right-drag = resize, wheel = scale, "
                                "Shift = free aspect, Alt = no snap, F3 = done" : "");
@@ -601,6 +616,17 @@ static int plat_layout_event(const SDL_Event *e) {
     case SDL_EVENT_KEY_DOWN:
         if (e->key.key == SDLK_F5) {
             if (!e->key.repeat) plat_set_windows(!g_separate, 1);
+            return 1;
+        }
+        if (e->key.key == SDLK_F6 || e->key.key == SDLK_F7) {   /* save / load state (current slot) */
+            if (!e->key.repeat && albw_ss_request) albw_ss_request(e->key.key == SDLK_F6 ? 1 : 2, g_ss_slot);
+            return 1;
+        }
+        if (e->key.key == SDLK_F8) {   /* next save-state slot (Shift: previous) */
+            if (!e->key.repeat) {
+                g_ss_slot = (g_ss_slot + ((mod & SDL_KMOD_SHIFT) ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI;
+                fprintf(stderr, "savestate: slot %d\n", g_ss_slot + 1);
+            }
             return 1;
         }
         if (e->key.key == SDLK_F2 && g_separate) {
@@ -786,6 +812,7 @@ int plat_poll(void) {
         if (esc_quits < 0) esc_quits = getenv("ALBW_ESC_QUITS") != NULL;
         if (esc_quits) return 0;
         g_menu_open = 1;
+        g_menu_cur = 0;
         g_menu_sel = 0;
         g_menu_note[0] = 0;
     }
@@ -923,6 +950,36 @@ static void plat_composite(const Layout *l) {
 #include "menu.c"   /* Esc menu overlay (pauses the game inside plat_end_frame) */
 
 void plat_end_frame(void) {
+    /* save / load state requests (keys, menu) run here: the main game thread still holds the app
+     * core (released below for the swap). A load continues from the saved frame's same point. */
+    if (albw_ss_request) {   /* ALBW_SS_AT=<frame>:save|load:<slot 1..>[,...] (debug, headless tests) */
+        static const char *spec = (const char *)1;
+        if (spec == (const char *)1) spec = getenv("ALBW_SS_AT");
+        for (const char *q = spec; q && *q;) {
+            char *e;
+            long f = strtol(q, &e, 10);
+            if (e == q || *e != ':') break;
+            int op = !strncmp(e + 1, "save", 4) ? 1 : !strncmp(e + 1, "load", 4) ? 2 : 0;
+            const char *c = strchr(e + 1, ':');
+            int slot = c ? atoi(c + 1) - 1 : 0;
+            if (op && f == g_plat_frames + 1) albw_ss_request(op, slot < 0 ? 0 : slot);
+            q = strchr(e, ',');
+            q = q ? q + 1 : NULL;
+        }
+    }
+    if (albw_ss_frame_point) {
+        albw_ss_frame_point();
+        static const char *last;
+        const char *msg = albw_ss_note ? albw_ss_note() : NULL;
+        if (msg && msg[0] && msg != last) { last = msg; }
+        {   /* show the outcome in the title for ~3 s */
+            static char shown[200];
+            static long until;
+            if (msg && strcmp(msg, shown)) { snprintf(shown, sizeof shown, "%s", msg); until = 180; g_title_dirty = 1; }
+            if (until > 0 && --until == 0) g_title_dirty = 1;
+            g_title_msg = until > 0 ? shown : NULL;
+        }
+    }
     shot_maybe();
     prof_frame();
     SDL_Window *last;   /* presented after the block below starts: may wait for vsync */
@@ -964,10 +1021,41 @@ void plat_end_frame(void) {
     }
     if (g_menu_open) menu_run();   /* Esc menu: the game is paused here until it closes */
 
-    /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate) */
-    next_frame_ns += 16666667ull;
+    /* 60 Hz pacing (on top of vsync, which may run at a different refresh rate); Debug > Speed
+     * scales the period, unlimited skips the wait */
     uint64_t now = plat_ticks_ns();
-    if (next_frame_ns > now) SDL_DelayNS(next_frame_ns - now);
-    else if (now - next_frame_ns > 100000000ull) next_frame_ns = now;
+    {   /* ALBW_SPEED=<percent>[:<frame>] (debug, e.g. tools/boot_save.sh): the start speed (0 =
+         * unlimited), back to 100 % at <frame> */
+        static int init; static long until = -1, nf;
+        if (!init) {
+            init = 1;
+            const char *e = getenv("ALBW_SPEED");
+            if (e) { g_dbg_speed = atoi(e); until = strchr(e, ':') ? atol(strchr(e, ':') + 1) : -1; }
+        }
+        if (until > 0 && ++nf == until) g_dbg_speed = 100;
+    }
+    if (g_dbg_speed > 0) {
+        next_frame_ns += 1666666700ull / (uint64_t)g_dbg_speed;
+        if (next_frame_ns > now) SDL_DelayNS(next_frame_ns - now);
+        else if (now - next_frame_ns > 100000000ull) next_frame_ns = now;
+    } else next_frame_ns = now;
+    {   /* Debug > Show FPS: game frames per second in the window title, updated twice a second */
+        static uint64_t t0; static int n, shown;
+        n++;
+        uint64_t t = plat_ticks_ns();
+        if (!t0) t0 = t;
+        if (t - t0 >= 500000000ull || shown != g_dbg_show_fps || g_title_dirty) {
+            int len = 0;
+            g_title_fps[0] = 0;
+            if (g_dbg_show_fps) len = snprintf(g_title_fps, sizeof g_title_fps, " - %.1f fps", n * 1e9 / (double)(t - t0 ? t - t0 : 1));
+            if (g_title_msg && len >= 0 && (size_t)len < sizeof g_title_fps)
+                snprintf(g_title_fps + len, sizeof g_title_fps - (size_t)len, "  [%s]", g_title_msg);
+            if (g_dbg_show_fps || shown || g_title_dirty) plat_layout_title();
+            g_title_dirty = 0;
+            shown = g_dbg_show_fps;
+            t0 = t;
+            n = 0;
+        }
+    }
     albw_sched_block_end();
 }

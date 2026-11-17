@@ -10,7 +10,7 @@ extern char s_cf_004e4f64[];
 #include "compilefix.h"
 
 extern int func_00150A84(int *param_1,int *param_2,int param_3);
-extern float func_00151148(int param_1,int param_2);
+extern int func_00151148(int param_1,int param_2);
 extern int func_0016898C(int param_1,uint *param_2);
 extern int func_002C11E8(int *param_1,undefined4 param_2,int param_3,undefined1 param_4);
 extern int func_004CF478(int param_1,int param_2);

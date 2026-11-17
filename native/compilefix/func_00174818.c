@@ -13,7 +13,7 @@ extern int func_00150A84(int *param_1,int *param_2,int param_3);
 extern int func_0016898C(int param_1,uint *param_2);
 extern int func_00168E9C(int *param_1,int param_2,int *param_3);
 extern int func_004356B4(int *param_1);
-extern float func_004A7F00(int param_1,int param_2,uint param_3);
+extern int func_004A7F00(int param_1,int param_2,uint param_3);
 extern int func_004CEAF0(int param_1);
 extern int func_00588BE4(int param_1);
 extern undefined4 DAT_001749bc;

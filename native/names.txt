@@ -1,0 +1,62 @@
+# Descriptive names for game functions (USA address -> name), added to the binary as aliases of
+# func_<ADDR> by tools/gen_names.py (tools/link.sh): gdb, crash backtraces, the profiler
+# (tools/prof_report.py) and `nm` show them; the link itself keeps using the func_<ADDR> names.
+# One per line: func_<ADDR> <name> [# note]. Names: <area>_<what>, C identifier characters only.
+# Add a name when a function's role is established (BOOT_LOG / a native rewrite's header).
+
+# --- nw::eft particle system (BOOT_LOG 120-121)
+func_00111F1C  eft_System_CreateEmitterSetID      # (system, handle, mtx, set id, resource, group, mask)
+func_003F7FB0  eft_System_KillEmitterSet
+func_003F7D70  eft_System_KillAllEmitters
+func_003F7CC4  eft_System_EntryResource           # native wrapper registers the PTCL programs
+func_003F6FF4  eft_System_Initialize               # builds the three emitter calcs (+0x494..)
+func_003F6FBC  eft_System_BeginFrame
+func_003F8250  eft_System_CalcDrawEmitterSet       # native wrapper translates the written blocks
+func_003F0080  eft_Emitter_DrawSetup               # program stream, textures, combiner, blend
+func_003EF244  eft_FlushDrawBatch                  # copies the prebuilt draw block
+func_003EF0F8  eft_SetPassCameraUniforms           # c85 eye, c86-c89 projection, c90-c92 view
+func_003F43DC  eft_EmitterSimple_Draw
+func_003F4D34  eft_EmitterComplex_Draw
+func_003F5498  eft_EmitterChild_Draw
+func_003F5734  eft_EmitterChild_DrawStripe
+func_005648EC  eft_Resource_SearchEmitterSetID
+func_00564908  eft_Resource_SearchEmitterSetName   # strcmp over the resource's set names
+func_002E2F78  EffectMgr_Initialize
+func_002E32DC  EffectMgr_LoadJackAll
+func_002E3494  EffectMgr_LoadDemoEffects
+func_002E3DF4  EffectMgr_CalcFrame
+func_002E39E8  EffectMgr_DrawPass                  # native wrapper translates the pass
+func_004A21F8  EffectKey_ResolveEmitterSets
+func_00111188  EffectKey_Start
+func_00111AA0  EffectKey_CreateEmitterSet
+func_004A2934  EffectKey_Update
+func_001FFE2C  EffectKey_ListenerCallback
+
+# --- fog
+func_0026EB74  Fog_WriteCommands                   # native wrapper: ROP_FOG
+func_003CC288  Fog_BuildLut
+
+# --- animation / materials
+func_00169608  SkelAnim_BindByName
+func_00169A80  SkelAnim_Calc
+func_0016898C  SkelAnim_Request
+func_00168E9C  AnimSlots_Update
+func_00567588  MaterialAnim_ApplyFrame
+func_001699A0  MaterialAnim_ApplyClamped
+func_0068FDFC  MaterialAnim_Evaluate
+func_0028C8EC  Player_SetFace                      # Link_FaceChange frame (7 = eyes closed)
+func_002DD4B0  Player_FaceForAnimation
+func_0028C954  Player_CreateAnimations
+
+# --- graphics / sdk
+func_0049F3C4  Gfx_ClearRenderTarget
+func_004371D8  Lyt_DrawVisitor_Parts
+func_003CBC1C  Gr_FragmentLightingOff
+func_001139F8  nngx_GetPhysicalAddr
+func_00600660  nngxGetVramStartAddr
+func_006003D8  nngxGetCmdlistParameteri
+func_00601378  nngxMoveCommandbufferPointer
+func_0010EE40  nn_os_GetDeviceMemoryAddress
+func_001022F4  nn_os_GetDeviceMemorySize
+func_004994B0  sead_BufferedSafeString_format
+func_0010FBAC  strcmp

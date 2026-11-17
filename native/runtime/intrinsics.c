@@ -84,14 +84,18 @@ void coprocessor_moveto(uint32_t cp, uint32_t op1, uint32_t op2, uint32_t rt, ui
 /* ------------------------------------------------------------ thread-local block
  * The SDK keeps per-thread data in a 0x200-byte block (the 3DS TLS page). Native: a real
  * thread-local array. Returned as a full pointer-sized integer (64-bit clean). */
+/* Game threads (the main thread and CreateThread threads, sdk/os.c) use the TLS block in their
+ * fixed stack slot (runtime/pmem.c: the same address in every run, for persistent save states);
+ * other threads a thread-local block (x86-64: low memory, the game keeps the address in 32-bit
+ * words). */
+static _Thread_local uint8_t *tls_slot;
+void albw_tls_set(void *block) { tls_slot = block; }
 #if defined(__x86_64__)
-/* low-4GB mode: the game keeps the TLS address in 32-bit words (CriticalSection owner, ...), and
- * a thread not created by the game (main thread, host threads) has its TLS high: one low page
- * per thread, kept for the life of the process */
 #include <sys/mman.h>
 static _Thread_local uint8_t *tls_low;
 
 uintptr_t albw_tls(void) {
+    if (tls_slot) return (uintptr_t)tls_slot;
     if (!tls_low) {
         tls_low = albw_low_map(0x1000, PROT_READ | PROT_WRITE, 0);
         if (!tls_low) runtime_fatal("albw_tls: no low memory");
@@ -101,5 +105,5 @@ uintptr_t albw_tls(void) {
 #else
 static _Thread_local _Alignas(16) uint8_t tls_block[0x200];
 
-uintptr_t albw_tls(void) { return (uintptr_t)tls_block; }
+uintptr_t albw_tls(void) { return tls_slot ? (uintptr_t)tls_slot : (uintptr_t)tls_block; }
 #endif

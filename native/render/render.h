@@ -196,6 +196,7 @@ typedef enum {
                         buffer-update bits, bit 1: also the buffer colour (u.tev) */
     ROP_EXT,         /* executed by the registered extension (render_set_ext; nw::h3d: render/h3d.c) */
     ROP_FL,          /* 3DS fragment lighting state (render/fraglight.h: u.fl.kind FL_*) */
+    ROP_FOG,         /* PICA fog (u.fog): mode (0 off, 5 fog), z flip, colour, LUT key (0 = keep) */
     ROP_COUNT
 } ROpType;
 
@@ -218,6 +219,7 @@ typedef struct {
         struct { uintptr_t indices; uint32_t first, count; uint8_t prim, index_u16, indexed; } draw;
         struct { uintptr_t addr; uint32_t size; } call;
         struct { uint16_t kind; uintptr_t ptr; uint32_t a, b, c; float f[8]; } ext; /* ROP_EXT */
+        struct { uint8_t mode, flip, rgb[3]; uint32_t key; } fog;           /* ROP_FOG */
         struct { uint8_t kind; uint8_t pad[3]; uint8_t data[248]; } fl;   /* ROP_FL
                                                                              payloads (fixed-layout
                                                                              structs of those modules) */
@@ -243,6 +245,13 @@ void render_exec_op(const ROp *op);
 
 /* end of a host frame: op-pool housekeeping (gfx.c calls it at SwapBuffers) */
 void render_frame_end(void);
+/* PICA fog lookup table (registers 0xE6 / 0xE8..): 128 entries {value, difference} (the factor at
+ * depth index i + fraction f is value + difference * f), registered under a content key by the
+ * producer (thread-safe); ROP_FOG selects it by key. */
+void render_fog_lut_set(uint32_t key, const float lut[128][2]);
+void render_ss_loaded(void);   /* save states: game memory was replaced (re-read every texture) */
+size_t render_pool_export(void **out);          /* save states: the op pool (malloc'd blob) */
+int render_pool_import(const void *in, size_t n);
 /* internal resolution: multiples of the 3DS screens (1..8, ALBW_RENDER_SCALE at start), changeable between frames */
 int render_get_scale(void);
 void render_set_scale(int scale);

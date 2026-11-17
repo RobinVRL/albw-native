@@ -20,7 +20,7 @@ def syms(obj, *flags):
 
 # ALBW_ARCH=x86_64 (tools/link64.sh, build_decomp.py --arch x86_64): the 64-bit libraries
 _LIB = "/usr/lib" if os.environ.get("ALBW_ARCH") == "x86_64" else "/usr/lib32"
-SYSTEM_LIBS = [_LIB + "/libc.so.6", _LIB + "/libm.so.6", _LIB + "/libSDL3.so.0"]
+SYSTEM_LIBS = [_LIB + "/libc.so.6", _LIB + "/libm.so.6", _LIB + "/libSDL3.so.0", _LIB + "/libz.so.1"]  # libz: save states
 
 
 def system_symbols():

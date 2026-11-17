@@ -136,6 +136,81 @@ Status 2026-11-15 (texture samplers, BOOT_LOG 99 [3d]): the h3d decoder now take
 Old next steps: (a) relink with func_00582014.c and confirm the overworld draws in state 2 (shots: ALBW_SHOT=600,1200,2000 ALBW_SHOT_DIR=...); (b) the 3D Triforce after the logo appears (TitleLogo.bch model 0 still drawn: find its hide / fade, probably the same alpha path 002C3EB4 or a visibility animation); (c) blue background = the sky / clear when no rooms draw, re-check after (a); (d) sweep other vtable calls that pass a float in s0 through Ghidra tail calls ("Could not recover jumptable" + indirect call with a float live in s0): same class as 00582014.
 Debug aids (native/sdk/h3d.c): ALBW_H3D_MODELS=1 (+ _BT=1 call chain of each model's first draw), ALBW_H3D_SCENE=1 (scene model list: flags +0x164, vis index, shown mask +0x168, element count), ALBW_H3D_SCENE_TRAP=1 (SIGTRAP once the scene has models, for gdb watchpoints; scripts build/shots3d/room*.gdb), ALBW_H3D_CAMTRACE=1. Private save: build/shots3d/race.sh. Note: tools/link.sh's DAT grep over build/decomp/ghidra_fallback is very slow under I/O load (40+ min seen).
 
+## Overnight plan (2026-11-16): scripted scenes, then effects (autonomous, no user input)
+
+Rules: ALBW_JOBS=2; one game / emulator / gdb at a time; no git commits; every fix -> native/BOOT_LOG.md
+entry, every disproven cause -> native/DIDNT_WORK.md row, MISSING.md ticked with the BOOT_LOG ref;
+never `pkill -f` / `pgrep -f` with a pattern that also matches the calling shell (use `pgrep -x albw`,
+`pkill -x albw`); Azahar config restored after any gdbstub use (use_gdbstub=false); one progress line
+per iteration under "Progress" below. Test states: save states are per build - after each relink,
+make a fresh one with the scripted route (new game -> yard, scratchpad route_press.txt, ALBW_SPEED=0,
+ALBW_SS_AT=<frame>:save:<slot>, private ALBW_STATE_DIR / ALBW_SAVE_DIR). Debug statics in saved
+native modules are restored with a state: switch traces on from gdb after `render_ss_loaded`.
+
+1. **Link's flow dash (yard, "C'mon, let's get to his shop")** - BOOT_LOG 127. The flowchart sends
+   Link_Dash (State_AnmFromFlow 0x96, anim 10) but Link's position never changes (x 12 -> warped to
+   6.45 at frame ~889); Gulley's movement and the camera (which follows Link) are fine.
+   a. Find the condition in 001EA96C (called per frame by 00342C24 with &params) that skips the
+      position integration (EU 1EAB14..1EAB38) during the dash: walk its branch structure on the ARM,
+      compare the port's inputs (00342C24's params block: +0x3B40.. state, **(+0x44) speed, mode bytes
+      +0x3BAE, the action id read at +0x614 +0x42) with what the ARM path needs; gdb on the port at
+      the branch points.
+   b. Check how the dash speed / root motion is meant to reach the params (00342C24 first branch,
+      002927A0 action update, the anim-10 flag +0xCC set by 001DBF54).
+   c. Fix, verify with frames (Link slides into Gulley; camera follows).
+2. **Systemic lostframe sweep (Vec3 first / second store)**: extend tools/lost_vec3_scan.py to the
+   lost x (first) and y (second) word, as found in 001EA96C (`&stack0x..` passed, only [1]/[2]
+   copied); confirm each against the EU code; fix with compilefix copies; record counts.
+3. **Gulley at "Wake up!" (house)**: he must turn to face the screen and does not. Route run to the
+   house dialogue; ALBW_STATE_TRACE + the NPC's rotation (actor angle fields) over the frames; find
+   the turn command (flow action / NPC state) and the defect; compare with the Azahar recording
+   (scratchpad azrec) where available.
+4. **Weather vane bubbles** (pan to the vane, "With the weather vane here!"): ALBW_EFT_TRACE=1 in
+   that scene: is the emitter set created, are its draws dropped (g_live_dropped / unknown program
+   hash)? Register the programs of every PTCL (not only JackAll: native/sdk/eft.c register_programs
+   runs once), classify unknown programs against effects.c's variants, add GLSL for any truly new one.
+5. **House candle flame** (appears briefly when Link gets off the bed, then vanishes): same eft path;
+   check the emitter's lifetime / kill and the draw path.
+6. **Dream**: Link holding a sword and shield; the mist without lines / borders; smoke colour and the
+   missing nebula (MISSING.md) - eft programs / model visibility.
+7. **Automated defect search**: compile every linked Ghidra text once with -Wfloat-conversion
+   -Wimplicit-int-float-conversion -Wshorten-64-to-32 and triage float<->int conversions; then the
+   remaining fall-through functions (tools/fallthrough_scan.py list).
+8. **Billboards** (subagent report: per-PTCL program registration, bone billboard order) - after 4.
+
+### Status at handover (2026-11-17 morning, before the reboot)
+Build: build/albw is linked with everything below (boots, unit tests pass, regression route run OK: title, dream,
+WAKE UP turn, house, dash, vane). Nothing committed since a6fb290. Old save states do not load in this build (build
+hash); regenerate with tools/overnight/route_press.txt (README there). The machine needs a REBOOT: NVIDIA libraries
+620.70 are installed but the 615.78 kernel module is loaded ("X_GLXCreateContext BadValue" from ./run.sh, nvidia-smi:
+Driver/library version mismatch) - not a port bug.
+
+| item | state |
+|---|---|
+| 1 Link's flow dash + camera pan | DONE, BOOT_LOG 128 (u8 return read as int: boolret.py extends declared small returns) |
+| 2 lostframe Vec3 sweep | not started tonight (22 candidates in build/lost_word_verified.txt, 2 reviewed = FP) |
+| 3 Gulley faces the screen at WAKE UP | DONE, BOOT_LOG 129 (look-at virtual lost its third argument) |
+| 4 vane bubbles | DONE, BOOT_LOG 130 (eft draw range [a, return)); vane body grain still open |
+| 5 house candle flame | OPEN: sconce set draws a faint glow only; Azahar shows a red-orange flame. Ruled out: depth / alpha / cull / stencil (ALBW_EFT_FRAG), texture decode (LA8 / L8 OK), room model textures (no flame texture). Next: compare particle alpha / scale with Azahar |
+| 6 dream | OPEN: nebula background missing (Triforce + Link close-up), monster shot shows pinkish streaks, shield not visible on Link (model draws with 0 pixels: 0x1f12ac00 x8). The dream's eft sets (resource 1: ids 2, 0, 0x5e, 0x5d x3, 0x5a, 1, 3, 4 x7, created frames 2710-3212) are alive at frame 3800 but almost all have 0 emitters (only id 2 has 2, id 1 has 1): emitters end early -> next: emitter lifetime / loop flags in the eft calc (compare one set with Azahar) |
+| 7 defect search | indirect-call dropped-argument class: tools/indirect_args_scan.py, ~45 ARM-checked compilefix copies, status in build/indirect_args_triage.txt (TODO: 00495CA8/00495DA4 thunks, 003B8744 site 3B8960) |
+| 8 billboards | not started |
+
+New tools tonight: Azahar az_trace (AZ_SCAN multi-frame, AZ_DUMP), ALBW_EFT_SETLOG (eft.c, read per call),
+ALBW_EFT_FRAG=d/a/b/c/s (render.c: particle draws without depth / alpha / blend / cull / stencil), state slot 4 (house
+frame 9000). Gotcha: statics of saved modules (game, sdk/eft.c, sdk/h3d.c) are restored by a state load, so env
+switches cached there read as "off" after a load (native/SAVESTATES.md).
+
+Progress (one line per iteration):
+- 22:00 tooling: test games now run offscreen on the GPU (SDL_VIDEO_DRIVER=offscreen: invisible, ~10x faster); Azahar source build (Qt, ${AZAHAR_DIR:-$HOME/azahar}/build-dbg) started for scripted input / trace logging; tools/lost_word_scan.py + tools/verify_lost_word.py (lost first / second Vec3 word, checked against the EU code by call occurrence): 22 sites flagged REAL, first reviewed (002E15CC) is a false positive (output argument) - review list in build/lost_word_verified.txt; route run for fresh yard states (frames 9700 / 9900) running.
+- 22:40 item 1: the 001EA96C block I fixed (EU 1EAAC0..1EAB38) is gated by params+0x95 / state+0x3BAE / 002C1634 (riding a moving object), not the walk / dash path: the dash mover is elsewhere - to be found with a write watch on Link's position in the original (Azahar build). Fresh yard states (frames 9700 house / 9900 yard) in scratchpad night/states. Item 4: effect keys / emitter sets are created during the dash (sets 740, 739, 24), effect draws run (0 dropped), but at the vane pan (frame 1500 dump) NO particle program is drawn and the bird's face is awake / its body texture blocky (Azahar: eyes closed, bubbles): the vane actor (MojTelephone, factory 005B559C, creator 00603E68 -> ctor 001C57A0) is not in its sleeping look - one cause for both (state / material animation / effect key in 001C5xxx).
+- 00:20 item 1 DONE (BOOT_LOG 128): Azahar trace build (az_trace: write watch / scripted input / state load / memory scans, headless on Xvfb :99) showed the original moves Link through 001E5FC4 in action 0x97 FlowRailMove; the rail node is reached in both games, but the u8 parameter reader 0054B260 left word>>16 in %eax: tools/boolret.py extends declared small returns (178 adapters; plain char / source-declared bool excluded - they crashed the boot); route run: Link dashes into Gulley, camera follows (frames 10360-10690). Dream sword + shield = original. Next: item 3 (Azahar shows a "WAKE UP!" close-up facing the camera).
+- 01:45 item 3 DONE (BOOT_LOG 129): Gulley found in Azahar memory (AZ_SCAN now takes several frames), angle watch -> 0030D6D0 calls look-at virtual 006143E4 with r2 = 1 in the ARM, Ghidra dropped it; compilefix passes it; route run: Gulley turns to the camera at "WAKE UP!", dash still OK. New class scanner tools/indirect_args_scan.py: 109 candidates in build/indirect_args.txt (to triage, item 7). New night states (night3/states: 1 = house 5300, 2 = yard 9700, 3 = yard 9900). Next: item 4 (vane).
+- 03:55 item 7 (indirect-call class) + item 4: tools/indirect_args_scan.py reworked (pairs ARM / Ghidra sites per vtable offset; `mov r1, r2` copies count as arguments; VFP / ldm base reads are not writes): ~35 ARM-checked compilefix copies (+0x138 state change (1)->(1,1) x16, look-at (0)->(0,0) 0030D510, flow 0030CA68, text pane +0x60 length x4, ...), list + status in build/indirect_args_triage.txt; boot + unit tests pass. Item 4: the vane's bubble set (0x212) is created at yard entry, sits at the head, is calculated every frame; its draws were translated from the wrong range: eft.c's 003F8250 wrapper bracketed the eft cursor, but the set writes from its `a` argument (current half of the double buffer) up to the returned pointer -> fixed to [a, r) (all particle effects). Verification route run (night6) in progress. Vane body grain / blocky texture still open (not filtering: ALBW_TEX_FORCE_LINEAR changes nothing).
+- 05:55 item 4 DONE (BOOT_LOG 130): vane bubbles visible after the eft range fix (night6 route run, frames 11600-12000 vs Azahar). Item 5 (candle): the sconce's eft set (2 emitters, at (5.7, 3, -6), scale 0.6) is calculated and drawn every frame (2 draws, 0 dropped, colours c82 = 1, alpha 0.25 / 0.58, blend src-alpha / additive); ALBW_EFT_FRAG=b (new render.c switch: d/a/b/c/s turn depth / alpha / blend / cull / stencil off for particle draws) shows the glow quad at the sconce, so position / texture are right; with blending the port shows a faint glow only, Azahar a distinct red-orange flame above the sconce: the flame itself is another element (third emitter / other set / a model with a visibility or texture animation - "appears briefly then vanishes" fits an animation). Next: MODELMAP + eft set list at house load (route run from boot with ALBW_H3D_MODELMAP and ALBW_EFT_SETLOG; statics caveat in SAVESTATES.md), Azahar watch on the sconce actor. New state slot 4 = house frame 9000 (Link about to walk right, sconce in view with ALBW_PRESS=300:CRIGHT:90).
+- 06:35 item 7 batch 2: 0046308C/004610A0 text length (in_r3), 0048FAF8 sixth parameter + caller 001E14F8, 0037A9E8 (+0x64/+0x68 mov r2, r3 elisions), 00466004 (+0x18 alignment); boot + unit tests pass; regression route run (night8): title, dream, WAKE UP turn, house, dash, vane OK; fresh states night8/states (1 house 5300, 4 house 9000, 2 9700, 3 yard 9900). Next: item 6 (dream: nebula / mist / smoke).
+- 07:20 item 6 started: Azahar vs port dream captured (Azahar: red nebula behind the Triforce and Link, monster shot with dark red clouds + red eyes; port: black, pinkish streaks); 0 eft draws dropped; dream sets alive but emitter counts 0 at frame 3800. Handover written above (reboot needed for the NVIDIA driver).
+
 ## Overnight plan (2026-11-15): title 1:1 -> opening cutscene -> gameplay
 
 Working rules: one game / emulator / gdb run at a time, ALBW_JOBS=2, no parallel agents (RAM);
@@ -194,6 +269,7 @@ Progress:
 - 2026-11-16: optimization pass (BOOT_LOG 117): ALBW_PROFILE sampling profiler + tools/prof_report.py; op pool hashes only used bytes; the port's own code is ~0.15 core, the rest is the GL driver. X11 hang = KDE session locked (windows not mapped).
 - 2026-11-16: review + fragility audit (BOOT_LOG 118): 6 fixes (menu rescale, texture LOD clamp, 64-bit varargs, viewer/test links, misc2 test); biggest open fragility: 119 functions linked with a stale-map Ghidra body (tools/stale_map_scan.py) - do the EU/USA map fix integration next. Fairy light streak at the logo: still missing (checked vs Azahar e001).
 - 2026-11-16: map fix integrated (BOOT_LOG 119: 0 wrong bodies linked, the six missing functions resolved); particles part 1 (BOOT_LOG 120): emitter sets now created/calculated as in Azahar (stripped __asm in the name search); part 2 = draw path (raw PICA -> native eft producers).
+- 2026-11-16: particles drawn (BOOT_LOG 121: title fairy lights match Azahar, dream effects run), fog implemented (122, unverified), function names (native/names.txt), checklist MISSING.md.
 
 ## Lost stack stores (lostframe class) left in stage-2 text
 

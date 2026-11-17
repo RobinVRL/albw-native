@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 OUT="${1:-../build/render_test}"
 mkdir -p "$OUT"
-SRC=(platform/platform.c sdk/gfx.c sdk/gr.c render/render.c render/fraglight.c render/prim.c render/effects.c render/font.c render/texdecode.c render/test/render_test.c)
+SRC=(platform/platform.c sdk/gfx.c sdk/gr.c render/render.c render/fraglight.c render/prim.c render/effects.c render/font.c render/texdecode.c render/test/render_test.c runtime/pmem.c runtime/lowmem.c)
 FSRC=(platform/platform.c sdk/lyt.c render/render.c render/fraglight.c render/prim.c render/effects.c render/font.c render/texdecode.c render/test/font_test.c
       assets/romfs.c assets/yaz0.c assets/sarc.c assets/texture.c assets/png.c assets/dvlb.c)
 PSRC=(platform/platform.c sdk/gr.c sdk/prim.c render/render.c render/fraglight.c render/prim.c render/effects.c render/font.c

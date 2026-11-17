@@ -24,7 +24,8 @@ enum {
     H3D_VTX = 1,     /* ptr: H3dVtx * (vertex layout + buffer of a mesh), NULL = none */
     H3D_DRAW,        /* a: index word (offset from the vertex base, bit 31 = 16-bit indices),
                         b: index count, c: primitive (RPRIM_*); flags 1: a is the absolute index
-                        buffer address (from the file's relocation table), unit = 16-bit indices */
+                        buffer address (from the file's relocation table), unit = 16-bit indices;
+                        flags 2: keep the bound program (live-translated nw::eft blocks) */
     H3D_TEXADDR,     /* unit; a: texture address, b: width | height << 16, c: format | max level << 8 */
     H3D_TEXPARAM,    /* unit; a: wrap_s | wrap_t << 4 | mag << 8 | min << 12 | type << 16 (RTexUnit
                         codes), b: border RGBA (R low byte), f[0]: LOD bias */
@@ -77,6 +78,8 @@ H3dVtx *h3d_vtx_new(void);
 /* counters for tests / traces */
 typedef struct { uint32_t blobs, blob_calls, draws, dropped, vbo_uploads, ibo_uploads; } H3dStats;
 H3dStats h3d_stats(void);
+/* save states: size of the registry state (buf NULL), or save (restore 0) / restore it */
+size_t h3d_ss_state(void *buf, size_t n, int restore);
 
 /* the hand-written GLSL body of nwh3d_DefaultShader (no #version line) and its variant defines */
 extern const char RENDER_VS_H3D[];

@@ -74,11 +74,19 @@ static void voice_defaults(Voice *v) {
     v->interp = AUD_INTERP_POLYPHASE;
 }
 
+/* save states (native/runtime/savestate.c; weak: tools without it): the voices and the master
+ * volume (the aux buses hold host effect objects and keep their current state) */
+extern void albw_ss_add_range(const char *name, void *p, size_t n) __attribute__((weak));
+
 static void once_init(void) {
     init_mutex(&g_mu);
     init_mutex(&g_aux_mu);
     for (int i = 0; i < AUD_VOICES; i++) voice_defaults(&g_v[i]);
     for (int b = 0; b < AUD_AUX_BUSES; b++) g_aux[b].ret = 1.0f;
+    if (albw_ss_add_range) {
+        albw_ss_add_range("mixer voices", g_v, sizeof g_v);
+        albw_ss_add_range("mixer master", &g_master, sizeof g_master);
+    }
 }
 
 void aud_init(void) { pthread_once(&g_once, once_init); }

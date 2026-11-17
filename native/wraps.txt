@@ -1,0 +1,6 @@
+# decomp functions with a native wrapper: tools/link.sh exports the decompiled body as
+# func_<ADDR>__decomp (one per line; anything after the name is a comment)
+func_002E39E8   per-pass effect draw -> sdk/eft.c (live translation of the eft command blocks)
+func_003F7CC4   eft System::EntryResource -> sdk/eft.c (registers the PTCL's vertex programs)
+func_003F8250   eft emitter-set calc + draw -> sdk/eft.c (translates the words it wrote at the eft cursor)
+func_0026EB74   scene fog writer -> sdk/eft.c (fog registers translated to ROP_FOG)

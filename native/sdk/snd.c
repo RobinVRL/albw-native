@@ -119,8 +119,16 @@ static void wb_status(void *user, int status) {
     if (wb) __atomic_store_n(&wb->status, (uint8_t)status, __ATOMIC_RELEASE);
 }
 
+extern void albw_ss_add_range(const char *name, void *p, size_t n) __attribute__((weak));
+extern void albw_ss_host_enter(void) __attribute__((weak));
+extern void albw_ss_host_leave(void) __attribute__((weak));
+
 static void init_once(void) {
     aud_init();
+    if (albw_ss_add_range) {   /* save states: the nn::snd voices (savestate.c) */
+        albw_ss_add_range("snd voices", g_voice, sizeof g_voice);
+        albw_ss_add_range("snd seq", &g_seq, sizeof g_seq);
+    }
     aud_set_status_callback(wb_status);
     for (int i = 0; i < AUD_VOICES; i++) {
         memset(&g_voice[i], 0, sizeof g_voice[i]);
@@ -934,8 +942,10 @@ static void *sound_thread_main(void *p) {
     float frame[AUD_FRAME * 2];
     while (atomic_load(&g_thr.running)) {
         aud_out_wait();                    /* = nn::snd::WaitForDspSync */
+        if (albw_ss_host_enter) albw_ss_host_enter();   /* runs game code: held back during a save / load */
         uint64_t t0 = now_ticks();
         albw_snd_frame(frame);
+        if (albw_ss_host_leave) albw_ss_host_leave();
         aud_out_push(frame, AUD_FRAME);
         g_thr.last_ticks = now_ticks() - t0;
     }

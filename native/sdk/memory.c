@@ -111,13 +111,10 @@ static pthread_mutex_t g_os_memory_lock = PTHREAD_MUTEX_INITIALIZER;
 /* commit/decommit so that exactly [base, base+size) is usable; new pages read as zero */
 static int32_t region_resize(Region *r, uint32_t size) {
     if (size > APP_MEMORY_SIZE) return RESULT_OUT_OF_MEMORY;
-    if (!r->base) {
-        int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE;
-#if defined(__x86_64__)
-        flags |= MAP_32BIT; /* low-4GB mode: game addresses fit 32-bit words (native/64BIT.md) */
-#endif
-        void *p = mmap(NULL, APP_MEMORY_SIZE, PROT_NONE, flags, -1, 0);
-        if (p == MAP_FAILED) return RESULT_OUT_OF_MEMORY;
+    if (!r->base) {   /* the reserved fixed-address area (runtime/pmem.c: persistent save states) */
+        size_t n = 0;
+        void *p = pmem_area(r == &g_heap ? PMEM_HEAP : PMEM_DEVICE, &n);
+        if (!p || n < APP_MEMORY_SIZE) return RESULT_OUT_OF_MEMORY;
         r->base = p;
     }
     if (size > r->committed) {
@@ -415,4 +412,21 @@ void *func_001164F4(void *dst, uint32_t n) {
 void *func_00110490(void *dst, uint32_t n) {
     memset(dst, 0, n);
     return (uint8_t *)dst + n;
+}
+
+/* save states (native/runtime/savestate.c): the two regions and resizing them back on load */
+int albw_mem_ss_region(int i, uint8_t **base, uint32_t *committed) {
+    Region *r = i == 0 ? &g_heap : i == 1 ? &g_device : NULL;
+    if (!r) return -1;
+    *base = r->base;
+    *committed = r->committed;
+    return 0;
+}
+int albw_mem_ss_resize(int i, uint32_t committed) {
+    Region *r = i == 0 ? &g_heap : i == 1 ? &g_device : NULL;
+    if (!r) return -1;
+    pthread_mutex_lock(&g_os_memory_lock);
+    int32_t res = r->committed == committed ? RESULT_SUCCESS : region_resize(r, committed);
+    pthread_mutex_unlock(&g_os_memory_lock);
+    return res == RESULT_SUCCESS ? 0 : -1;
 }

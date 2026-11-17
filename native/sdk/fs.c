@@ -1176,3 +1176,44 @@ struct fs_server_object *func_003C93A0(struct fs_server_object *obj) {
     }
     return obj;
 }
+
+/* ================================================================== save states (savestate.c)
+ * The archive and handle tables. ROM handles are positionless (offset per read), so they come
+ * back as they were. Host files (save data, open only while the game writes its save) keep the
+ * current descriptor if that slot is still the same open file; otherwise they come back closed. */
+#include "../runtime/runtime.h"
+void albw_fs_ss_write(SsBuf *b) {
+    pthread_mutex_lock(&fs_lock);
+    ss_section(b, 0x31415246u, archives, sizeof archives);   /* "FRA1" */
+    ss_section(b, 0x31485346u, handles, sizeof handles);     /* "FSH1" */
+    pthread_mutex_unlock(&fs_lock);
+}
+
+int albw_fs_ss_check(SsBuf *b, char *why, size_t whylen) {
+    size_t n1, n2;
+    if (!ss_get_section(b, 0x31415246u, &n1) || n1 != sizeof archives || !ss_get_section(b, 0x31485346u, &n2) ||
+        n2 != sizeof handles) {
+        snprintf(why, whylen, "damaged state (files)");
+        return -1;
+    }
+    return 0;
+}
+
+void albw_fs_ss_load(SsBuf *b) {
+    size_t n;
+    const void *arch = ss_get_section(b, 0x31415246u, &n);
+    const __typeof__(handles[0]) *hnd = ss_get_section(b, 0x31485346u, &n);
+    pthread_mutex_lock(&fs_lock);
+    for (int i = 0; i < MAX_HANDLES; i++) {
+        int keep = hnd[i].kind == H_HOST && handles[i].kind == H_HOST && handles[i].fd >= 0 && !handles[i].closed;
+        if (!keep && handles[i].kind == H_HOST && handles[i].fd >= 0) close(handles[i].fd);
+        int fd = keep ? handles[i].fd : -1;
+        handles[i] = hnd[i];
+        if (handles[i].kind == H_HOST) {
+            handles[i].fd = fd;
+            if (fd < 0) handles[i].closed = 1;
+        }
+    }
+    memcpy(archives, arch, sizeof archives);
+    pthread_mutex_unlock(&fs_lock);
+}

@@ -8,8 +8,27 @@
  * as a 32-bit int. Confidence: high. */
 #include "framework.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 int func_002D55D0(uint32_t self_w, uint32_t next) {
     int32_t n = (int32_t)next;
+    {   /* debug: ALBW_STATE_TRACE=1: every state change (object, old -> new, caller, frame);
+         * =<hex object>: only that state machine */
+        static int on = -1;
+        static uint32_t only;
+        if (on < 0) {
+            const char *e = getenv("ALBW_STATE_TRACE");
+            on = e != NULL;
+            only = e ? (uint32_t)strtoul(e, NULL, 16) : 0;
+            if (only == 1) only = 0;
+        }
+        if (on && (!only || only == self_w)) {
+            extern long g_plat_frames __attribute__((weak));
+            fprintf(stderr, "state: f=%ld sm %#x %d -> %d from %p\n", &g_plat_frames ? g_plat_frames : 0L, self_w,
+                    (int)FLD(gp_ptr(self_w), 4, int16_t), (int)n, __builtin_return_address(0));
+        }
+    }
     if (n == -2 || n == -1)
         return 0;
     FLD(gp_ptr(self_w), 4, int16_t) = (int16_t)n;

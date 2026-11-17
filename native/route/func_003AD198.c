@@ -14,7 +14,7 @@
 
 void func_004A2F38(int effect, void *pos);
 void func_004A1B9C(uint32_t *out, int set, const char *name);
-float func_00151148(int obj, int a);
+int func_00151148(int obj, int a);
 int func_00115C54(float *out, float *a, float *b);
 void func_001512B4(int obj, float *pos);
 void func_00151150(int obj, float *v);

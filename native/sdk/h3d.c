@@ -62,6 +62,16 @@
 #include <string.h>
 
 #include "../include/gptr.h"
+#include "../render/effects.h"
+
+/* tables whose pointers sit in saved statics live in the fixed arena (runtime/pmem.c, persistent
+ * save states); weak: the render tests link this file without it */
+extern void *pmem_calloc(size_t a, size_t b) __attribute__((weak));
+extern void *pmem_realloc(void *p, size_t n) __attribute__((weak));
+extern void pmem_free(void *p) __attribute__((weak));
+static void *ss_calloc(size_t a, size_t b) { return pmem_calloc ? pmem_calloc(a, b) : calloc(a, b); }
+static void *ss_realloc(void *p, size_t n) { return pmem_realloc ? pmem_realloc(p, n) : realloc(p, n); }
+static void ss_free(void *p) { if (pmem_free) pmem_free(p); else free(p); }
 #include "../render/fraglight.h"
 #include "../render/h3d.h"
 #include "../render/render.h"
@@ -198,12 +208,12 @@ static void idx_reloc_put(uint32_t word, uint32_t addr, int u16) {
         IdxReloc *old = g_ir;
         size_t oc = g_ir_cap;
         g_ir_cap = oc ? oc * 2 : 1024;
-        g_ir = calloc(g_ir_cap, sizeof *g_ir);
+        g_ir = ss_calloc(g_ir_cap, sizeof *g_ir);   /* fixed arena: the pointer is in a saved static */
         if (!g_ir) abort();
         g_ir_n = 0;
         for (size_t i = 0; i < oc; i++)
             if (old[i].used) idx_reloc_put(old[i].word, old[i].addr, old[i].u16);
-        free(old);
+        ss_free(old);
     }
     size_t h = ir_hash(word, g_ir_cap);
     while (g_ir[h].used && g_ir[h].word != word) h = (h + 1) & (g_ir_cap - 1);
@@ -264,6 +274,15 @@ typedef struct {
     /* fragment-lighting LUT data words (0x1C8..0x1CF) */
     int nlut;
     float lut[256][2];
+    /* fog (0xE0 bits 0-2 mode / bit 16 z flip, 0xE1 colour, 0xE6 index + 0xE8.. LUT data) */
+    int fog_written, fog_lut_n;
+    uint32_t fog_idx;
+    float fog_lut[128][2];
+    /* live translation of a per-frame command range (h3d_translate_live, nw::eft draws) */
+    int live;
+    uint32_t code[512];   /* vertex program code words uploaded since the last 0x2CB */
+    int ncode, code_new;
+    int eft_variant;      /* render/effects.h variant of the bound eft program, -1 unknown, -2 none */
 } Dec;
 
 static void flush_uniforms(Dec *d) {
@@ -308,10 +327,28 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
         }
     }
     if (reg >= 0x300) return;
+    if (reg == 0xE0 && (mask & 5)) d->fog_written = 1;   /* fog mode (byte 0) / z flip (byte 2) */
+    if (reg == 0xE1) d->fog_written = 1;
+    if (reg == 0xE6) { d->fog_idx = v & 0x7F; d->fog_written = 1; }
+    if (reg >= 0xE8 && reg <= 0xEF) {
+        /* fog LUT entry: value 0.11 unsigned (bits 13-23), difference signed 1.11 (bits 0-12) */
+        uint32_t i = d->fog_idx++ & 0x7F;
+        d->fog_lut[i][0] = (float)((v >> 13) & 0x7FF) / 2047.0f;
+        d->fog_lut[i][1] = (float)((int32_t)(v << 19) >> 19) / 2047.0f;
+        d->fog_lut_n++;
+        d->fog_written = 1;
+    }
     uint32_t m = (mask & 1 ? 0xFFu : 0) | (mask & 2 ? 0xFF00u : 0) | (mask & 4 ? 0xFF0000u : 0) | (mask & 8 ? 0xFF000000u : 0);
     d->reg[reg] = (d->reg[reg] & ~m) | (v & m);
-    d->written[reg] = 1;
+    if (reg != 0xE0 || (mask & 2)) d->written[reg] = 1;   /* 0xE0 byte 1: the combiner buffer bits */
     v = d->reg[reg];
+    if (d->live) {
+        if (reg == 0x2CB) { d->ncode = 0; d->code_new = 1; }
+        else if (reg >= 0x2CC && reg <= 0x2D3) { if (d->ncode < 512) d->code[d->ncode++] = v; }
+        else if (reg == 0x2B0 && d->eft_variant != -2) return;   /* b carries the eft variant */
+        else if ((reg >= 0x200 && reg <= 0x226) || (reg >= 0x232 && reg <= 0x235) || reg == 0x2BB || reg == 0x2BC)
+            d->vtx_done = 0;                                       /* a new layout before the next draw */
+    }
     if (reg == 0x2C0) {
         flush_uniforms(d);
         d->uidx = v & 0x7F;
@@ -371,7 +408,65 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
 /* PICA attribute registers 0x200-0x227 / 0x232-0x235 / 0x2BB-0x2BC -> H3dVtx (the h3d converter
  * interleaves all arrays in one buffer; element offsets aligned to the element size like
  * native/assets/bch.c, which the asset viewer validated on the game's files) */
+/* live blocks: the eft library uses the constant attribute base 0x18000000 (the 3DS physical VRAM
+ * start) with buffer offsets = physical address - base. Its VRAM buffers convert with the hardware
+ * rule (VRAM physical = virtual - 0x07000000), so base + offset falls in the physical VRAM window
+ * and is rebased onto the host VRAM block (nngxGetVramStartAddr, gfx.c); other buffers (device
+ * memory: the dream's Effect/Demo particles) keep their host address (GetPhysicalAddr is the
+ * identity natively), so base + offset already is the host address. Applied to FINAL addresses
+ * (vertex buffer, index buffer, textures), never to the base alone. */
+void *func_00600660(uint32_t area);
+static uint32_t live_pa(uint32_t a) {
+    if (a >= 0x18000000u && a < 0x18600000u) {   /* VRAM */
+        uint32_t v = (uint32_t)(uintptr_t)func_00600660(0x20000);
+        if (v) return v + (a - 0x18000000u);
+    }
+    return a;
+}
+
+/* live translation: one H3dVtx per distinct layout (the per-frame eft draws repeat a few layouts;
+ * allocating one per draw would grow without bound) */
+typedef struct { uint32_t key[48]; H3dVtx *v; } LiveVtx;
+static LiveVtx g_live_vtx[256];
+static int g_nlive_vtx;
+static pthread_mutex_t g_live_mx = PTHREAD_MUTEX_INITIALIZER;
+
+static H3dVtx *emit_vertex_layout_new(Dec *d);
 static H3dVtx *emit_vertex_layout(Dec *d) {
+    if (!d->live) return emit_vertex_layout_new(d);
+    uint32_t key[48];
+    memset(key, 0, sizeof key);
+    for (int r = 0; r < 0x27; r++) key[r] = d->reg[0x200 + r];
+    key[0x27] = d->reg[0x2BB];
+    key[0x28] = d->reg[0x2BC];
+    key[0x29] = d->fx_set;
+    {   /* the constant attribute values (FNV-1a over all 12) */
+        const uint8_t *b = (const uint8_t *)d->fx_val;
+        uint32_t h = 2166136261u;
+        for (size_t i = 0; i < sizeof d->fx_val; i++) h = (h ^ b[i]) * 16777619u;
+        key[0x2A] = h;
+    }
+    pthread_mutex_lock(&g_live_mx);
+    for (int i = 0; i < g_nlive_vtx; i++)
+        if (!memcmp(g_live_vtx[i].key, key, sizeof key)) {
+            H3dVtx *v = g_live_vtx[i].v;
+            pthread_mutex_unlock(&g_live_mx);
+            d->vtx_done = 1;
+            ROp op = op_new(ROP_EXT);
+            op.u.ext.kind = H3D_VTX;
+            op.u.ext.ptr = (uintptr_t)v;
+            ol_push(&d->ops, &op);
+            return v;
+        }
+    pthread_mutex_unlock(&g_live_mx);
+    H3dVtx *v = emit_vertex_layout_new(d);
+    pthread_mutex_lock(&g_live_mx);
+    if (g_nlive_vtx < 256) { memcpy(g_live_vtx[g_nlive_vtx].key, key, sizeof key); g_live_vtx[g_nlive_vtx++].v = v; }
+    pthread_mutex_unlock(&g_live_mx);
+    return v;
+}
+
+static H3dVtx *emit_vertex_layout_new(Dec *d) {
     d->vtx_done = 1;
     H3dVtx *v = h3d_vtx_new();
     uint32_t fmt_lo = d->reg[0x201], fmt_hi = d->reg[0x202];
@@ -413,6 +508,7 @@ static H3dVtx *emit_vertex_layout(Dec *d) {
         if (v->nbuffers == 0) {
             v->stride = (uint16_t)((hi >> 16) & 0xFF);
             v->addr = v->base + d->reg[0x203 + 3 * k];
+            if (d->live) v->addr = live_pa(v->addr);
         }
         v->nbuffers++;
     }
@@ -430,6 +526,23 @@ static H3dVtx *emit_vertex_layout(Dec *d) {
 /* end of blob: the non-streamed state it set */
 static void dec_finish(Dec *d) {
     flush_uniforms(d);
+    if (d->fog_written) {
+        ROp op = op_new(ROP_FOG);
+        op.u.fog.mode = (uint8_t)(d->reg[0xE0] & 7);
+        op.u.fog.flip = (uint8_t)((d->reg[0xE0] >> 16) & 1);
+        for (int c = 0; c < 3; c++) op.u.fog.rgb[c] = (uint8_t)(d->reg[0xE1] >> (8 * c));
+        if (d->fog_lut_n) {
+            const uint8_t *b = (const uint8_t *)d->fog_lut;
+            uint32_t h = 2166136261u;
+            for (size_t i = 0; i < sizeof d->fog_lut; i++) h = (h ^ b[i]) * 16777619u;
+            if (!h) h = 1;
+            render_fog_lut_set(h, (const float(*)[2])d->fog_lut);
+            op.u.fog.key = h;
+        }
+        ol_push(&d->ops, &op);
+        d->fog_written = 0;
+        d->fog_lut_n = 0;
+    }
     if (!d->vtx_done && (d->written[0x201] || d->written[0x202])) emit_vertex_layout(d);
     /* texture units */
     if (d->written[0x80]) {
@@ -448,7 +561,7 @@ static void dec_finish(Dec *d) {
             ROp op = op_new(ROP_EXT);
             op.unit = (uint8_t)u;
             op.u.ext.kind = H3D_TEXADDR;
-            op.u.ext.a = d->reg[r[4]] << 3;
+            op.u.ext.a = d->live ? live_pa(d->reg[r[4]] << 3) : d->reg[r[4]] << 3;
             op.u.ext.b = (d->reg[r[1]] >> 16 & 0x7FF) | (d->reg[r[1]] & 0x7FF) << 16;
             op.u.ext.c = (d->reg[r[5]] & 0xF) | ((d->reg[r[3]] >> 16) & 0xF) << 8 | ((d->reg[r[3]] >> 24) & 0xF) << 12; /* format, max / min level (LOD register) */
             ol_push(&d->ops, &op);
@@ -565,6 +678,187 @@ static void dec_finish(Dec *d) {
         op.u.frag.cull = (uint8_t)(d->reg[0x040] & 3);
         ol_push(&d->ops, &op);
     }
+}
+
+/* ================================================================== live translation (nw::eft)
+ *
+ * The eft draw path (002E39E8 per pass -> 003F8250 -> emitter draws 003F43DC / 003F4D34 /
+ * 003F5498 / 003F5734 -> 003F0080 / 003EF31C / 003EF244 ...) writes complete PICA state blocks into
+ * the frame's command list: the emitter's vertex program stream (code 0x2CB/0x2CC, setup, output
+ * map), uniforms (c82-c84 emitter, c1.. particle blocks), texture units, combiner, fragment
+ * operations, vertex arrays and an indexed draw, interleaved with markers of the native
+ * producers it calls (005647D4 combiner colours, ...). Those blocks are generated per frame from
+ * game data, so - like the model blobs at load (convert_blob) - they are translated where they
+ * are PRODUCED: h3d_translate_live() runs right after the pass wrote them (native/sdk/eft.c) and
+ * replaces the range in place with the equivalent recorded ops (and the markers already there,
+ * in order); the renderer still executes markers only. Programs: the uploaded code is identified
+ * by its hash among the PTCL's programs (registered at resource entry, eft.c) -> RPROG_EFT with
+ * the variant in the bool word b (render/effects.h); unknown programs (the stripe family) drop
+ * their draws. Draws keep the bound program (H3D_DRAW flag 2). */
+typedef struct { int marker; uint32_t token; ROp op; } LiveEnt;
+
+static void live_take(Dec *d, LiveEnt **out, int *n, int *cap) {
+    for (int i = 0; i < d->ops.n; i++) {
+        if (*n == *cap) { *cap = *cap ? *cap * 2 : 64; *out = realloc(*out, (size_t)*cap * sizeof **out); if (!*out) abort(); }
+        (*out)[*n].marker = 0;
+        (*out)[*n].op = d->ops.v[i];
+        (*n)++;
+    }
+    d->ops.n = 0;
+}
+
+static unsigned g_live_ranges, g_live_draws, g_live_dropped, g_live_overflow;
+
+/* translate the command words [start, end) (game addresses) in place; returns the ops written */
+int h3d_translate_live(uint32_t start, uint32_t end) {
+    if (!start || end <= start + 8 || end - start > (8u << 20)) return 0;
+    uint32_t words = (end - start) / 4;
+    uint32_t *w = malloc((size_t)words * 4);
+    if (!w) return 0;
+    memcpy(w, (const void *)GA(start), (size_t)words * 4);
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) abort();
+    d->live = 1;
+    d->vtx_done = 1;
+    /* GPU state persists across ranges (a block may rely on the attribute base, fixed attributes or
+       the program a previous block set): the register shadow carries over, written[] does not */
+    static uint32_t s_reg[0x300];
+    static float s_fx_val[12][4];
+    static uint16_t s_fx_set;
+    static int s_variant = -2;
+    pthread_mutex_lock(&g_live_mx);
+    memcpy(d->reg, s_reg, sizeof s_reg);
+    memcpy(d->fx_val, s_fx_val, sizeof s_fx_val);
+    d->fx_set = s_fx_set;
+    d->eft_variant = s_variant;
+    pthread_mutex_unlock(&g_live_mx);
+    LiveEnt *out = NULL;
+    int n = 0, cap = 0, raw = 0;
+    uint32_t i = 0;
+    while (i + 1 < words) {
+        uint32_t p0 = w[i], h = w[i + 1];
+        if (h == RENDER_MARK) {
+            live_take(d, &out, &n, &cap);
+            if (n == cap) { cap = cap ? cap * 2 : 64; out = realloc(out, (size_t)cap * sizeof *out); if (!out) abort(); }
+            out[n].marker = 1;
+            out[n].token = p0;
+            n++;
+            i += 2;
+            continue;
+        }
+        uint32_t reg = h & 0xFFFF, mask = (h >> 16) & 0xF, cnt = (h >> 20) & 0xFF, cons = h >> 31;
+        if (reg >= 0x300 || !mask || i + 2 + cnt > words) { i++; continue; }   /* padding / not a command */
+        raw = 1;
+        for (uint32_t k = 0; k <= cnt; k++) {
+            uint32_t r = cons ? reg + k : reg, v = k ? w[i + 1 + k] : p0;
+            d->word_addr = start + 4 * (k ? i + 1 + k : i);
+            if ((r == 0x22F || r == 0x22E) && (v & 1)) {
+                /* draw kick: the state written since the last draw first, then the program */
+                dec_finish(d);
+                memset(d->written, 0, sizeof d->written);
+                if (d->ncode && d->code_new) {
+                    int var = effects_variant_of(effects_program_hash(d->code, d->ncode));
+                    d->code_new = 0;
+                    d->eft_variant = var;
+                    if (var >= 0) {
+                        ROp pr = op_new(ROP_PROGRAM);
+                        pr.u.program.id = RPROG_EFT;
+                        ol_push(&d->ops, &pr);
+                        ROp vb = op_new(ROP_VS_BOOL);
+                        vb.u.vsb.mask = (uint16_t)var;
+                        ol_push(&d->ops, &vb);
+                    }
+                }
+                {   /* debug: ALBW_EFT_TRACE: the first draw without an attribute base, with what its range wrote */
+                    static int tr = -1, once;
+                    if (tr < 0) tr = getenv("ALBW_EFT_TRACE") != NULL;
+                    if (tr && !once && !d->reg[0x200]) {
+                        once = 1;
+                        char line[2048]; int o = 0;
+                        for (uint32_t q = 0; q + 1 < words && o < 1900; ) {
+                            uint32_t hq = w[q + 1], rq = hq & 0xFFFF, cq = (hq >> 20) & 0xFF;
+                            if (hq == RENDER_MARK) { o += snprintf(line + o, sizeof line - (size_t)o, " M"); q += 2; continue; }
+                            if (rq >= 0x300 || !((hq >> 16) & 0xF)) { q++; continue; }
+                            o += snprintf(line + o, sizeof line - (size_t)o, " %03x=%x", rq, w[q]);
+                            q += 2 + cq; if (q & 1) q++;
+                        }
+                        fprintf(stderr, "eft-live: draw without base at %#x (range %#x..%#x):%s\n", d->word_addr, start, end, line);
+                    }
+                }
+                if (d->eft_variant == -1) { g_live_dropped++; continue; }
+                if (r == 0x22E) { g_live_dropped++; continue; }   /* draw-arrays: not used by eft */
+                if (!d->reg[0x200]) {
+                    /* no attribute base in the block: the vertex arrays are native ROP_ATTRIB ops of
+                       the gr producers (markers in the range); a plain indexed draw on them, the
+                       index register's 28-bit address completed at execution (ROP_DRAW flag 0x80) */
+                    flush_uniforms(d);
+                    uint32_t iw = d->reg[0x227], prim = (d->reg[0x25E] >> 8) & 3;
+                    ROp dr = op_new(ROP_DRAW);
+                    dr.flags = 0x80;
+                    dr.u.draw.indexed = 1;
+                    dr.u.draw.indices = iw & 0x0FFFFFFFu;
+                    dr.u.draw.index_u16 = (uint8_t)(iw >> 31);
+                    dr.u.draw.count = d->reg[0x228];
+                    dr.u.draw.prim = (uint8_t)(prim == 3 ? RPRIM_TRIANGLES : prim);
+                    ol_push(&d->ops, &dr);
+                    g_live_draws++;
+                    continue;
+                }
+                int before = d->ops.n;
+                dec_write(d, r, v, mask);
+                for (int j = before; j < d->ops.n; j++)
+                    if (d->ops.v[j].type == ROP_EXT && d->ops.v[j].u.ext.kind == H3D_DRAW) {
+                        ROp *op = &d->ops.v[j];
+                        uint32_t iw = d->reg[0x227];
+                        op->flags |= 2 | 1;   /* keep the program; absolute index buffer address */
+                        op->u.ext.a = live_pa((d->reg[0x200] << 3) + (iw & 0x0FFFFFFFu));
+                        op->unit = (uint8_t)(iw >> 31);
+                    }
+                g_live_draws++;
+                continue;
+            }
+            dec_write(d, r, v, mask);
+        }
+        i += 2 + cnt;
+        if (i & 1) i++;
+    }
+    dec_finish(d);   /* state written after the last draw (fog of 0026EB74, ...) applies to later draws */
+    pthread_mutex_lock(&g_live_mx);
+    memcpy(s_reg, d->reg, sizeof s_reg);
+    memcpy(s_fx_val, d->fx_val, sizeof s_fx_val);
+    s_fx_set = d->fx_set;
+    s_variant = d->eft_variant;
+    pthread_mutex_unlock(&g_live_mx);
+    live_take(d, &out, &n, &cap);
+    int written = 0;
+    if (raw) {
+        /* rewrite: every entry is 2 words; the raw commands it replaces were at least as long */
+        if ((uint32_t)n * 2 > words) {
+            g_live_overflow++;
+        } else {
+            uint32_t *p = (uint32_t *)GA(start);
+            for (int k = 0; k < n; k++) {
+                if (out[k].marker) { p[0] = out[k].token; p[1] = RENDER_MARK; p += 2; }
+                else { p = render_rec(p, &out[k].op); written++; }
+            }
+            uint32_t *e = (uint32_t *)GA(end);
+            while (p + 2 <= e) { p[0] = 0; p[1] = 0; p += 2; }
+            if (p < e) *p = 0;
+            g_live_ranges++;
+        }
+    }
+    {   /* debug: ALBW_EFT_TRACE=1: totals every 600 ranges */
+        static int tr = -1;
+        if (tr < 0) tr = getenv("ALBW_EFT_TRACE") != NULL;
+        if (tr && raw && g_live_ranges % 600 == 1)
+            fprintf(stderr, "eft-live: ranges %u draws %u dropped %u overflow %u (this: %d ops, %u words)\n", g_live_ranges,
+                    g_live_draws, g_live_dropped, g_live_overflow, written, words);
+    }
+    free(out);
+    free(d->ops.v);
+    free(d);
+    free(w);
+    return written;
 }
 
 /* walk a command blob in game memory: [param][header] pairs, header = reg | byte mask << 16 |
@@ -752,7 +1046,7 @@ static int register_luts(uint32_t cont) {
                 pthread_mutex_lock(&g_plut_mx);
                 if (g_nplut == g_capplut) {
                     g_capplut = g_capplut ? 2 * g_capplut : 64;
-                    g_plut = realloc(g_plut, g_capplut * sizeof *g_plut);
+                    g_plut = ss_realloc(g_plut, g_capplut * sizeof *g_plut);
                     if (!g_plut) abort();
                 }
                 g_plut[g_nplut++] = (PendingLut){blob, words};
@@ -1263,7 +1557,9 @@ void func_00170558(uint32_t elem, uint32_t *ctx, uint32_t x, uint32_t y) {
                 fprintf(stderr, "skel:   model+0x104 [%7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f]\n",
                         w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9], w[10], w[11]);
             }
-            for (uint32_t b = 0; G8(model, 0x16B) && b < nb && b < 2; b++) {
+            static int all = -1;   /* ALBW_SKEL_ALL=1: every bone, not just the first two */
+            if (all < 0) all = getenv("ALBW_SKEL_ALL") != NULL;
+            for (uint32_t b = 0; G8(model, 0x16B) && b < nb && b < (all ? 256u : 2u); b++) {
                 const float *m = (const float *)GA(world + b * 0x30);
                 const char *bn = (const char *)GA(G32(bones + b * 0x64, 0x5C));
                 fprintf(stderr, "skel:   bone %u %-12s [%7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f | %7.3f %7.3f %7.3f %8.2f]\n", b, bn,

@@ -9,6 +9,7 @@
 #ifndef __cplusplus
 #ifndef ALBW_PIECE32
 #define ALBW_PIECE32(x) _Generic((x), float: albw_piece32_f((float)_Generic((x), float: (x), default: 0.0f)), \
+    double: albw_piece32_f((float)_Generic((x), double: (x), default: 0.0)), \
     default: (uint32_t)(x))
 static inline uint32_t albw_piece32_f(float f) { uint32_t u; __builtin_memcpy(&u, &f, 4); return u; }
 #endif

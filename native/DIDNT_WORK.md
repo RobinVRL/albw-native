@@ -286,3 +286,30 @@ Particle effects (nw::eft) missing everywhere (2026-11-16, open; PLAN "Critical 
 | The title creates the fairy through 002E1B70 / 002E1BB4 | read the sources | camera controller helpers (data_00708998 + 0x18), not effects |
 | Find CreateEmitterSet statically | callers into 003E7000-003F8000 (only 003EF0F8, 003F7C78 ClearResource, 003F7D70 are called from game code), users of the set / emitter pool sizes 0x288 / 0x2B0 (003EA664 / 003EAA88 / 003EC2CC / 003EE804 sit in a function table at 0x7162E8; 003E2B04 / 0048E924 are math) | not found: creation goes through virtual calls. Next: Azahar gdbstub breakpoint on the emitter draw (EU 003F43BC / 003F4D14 / 003F5478 / 003F5714) at the title logo, walk the call chain up to the creator (needs an unlocked desktop: X11 windows are not mapped while KDE is locked, and Azahar with QT_QPA_PLATFORM=offscreen segfaults) |
 | Even created emitters would draw | render_exec_cmds runs only recorded ops; the eft draw path writes raw PICA commands; render/effects.c has the GLSL only (stripe programs 14 / 17 / 19 unwritten) | a native eft producer is needed as well |
+
+Particle drawing (BOOT_LOG 121, 2026-11-16):
+| Hypothesis | Test | Result |
+|---|---|---|
+| Hook the per-pass draw 002E39E8 to catch the eft blocks | wrap it, ALBW_RAW_DUMP=884 | wrong place: the emitter draws run in 002E3DF4 -> 003F8250 into the eft library's own double-buffered command buffers (cursor at *DAT_003ef2d4), not through CURRENT_BUFADDR; 002E39E8 only adds the pass camera uniforms. Hook 003F8250 with the eft cursor |
+| Rebase the attribute base 0x18000000 onto host VRAM | title fairy drew, dream crashed (fault = host VRAM + 0x046DAC80) | only right for VRAM buffers: offsets are physical - 0x18000000; device-memory buffers keep host addresses (identity GetPhysicalAddr), so rebase base + offset only when it lands in the physical VRAM window |
+| The dream's buffers use FCRAM physical addresses (0x20000000 + device-memory offset) | map [0x20000000, + device size) -> GetDeviceMemoryAddress | wrong: no address in that window ever reached the decoder (debug print never fired); the crash came from the base rebase above |
+| A fresh register shadow per translated range | dream crash at frame 2757, fault = the buffer offset alone | a block relies on state an earlier block set (attribute base 0x200): the live shadow (registers, fixed attributes, program variant) must persist across ranges like GPU state |
+| Wrap decomp functions with llvm-objcopy --redefine-sym | (design) | renames the callers inside the game object too; instead add func_X__decomp at the -ffunction-sections section start (tools/link.sh, native/wraps.txt) |
+
+Fog (BOOT_LOG 122):
+| Hypothesis | Test | Result |
+|---|---|---|
+| Fog state is in the model command blobs | ALBW_RAW_DUMP, code-pool scan for 0xE1/0xE6 headers | no: written per frame by 0026EB74 (scene fog object), 002E39E8 (eft pass) and 003CC288 (LUT builder) as raw words |
+| Treat every 0xE0 write as combiner state | (design) | 0xE0 is shared: byte 0 fog mode, byte 2 z flip, byte 1 combiner buffer bits - a fog-only write (mask 5) must not re-emit the combiner buffer configuration |
+
+## Scripted yard scene (2026-11-16)
+| idea | why it was wrong |
+|---|---|
+| the dash fails because 001EA96C loses the x word of its position add (BOOT_LOG 127) | that block (EU 1EAAC0..1EAB38) only runs when riding a moving object (params+0x95, state+0x3BAE, 002C1634); the lost store is real but not on the dash path |
+| the flow interpreter walks a different node path in the port | the current-node pointer sequence (Azahar watch on flow +0xF0 vs port) is identical |
+| the rail-move node's parameter is 37 (node 0x...95D00 bytes 05 00 25 01) | that is the preceding node; the rail node is 0x...960D0 (0B 00 64 01), identical bytes in both games: the u8 parameter reader returned 0x164 |
+| the camera pan after the dash is a camera bug | the camera follows Link, who never moved |
+| the vane bubbles are drawn but invisible | no particle program is drawn at the vane at all (frame 1500 render dump); the vane actor is not in its sleeping look either (open eyes) |
+| the candle flame is invisible because the eft range was wrong (BOOT_LOG 130) | after the fix the sconce set draws (2 emitters, glow only); the flame shape Azahar shows is a different element |
+| the candle flame is rejected by depth / alpha / stencil / culling | ALBW_EFT_FRAG=d / a / c / s change nothing; only b (blend off) shows the glow quad: the glow is drawn and simply faint (alpha 0.25 / 0.58) |
+| ALBW_EFT_SETLOG / ALBW_EFT_TRACE print nothing after a state load | debug statics of saved modules are restored with the state (off at save time); read the env per call or set from gdb (SAVESTATES.md) |
