@@ -111,3 +111,11 @@ func_002C30E8  renderTexture_DrawAll               # per texture: draw, then ren
 func_00561B30  gr_RenderTarget_MakeCommand         # nn::gr: frame-buffer bind command (native: ROP_TARGET, kept in the op pool)
 func_0014C108  render_TopScreenPass                # left-eye top-screen pass
 func_0014B788  render_BottomScreenPass
+
+# --- cast attachments (BOOT_LOG 160q)
+func_004C7A54  castAttachment_Update               # attached model (sword, staff) follows its bone; setAlpha(cast slot alpha)
+func_00582C90  castMgr_GetSlotAlpha                # float alpha of a cast slot, 1.0 when empty
+func_00582DA4  castMgr_GetSlotBoneMatrix
+func_002C3EB4  model_SetAlpha                      # vt+0x18 (model, layer, float alpha): clamps 0..1, switches draw layers
+func_004D08D4  model_Construct
+func_004CEF4C  model_IsVisibleThisFrame
