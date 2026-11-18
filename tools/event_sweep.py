@@ -95,6 +95,14 @@ def main():
         keep = set(a.only.split(","))
         todo = [t for t in todo if t[1] in keep]
     presses = max(1, (a.frames - 60) // 30)
+    # run a private copy of the game (with its .ssmap / .map): relinking build/albw during a long
+    # sweep must not break or change the runs
+    bindir = tempfile.mkdtemp(prefix="albw_sweep_bin_")
+    for ext in ("", ".ssmap", ".map"):
+        src = os.path.join(ROOT, "build", "albw" + ext)
+        if os.path.exists(src):
+            shutil.copy2(src, os.path.join(bindir, "albw" + ext))
+    binary = os.path.join(bindir, "albw")
     for flow, name in todo:
         if name in done:
             continue
@@ -109,7 +117,7 @@ def main():
         if a.shots:
             env.update(ALBW_SHOT_DIR=work, ALBW_SHOT="%d,%d" % (150 + 120, last - 20))
         try:
-            p = subprocess.run([os.path.join(ROOT, "build", "albw")], cwd=ROOT, env=env, capture_output=True,
+            p = subprocess.run([binary], cwd=ROOT, env=env, capture_output=True,
                                text=True, errors="replace", timeout=240)
             log, rc = p.stdout + p.stderr, p.returncode
         except subprocess.TimeoutExpired as e:
