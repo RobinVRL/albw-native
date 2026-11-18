@@ -825,12 +825,16 @@ uint32_t func_003D3800(PadReader *r, PadStatus *out) {
 /* USA 003D48F4 (EU 003D48D4)  TouchPanelReader::ReadLatest(reader, TouchPanelStatus *out)
  * -> bool (a sample was read). Native: bottom-screen touch from plat_input() (0..319, 0..239).
  * Confidence: high. */
+extern long g_plat_frames;
 uint32_t func_003D48F4(void *reader, TouchStatus *out) {
     const PlatInput *in = plat_input();
     if (in->touch && !hid_input_blocked()) {
         out->x = (uint16_t)in->touch_x;
         out->y = (uint16_t)in->touch_y;
         out->touch = 1;
+        static int tr = -1;
+        if (tr < 0) tr = getenv("ALBW_TOUCH_TRACE") != NULL;
+        if (tr) fprintf(stderr, "touch: f=%ld %d,%d\n", g_plat_frames, in->touch_x, in->touch_y);
     } else {
         out->x = 0;
         out->y = 0;

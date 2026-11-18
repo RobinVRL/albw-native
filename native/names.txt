@@ -60,3 +60,22 @@ func_0010EE40  nn_os_GetDeviceMemoryAddress
 func_001022F4  nn_os_GetDeviceMemorySize
 func_004994B0  sead_BufferedSafeString_format
 func_0010FBAC  strcmp
+
+# --- pushable / pullable objects: gravestones MojTomb* (BOOT_LOG 160k; native/PUSHABLES.md)
+func_00348558  player_InteractionCheck            # contact scan, interaction kind (vt+0x4C), A -> action
+func_005244C0  pushable_InteractionKind           # MojTomb vt+0x4C: 15 when stick up and Link south of it
+func_003783F4  player_PushPull_Enter               # states 0x73..0x77 enter: anims, SE_PV_PUSH_PULL
+func_003786B8  player_PushPull_Update              # 0x73 grip: count push/pull frames -> 0x74 / 0x75 move
+func_00176664  pushable_CanMoveDir                 # MojTomb vt+0x58: Link facing up and dir up
+func_00325CF4  pushable_CheckMoveTarget            # target = pos + 1 unit in dir -> vt+0x5C
+func_001766B4  pushable_CanMoveTo                  # MojTomb vt+0x5C: direction check + 00325DE0
+func_00325DE0  pushable_IsTargetFree               # actors in the way, ground height test, sweep 0054EA88
+func_0054E224  pushable_HeightTest_thunk           # vt+0x60 (b 0054E650)
+func_0054E650  pushable_HeightTest                 # (this, ground, height, tolerance) -> 1 = blocked
+func_0054E64C  pushable_HeightTest2                # vt+0x64, same body
+func_0052456C  pushable_GripFrames                 # MojTomb vt+0x54: 46 frames of pushing before it moves
+func_00176314  pushable_IdleUpdate                 # starts the move when the player is in state 0x74
+func_0053F260  player_IsPushMoving                 # player state 0x74 and 005594D0
+func_00176370  pushable_MoveEnter                  # SE_TombMOVE, moving flag +0x4CC
+func_001767D4  pushable_MoveUpdate                 # 90-frame move animation
+func_0054E364  pushable_IsMoving                   # vt+0x6C: byte +0x4CC

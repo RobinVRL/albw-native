@@ -24,6 +24,9 @@
  * Confidence: high (flow), medium (role names). */
 #pragma STDC FP_CONTRACT OFF
 #include "../route/route.h"
+#include <stdio.h>
+#include <stdlib.h>
+extern long g_plat_frames;
 
 extern uint32_t data_00706E20[], data_006F5D5C[], data_00726A60[], data_00726A64[],
     data_00709DF8[], data_007A923C[], data_007A9260[], data_00709D28[], data_00726950[],
@@ -206,7 +209,15 @@ int func_00348558(char *self, uint32_t p2, uint32_t p3)
     _Alignas(8) char sp[0xC8];
     memset(sp, 0, sizeof sp);
     char *r4 = RP(self, 0x2C) + 0x20;
-    if (func_00361A20((int)RF(self, 0x54, uint32_t), p2, p3) != 0) {
+    int gate = func_00361A20((int)RF(self, 0x54, uint32_t), p2, p3);
+    {
+        static int itr0 = -1;
+        if (itr0 < 0) itr0 = getenv("ALBW_INTERACT_TRACE") != NULL;
+        if (itr0 && (RF(RP(RP(self, 0x48), 0x14), 0, uint32_t) & 1))
+            fprintf(stderr, "interact: f=%ld A pressed: gate 00361A20 = %d, contacts %u\n", g_plat_frames, gate,
+                    RF(RP(self, 0x54) + 0x394, 0, uint32_t));
+    }
+    if (gate != 0) {
         RF(r4, 0x1C, uint32_t) = 0;
         char *lst = RP(self, 0x54) + 0x394;
         uint32_t *r5 = GPTR_TO(uint32_t, RF(lst, 8, uint32_t));
@@ -222,6 +233,10 @@ int func_00348558(char *self, uint32_t p2, uint32_t p3)
             RF(r4, 0x1C, uint32_t) = RF(ent, 8, uint32_t);
             int kind = RVFN(int (*)(char *, char *), a, 0x4C)(a, r4 + 8);
             RF(r4, 0, uint8_t) = (uint8_t)kind;
+            static int itr = -1;
+            if (itr < 0) itr = getenv("ALBW_INTERACT_TRACE") != NULL;
+            if (itr) fprintf(stderr, "interact: f=%ld actor %p vt %#x kind %d allowed %d\n", g_plat_frames, (void *)a,
+                             RF(a, 0, uint32_t), kind, func_00553720((int)GPTR_OF(self), kind));
             if (func_00553720((int)GPTR_OF(self), kind) == 0) {
                 RF(r4, 0, uint8_t) = 0;
                 continue;
@@ -261,6 +276,7 @@ int func_00348558(char *self, uint32_t p2, uint32_t p3)
                 U32(0x38) = GPTR_OF(sp + 0xA0);
                 U32(0x30) = 0x38;
                 if (func_004A8030((int)data_00709D28[0], (int *)(sp + 0x1C), 3) != 0) {
+                    if (itr) fprintf(stderr, "interact:   line-of-sight probe blocked -> rejected\n");
                     RF(r4, 0, uint8_t) = 0;
                     continue;
                 }

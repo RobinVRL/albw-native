@@ -957,13 +957,19 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         done = g_plat_frames >= atol(rest);
     } else if (!strcmp(op, "wait")) {
         done = el >= atol(rest);
-    } else if (!strcmp(op, "press")) {
+    } else if (!strcmp(op, "press") || !strcmp(op, "hold")) {   /* hold: no release frame after it */
         long hold = 6;
         int k = sscanf(rest, " %15[^ ;] %ld", arg, &hold);
         if (k < 1) hold = 6;
-        uint32_t bit = route_button(arg, strlen(arg));
+        uint32_t bit = 0;   /* "A+CDOWN": several buttons at once */
+        for (const char *b = arg; *b;) {
+            size_t n = strcspn(b, "+");
+            bit |= route_button(b, n);
+            b += n;
+            if (*b == '+') b++;
+        }
         if (el < hold) keys = bit;
-        done = el >= hold + 1;
+        done = op[0] == 'h' ? el >= hold - 1 : el >= hold + 1;
         if (bit & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_CPAD_LEFT | KEY_CPAD_RIGHT) && el < hold) {
             *pad_x = (bit & KEY_CPAD_RIGHT ? 156 : 0) - (bit & KEY_CPAD_LEFT ? 156 : 0);
             *pad_y = (bit & KEY_CPAD_UP ? 156 : 0) - (bit & KEY_CPAD_DOWN ? 156 : 0);
