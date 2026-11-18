@@ -41,6 +41,14 @@
 #define SND_RESULT_ALREADY_INITIALIZED 0x0820ABF9u   /* 003DBB7C's "already initialised" */
 #define SND_PRIORITY_MAX 0x7FFF
 
+/* ALBW_SND_TRACE=1: voice allocation, play / stop and wave buffers on stderr (debug) */
+extern long g_plat_frames;
+static int snd_trace(void) {
+    static int t = -1;
+    if (t < 0) { const char *e = getenv("ALBW_SND_TRACE"); t = e && *e && *e != '0'; }
+    return t;
+}
+
 /* ------------------------------------------------------------------ game-memory structures */
 
 /* nn::snd::WaveBuffer (game memory, 0x18 bytes; layout from AppendWaveBuffer 003E14A8 and
@@ -698,6 +706,7 @@ void *func_003DB6DC(int32_t priority, SndDropFn cb, uintptr_t arg) {
     v->mono_cutoff = 0;
     memset(v->biquad, 0, sizeof v->biquad);
     aud_unlock();
+    if (snd_trace()) fprintf(stderr, "snd: f=%ld alloc voice %d prio %d\n", g_plat_frames, i, (int)priority);
     return v;
 }
 
@@ -731,6 +740,7 @@ void func_003E16D4(void *voice, int32_t state) {
     g_voice[i].state = (uint8_t)state;
     aud_voice_set_state(i, state);
     aud_unlock();
+    if (snd_trace()) fprintf(stderr, "snd: f=%ld voice %d state %d\n", g_plat_frames, i, (int)state);
 }
 
 /* USA 003E14A0 (EU 003E1480, impl 003E14A8) nn::snd::Voice::AppendWaveBuffer(WaveBuffer *):
@@ -761,6 +771,8 @@ void func_003E14A0(void *voice, SndWaveBuffer *wb) {
         a.has_ctx = true;
     }
     wb_status(wb, AUD_WB_WAIT);
+    if (snd_trace()) fprintf(stderr, "snd: f=%ld voice %d buffer %#x len %u loop %d ctx %d\n", g_plat_frames, i,
+                             wb->bufferAddress, a.length, (int)a.loop, (int)a.has_ctx);
     if (aud_voice_append(i, &a) != 0) {
         fprintf(stderr, "snd: voice %d wave buffer queue full, buffer dropped\n", i);
         wb_status(wb, AUD_WB_DONE);

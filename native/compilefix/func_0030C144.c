@@ -6,7 +6,8 @@
  * z += +0x78; then 0030A200(this, sp, ...). Ghidra dropped the stores, so the position was
  * whatever the frame held (zero): the house cutscene camera looked at the room origin instead of
  * Link's bed, and the mesh culling hid most of the room (BOOT_LOG 111 [3d]).
- * CLASS lost Vec3 stack store (ldm/stm). Confidence: high (instruction-level). */
+ * CLASS lost Vec3 stack store (ldm/stm). Confidence: high (instruction-level).
+ * Second fix (BOOT_LOG 159): command 0x29 (Master Sword event) lost its SafeString stack stores. */
 #include "ghidra_types.h"
 
 extern int func_00290294(int param_1,int param_2);
@@ -108,6 +109,10 @@ undefined4 func_0030C144(int *param_1)
     else if (uVar2 == 0x29) {
       func_00290294(*DAT_0030c438,0);
       piVar3 = DAT_0030c444;
+      /* EU 30C2EC..30C304: a SafeString at sp {vtable DAT_0030c440, name *DAT_0030c43c}; Ghidra
+       * dropped both stores (Master Sword event crashed in 00587FCC hashing a garbage string) */
+      *(undefined4 *)(albw_frame + 0x0) = DAT_0030c440;
+      *(undefined4 *)(albw_frame + 0x4) = *(undefined4 *)(uintptr_t)DAT_0030c43c;
       iVar6 = func_00540848(*DAT_0030c444,&stack0xffffffe0);
       if (iVar6 != 1) {
         func_004EB4A4(*piVar3);
