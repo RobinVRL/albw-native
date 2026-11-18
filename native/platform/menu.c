@@ -11,6 +11,8 @@
  *  Video  Windows (separate / joined), Layout preset, Swap screens, Filter, Integer scale,
  *         Resolution (internal render scale 1x..8x), Fullscreen, Edit layout (the F3 mouse editor),
  *         Menu style (this menu as a bar across the top or as a centered panel with the same tabs)
+ *  Controls  Device (keyboard / controller), one row per input.cfg action (Enter: press the new
+ *         key / button, - or Delete: clear), Reset to defaults; saved to input.cfg at once
  *  Debug  Particles, Fog, Show FPS (window title), Speed (25 % .. unlimited). The retail code has
  *         no hidden debug menu to expose (searched: the only developer leftovers are the course
  *         list's E3Field / Test* names, whose course files are not on the ROM, the Dbg:* heaps and
@@ -26,6 +28,31 @@
 
 /* g_menu_open, g_menu_sel, g_quit_req, g_menu_note: declared at the top of platform.c */
 static GLuint menu_prog, menu_vao, menu_vbo, menu_tex;
+static int g_menu_scroll, g_menu_max_rows = 1000;   /* long menus (Controls) scroll */
+static int g_bind_pad;                               /* Controls: 0 keyboard, 1 controller */
+static int g_bind_wait = -1;                         /* Controls: action waiting for a key / button */
+
+static const char *bind_action_label(int a) {
+    static const char *const L[IN_ACTION_COUNT] = {
+        "A", "B", "X", "Y", "L", "R", "ZL", "ZR", "Start", "Select",
+        "D-pad up", "D-pad down", "D-pad left", "D-pad right",
+        "Circle pad up", "Circle pad down", "Circle pad left", "Circle pad right",
+        "C-stick up", "C-stick down", "C-stick left", "C-stick right",
+        "Input menu", "Esc menu", "Other screen"};
+    return (unsigned)a < IN_ACTION_COUNT ? L[a] : "?";
+}
+
+/* set (or clear: name "") the binding of action a for the current device and save input.cfg */
+static void bind_set(int a, const char *name) {
+    InputConfig c;
+    input_get_config(&c);
+    char *dst = g_bind_pad ? c.pad.bind[a] : c.key[a];
+    snprintf(dst, IN_BIND_LEN, "%s", name);
+    if (input_set_config(&c) == 0 && input_save(NULL) == 0)
+        snprintf(g_menu_note, sizeof g_menu_note, name[0] ? "%s = %s (saved)" : "%s cleared (saved)", bind_action_label(a), name);
+    else
+        snprintf(g_menu_note, sizeof g_menu_note, "Cannot save: %s", input_last_error());
+}
 static GLint menu_loc_size;
 
 typedef struct { float x, y, u, v, r, g, b, a; } MenuVtx;
@@ -34,9 +61,13 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_COUNT };
 
 typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
+#define MI_BIND_BASE 200   /* MI_BIND_BASE + InAction: one Controls row per action */
+static int menu_controls_items[2 + IN_ACTION_COUNT] = {MI_BIND_DEV, MI_BIND_RESET};   /* rest: menu_gl_init */
+static const char *const menu_controls_notes[] = {"Enter: press the new key / button   - or Delete: clear",
+                                                  "Several keys: edit input.cfg (\"A, B\" or \"Ctrl&X\")", NULL};
 static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_QUIT};
 static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
 static const int menu_debug_items[] = {MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
@@ -46,6 +77,7 @@ static const char *const menu_debug_notes[] = {"Game debug menus: none in the re
 static const MenuDef menu_defs[] = {
     {"File", menu_file_items, MENU_N(menu_file_items), NULL},
     {"Video", menu_video_items, MENU_N(menu_video_items), NULL},
+    {"Controls", menu_controls_items, MENU_N(menu_controls_items), menu_controls_notes},
     {"Debug", menu_debug_items, MENU_N(menu_debug_items), menu_debug_notes},
 };
 #define MENU_COUNT MENU_N(menu_defs)
@@ -63,6 +95,7 @@ static const char *MENU_FS =
     "void main() { o = vec4(v_col.rgb, v_col.a * texture(tex, v_uv).r); }\n";
 
 static void menu_gl_init(void) {
+    for (int a = 0; a < IN_ACTION_COUNT; a++) menu_controls_items[2 + a] = MI_BIND_BASE + a;
     if (menu_prog) return;
     menu_prog = gl_program(MENU_VS, MENU_FS);
     menu_loc_size = glGetUniformLocation(menu_prog, "size");
@@ -126,8 +159,19 @@ static SDL_Window *menu_window(void) {
 static int menu_fullscreen(void) { return (SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN) != 0; }
 
 static void menu_label(int i, char *buf, size_t n) {
+    if (i >= MI_BIND_BASE && i < MI_BIND_BASE + IN_ACTION_COUNT) {
+        int a = i - MI_BIND_BASE;
+        if (a == g_bind_wait) { snprintf(buf, n, "%-16s ... press a %s (Esc: cancel)", bind_action_label(a), g_bind_pad ? "button" : "key"); return; }
+        InputConfig c;
+        input_get_config(&c);
+        const char *b = g_bind_pad ? c.pad.bind[a] : c.key[a];
+        snprintf(buf, n, "%-16s %s", bind_action_label(a), b[0] ? b : "-");
+        return;
+    }
     switch (i) {
     case MI_RESUME: snprintf(buf, n, "Resume"); break;
+    case MI_BIND_DEV: snprintf(buf, n, "Device         < %s >", g_bind_pad ? "Controller" : "Keyboard"); break;
+    case MI_BIND_RESET: snprintf(buf, n, "Reset %s controls to defaults", g_bind_pad ? "controller" : "keyboard"); break;
     case MI_WINDOWS: snprintf(buf, n, "Windows        < %s >", g_separate ? "Separate" : "Joined"); break;
     case MI_SINGLE: snprintf(buf, n, "Single screen  < %s >", g_layout_cfg.single_screen ? "On (Tab: other screen)" : "Off"); break;
     case MI_PRESET: snprintf(buf, n, "Layout         < %s >", layout_preset_name(g_layout_cfg.preset)); break;
@@ -184,7 +228,8 @@ static void menu_size(int m, float row, size_t *chars, float *h, int *nnotes) {
     for (const char *const *t = d->notes; t && *t; t++, nn++)
         if (strlen(*t) * 0.75 > longest) longest = (size_t)(strlen(*t) * 0.75) + 1;
     *chars = longest + 3;
-    *h = d->n * row + row * 0.5f + (nn ? (nn + 0.5f) * row * 0.8f : 0);
+    int rows = d->n < g_menu_max_rows ? d->n : g_menu_max_rows;
+    *h = rows * row + row * 0.5f + (nn ? (nn + 0.5f) * row * 0.8f : 0);
     *nnotes = nn;
 }
 
@@ -195,6 +240,8 @@ static void menu_geom(int ww, int wh, MenuGeom *g) {
     g->s = sc;
     g->row = MENU_FONT_H * sc * 1.5f;
     g->bar_h = MENU_FONT_H * sc * 1.7f;
+    g_menu_max_rows = (int)((wh - g->bar_h - g->row * 4.5f) / g->row);   /* room for the notes */
+    if (g_menu_max_rows < 4) g_menu_max_rows = 4;
     float cw = MENU_FONT_W * sc;
     size_t chars;
     float h;
@@ -237,7 +284,25 @@ static void menu_geom(int ww, int wh, MenuGeom *g) {
 
 static void menu_activate(int i, int dir) {
     g_menu_note[0] = 0;
+    if (i >= MI_BIND_BASE && i < MI_BIND_BASE + IN_ACTION_COUNT) {
+        if (dir < 0) bind_set(i - MI_BIND_BASE, "");
+        else { g_bind_wait = i - MI_BIND_BASE; input_capture_reset(); }
+        return;
+    }
     switch (i) {
+    case MI_BIND_DEV: g_bind_pad ^= 1; break;
+    case MI_BIND_RESET: {
+        InputConfig c, d;
+        input_get_config(&c);
+        input_defaults(&d);
+        for (int a = 0; a < IN_ACTION_COUNT; a++) {
+            if (g_bind_pad) memcpy(c.pad.bind[a], d.pad.bind[a], IN_BIND_LEN);
+            else memcpy(c.key[a], d.key[a], IN_BIND_LEN);
+        }
+        if (input_set_config(&c) == 0 && input_save(NULL) == 0) snprintf(g_menu_note, sizeof g_menu_note, "Defaults restored (saved)");
+        else snprintf(g_menu_note, sizeof g_menu_note, "Cannot save: %s", input_last_error());
+        break;
+    }
     case MI_RESUME: g_menu_open = 0; break;
     case MI_WINDOWS: plat_set_windows(!g_separate, 1); break;
     case MI_PRESET: {
@@ -307,6 +372,7 @@ static void menu_move(int d) {
 static void menu_switch(int d) {
     g_menu_cur = (g_menu_cur + d + MENU_COUNT) % MENU_COUNT;
     g_menu_sel = 0;
+    g_menu_scroll = 0;
     g_menu_note[0] = 0;
 }
 static void menu_do(int dir) { menu_activate(menu_defs[g_menu_cur].items[g_menu_sel], dir); }
@@ -328,10 +394,28 @@ static int menu_hit(float mx, float my) {
     }
     if (mx < g.dx || mx > g.dx + g.dw || my < g.dy || my > g.dy + g.dh) return -2;
     int i = (int)((my - (g.dy + g.row * 0.25f)) / g.row);
-    return i >= 0 && i < menu_defs[g_menu_cur].n ? i : -1;
+    if (i < 0 || i >= g_menu_max_rows) return -1;
+    i += g_menu_scroll;
+    return i < menu_defs[g_menu_cur].n ? i : -1;
 }
 
 static void menu_event(const SDL_Event *e) {
+    if (g_bind_wait >= 0) {   /* Controls: waiting for the new key / button */
+        if (e->type == SDL_EVENT_QUIT || e->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) { g_bind_wait = -1; g_quit_req = 1; g_menu_open = 0; return; }
+        if (e->type == SDL_EVENT_KEY_DOWN && !e->key.repeat && e->key.key == SDLK_ESCAPE) { g_bind_wait = -1; return; }
+        if (e->type == SDL_EVENT_KEY_DOWN && !e->key.repeat && e->key.key == SDLK_DELETE) { bind_set(g_bind_wait, ""); g_bind_wait = -1; return; }
+        input_handle_event(e);
+        char nm[48];
+        uint32_t id;
+        if (input_capture(nm, sizeof nm, &id)) {
+            char err[160];
+            if (input_check_binding(nm, !g_bind_pad, (InAction)g_bind_wait, err, sizeof err) == 0) {
+                bind_set(g_bind_wait, nm);
+                g_bind_wait = -1;
+            }   /* a key while binding the controller (or the reverse): keep waiting */
+        }
+        return;
+    }
     switch (e->type) {
     case SDL_EVENT_QUIT:
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED: g_quit_req = 1; g_menu_open = 0; return;
@@ -343,7 +427,7 @@ static void menu_event(const SDL_Event *e) {
         else if (k == SDLK_DOWN) menu_move(1);
         else if (k == SDLK_LEFT) menu_switch(-1);
         else if (k == SDLK_RIGHT || k == SDLK_TAB) menu_switch(back ? -1 : 1);
-        else if (k == SDLK_MINUS || k == SDLK_KP_MINUS) menu_do(-1);
+        else if (k == SDLK_MINUS || k == SDLK_KP_MINUS || k == SDLK_DELETE) menu_do(-1);
         else if (k == SDLK_PLUS || k == SDLK_EQUALS || k == SDLK_KP_PLUS) menu_do(1);
         else if ((k == SDLK_RETURN || k == SDLK_KP_ENTER || k == SDLK_SPACE) && !e->key.repeat) menu_do(back ? -1 : 1);
         return;
@@ -416,9 +500,14 @@ static void menu_draw(int ww, int wh) {
     }
     menu_rect(g.dx, g.dy, g.dw, g.dh, 0.08f, 0.10f, 0.12f, 0.94f);                       /* dropdown */
     char buf[96];
-    for (int k = 0; k < d->n; k++) {
+    int rows = d->n < g_menu_max_rows ? d->n : g_menu_max_rows;
+    if (g_menu_sel < g_menu_scroll) g_menu_scroll = g_menu_sel;
+    if (g_menu_sel >= g_menu_scroll + rows) g_menu_scroll = g_menu_sel - rows + 1;
+    if (g_menu_scroll > d->n - rows) g_menu_scroll = d->n - rows;
+    if (g_menu_scroll < 0) g_menu_scroll = 0;
+    for (int k = g_menu_scroll; k < g_menu_scroll + rows; k++) {
         int i = d->items[k];
-        float y = g.dy + g.row * 0.25f + k * g.row;
+        float y = g.dy + g.row * 0.25f + (k - g_menu_scroll) * g.row;
         if (k == g_menu_sel) menu_rect(g.dx + 4 * s, y, g.dw - 8 * s, g.row, 0.85f, 0.70f, 0.25f, 0.25f);
         menu_label(i, buf, sizeof buf);
         float c = i == MI_SWAP && g_separate ? 0.5f : 1.0f;   /* swap only arranges the joined window */
@@ -426,7 +515,7 @@ static void menu_draw(int ww, int wh) {
     }
     for (int k = 0; k < g.nnotes; k++) {
         float hs = s * 0.75f;
-        float y = g.dy + g.row * 0.25f + d->n * g.row + g.row * 0.3f + k * g.row * 0.8f;
+        float y = g.dy + g.row * 0.25f + rows * g.row + g.row * 0.3f + k * g.row * 0.8f;
         menu_text(g.dx + cw, y, hs, d->notes[k], 0.55f, 0.55f, 0.55f, 1);
     }
 

@@ -1079,6 +1079,17 @@ int plat_poll(void) {
         in.touch_y = g_route_ty;
     }
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
+    if (g_layout_cfg.single_screen) {
+        /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
+         * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
+         * does not use Select on the field. */
+        static int start_prev;
+        int st = (in.held & KEY_START) != 0;
+        if (st && !start_prev) plat_single_screen_flip();
+        start_prev = st;
+        in.held &= ~KEY_START;
+        if (in.held & KEY_SELECT) in.held = (in.held & ~KEY_SELECT) | KEY_START;
+    }
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
     return 1;

@@ -57,7 +57,7 @@ planned.
 Saves go to `~/.local/share/albw-port/save`. The 3DS game saves (`Save_*.bin`) are the game's own
 format.
 
-### Controls (keyboard; rebind in the F1 menu)
+### Controls (keyboard; rebind in Esc > Controls)
 
 | 3DS | Key | | 3DS | Key |
 |---|---|---|---|---|
@@ -76,6 +76,9 @@ format.
 | F6 / F7 | save state / load state |
 | F9 | single-screen mode on / off |
 | Tab (controller: right-stick click) | single-screen mode: show the other screen (items, map) and back |
+
+In single-screen mode Start brings up the bottom screen (map, Gear, Items) and Select opens the
+game's Pause. Rebind any key or button in Esc > Controls (saved to `~/.config/albw-port/input.cfg`).
 
 A game controller works too.
 
