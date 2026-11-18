@@ -31,6 +31,8 @@
  * Confidence: high (flow), medium (role names). */
 #pragma STDC FP_CONTRACT OFF
 #include "../route/route.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 extern uint32_t data_00712468[], data_0070BB18[], data_007A9248[], data_0070B928[],
     data_0070B960[], data_0070B9E8[], data_0070BB80[];
@@ -138,6 +140,8 @@ static void collect_nodes(char *sb)
 static void submit_models(char *sb, int visible, int shadow, float *mtx, float *pos, int mgr)
 {
     int32_t r5 = 0;
+    static int vt = -1; int n_tot = 0, n_ok = 0;
+    if (vt < 0) vt = getenv("ALBW_VIS_TRACE") != NULL;
     if (RF(sb, 0x5C, int32_t) <= 0)
         return;
     do {
@@ -154,6 +158,7 @@ static void submit_models(char *sb, int visible, int shadow, float *mtx, float *
             model_erase(sb, r5);
         } else {
             uint8_t ok = func_004CEF4C((int *)m, (int)RF(sb, 0x28CC, uint32_t));
+            n_tot++; n_ok += ok != 0;
             if (visible && ok && RF(m, 0x13C, int32_t) >= 0 && (RF(m, 0x164, uint32_t) & 0x1000) == 0) {
                 uint32_t fl = RF(m, 0x164, uint32_t), a = RF(m, 0x13C, uint32_t);
                 if (fl & 0x2000000) {
@@ -168,6 +173,8 @@ static void submit_models(char *sb, int visible, int shadow, float *mtx, float *
             r5++;
         }
     } while (RF(sb, 0x5C, int32_t) > r5);
+    if (vt) { extern long g_plat_frames __attribute__((weak));
+              fprintf(stderr, "vis: f=%ld visible=%d models %d ok %d\n", &g_plat_frames ? g_plat_frames : 0L, visible, n_tot, n_ok); }
 }
 
 int func_001312BC(char *sb, int param_2)

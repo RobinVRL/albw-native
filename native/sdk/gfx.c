@@ -788,9 +788,13 @@ void func_003E356C(void *start0, void *end0, uint32_t value0, uint16_t ctl0, voi
 
 /* USA 003E35DC (+4 alias 003E35E0)  FlushDataCache(addr, size) wrapper (gsp IPC 0x00080082);
  * ~16 game callers before texture/vertex uploads. Native: one coherent address space, nothing to
- * flush. -> Result 0. Confidence: high. */
-uint32_t func_003E35DC(const void *addr, uint32_t size) { return 0; }
-uint32_t func_003E35E0(const void *addr, uint32_t size) { return 0; }
+ * flush - but the flush is the game's announcement that the CPU wrote this range for the GPU, so
+ * the renderer's texture cache drops what it holds there (render_mem_written). Without it, large
+ * textures (> 256 KB, not re-hashed per frame) kept stale contents when the overworld streamed an
+ * area into reused memory: black / wrong ground after crossing area edges (BOOT_LOG 153).
+ * -> Result 0. Confidence: high. */
+uint32_t func_003E35DC(const void *addr, uint32_t size) { render_mem_written(addr, size); return 0; }
+uint32_t func_003E35E0(const void *addr, uint32_t size) { render_mem_written(addr, size); return 0; }
 
 /* USA 003E3610 (+4 alias 003E3614)  GX command 5 FlushCacheRegions + command 1
  * ProcessCommandList (addr, size, flush, flags) = submit PICA words. Native: discarded (Tier B
@@ -889,7 +893,10 @@ uint32_t func_003E3CB0(void *session, uint32_t reg, void *out, uint32_t size) {
 
 /* USA 003E3D74  IPC FlushDataCache (session*, process, addr, size); USA 003E3DB0 IPC
  * SaveVramSysArea (session*); USA 003E3DD8 IPC TriggerCmdReqQueue (session*). -> Result 0. High. */
-uint32_t func_003E3D74(void *session, uint32_t process, const void *addr, uint32_t size) { return 0; }
+uint32_t func_003E3D74(void *session, uint32_t process, const void *addr, uint32_t size) {
+    render_mem_written(addr, size);   /* see 003E35DC */
+    return 0;
+}
 uint32_t func_003E3DB0(void *session) { return 0; }
 uint32_t func_003E3DD8(void *session) { return 0; }
 
