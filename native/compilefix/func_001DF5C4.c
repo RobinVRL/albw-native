@@ -46,7 +46,7 @@ uint32_t func_001E0634(char *self, int32_t frames, float value)
     if (!func_0057D86C(W(self, 0x24)))
         return 0;
     if (frames < 0) frames = 0;
-    return func_0048BD2C((uint32_t *)(self + 0x24), frames, F(self, 0x104));
+    return func_0048BD2C((uint32_t *)(uintptr_t)W(self, 0x24), frames, F(self, 0x104));   /* the handle stored at +0x24 (EU 1E0694 `ldr r0, [r4, #0x24]`) */
 }
 
 /* nw::snd fade at +0xB4 {start, end, frames, current}: start = current value, end = max(v, 0) */
