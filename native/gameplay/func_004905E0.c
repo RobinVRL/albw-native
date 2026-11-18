@@ -40,3 +40,13 @@ int32_t albw_atan_idx(float t) {
 int func_004905E0(float t) {
     return albw_atan_idx(t);
 }
+
+/* The atan2 the game inlines (25 copies in 00235ED4: EU 23652C..23663C) is 004904CC with the roles of
+ * its two operands exchanged: the inline code compares s2 ("a") first, 004904CC compares its second
+ * operand first. Checked branch by branch against EU 23652C..23663C (both >= 0: a < b ? 0x40000000 -
+ * A(a/b) : A(b/a); a >= 0 > b; a < 0 <= b; both < 0 with bhi). Used by tools/atan2_inline_fix.py to
+ * replace the inlined copies Ghidra decoded wrongly (BOOT_LOG 160d). */
+int32_t albw_atan2_inline(float a, float b)
+{
+    return albw_atan2_idx(b, a);
+}

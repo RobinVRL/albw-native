@@ -1,3 +1,4 @@
+int albw_atan2_inline(float a, float b);
 /* compilefix: USA 00247830 (EU 00247830), Ghidra-derived (build/ghidra_analyzed4).
  * Failed to compile: operand of type 'float' cannot be cast to a pointer type
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
@@ -150,69 +151,8 @@ LAB_00247b00:
     if (*(char *)(param_1 + 0x4dc) != '\0') {
       fVar14 = *(float *)(param_1 + 0x4d8);
       fVar13 = *(float *)(param_1 + 0x4d0);
-      uVar12 = in_fpscr & 0xfffffff | (uint)(fVar14 == fVar15) << 0x1e;
-      bVar10 = false;
-      if (SUB41(uVar12 >> 0x1e,0)) {
-        uVar12 = in_fpscr & 0xfffffff | (uint)(fVar13 == fVar15) << 0x1e;
-        bVar10 = SUB41(uVar12 >> 0x1e,0);
-      }
-      if (bVar10) {
-        iVar5 = 0;
-      }
-      else {
-        uVar12 = uVar12 & 0xfffffff;
-        if (NAN(fVar14) || NAN(fVar15)) {
-          if (NAN(fVar13) || NAN(fVar15)) {
-            uVar12 = uVar12 | (uint)(fVar14 == fVar13) << 0x1e | (uint)(fVar13 <= fVar14) << 0x1d;
-            bVar3 = (byte)(uVar12 >> 0x18);
-            if ((bool)(bVar3 >> 5 & 1) && !(bool)(bVar3 >> 6)) {
-              iVar5 = func_004905E0(fVar14 / fVar13);
-              iVar5 = -0x40000000 - iVar5;
-            }
-            else {
-              iVar5 = func_004905E0(fVar13 / fVar14);
-              iVar5 = iVar5 + -0x80000000;
-            }
-          }
-          else {
-            fVar14 = -fVar14;
-            uVar1 = uVar12 | (uint)(fVar14 < fVar13) << 0x1f;
-            uVar12 = uVar1 | (uint)(NAN(fVar14) || NAN(fVar13)) << 0x1c;
-            if ((byte)(uVar1 >> 0x1f) == ((byte)(uVar12 >> 0x1c) & 1)) {
-              iVar5 = func_004905E0(fVar13 / fVar14);
-              iVar5 = -0x80000000 - iVar5;
-            }
-            else {
-              iVar5 = func_004905E0(fVar14 / fVar13);
-              iVar5 = iVar5 + 0x40000000;
-            }
-          }
-        }
-        else if (NAN(fVar13) || NAN(fVar15)) {
-          fVar13 = -fVar13;
-          uVar1 = uVar12 | (uint)(fVar14 < fVar13) << 0x1f;
-          uVar12 = uVar1 | (uint)(NAN(fVar14) || NAN(fVar13)) << 0x1c;
-          if ((byte)(uVar1 >> 0x1f) == ((byte)(uVar12 >> 0x1c) & 1)) {
-            iVar5 = func_004905E0(fVar13 / fVar14);
-            iVar5 = -iVar5;
-          }
-          else {
-            iVar5 = func_004905E0(fVar14 / fVar13);
-            iVar5 = iVar5 + -0x40000000;
-          }
-        }
-        else {
-          uVar1 = uVar12 | (uint)(fVar14 < fVar13) << 0x1f;
-          uVar12 = uVar1 | (uint)(NAN(fVar14) || NAN(fVar13)) << 0x1c;
-          if ((byte)(uVar1 >> 0x1f) == ((byte)(uVar12 >> 0x1c) & 1)) {
-            iVar5 = func_004905E0(fVar13 / fVar14);
-          }
-          else {
-            iVar5 = func_004905E0(fVar14 / fVar13);
-            iVar5 = 0x40000000 - iVar5;
-          }
-        }
-      }
+      uVar12 = in_fpscr & 0xfffffff;   /* rounding-mode bits, still read below */
+      iVar5 = albw_atan2_inline(fVar14,fVar13);   /* inlined atan2Idx (atan2_inline_fix) */
       local_7c = (int *)(*(int *)(param_1 + 1000) - iVar5);
       iVar5 = func_0058E2B8((int *)&local_7c);
       fVar13 = (float)VectorUnsignedToFloat(iVar5,(byte)(uVar12 >> 0x15) & 3);

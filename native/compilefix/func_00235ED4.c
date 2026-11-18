@@ -1,3 +1,4 @@
+int albw_atan2_inline(float a, float b);
 /* compilefix: USA 00235ED4 (EU 00235ED4), Ghidra-derived (build/ghidra_analyzed4).
  * Failed to compile: statement requires expression of integer type ('undefined4 *' (aka 'unsigned int *') invalid)
  * Fixed (each an exact C form of the ARM operation; the rest is the converted Ghidra text):
@@ -354,71 +355,8 @@ LAB_002362f0:
           local_bc = (float *****)ppppppfVar33;
           pfVar13 = (float *)func_00520FC0();
           func_00115C70((float *)ppppppfVar29,pfVar13,(float *)(iVar26 + 4));
-          uVar17 = in_fpscr & 0xfffffff;
-          in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_bc) == ALBW_AS_F32(ppppppfVar33)) << 0x1e;
-          bVar8 = false;
-          if (SUB41(in_fpscr >> 0x1e,0)) {
-            in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_c4) == ALBW_AS_F32(ppppppfVar33)) << 0x1e;
-            bVar8 = SUB41(in_fpscr >> 0x1e,0);
-          }
-          if (bVar8) {
-            iVar12 = 0;
-          }
-          else {
-            in_fpscr = in_fpscr & 0xfffffff;
-            if (NAN(ALBW_AS_F32(local_bc)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-              if (NAN(ALBW_AS_F32(local_c4)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-                in_fpscr = in_fpscr | (uint)(ALBW_AS_F32(local_bc) == ALBW_AS_F32(local_c4)) << 0x1e |
-                           (uint)(ALBW_AS_F32(local_c4) <= ALBW_AS_F32(local_bc)) << 0x1d;
-                bVar7 = (byte)(in_fpscr >> 0x18);
-                if ((bool)(bVar7 >> 5 & 1) && !(bool)(bVar7 >> 6)) {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / ALBW_AS_F32(local_c4));
-                  iVar12 = -0x40000000 - iVar12;
-                }
-                else {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / ALBW_AS_F32(local_bc));
-                  iVar12 = iVar12 + -0x80000000;
-                }
-              }
-              else {
-                fVar30 = -ALBW_AS_F32(local_bc);
-                uVar17 = in_fpscr | (uint)(fVar30 < ALBW_AS_F32(local_c4)) << 0x1f;
-                in_fpscr = uVar17 | (uint)(NAN(fVar30) || NAN(ALBW_AS_F32(local_c4))) << 0x1c;
-                if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / fVar30);
-                  iVar12 = -0x80000000 - iVar12;
-                }
-                else {
-                  iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_c4));
-                  iVar12 = iVar12 + 0x40000000;
-                }
-              }
-            }
-            else if (NAN(ALBW_AS_F32(local_c4)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-              fVar30 = -ALBW_AS_F32(local_c4);
-              uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_bc) < fVar30) << 0x1f;
-              in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_bc)) || NAN(fVar30)) << 0x1c;
-              if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_bc));
-                iVar12 = -iVar12;
-              }
-              else {
-                iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / fVar30);
-                iVar12 = iVar12 + -0x40000000;
-              }
-            }
-            else {
-              uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_bc) < ALBW_AS_F32(local_c4)) << 0x1f;
-              in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_bc)) || NAN(ALBW_AS_F32(local_c4))) << 0x1c;
-              if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / ALBW_AS_F32(local_bc));
-              }
-              else {
-                iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / ALBW_AS_F32(local_c4));
-                iVar12 = 0x40000000 - iVar12;
-              }
-            }
-          }
+          uVar17 = in_fpscr & 0xfffffff;   /* rounding-mode bits, still read below */
+          iVar12 = albw_atan2_inline(ALBW_AS_F32(local_bc),ALBW_AS_F32(local_c4));   /* inlined atan2Idx (atan2_inline_fix) */
           *(int *)(iVar25 + iVar24 * 0x104 + 0xd0) = iVar12;
         }
         switch((int)(uintptr_t)(local_c8)) {
@@ -557,71 +495,8 @@ LAB_002367f0:
             local_b0 = (float *****)ppppppfVar33;
             pfVar13 = (float *)func_00520FC0();
             func_00115C70((float *)local_bc,pfVar13,(float *)(iVar26 + 4));
-            uVar17 = in_fpscr & 0xfffffff;
-            in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_b0) == ALBW_AS_F32(ppppppfVar33)) << 0x1e;
-            bVar8 = false;
-            if (SUB41(in_fpscr >> 0x1e,0)) {
-              in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_b8) == ALBW_AS_F32(ppppppfVar33)) << 0x1e;
-              bVar8 = SUB41(in_fpscr >> 0x1e,0);
-            }
-            if (bVar8) {
-              iVar12 = 0;
-            }
-            else {
-              in_fpscr = in_fpscr & 0xfffffff;
-              if (NAN(ALBW_AS_F32(local_b0)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-                if (NAN(ALBW_AS_F32(local_b8)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-                  in_fpscr = in_fpscr | (uint)(ALBW_AS_F32(local_b0) == ALBW_AS_F32(local_b8)) << 0x1e |
-                             (uint)(ALBW_AS_F32(local_b8) <= ALBW_AS_F32(local_b0)) << 0x1d;
-                  bVar7 = (byte)(in_fpscr >> 0x18);
-                  if ((bool)(bVar7 >> 5 & 1) && !(bool)(bVar7 >> 6)) {
-                    iVar12 = func_004905E0(ALBW_AS_F32(local_b0) / ALBW_AS_F32(local_b8));
-                    iVar12 = -0x40000000 - iVar12;
-                  }
-                  else {
-                    iVar12 = func_004905E0(ALBW_AS_F32(local_b8) / ALBW_AS_F32(local_b0));
-                    iVar12 = iVar12 + -0x80000000;
-                  }
-                }
-                else {
-                  fVar30 = -ALBW_AS_F32(local_b0);
-                  uVar17 = in_fpscr | (uint)(fVar30 < ALBW_AS_F32(local_b8)) << 0x1f;
-                  in_fpscr = uVar17 | (uint)(NAN(fVar30) || NAN(ALBW_AS_F32(local_b8))) << 0x1c;
-                  if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                    iVar12 = func_004905E0(ALBW_AS_F32(local_b8) / fVar30);
-                    iVar12 = -0x80000000 - iVar12;
-                  }
-                  else {
-                    iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_b8));
-                    iVar12 = iVar12 + 0x40000000;
-                  }
-                }
-              }
-              else if (NAN(ALBW_AS_F32(local_b8)) || NAN(ALBW_AS_F32(ppppppfVar33))) {
-                fVar30 = -ALBW_AS_F32(local_b8);
-                uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_b0) < fVar30) << 0x1f;
-                in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_b0)) || NAN(fVar30)) << 0x1c;
-                if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                  iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_b0));
-                  iVar12 = -iVar12;
-                }
-                else {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_b0) / fVar30);
-                  iVar12 = iVar12 + -0x40000000;
-                }
-              }
-              else {
-                uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_b0) < ALBW_AS_F32(local_b8)) << 0x1f;
-                in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_b0)) || NAN(ALBW_AS_F32(local_b8))) << 0x1c;
-                if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_b8) / ALBW_AS_F32(local_b0));
-                }
-                else {
-                  iVar12 = func_004905E0(ALBW_AS_F32(local_b0) / ALBW_AS_F32(local_b8));
-                  iVar12 = 0x40000000 - iVar12;
-                }
-              }
-            }
+            uVar17 = in_fpscr & 0xfffffff;   /* rounding-mode bits, still read below */
+            iVar12 = albw_atan2_inline(ALBW_AS_F32(local_b0),ALBW_AS_F32(local_b8));   /* inlined atan2Idx (atan2_inline_fix) */
             *(int *)(iVar25 + iVar24 * 0x104 + 0xd0) = iVar12;
           }
           if (*(char *)((int)local_54 + 0x49) == '\0') goto LAB_0023704c;
@@ -733,72 +608,8 @@ LAB_00236aa0:
                       local_bc = (float *****)ppppppfVar33;
                       func_00115C70((float *)&local_c4,(float *)(puVar16 + 0xf4),
                                     (float *)(iVar26 + 4));
-                      uVar17 = in_fpscr & 0xfffffff;
-                      in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_bc) == ALBW_AS_F32(ppppppfVar29)) << 0x1e;
-                      bVar8 = false;
-                      if (SUB41(in_fpscr >> 0x1e,0)) {
-                        in_fpscr = uVar17 | (uint)(ALBW_AS_F32(local_c4) == ALBW_AS_F32(ppppppfVar29)) << 0x1e;
-                        bVar8 = SUB41(in_fpscr >> 0x1e,0);
-                      }
-                      if (bVar8) {
-                        iVar12 = 0;
-                      }
-                      else {
-                        in_fpscr = in_fpscr & 0xfffffff;
-                        if (NAN(ALBW_AS_F32(local_bc)) || NAN(ALBW_AS_F32(ppppppfVar29))) {
-                          if (NAN(ALBW_AS_F32(local_c4)) || NAN(ALBW_AS_F32(ppppppfVar29))) {
-                            in_fpscr = in_fpscr | (uint)(ALBW_AS_F32(local_bc) == ALBW_AS_F32(local_c4)) << 0x1e
-                                       | (uint)(ALBW_AS_F32(local_c4) <= ALBW_AS_F32(local_bc)) << 0x1d;
-                            bVar7 = (byte)(in_fpscr >> 0x18);
-                            if ((bool)(bVar7 >> 5 & 1) && !(bool)(bVar7 >> 6)) {
-                              iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / ALBW_AS_F32(local_c4));
-                              iVar12 = -0x40000000 - iVar12;
-                            }
-                            else {
-                              iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / ALBW_AS_F32(local_bc));
-                              iVar12 = iVar12 + -0x80000000;
-                            }
-                          }
-                          else {
-                            fVar30 = -ALBW_AS_F32(local_bc);
-                            uVar17 = in_fpscr | (uint)(fVar30 < ALBW_AS_F32(local_c4)) << 0x1f;
-                            in_fpscr = uVar17 | (uint)(NAN(fVar30) || NAN(ALBW_AS_F32(local_c4))) << 0x1c;
-                            if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                              iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / fVar30);
-                              iVar12 = -0x80000000 - iVar12;
-                            }
-                            else {
-                              iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_c4));
-                              iVar12 = iVar12 + 0x40000000;
-                            }
-                          }
-                        }
-                        else if (NAN(ALBW_AS_F32(local_c4)) || NAN(ALBW_AS_F32(ppppppfVar29))) {
-                          fVar30 = -ALBW_AS_F32(local_c4);
-                          uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_bc) < fVar30) << 0x1f;
-                          in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_bc)) || NAN(fVar30)) << 0x1c;
-                          if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                            iVar12 = func_004905E0(fVar30 / ALBW_AS_F32(local_bc));
-                            iVar12 = -iVar12;
-                          }
-                          else {
-                            iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / fVar30);
-                            iVar12 = iVar12 + -0x40000000;
-                          }
-                        }
-                        else {
-                          uVar17 = in_fpscr | (uint)(ALBW_AS_F32(local_bc) < ALBW_AS_F32(local_c4)) << 0x1f;
-                          in_fpscr = uVar17 | (uint)(NAN(ALBW_AS_F32(local_bc)) || NAN(ALBW_AS_F32(local_c4)))
-                                              << 0x1c;
-                          if ((byte)(uVar17 >> 0x1f) == ((byte)(in_fpscr >> 0x1c) & 1)) {
-                            iVar12 = func_004905E0(ALBW_AS_F32(local_c4) / ALBW_AS_F32(local_bc));
-                          }
-                          else {
-                            iVar12 = func_004905E0(ALBW_AS_F32(local_bc) / ALBW_AS_F32(local_c4));
-                            iVar12 = 0x40000000 - iVar12;
-                          }
-                        }
-                      }
+                      uVar17 = in_fpscr & 0xfffffff;   /* rounding-mode bits, still read below */
+                      iVar12 = albw_atan2_inline(ALBW_AS_F32(local_bc),ALBW_AS_F32(local_c4));   /* inlined atan2Idx (atan2_inline_fix) */
                       *(int *)(iVar25 + iVar24 * 0x104 + 0xd0) = iVar12;
                     }
                   }
