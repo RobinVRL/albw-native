@@ -119,3 +119,10 @@ func_00582DA4  castMgr_GetSlotBoneMatrix
 func_002C3EB4  model_SetAlpha                      # vt+0x18 (model, layer, float alpha): clamps 0..1, switches draw layers
 func_004D08D4  model_Construct
 func_004CEF4C  model_IsVisibleThisFrame
+func_00554F70  castCmd_PlayAnim                    # event command: cast slot animation (vt+4 = castSlot_PlayAnim)
+func_004F0864  castSlot_PlayAnim                   # (slot, anim, blend): anims in mask +0x110 also drive the locator layer (+0x44, flag +0x11C)
+func_004F1310  castSlot_UpdateTransform            # model matrix = slot pos +0x48 (+ locator bone of +0x40 when +0x11C)
+func_004B08FC  castMgr_Update                      # 16 cast slots (+0x1418), attachments (+0x1458)
+func_004B7810  castMgr_RunCommands
+func_00232F40  mapRoomVis_Update                   # worker thread: per-model room-visibility (+0x35 hidden) from the camera frustum
+func_004CF600  model_InFrustum                     # bounding sphere vs frustum planes
