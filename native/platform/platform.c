@@ -805,6 +805,8 @@ static uint32_t scripted_keys(void) {
  *                   and goes on; after 1800 frames it gives up (prints "route: FAILED", route stops)
  *   wait N          N frames
  *   press BTN [N]   hold a button (ALBW_PRESS names, incl. CUP..) N frames (default 6), then 1 frame off
+ *   spawn NAME [DX DZ]  spawn actor profile NAME (e.g. EnemyKeese) at Link + (DX, 0, DZ) (default 0 2)
+ *   profiles        list the registered actor profile names
  *   touch X Y [N]   touch the bottom screen at (X, Y) (0..319, 0..239) for N frames (default 6), then
  *                   1 frame off
  *   save S | load S save state slot S
@@ -816,7 +818,16 @@ static uint32_t scripted_keys(void) {
  * ALBW_PLAYER_LOG=N prints the position every N frames. Example (yard state -> vane):
  *   ALBW_ROUTE='at 30;goto 4 12;goto 4 15 0.2;press CDOWN 10;press A;wait 120;save 9;quit' */
 __attribute__((weak)) void *albw_dbg_player;
+const float *albw_debug_player_pos(void);                         /* runtime/debug_spawn.c */
+void *albw_debug_spawn(const char *name, float dx, float dz);
+void albw_debug_list_profiles(void);
+int albw_debug_preload(const char *name);
+static long g_spawn_wait = 45;   /* ALBW_SPAWN_WAIT: frames between the resource request and the create */
 static const float *route_player_pos(void) {
+    /* the game's own player position (00520FC0); the player-update object + 0x30 used before went
+     * stale in Lorule Castle */
+    const float *p = albw_debug_player_pos();
+    if (p) return p;
     return albw_dbg_player ? (const float *)((const char *)albw_dbg_player + 0x30) : NULL;
 }
 static uint32_t route_button(const char *name, size_t n) {
@@ -871,6 +882,15 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         if (k < 3) hold = 6;
         if (el < hold) { g_route_touch = 1; g_route_tx = tx; g_route_ty = ty; }
         done = el >= hold + 1;
+    } else if (!strcmp(op, "spawn")) {
+        char nm[64] = {0};
+        double dx = 0, dz = 2;
+        sscanf(rest, " %63[^ ;] %lf %lf", nm, &dx, &dz);
+        if (el == 0) { albw_debug_preload(nm); const char *w = getenv("ALBW_SPAWN_WAIT"); if (w) g_spawn_wait = atol(w); }
+        if (el >= g_spawn_wait) { albw_debug_spawn(nm, (float)dx, (float)dz); done = 1; }
+    } else if (!strcmp(op, "profiles")) {
+        albw_debug_list_profiles();
+        done = 1;
     } else if (!strcmp(op, "at")) {
         done = g_plat_frames >= atol(rest);
     } else if (!strcmp(op, "wait")) {
