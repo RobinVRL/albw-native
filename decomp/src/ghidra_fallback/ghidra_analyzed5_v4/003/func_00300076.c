@@ -1,0 +1,17 @@
+#include "ghidra_types.h"
+
+
+// USA 00300076 <- EU 00300052 (Ghidra, function missing from the decomp table)
+
+int func_00300076(int param_1,int *param_2)
+
+{
+  if (*param_2 << 0x15 < 0) {
+    param_1 = (int)(char)param_1;
+  }
+  else if (*param_2 << 0x17 < 0) {
+    return (int)(short)param_1;
+  }
+  return param_1;
+}
+

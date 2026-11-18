@@ -1,0 +1,72 @@
+#include "ghidra_types.h"
+
+extern int func_0010C0B8(int param_1);
+extern int func_0010EEE0(int param_1);
+extern int func_0010F0A8(int param_1,uint param_2);
+extern int func_0010F1DC(int *param_1,int *param_2);
+extern void func_0010F1F8(int *param_1,float fparam_0);
+
+// USA 0049C334 <- EU 0049C30C (Ghidra, non-matching)
+
+int func_0049C334(int *param_1,int param_2,int param_3)
+
+{
+  int iVar1;
+  uint uVar2;
+  int *piVar3;
+  undefined4 *puVar4;
+  uint uVar5;
+  float in_s0;
+  
+  iVar1 = (**(code **)(*param_1 + 0x40))(param_1);
+  if (iVar1 != 0) {
+    piVar3 = (int *)0x0;
+    if ((param_1[0x1c] & 1U) != 0) {
+      func_0010C0B8((int)(param_1 + 0x15));
+      piVar3 = param_1 + 0x15;
+    }
+    iVar1 = param_1[0x23];
+    while( true ) {
+      uVar2 = iVar1 - param_1[0x25];
+      if (uVar2 == (int)(param_1 + 0x22) - param_1[0x25]) break;
+      if (*(int *)(uVar2 + 0xc) + 0x10 + uVar2 == param_2) {
+        uVar5 = (*(int *)(uVar2 + 0xc) + *(int *)(uVar2 + 8)) - param_3;
+        if (uVar5 < 0x10) {
+          *(uint *)(uVar2 + 0xc) = uVar5;
+          if (uVar5 != 0) {
+            *(uint *)(uVar2 + uVar5 + 0xc) = uVar2 + 1;
+          }
+          iVar1 = uVar2 + *(int *)(uVar2 + 0xc) + 0x10;
+        }
+        else {
+          puVar4 = (undefined4 *)(uVar2 + uVar5);
+          if (puVar4 != (undefined4 *)0x0) {
+            *puVar4 = 0;
+            puVar4[1] = 0;
+            puVar4[2] = 0;
+            puVar4[3] = 0;
+          }
+          puVar4[2] = param_3;
+          func_0010F1DC(param_1 + 0x22,(int *)(param_1[0x25] + (int)puVar4));
+          param_1[0x24] = param_1[0x24] + 1;
+          func_0010F1F8((int *)(param_1[0x25] + uVar2),in_s0);
+          param_1[0x24] = param_1[0x24] + -1;
+          *(uint *)(uVar2 + 8) = uVar5 - 0x10;
+          *(undefined4 *)(uVar2 + 0xc) = 0;
+          func_0010F0A8((int)param_1,uVar2);
+          iVar1 = (int)puVar4 + puVar4[3] + 0x10;
+        }
+        if (piVar3 != (int *)0x0) {
+          func_0010EEE0((int)piVar3);
+        }
+        return iVar1;
+      }
+      iVar1 = *(int *)(uVar2 + param_1[0x25] + 4);
+    }
+    if (piVar3 != (int *)0x0) {
+      func_0010EEE0((int)piVar3);
+    }
+  }
+  return 0;
+}
+

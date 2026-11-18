@@ -21,7 +21,15 @@ if [[ "${ALBW_SANITIZE:-0}" == 1 ]]; then
     LDSAN=("${SAN[@]}")
     NOBJ=$B/nobj-san OUT=$B/albw-san
 fi
-SDL=$(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags --libs sdl3)
+# 32-bit SDL3: the distribution's (Arch lib32: /usr/lib32/pkgconfig) or build.sh's own (build/deps)
+PCP=${ALBW_PKG_CONFIG_PATH:-$PWD/build/deps/sdl3-i686/lib/pkgconfig:/usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig}
+SDL=$(PKG_CONFIG_LIBDIR=$PCP pkg-config --cflags --libs sdl3)
+# SDL3 built by build.sh: found at run time without installing it
+[[ -d build/deps/sdl3-i686/lib ]] && SDL+=" -Wl,-rpath,$PWD/build/deps/sdl3-i686/lib"
+# game inputs: the decomp repository next to this one (development) or the in-repo snapshot +
+# the .code extracted from your ROM (tools/extract_code.py, build.sh)
+DECOMP_MAP=../albw-decomp-ai/shared/eu_usa_map.json; [[ -f $DECOMP_MAP ]] || DECOMP_MAP=decomp/eu_usa_map.json
+CODE_BIN=${ALBW_CODE_BIN:-build/rom/eu_code.bin}; [[ -f $CODE_BIN ]] || CODE_BIN=../albw-decomp-ai/rom/eu_code.bin
 
 mkdir -p $B/native
 # round 3 stage 1 builds lack FCONV (float<->int Ghidra copies as bit copies): rebuild the affected
@@ -50,7 +58,7 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
         for inc in native/platform/{layout,input,menu}.c native/platform/{menu_font,layout,gl}.h native/render/render.h; do [[ "$inc" -nt "$o" ]] && stale=1; done
     fi
     [[ $stale == 0 ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
-        $(PKG_CONFIG_PATH=/usr/lib32/pkgconfig pkg-config --cflags sdl3) -c "$f" -o "$o"
+        $(PKG_CONFIG_LIBDIR=$PCP pkg-config --cflags sdl3) -c "$f" -o "$o"
     NATIVE+=("$o")
 done
 # data symbols the native code uses get defined by the data generator too
@@ -63,8 +71,8 @@ llvm-nm -A --defined-only @$B/objs_pre.txt 2>/dev/null | awk '$3 ~ /^[VvWw]$/ &&
     | sort -u >> $B/native_syms.txt
 grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp/ghidra_fallback native/game native/robust native/gameplay native/sdk \
     | sed 's/^&//' | sort -u > $B/addr_taken_pool.txt
-python3 tools/gen_data.py --addr-taken $B/addr_taken_pool.txt --code "${ALBW_CODE_BIN:-../albw-decomp-ai/rom/eu_code.bin}" \
-    --map ../albw-decomp-ai/shared/eu_usa_map.json --extra $B/native_syms.txt >/dev/null
+python3 tools/gen_data.py --addr-taken $B/addr_taken_pool.txt --code "$CODE_BIN" \
+    --map "$DECOMP_MAP" --extra $B/native_syms.txt >/dev/null
 clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o
 # exactly the objects of the current source selection (stale ones from older selections excluded)
 python3 -c "import json;print('\n'.join(json.load(open('$B/decomp/report.json'))['objects']))" > $B/objs.txt

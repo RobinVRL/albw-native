@@ -1,9 +1,9 @@
 import sys, json
-sys.path.insert(0,'./native/refs/tools')
+sys.path.insert(0,'native/refs/tools')
 from reflib import *
 import capstone
 md=capstone.Cs(capstone.CS_ARCH_ARM,capstone.CS_MODE_ARM)
-kn=json.load(open('./native/refs/tools/known.json'))
+kn=json.load(open('native/refs/tools/known.json'))
 CEND=starts[-1]
 for eu in starts:
     end=fend(eu)

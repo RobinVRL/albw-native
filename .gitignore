@@ -1,6 +1,6 @@
 # build output and generated code (derived from the game binary: never committed)
 build/
-gen/
+/gen/
 *.o
 # game data: supplied locally
 *.bin
@@ -14,3 +14,10 @@ __pycache__/
 # systemic-rebuild backups and Jython bytecode
 native/robust/systemic3/prev_*/
 *$py.class
+# your ROM and anything taken from it, save states, local archives
+/rom.3ds
+*.cci
+*.cxi
+*.state
+*.zip
+/screen_top.ppm

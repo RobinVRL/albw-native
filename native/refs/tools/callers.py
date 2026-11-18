@@ -1,4 +1,4 @@
-import sys;sys.path.insert(0,'./native/refs/tools')
+import sys;sys.path.insert(0,'native/refs/tools')
 from reflib import *
 import capstone
 _cache=None
@@ -17,5 +17,5 @@ def callgraph():
     _cache=calls; return calls
 if __name__=='__main__':
     import pickle
-    c=callgraph(); pickle.dump(c,open('./native/refs/tools/callers.pkl','wb'))
+    c=callgraph(); pickle.dump(c,open('native/refs/tools/callers.pkl','wb'))
     for u in sys.argv[1:]: print(u, sorted(c.get(u,[]))[:30])

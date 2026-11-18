@@ -148,7 +148,7 @@ SMALL = [
 def src_of(o):
     rel = o.split('/build/decomp/obj/', 1)[-1]
     if rel.endswith('.final.o'): rel = rel[:-len('.final.o')]
-    return ('build/decomp/' + rel) if rel.startswith('ghidra_fallback/') else ('../albw-decomp-ai/' + rel)
+    return ('build/decomp/' + rel) if rel.startswith('ghidra_fallback/') or os.path.exists('build/decomp/' + rel) else ('../albw-decomp-ai/' + rel)
 n_small = 0
 for o in open(objs_txt).read().split():
     mo = re.search(r'func_([0-9A-F]{8})', os.path.basename(o))

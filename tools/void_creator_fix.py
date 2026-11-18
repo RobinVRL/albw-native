@@ -72,7 +72,7 @@ def main():
         k = fn.rstrip().rfind('}')
         fn = fn[:k] + '  return albw_ret;\n}\n'
         hdr = ('/* compilefix: %s, the converted stage-2 text (%s): an actor profile creator printed as\n'
-               ' * `void`; the ARM returns the new object (tools/void_creator_fix.py, BOOT_LOG 158). */\n') % (c, p)
+               ' * `void`; the ARM returns the new object (tools/void_creator_fix.py, BOOT_LOG 158). */\n') % (c, os.path.relpath(p, ROOT))
         print(c)
         if not dry:
             open('native/compilefix/%s.c' % c, 'w').write(hdr + head + fn)

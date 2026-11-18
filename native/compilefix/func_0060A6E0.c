@@ -1,4 +1,4 @@
-/* compilefix: func_0060A6E0, the converted stage-2 text (./build/decomp/ghidra_fallback/ghidra_analyzed5_v4/006/func_0060A6E0.c): an actor profile creator printed as
+/* compilefix: func_0060A6E0, the converted stage-2 text (build/decomp/ghidra_fallback/ghidra_analyzed5_v4/006/func_0060A6E0.c): an actor profile creator printed as
  * `void`; the ARM returns the new object (tools/void_creator_fix.py, BOOT_LOG 158). */
 #include "ghidra_types.h"
 

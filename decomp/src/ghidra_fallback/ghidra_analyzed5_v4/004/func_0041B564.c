@@ -1,0 +1,22 @@
+#include "ghidra_types.h"
+
+
+// USA 0041B564 <- EU 0041B544 (Ghidra, non-matching)
+// PARAM param_5 Stack[0x0]:4 int
+// PARAM param_6 Stack[0x4]:4 undefined4
+
+undefined4 func_0041B564(undefined4 *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
+                  int param_5,undefined4 param_6)
+
+{
+  *param_1 = param_2;
+  param_1[1] = param_3;
+  param_1[2] = param_4;
+  param_1[7] = param_6;
+  param_1[4] = param_5 + 8;
+  param_1[3] = param_5;
+  param_1[5] = param_5 + 0x10;
+  param_1[6] = param_5 + 0x18;
+  return (undefined4)param_1;
+}
+

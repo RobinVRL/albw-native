@@ -1,4 +1,4 @@
-import sys;sys.path.insert(0,'./native/refs/tools')
+import sys;sys.path.insert(0,'native/refs/tools')
 from reflib import *
 def strings_of(usa):
     eu=u2e[usa]; out=[]

@@ -1005,8 +1005,12 @@ def snapshot_main(a):
         res = list(ex.map(one, jobs))
     ok = [r for r in res if r["ok"]]
     bad = [(r["path"], r["error"]) for r in res if not r["ok"]]
+    defined = set()
+    for r in ok:
+        defined.update(r["defs"])
+    und = collections.Counter(u for r in ok for u in r["und"] if u not in defined)
     rep = {"objects": [os.path.join(OUT, "obj", r["path"] + ".final.o") for r in ok],
-           "sources": len(jobs), "compiled": len(ok), "failed": bad}
+           "sources": len(jobs), "compiled": len(ok), "failed": bad, "unresolved": dict(und.most_common())}
     json.dump(rep, open(os.path.join(OUT, "report.json"), "w"), indent=1)
     print("compiled %d / %d sources%s" % (len(ok), len(jobs), "" if not bad else ", FAILED: %d (first: %s)" % (len(bad), bad[0])))
     return 0 if not bad else 1

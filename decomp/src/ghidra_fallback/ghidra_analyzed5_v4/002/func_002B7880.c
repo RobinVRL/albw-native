@@ -1,0 +1,68 @@
+#include "ghidra_types.h"
+
+extern int func_0052FBA0(int param_1,uint param_2);
+extern int func_00687DB0(undefined4 *param_1);
+extern int *DAT_002b79a0;
+extern undefined4 DAT_002b79a4;
+
+// USA 002B7880 <- EU 002B785C (Ghidra, non-matching)
+// GLOBAL DAT_002b79a0 int *
+// GLOBAL DAT_002b79a4 undefined4
+
+undefined4 * func_002B7880(int param_1)
+
+{
+  int *piVar1;
+  byte bVar2;
+  int iVar3;
+  undefined4 *puVar4;
+  int iVar5;
+  uint uVar6;
+  float fVar7;
+  float fVar8;
+  
+  if ((*(int *)(param_1 + 0xb20) == 0) && (0 < *(int *)(param_1 + 0x14a4))) {
+    iVar5 = *(int *)(param_1 + 0x14a0);
+    iVar3 = iVar5;
+    if (*(int *)(param_1 + 0x149c) <= iVar5) {
+      iVar3 = iVar5 - *(int *)(param_1 + 0x149c);
+    }
+    uVar6 = *(uint *)(*(int *)(param_1 + 0x1498) + iVar3 * 4);
+    *(int *)(param_1 + 0x14a0) = iVar5 + 1;
+    if (*(int *)(param_1 + 0x149c) <= iVar5 + 1) {
+      *(undefined4 *)(param_1 + 0x14a0) = 0;
+    }
+    piVar1 = DAT_002b79a0;
+    *(int *)(param_1 + 0x14a4) = *(int *)(param_1 + 0x14a4) + -1;
+    puVar4 = (undefined4 *)func_0052FBA0(*piVar1 + 0x3dbbc,uVar6);
+    puVar4 = func_00687DB0(puVar4);
+    if (puVar4 != (undefined4 *)0x0) {
+      fVar7 = ALBW_AS_F32(puVar4[0xf4]) - *(float *)(param_1 + 0x3d0);
+      fVar8 = ALBW_AS_F32(puVar4[0xf6]) - *(float *)(param_1 + 0x3d8);
+      fVar7 = fVar7 * fVar7 + fVar8 * fVar8;
+      if (fVar7 < *(float *)(param_1 + 0xa64)) {
+        *(float *)(param_1 + 0xa64) = fVar7;
+        *(uint *)(param_1 + 0xb28) = uVar6;
+      }
+      iVar3 = *(int *)(param_1 + 0x14a4);
+      if (iVar3 < *(int *)(param_1 + 0x149c)) {
+        *(int *)(param_1 + 0x14a4) = iVar3 + 1;
+        iVar3 = iVar3 + *(int *)(param_1 + 0x14a0);
+        if (*(int *)(param_1 + 0x149c) <= iVar3) {
+          iVar3 = iVar3 - *(int *)(param_1 + 0x149c);
+        }
+        *(uint *)(*(int *)(param_1 + 0x1498) + iVar3 * 4) = uVar6;
+      }
+    }
+    bVar2 = *(char *)(param_1 + 0xb08) + 1;
+    *(byte *)(param_1 + 0xb08) = bVar2;
+    if (*(int *)(param_1 + 0x14a4) <= (int)(uint)bVar2) {
+      *(undefined4 *)(param_1 + 0xa64) = DAT_002b79a4;
+      *(undefined1 *)(param_1 + 0xb08) = 0;
+      *(undefined4 *)(param_1 + 0xb20) = *(undefined4 *)(param_1 + 0xb28);
+      return puVar4;
+    }
+  }
+  return (undefined4 *)0x0;
+}
+

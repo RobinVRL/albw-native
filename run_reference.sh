@@ -5,7 +5,7 @@
 # Decrypted dumps often keep the NCCH "encrypted" flag, which Azahar rejects ("Failed to determine
 # system mode (Error 8)"): a copy with the NoCrypto flag set is made once, outside the repo.
 set -e
-: "${ALBW_ROM:=/path/to/your/game.3ds}"
+: "${ALBW_ROM:=$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/albw-port/rom_path" 2>/dev/null || echo rom.3ds)}"
 REF_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/albw-port/reference"
 COPY="$REF_DIR/albw_nocrypto.3ds"
 if [[ ! -f "$COPY" || "$ALBW_ROM" -nt "$COPY" ]]; then

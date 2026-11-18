@@ -1,0 +1,113 @@
+#include "ghidra_types.h"
+
+extern int func_0010A464(undefined4 *param_1);
+extern int func_00150A84(int *param_1,int *param_2,int param_3);
+extern int func_0025B860(int param_1,int param_2,float fparam_0,float fparam_1);
+extern int func_0025B874(undefined4 *param_1);
+extern int func_0052107C(int param_1);
+extern int func_00539200(int param_1);
+extern float func_0059163C(float fparam_0);
+extern int func_00661480(undefined4 *param_1,undefined1 param_2);
+extern float DAT_00287f30;
+extern float DAT_00287f34;
+extern float DAT_00287f38;
+extern float DAT_00287f3c;
+extern float DAT_00287f40;
+extern undefined DAT_00287f44;
+extern int DAT_00287f60;
+extern int DAT_00287f64;
+extern char s_L_SE_MagicBottle_BOUND_00287f46[];
+extern undefined4 _DAT_00287f44;
+
+// USA 00287D70 <- EU 00287D98 (Ghidra, non-matching)
+// GLOBAL DAT_00287f30 float
+// GLOBAL DAT_00287f34 float
+// GLOBAL DAT_00287f38 float
+// GLOBAL DAT_00287f3c float
+// GLOBAL DAT_00287f40 float
+// GLOBAL DAT_00287f44 undefined
+// GLOBAL DAT_00287f60 int
+// GLOBAL DAT_00287f64 int
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void func_00287D70(int *param_1,uint param_2)
+
+{
+  bool bVar1;
+  uint uVar2;
+  bool bVar3;
+  bool bVar4;
+  uint in_fpscr;
+  float fVar5;
+  float fVar6;
+  float fVar7;
+  float fVar8;
+  _Alignas(8) unsigned char albw_frame[0x90];
+  #define auStack_88 ((undefined4 *)(albw_frame + 0x8))
+  #define local_28 (*(int *)(albw_frame + 0x68))
+  #define local_24 (*(char * *)(albw_frame + 0x6c))
+  uVar2 = param_1[0x141];
+  if (uVar2 != 0) {
+    param_2 = param_1[0x140];
+  }
+  fVar5 = DAT_00287f30;
+  if ((uVar2 != 0 && param_2 != 0) && (fVar5 = DAT_00287f34, param_2 < uVar2)) {
+    fVar5 = (float)VectorUnsignedToFloat(param_2,(byte)(in_fpscr >> 0x15) & 3);
+    fVar5 = fVar5 * ALBW_AS_F32(param_1[0x142]);
+  }
+  fVar8 = DAT_00287f34;
+  fVar7 = DAT_00287f30;
+  fVar6 = func_0059163C(DAT_00287f38 * fVar5 * DAT_00287f3c);
+  fVar8 = fVar8 - fVar5;
+  fVar6 = fVar6 * fVar8;
+  if (fVar6 <= fVar7) {
+    fVar6 = -fVar6;
+  }
+  fVar7 = fVar6 * DAT_00287f40;
+  if ((uint)param_1[0x140] < (uint)param_1[0x141]) {
+    param_1[0x140] = param_1[0x140] + 1;
+    if ((int)ALBW_AS_U32(fVar5) < _DAT_00287f44) {
+      fVar5 = ALBW_AS_F32((_DAT_00287f44 + -0x1800000));
+      if ((char)param_1[0x14c] == '\0') {
+        bVar4 = SBORROW4((int)ALBW_AS_U32(fVar7),(int)ALBW_AS_U32(fVar5));
+        bVar1 = (int)ALBW_AS_U32(fVar7) - (int)ALBW_AS_U32(fVar5) < 0;
+        bVar3 = fVar7 == fVar5;
+        if ((int)ALBW_AS_U32(fVar5) < (int)ALBW_AS_U32(fVar7)) {
+          fVar5 = ALBW_AS_F32(param_1[0x145]);
+          bVar1 = fVar5 < fVar7;
+          bVar3 = fVar5 == fVar7;
+          bVar4 = NAN(fVar5) || NAN(fVar7);
+        }
+        if (!bVar3 && bVar1 == bVar4) {
+          *(undefined1 *)(param_1 + 0x14c) = 1;
+        }
+      }
+      else if ((int)ALBW_AS_U32(fVar7) < (int)ALBW_AS_U32(fVar5)) {
+        func_0010A464(auStack_88);
+        local_24 = s_L_SE_MagicBottle_BOUND_00287f46 + 2;
+        local_28 = DAT_00287f60;
+        func_00150A84(param_1,&local_28,(int)auStack_88);
+        bVar1 = func_00539200((int)auStack_88);
+        if (bVar1) {
+          func_0025B860((int)auStack_88,0,fVar8,fVar6);
+        }
+        *(undefined1 *)(param_1 + 0x14c) = 0;
+        func_0025B874(auStack_88);
+      }
+    }
+    param_1[0x145] = (int)ALBW_AS_U32(fVar7);
+    param_1[0x147] = (int)ALBW_AS_U32(fVar7);
+    return;
+  }
+  bVar1 = func_0052107C((int)param_1);
+  if (bVar1) {
+    *(undefined1 *)((int)param_1 + 0x427) = 0;
+    func_00661480(param_1 + 0x137,3);
+  }
+  else {
+    param_1[0xf8] = DAT_00287f64;
+  }
+  return;
+}
+

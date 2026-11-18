@@ -129,9 +129,7 @@ static pthread_mutex_t fs_lock = PTHREAD_MUTEX_INITIALIZER;
 /* ---------------------------------------------------------------------------------------------
  * the ROM: RomFS level 3 and ExeFS
  * ------------------------------------------------------------------------------------------- */
-#define ROM_DEFAULT_PATH \
-    "/path/to/your/" \
-    "(En,Fr,De,Es,It) Decrypted.3ds"
+#define ROM_DEFAULT_PATH "rom.3ds"   /* ALBW_ROM overrides (run.sh / build.sh set it) */
 
 static struct {
     int ready;

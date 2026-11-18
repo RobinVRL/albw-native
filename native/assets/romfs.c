@@ -18,9 +18,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define ROM_DEFAULT_PATH \
-    "/path/to/your/" \
-    "(En,Fr,De,Es,It) Decrypted.3ds"
+#define ROM_DEFAULT_PATH "rom.3ds"   /* ALBW_ROM overrides (run.sh / build.sh set it) */
 #define NONE 0xFFFFFFFFu
 
 static int rom_fd = -1;

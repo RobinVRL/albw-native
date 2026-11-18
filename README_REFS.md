@@ -1,17 +1,13 @@
-# External references
+# Sources and references
 
-| Reference | Where | Use | Copied into this repo? |
+| What | Where | Used for | In this repo? |
 |---|---|---|---|
-| Matching decomp (`albw-decomp-ai`) | `../albw-decomp-ai` | game code, function table, maps | no (read at build time) |
-| open-ead/sead | `../refs/sead` (git clone) | class names and layouts of Nintendo's sead library | **no**: no license file, reference only; our own headers are in `native/include/` |
-| Ghidra 12.0.2 | `/opt/ghidra` | decompilation (`tools/ghidra/`, decomp `tools/ghidra_dump.py`) | no |
+| Matching decompilation `albw-decomp-ai` | github.com/7akeem0/albw-decomp-ai | matched game functions, function table, EU/USA address map | yes: the sources the build compiles are copied to `decomp/` (`tools/export_snapshot.py`) |
+| Ghidra 12.0.2 | your own install | decompiling the functions without a matched source | its output, converted, in `decomp/` |
+| open-ead/sead | `../refs/sead` | names and layouts of Nintendo's sead library | no (no license; reference only) |
 
-## Other decompilations used as references (cloned to ../refs/, not part of this repo)
-| folder | project | used for |
-|---|---|---|
-| 3dsdecomp_redpepper | Super Mario 3D Land (3DS) decomp, with 3DS-era sead, nnsdk headers, LibMessageStudio, symbol lists | sead/nn/LMS layouts and behaviour, function identification |
-| open-ead_sead | sead (Switch era) | sead behaviour (layouts may differ) |
-| aboood40091_sead | sead as in NSMBU (Wii U, 2012) | same-era sead |
-| zeldaret_botw | Breath of the Wild decomp | naming only |
-| IcefirePhoenix_Tricord_3DS_Plugin | Tri Force Heroes plugin (ALBW engine) | RAM layouts, actor/RomFS notes |
-References only: behaviour, layouts and names; our code is written here, not copied. The game's ARM code wins over any reference.
+Other projects read for reference only (names, layouts, behaviour; no code copied):
+Super Mario 3D Land decomp (3DS-era sead, nn SDK headers), sead as in NSMBU, the Breath of the Wild
+decomp (names), Tricord 3DS plugin (Tri Force Heroes uses the same engine).
+
+When a reference and the game's ARM code disagree, the ARM code wins.

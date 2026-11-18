@@ -1,4 +1,4 @@
-import sys;sys.path.insert(0,'./native/refs/tools')
+import sys;sys.path.insert(0,'native/refs/tools')
 from reflib import *
 a=int(sys.argv[1],16)
 while rd(a-4) in e2u: a-=4

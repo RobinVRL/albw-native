@@ -30,7 +30,7 @@ if [[ "${1:-}" == "--qt" ]]; then
     native/frontend/qt/build.sh build/frontend-qt >/dev/null
     exec build/frontend-qt/albw-qt "$@"
 fi
-: "${ALBW_ROM:=/path/to/your/game.3ds}"
+: "${ALBW_ROM:=$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/albw-port/rom_path" 2>/dev/null || echo rom.3ds)}"
 export ALBW_ROM
 # prefer native Wayland when available (the 32-bit SDL needs lib32-libxkbcommon + lib32-libdecor);
 # fall back to X11 otherwise. On NVIDIA, 32-bit EGL on Wayland also needs the 32-bit egl-wayland
@@ -47,7 +47,7 @@ fi
 LINK=0 GDB=0 ARGS=()
 if [[ "${1:-}" == "--viewer" ]]; then
     shift
-    : "${ALBW_ROM:=/path/to/your/game.3ds}"
+    : "${ALBW_ROM:=$(cat "${XDG_CONFIG_HOME:-$HOME/.config}/albw-port/rom_path" 2>/dev/null || echo rom.3ds)}"
     export ALBW_ROM
     native/assets/build.sh "$PWD/build/assets" >/dev/null   # (the script cd's into native/assets)
     exec build/assets/viewer64 "$@"

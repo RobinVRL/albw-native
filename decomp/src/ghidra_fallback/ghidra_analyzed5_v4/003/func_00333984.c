@@ -1,0 +1,140 @@
+#include "ghidra_types.h"
+
+extern int func_0010BAB4(undefined4 param_1);
+extern undefined8 func_0010E3C4(uint *param_1,uint *param_2,uint param_3);
+extern int func_0011549C(float *param_1,float *param_2,float *param_3);
+extern int func_001695F8(int param_1,uint param_2,int *param_3);
+extern int func_001E3FD8(int param_1);
+extern int func_001E40DC(int param_1,int param_2);
+extern int func_001E4318(int param_1);
+extern int func_003A4864(undefined4 *param_1,uint *param_2);
+extern int func_00435ED0(int param_1,float *param_2);
+extern int func_0043610C(int param_1,float *param_2);
+extern int func_0043625C(int *param_1,undefined4 *param_2);
+extern float func_00491624(float *param_1,uint param_2,uint param_3,uint param_4);
+extern int func_004A879C(int param_1,int param_2,uint param_3);
+extern int func_004ED9C8(int param_1);
+extern int func_004EDAD0(int param_1,uint *param_2);
+extern int func_004EDB28(int param_1,int param_2);
+extern int func_004EDC9C(undefined4 *param_1);
+extern int func_00588BF0(int param_1,int param_2);
+extern int DAT_00333b8c;
+extern int DAT_00333b90;
+extern undefined4 DAT_00333b94;
+extern float DAT_00333bb4;
+extern undefined4 DAT_00333bb8;
+extern int *DAT_00333bbc;
+extern undefined4 DAT_00333bc0;
+extern char s_Actor_DoorSwitchEast_kcl_00333b98[];
+extern char s_cf_00333b98[];
+
+// USA 00333984 <- EU 00333960 (Ghidra, non-matching)
+// GLOBAL DAT_00333b8c int
+// GLOBAL DAT_00333b90 int
+// GLOBAL DAT_00333b94 undefined4
+// GLOBAL DAT_00333bb4 float
+// GLOBAL DAT_00333bb8 undefined4
+// GLOBAL DAT_00333bbc int *
+// GLOBAL DAT_00333bc0 undefined4
+// GLOBAL s_cf_00333b98 string
+
+int * func_00333984(undefined4 *param_1,uint *param_2)
+
+{
+  int iVar1;
+  bool bVar2;
+  int *piVar3;
+  undefined4 *puVar4;
+  undefined4 *puVar5;
+  int *piVar6;
+  uint uVar7;
+  _Alignas(8) unsigned char albw_frame[0xc0];
+  #define local_c0 (*(int *)(albw_frame + 0x0))
+  #define local_bc (*(uint * *)(albw_frame + 0x4))
+  #define uStack_b8 (*(undefined4 *)(albw_frame + 0x8))
+  #define local_b4 (*(uint * *)(albw_frame + 0xc))
+  #define local_b0 (*(int *)(albw_frame + 0x10))
+  #define local_ac ((uint *)(albw_frame + 0x14))
+  #define uStack_6d (*(undefined1 *)(albw_frame + 0x53))
+  #define local_6c (*(float *)(albw_frame + 0x54))
+  #define local_68 (*(undefined4 *)(albw_frame + 0x58))
+  #define local_64 (*(undefined4 *)(albw_frame + 0x5c))
+  #define local_60 (*(undefined4 *)(albw_frame + 0x60))
+  #define fStack_5c (*(float *)(albw_frame + 0x64))
+  #define local_58 (*(undefined4 *)(albw_frame + 0x68))
+  #define local_54 (*(undefined4 *)(albw_frame + 0x6c))
+  #define local_50 (*(undefined4 *)(albw_frame + 0x70))
+  #define fStack_4c (*(float *)(albw_frame + 0x74))
+  #define afStack_48 ((float *)(albw_frame + 0x78))
+  #define local_24 (*(uint *)(albw_frame + 0x9c))
+  piVar3 = func_003A4864(param_1,param_2);
+  iVar1 = DAT_00333b8c;
+  piVar3[200] = DAT_00333b8c + 0x5c;
+  *piVar3 = iVar1;
+  bVar2 = func_00588BF0((int)piVar3,1);
+  if (bVar2) {
+    *(undefined1 *)((int)piVar3 + 0x2d7) = 1;
+  }
+  else {
+    func_001E3FD8((int)piVar3);
+    puVar4 = (undefined4 *)func_0010BAB4(0x48);
+    puVar5 = (undefined4 *)0x0;
+    if (puVar4 != (undefined4 *)0x0) {
+      puVar5 = func_004EDC9C(puVar4);
+    }
+    piVar6 = piVar3 + 0x121;
+    piVar3[0x121] = (int)puVar5;
+    if (puVar5 != (undefined4 *)0x0) {
+      local_b0 = 0x40;
+      uStack_6d = 0;
+      (*(undefined1 *)((char *)&local_ac[0] + 0)) = 0;
+      local_c0 = DAT_00333b90;
+      local_bc = (uint *)s_Actor_DoorSwitchEast_kcl_00333b98;
+      uStack_b8 = DAT_00333b94;
+      local_b4 = local_ac;
+      (**(code **)(DAT_00333b90 + 8))(&local_c0);
+      uVar7 = 0;
+      do {
+        if (*(char *)((int)local_bc + uVar7) == '\0') {
+          if ((int)uVar7 < 0x40001) goto LAB_00333a54;
+          break;
+        }
+        uVar7 = uVar7 + 1;
+      } while ((int)uVar7 < 0x40001);
+      uVar7 = 0;
+LAB_00333a54:
+      if (local_b0 <= (int)uVar7) {
+        uVar7 = local_b0 - 1;
+      }
+      (**(code **)(local_c0 + 8))(&local_c0);
+      func_0010E3C4(local_ac,local_bc,uVar7);
+      *(undefined1 *)((int)local_ac + uVar7) = 0;
+      func_004EDB28(piVar3[0x121],(int)&uStack_b8);
+      local_6c = DAT_00333bb4;
+      local_68 = DAT_00333bb8;
+      local_64 = DAT_00333bb8;
+      local_60 = DAT_00333bb8;
+      fStack_5c = DAT_00333bb4;
+      local_58 = DAT_00333bb8;
+      local_54 = DAT_00333bb8;
+      local_50 = DAT_00333bb8;
+      fStack_4c = DAT_00333bb4;
+      func_00491624(afStack_48,0,piVar3[0xfa],0);
+      func_0011549C(&local_6c,&local_6c,afStack_48);
+      func_00435ED0(*(int *)(*piVar6 + 0x14),&local_6c);
+      func_0043625C(*(int **)(*piVar6 + 0x14),piVar3 + 0xf4);
+      func_0043610C(*(int *)(*piVar6 + 0x14),(float *)(param_2 + 4));
+      local_24 = piVar3[0xb3];
+      func_004EDAD0(*piVar6,&local_24);
+      *(short *)(*piVar6 + 0x2c) = (short)piVar3[0x15];
+      func_004ED9C8(*piVar6);
+      func_004A879C(*DAT_00333bbc,*piVar6,0);
+    }
+    func_001E40DC((int)piVar3,1);
+    func_001695F8((int)piVar3,0,DAT_00333bc0);
+    func_001E4318((int)piVar3);
+    func_001E3FD8((int)piVar3);
+  }
+  return piVar3;
+}
+

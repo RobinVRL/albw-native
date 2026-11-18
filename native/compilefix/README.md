@@ -107,7 +107,7 @@ is unchanged and stays unlinked.
 
 ## Tooling (tooling.patch, proposed, not applied)
 
-`patch -p1 < albw-port/native/compilefix/tooling.patch` from `..`
+`patch -p1 < albw-port/native/compilefix/tooling.patch` from the parent directory
 (touches albw-decomp-ai/tools/import_ghidra.py, albw-decomp-ai/shared/include/ghidra_types.h,
 albw-port/tools/build_decomp.py). Coverage of the 283 run-3 failures:
 

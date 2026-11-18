@@ -1,0 +1,51 @@
+#include "ghidra_types.h"
+
+extern int func_00166C20(int *param_1,uint param_2,int *param_3,int param_4);
+extern int func_0016773C(int param_1,int param_2);
+extern int func_004B9A10(undefined4 *param_1,undefined1 param_2);
+extern int DAT_0043b590;
+extern int DAT_0043b5a0;
+extern char s_Cm_ScreenB_0043b594[];
+extern char s_InOut_0043b5a4[];
+
+// USA 0043B4F0 <- EU 0043B4D0 (Ghidra, non-matching)
+// GLOBAL DAT_0043b590 int
+// GLOBAL DAT_0043b5a0 int
+// GLOBAL s_Cm_ScreenB_0043b594 string
+// GLOBAL s_InOut_0043b5a4 string
+
+int * func_0043B4F0(undefined4 *param_1)
+
+{
+  int iVar1;
+  int *piVar2;
+  int iVar3;
+  int *piVar4;
+  _Alignas(8) unsigned char albw_frame[0x20];
+  #define local_20 (*(int *)(albw_frame + 0x0))
+  #define local_1c (*(char * *)(albw_frame + 0x4))
+  piVar2 = func_004B9A10(param_1,0);
+  iVar1 = DAT_0043b5a0;
+  iVar3 = DAT_0043b590 + 0x54;
+  *piVar2 = DAT_0043b590;
+  piVar2[0xe] = iVar3;
+  *(undefined1 *)((int)piVar2 + 0x71) = 0;
+  local_1c = s_Cm_ScreenB_0043b594;
+  local_20 = iVar1;
+  (**(code **)(*piVar2 + 0x38))(piVar2,&local_20,0);
+  piVar4 = (int *)piVar2[7];
+  func_0016773C((int)piVar4,1);
+  local_1c = s_InOut_0043b5a4;
+  local_20 = iVar1;
+  func_00166C20(piVar4,0,&local_20,0);
+  piVar2[10] = (int)piVar4;
+  *(undefined2 *)((int)piVar2 + 0x22) = 0;
+  *(undefined2 *)(piVar2 + 8) = 0;
+  piVar2[0xd] = (int)piVar4;
+  *(undefined2 *)((int)piVar2 + 0x2e) = 0;
+  *(undefined2 *)(piVar2 + 0xb) = 2;
+  *(undefined1 *)((int)piVar2 + 0xf) = 0x40;
+  piVar2[6] = piVar2[6] | 0x40;
+  return piVar2;
+}
+

@@ -1,0 +1,20 @@
+#include "ghidra_types.h"
+
+
+// USA 0057D5C4 <- EU 0057D59C (Ghidra, non-matching)
+
+int * func_0057D5C4(int *param_1)
+
+{
+  if ((char)param_1[1] != '\0') {
+    (**(code **)(*param_1 + 0x14))(param_1,param_1 + 2);
+    *(undefined1 *)(param_1 + 1) = 0;
+    *(undefined1 *)((int)param_1 + 5) = 1;
+  }
+  if (*(char *)((int)param_1 + 5) != '\0') {
+    (**(code **)(*param_1 + 0x18))(param_1,param_1 + 0x12,param_1 + 2,(char)param_1[0x22]);
+    *(undefined1 *)((int)param_1 + 5) = 0;
+  }
+  return param_1 + 0x12;
+}
+

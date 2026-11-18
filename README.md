@@ -1,50 +1,117 @@
-# ALBW native port (work in progress)
+# A Link Between Worlds – native Linux port
 
-A native Linux build of *The Legend of Zelda: A Link Between Worlds* in C with SDL2 + OpenGL,
-built **only from decompiled source**.
+A native Linux build of *The Legend of Zelda: A Link Between Worlds* (Nintendo 3DS), made from
+decompiled game code. The game logic runs as real C on your PC. Graphics, sound, input and file
+access are rewritten for Linux (SDL3 + OpenGL). There is no emulator.
 
-## Rule: decompilation, no emulation
+**Work in progress.** The game boots and is playable through large parts of the story. Expect
+bugs, glitches and crashes. See [Status](#status).
 
-- Every game function runs as real decompiled C compiled natively. No interpreter, no
-  machine-code recompilation, no simulated CPU state.
-- No emulation of the 3DS hardware or OS: no PICA200 GPU emulation, no kernel/svc or service
-  IPC emulation. The Nintendo SDK libraries linked into the game (`nn::fs`, `nn::hid`,
-  `nn::gx`/graphics, `nn::snd`, `nn::os`...) are **replaced at the function level** by native
-  implementations on Linux, SDL2 and OpenGL.
-- Graphics: the game's GPU-command producers are replaced by native OpenGL code. Model files whose
-  material state is stored as prebuilt GPU command blobs are decoded **once, at load time**, into
-  OpenGL state (asset conversion); GPU commands are never interpreted at runtime.
-- Shaders are hand-written GLSL translations of the game's GPU shader programs; shader bytecode is
-  never machine-translated (neither at load time nor at runtime).
-- The game's data and assets come from your own ROM at build/run time and are never committed.
+## You need your own game
 
-## Rule: the finished game is 64-bit
+This repository has **no game data**: no ROM, no keys, no assets, no saves. You need a
+**decrypted** dump of the **European** release that you made yourself.
 
-The released build targets x86-64. A 32-bit x86 build is only an intermediate step while the
-decompiled code still assumes 4-byte pointers. Every cleanup must be 64-bit clean: real pointer
-types, no pointers stored in 32-bit integers, no pointer-size-dependent offsets, and resource
-files converted to native structures instead of having 32-bit offsets patched into pointers.
-The tooling builds both targets so 64-bit health is tracked from the start.
+Tested dump:
 
-The matching decompilation in [`../albw-decomp-ai`](../albw-decomp-ai) is the source of the
-game code and stays a separate project; this repository holds the native build, the platform
-layer and the SDK replacements.
+| | |
+|---|---|
+| Title | The Legend of Zelda: A Link Between Worlds (Europe) (En,Fr,De,Es,It) |
+| Product code | CTR-P-BZLP, version 2 |
+| File | decrypted `.3ds`, 748,580,864 bytes |
+| SHA-1 | `4d2da91fa0edef9eef07e471527461396cc3faf2` |
+| MD5 | `b0bc337f96e8aaa4ab94aef91c3b1f6b` |
+| CRC32 | `07004847` |
+| `.code` SHA-1 (what the build checks) | `2aeee593a695f2ce1196b844026567f227472f0b` |
 
-An earlier experiment (static ARM->C recompilation + 3DS OS emulation) was removed because it
-breaks the no-emulation rule; it is in git history only.
+The file hashes depend on the dump and decryption tools. A different file can still work if its
+`.code` matches: the build checks that and stops if it does not. The USA and Japanese releases
+are not supported.
 
-## Road to a running build
+## Build
 
-1. **Native compile**: every decomp source (matched + Ghidra-derived) builds with a native
-   compiler, first for 32-bit x86 (pointer size and struct layouts as on the 3DS), tracked for
-   x86-64 at the same time.
-2. **Native link**: one definition per function, consistent names/signatures (C and C++),
-   the ~130 functions without source written.
-3. **Data**: the game's `.rodata`/`.data`/`.bss`, vtables and pointer tables as linkable data,
-   generated locally from the ROM, with pointers turned into symbol references.
-4. **SDK replacement**: identify the `nn::` library functions and reimplement them natively
-   (file system -> RomFS from the ROM + host save dir, input -> SDL2, graphics -> OpenGL,
-   audio -> SDL2 audio, threads -> pthreads).
-5. **Boot to gameplay** (32-bit intermediate build).
-6. **64-bit**: clean every function into typed, pointer-size-independent C; native resource
-   structures; switch the release build to x86-64.
+Supported: Fedora, Ubuntu, Linux Mint, Debian, Arch, openSUSE (x86-64).
+
+```
+git clone <this repository> albw-native
+cd albw-native
+./build.sh /path/to/your/game.3ds
+```
+
+`build.sh` installs the packages it needs (asks for sudo), builds a 32-bit SDL3 if your
+distribution has none, reads the game code from your ROM, then compiles and links. The first
+build takes a while (about 26,000 source files). Rebuild later with `./build.sh` (the ROM path is
+remembered in `~/.config/albw-port/rom_path`). Already have the packages? Use `--no-deps`.
+
+The game is a 32-bit program for now, so the build uses 32-bit libraries. A 64-bit build is
+planned.
+
+## Run
+
+```
+./run.sh
+```
+
+Saves go to `~/.local/share/albw-port/save`. The 3DS game saves (`Save_*.bin`) are the game's own
+format.
+
+### Controls (keyboard; rebind in the F1 menu)
+
+| 3DS | Key | | 3DS | Key |
+|---|---|---|---|---|
+| Circle pad | arrow keys | | L / R | Q / W |
+| A | X | | Start | Enter |
+| B | Z | | Select | Backspace |
+| X | S | | D-pad | I J K L |
+| Y | A | | Touch screen | mouse on the bottom screen |
+
+| Key | Action |
+|---|---|
+| Esc | pause menu (window, layout, filtering, quit) |
+| F1 | input menu |
+| F2 / F3 / F4 | screen layout preset / layout editor / swap screens |
+| F5 | one window or two windows |
+| F6 / F7 | save state / load state |
+
+A game controller works too.
+
+## Status
+
+Tested and working:
+- boot, title, file select, saving and loading
+- the opening and early story scenes, the overworld, houses, the blacksmith
+- items and equipment, enemies, combat, game over
+- loading late-game saves (Death Mountain, Lorule)
+
+Known problems:
+- sound in gameplay is still being worked on
+- some effects (Tornado Rod, fire, trails) draw wrongly
+- some cutscenes may stop or crash: please report them
+- see [MISSING.md](MISSING.md) for the full list
+
+## How it works (short)
+
+- `decomp/` – the decompiled game code (from the matching decompilation project and Ghidra),
+  converted so it compiles natively. Built with `tools/build_decomp.py --snapshot decomp`.
+- `native/` – everything written by hand: the platform layer (window, input, audio), the
+  replacements for the 3DS system libraries, the renderer, and fixes for decompiled functions
+  that were wrong (`native/compilefix/`, each with a note on what was wrong).
+- `tools/` – build and analysis scripts.
+- The game data (strings, tables) is generated from your ROM at build time and is never stored.
+
+Development notes: [native/BOOT_LOG.md](native/BOOT_LOG.md) (every bug found and how it was
+fixed), [native/DIDNT_WORK.md](native/DIDNT_WORK.md) (what was tried and failed),
+[native/SCRIPTED_EVENTS.md](native/SCRIPTED_EVENTS.md) (all cutscenes, with test status).
+
+### Rules the port follows
+
+- No emulation: no CPU interpreter or recompiler, no GPU or OS emulation. 3DS library calls are
+  replaced function by function with native code.
+- Shaders are hand-written GLSL; GPU command lists are never interpreted at run time.
+- No game data in the repository.
+
+## Legal
+
+This is a fan project for preservation and study. It is not affiliated with or endorsed by
+Nintendo. *The Legend of Zelda* and *A Link Between Worlds* are trademarks of Nintendo. You must
+own the game and dump it yourself; do not ask for ROMs or keys.
