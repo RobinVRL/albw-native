@@ -1191,7 +1191,10 @@ def main():
     if asm_flagged:
         print("matched sources with computing __asm blocks, built from Ghidra: %s" % sorted(asm_flagged))
     for addr, e in matched.items():
-        if e["status"] in ("honest", "hack") and users[e["path"]] == 1 and addr not in abi_flagged \
+        # ALBW_OWN_ONLY=1: no matched sources from the decomp repository: every function from our
+        # own Ghidra dumps (branch own-decomp: the whole game code under the port's MIT license)
+        if os.environ.get("ALBW_OWN_ONLY") != "1" and \
+                e["status"] in ("honest", "hack") and users[e["path"]] == 1 and addr not in abi_flagged \
                 and addr not in asm_flagged:
             by_path[e["path"]].append(addr)
             source_of[addr] = "matched"
