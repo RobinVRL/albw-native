@@ -25,8 +25,10 @@ Tested dump:
 | `.code` SHA-1 (what the build checks) | `2aeee593a695f2ce1196b844026567f227472f0b` |
 
 The file hashes depend on the dump and decryption tools. A different file can still work if its
-`.code` matches: the build checks that and stops if it does not. The USA and Japanese releases
-are not supported.
+`.code` matches: the build checks that and stops if it does not.
+
+Not supported (yet): the USA release (`.code` SHA-1 `e6ab7d66ee62e879248b0660aaf38d22202e604b`)
+and the Japanese release. Their code sits at different addresses.
 
 ## Build
 
