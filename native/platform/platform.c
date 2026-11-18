@@ -644,6 +644,41 @@ static void plat_layout_cursor(int which) {
     if (g_layout_cursor[which]) SDL_SetCursor(g_layout_cursor[which]);
 }
 
+/* F12: save both screens (the last finished frame) to ~/.local/share/albw-port/screenshots/
+ * shot_<time>_top.ppm / _bottom.ppm. Kept out of plat_end_frame (save states record its code). */
+static void __attribute__((noinline)) plat_screenshot_now(void) {
+    const char *home = getenv("HOME"), *xdg = getenv("XDG_DATA_HOME");
+    char dir[600];
+    if (xdg && *xdg) snprintf(dir, sizeof dir, "%s/albw-port/screenshots", xdg);
+    else snprintf(dir, sizeof dir, "%s/.local/share/albw-port/screenshots", home ? home : ".");
+    char cmd[700];
+    snprintf(cmd, sizeof cmd, "mkdir -p '%s'", dir);
+    if (system(cmd) != 0) return;
+    time_t now = time(NULL);
+    struct tm tmv;
+    localtime_r(&now, &tmv);
+    char stamp[32];
+    strftime(stamp, sizeof stamp, "%Y%m%d_%H%M%S", &tmv);
+    for (int i = 0; i < 2; i++) {
+        Target *t = &screens[i];
+        unsigned char *px = malloc((size_t)t->w * t->h * 4);
+        if (!px) return;
+        glBindFramebuffer(GL_FRAMEBUFFER, t->fbo);
+        glReadPixels(0, 0, t->w, t->h, 0x1908 /*GL_RGBA*/, 0x1401 /*GL_UNSIGNED_BYTE*/, px);
+        char path[760];
+        snprintf(path, sizeof path, "%s/shot_%s_%s.ppm", dir, stamp, i ? "bottom" : "top");
+        FILE *f = fopen(path, "wb");
+        if (f) {
+            fprintf(f, "P6\n%d %d\n255\n", t->w, t->h);
+            for (int y = t->h - 1; y >= 0; y--)
+                for (int x = 0; x < t->w; x++) fwrite(px + ((size_t)y * t->w + x) * 4, 1, 3, f);
+            fclose(f);
+            fprintf(stderr, "screenshot: %s\n", path);
+        }
+        free(px);
+    }
+}
+
 /* Layout keys and mouse editing. Returns 1 if the event was consumed (not passed to the game). */
 static int plat_layout_event(const SDL_Event *e) {
     float pd = SDL_GetWindowPixelDensity(win);
@@ -666,6 +701,10 @@ static int plat_layout_event(const SDL_Event *e) {
                 g_ss_slot = (g_ss_slot + ((mod & SDL_KMOD_SHIFT) ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI;
                 fprintf(stderr, "savestate: slot %d\n", g_ss_slot + 1);
             }
+            return 1;
+        }
+        if (e->key.key == SDLK_F12) {   /* screenshot of both screens */
+            if (!e->key.repeat) plat_screenshot_now();
             return 1;
         }
         if (e->key.key == SDLK_F9) {   /* single-screen mode on / off */
