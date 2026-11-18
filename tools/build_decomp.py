@@ -952,11 +952,73 @@ def load_decomp_tool(decomp, name):
     return mod
 
 
+def snapshot_main(a):
+    """Compile the source snapshot (decomp/src, decomp/jobs.json) exactly as the converted build did:
+    same flags (round-3 V4 stage 2), no conversion step, the snapshot's texts are final."""
+    global CTORS, RETURNS_THIS
+    os.environ["ALBW_CONVERT_V4"] = "1"
+    os.environ.setdefault("ALBW_V4_STAGE", "2")
+    os.environ["ALBW_PMF_THIS"] = "0"   # already applied to the snapshot texts
+    os.environ["ALBW_FCONV"] = "0"
+    snap = os.path.abspath(a.snapshot)
+    import gen_data, struct as _st
+    code_bin = os.environ.get("ALBW_CODE_BIN") or os.path.join(ROOT, "build", "rom", "eu_code.bin")
+    code = open(code_bin, "rb").read()
+    emap = json.load(open(os.path.join(snap, "eu_usa_map.json")))
+    fn_of = {int(v["eu"], 16): "func_" + k for k, v in emap.items()}
+    ctors, _ = gen_data.init_tables(code, lambda x: _st.unpack_from("<I", code, x - 0x100000)[0], fn_of)
+    CTORS = {c[5:] for c in ctors}
+    rt3 = os.path.join(ROOT, "native", "returns_this3.json")
+    if os.path.exists(rt3):
+        RETURNS_THIS = set(json.load(open(rt3)))
+    # sources and headers into build/decomp (fresh copies only where the snapshot is newer)
+    n = 0
+    for base, _, files in os.walk(os.path.join(snap, "src")):
+        rel = os.path.relpath(base, os.path.join(snap, "src"))
+        for f in files:
+            src, dst = os.path.join(base, f), os.path.join(OUT, rel, f)
+            if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(src, dst)
+                os.utime(dst)   # newer than any object built from an older text
+                n += 1
+    inc = os.path.join(OUT, "shared", "include")
+    if os.path.isdir(inc):
+        shutil.rmtree(inc)
+    shutil.copytree(os.path.join(snap, "include"), inc)
+    print("snapshot: %d sources updated, static constructors %d, returns-this %d" % (n, len(CTORS), len(RETURNS_THIS)))
+    jobs = []
+    for path, addrs in json.load(open(os.path.join(snap, "jobs.json"))):
+        if not addrs:
+            m = re.search(r"func_([0-9A-F]{8})", path)
+            addrs = [m.group(1)] if m else []
+        jobs.append((path, addrs, None))
+    done = [0]
+
+    def one(job):
+        r = build_one(job)
+        done[0] += 1
+        if done[0] % 2000 == 0:
+            print("  %d / %d" % (done[0], len(jobs)), flush=True)
+        return r
+    with cf.ThreadPoolExecutor(a.jobs) as ex:
+        res = list(ex.map(one, jobs))
+    ok = [r for r in res if r["ok"]]
+    bad = [(r["path"], r["error"]) for r in res if not r["ok"]]
+    rep = {"objects": [os.path.join(OUT, "obj", r["path"] + ".final.o") for r in ok],
+           "sources": len(jobs), "compiled": len(ok), "failed": bad}
+    json.dump(rep, open(os.path.join(OUT, "report.json"), "w"), indent=1)
+    print("compiled %d / %d sources%s" % (len(ok), len(jobs), "" if not bad else ", FAILED: %d (first: %s)" % (len(bad), bad[0])))
+    return 0 if not bad else 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default=os.path.join(ROOT, "..", "albw-decomp-ai"))
     ap.add_argument("--jobs", type=int, default=albw_jobs())
     ap.add_argument("--only", default="")
+    ap.add_argument("--snapshot", default="",
+                    help="build from a source snapshot (tools/export_snapshot.py: decomp/), no Ghidra dump or decomp repo")
     ap.add_argument("--arch", choices=("x86", "x86_64"), default="x86",
                     help="x86 = 32-bit intermediate build; x86_64 = the release target (tracks 64-bit health)")
     a = ap.parse_args()
@@ -964,6 +1026,8 @@ def main():
     if a.arch == "x86_64":
         OUT, TARGET, ARCH64 = os.path.join(ROOT, "build", "decomp64"), "x86_64-linux-gnu", True
         os.environ["ALBW_ARCH"] = "x86_64"  # gen_stubs.system_symbols(): 64-bit libraries
+    if a.snapshot:
+        return snapshot_main(a)
     decomp = os.path.abspath(a.decomp)
     os.makedirs(OUT, exist_ok=True)
     # the game's static constructors (their source's _GLOBAL__sub_I_* is the function)
