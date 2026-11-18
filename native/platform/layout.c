@@ -114,11 +114,20 @@ static void preset_canvas(const LayoutConfig *c, LayoutRect r[2], int vis[2], in
     }
 }
 
+/* single-screen mode: the one-screen preset of the screen that is up */
+static LayoutConfig single_as_preset(const LayoutConfig *c) {
+    LayoutConfig d = *c;
+    d.single_screen = 0;
+    d.preset = c->show_bottom ? LAYOUT_BOTTOM_ONLY : LAYOUT_TOP_ONLY;
+    d.swap = 0;
+    return d;
+}
+
 void layout_canvas_size(const LayoutConfig *c, int *w, int *h) {
     LayoutRect r[2];
     int vis[2], order[2];
     float cw, ch;
-    LayoutConfig d = *c;
+    LayoutConfig d = c->single_screen ? single_as_preset(c) : *c;
     if (d.preset == LAYOUT_CUSTOM) d.preset = LAYOUT_DEFAULT;
     preset_canvas(&d, r, vis, order, &cw, &ch);
     *w = (int)roundf_(cw);
@@ -131,6 +140,11 @@ static LayoutRect pixel_align(LayoutRect r) {
 }
 
 void layout_compute(const LayoutConfig *c, int ww, int wh, Layout *l) {
+    if (c->single_screen) {
+        LayoutConfig d = single_as_preset(c);
+        layout_compute(&d, ww, wh, l);
+        return;
+    }
     memset(l, 0, sizeof *l);
     l->ww = ww > 1 ? ww : 1;
     l->wh = wh > 1 ? wh : 1;
@@ -171,10 +185,12 @@ void layout_compute_single(const LayoutConfig *c, int screen, int ww, int wh, La
     LayoutConfig d = *c;
     d.preset = screen == LAYOUT_SCREEN_TOP ? LAYOUT_TOP_ONLY : LAYOUT_BOTTOM_ONLY;
     d.swap = 0;
+    d.single_screen = 0;
     layout_compute(&d, ww, wh, out);
 }
 
 int layout_separate_visible(const LayoutConfig *c, int screen) {
+    if (c->single_screen) return screen == (c->show_bottom ? LAYOUT_SCREEN_BOTTOM : LAYOUT_SCREEN_TOP);
     if (c->preset == LAYOUT_TOP_ONLY) return screen == LAYOUT_SCREEN_TOP;
     if (c->preset == LAYOUT_BOTTOM_ONLY) return screen == LAYOUT_SCREEN_BOTTOM;
     return 1;
@@ -496,6 +512,7 @@ int layout_load(LayoutConfig *c, const char *path) {
         else if (!strcmp(key, "render_scale")) { if (iv >= 1 && iv <= 8) c->render_scale = iv; }
         else if (!strcmp(key, "menu_style")) c->menu_centered = !strcmp(arg, "centered");
         else if (!strcmp(key, "custom_front")) c->custom_front = !strcmp(arg, "top") ? 0 : 1;
+        else if (!strcmp(key, "single_screen")) c->single_screen = iv != 0;
         else if (!strcmp(key, "custom")) {
             int s = !strcmp(arg, "top") ? 0 : !strcmp(arg, "bottom") ? 1 : -1;
             if (s < 0) continue;
@@ -521,9 +538,9 @@ int layout_save(const LayoutConfig *c, const char *path) {
     layout_fmt_float(r, sizeof r, clamp_ratio(c->large_ratio));
     fprintf(f, "# ALBW native port: screen layout (shared by the SDL and Qt frontends; see native/platform/layout.h)\n"
                "windows %s\npreset %s\nswap %d\ninteger_scale %d\nlinear_filter %d\nlarge_ratio %s\nkeep_aspect %d\nsnap %d\n"
-               "render_scale %d\nmenu_style %s\ncustom_front %s\n",
+               "render_scale %d\nmenu_style %s\ncustom_front %s\nsingle_screen %d\n",
             c->separate ? "separate" : "joined", layout_preset_key(c->preset), c->swap, c->integer_scale, c->linear_filter, r, c->keep_aspect, c->snap,
-            c->render_scale < 1 ? 1 : c->render_scale, c->menu_centered ? "centered" : "bar", c->custom_front ? "bottom" : "top");
+            c->render_scale < 1 ? 1 : c->render_scale, c->menu_centered ? "centered" : "bar", c->custom_front ? "bottom" : "top", c->single_screen);
     for (int s = 0; s < 2; s++) {
         char v[4][32];
         layout_fmt_float(v[0], 32, c->custom[s].x);

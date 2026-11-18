@@ -27,6 +27,7 @@ typedef struct PlatInput {
     int16_t cstick_x, cstick_y;  /* New 3DS C-stick (right stick by default), -156..156, +y = up;
                                     not in held (the game does not read it) */
     int menu;                  /* frontend menu binding pressed this frame (never seen by the game) */
+    int screen;                /* SCREEN binding pressed this frame: single-screen mode toggle (frontend) */
     int controllers;           /* game controllers connected */
     int motion;                /* 1 = accel/gyro come from a controller's sensors this frame */
     float accel[3];            /* G, SDL axes (controller held in front of you: +x right, +y up,

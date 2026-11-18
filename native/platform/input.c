@@ -30,7 +30,7 @@ static const char *const in_ACTION_NAMES[IN_ACTION_COUNT] = {
     "DUP", "DDOWN", "DLEFT", "DRIGHT",
     "CPAD_UP", "CPAD_DOWN", "CPAD_LEFT", "CPAD_RIGHT",
     "CSTICK_UP", "CSTICK_DOWN", "CSTICK_LEFT", "CSTICK_RIGHT",
-    "MENU", "QUIT",
+    "MENU", "QUIT", "SCREEN",
 };
 /* 3DS button bit of each action (0: analog / frontend) */
 static const uint32_t in_ACTION_BITS[IN_ACTION_COUNT] = {
@@ -223,7 +223,7 @@ static char in_path_default[512], in_path_loaded[512];
 static struct timespec in_mtime_loaded;
 static char in_last_err[1024], in_err_ret[1024];
 static int in_menu_prev, in_quit_prev;   /* controllers: edge detection on held state */
-static int in_kb_menu_ev, in_kb_quit_ev; /* keyboard: from key-down events (keys a frontend layer
+static int in_kb_menu_ev, in_kb_quit_ev, in_kb_screen_ev, in_screen_prev; /* keyboard: from key-down events (keys a frontend layer
                                       consumed before input_handle_event() never count) */
 static unsigned in_frame_count;
 static char in_cap_name[48];
@@ -250,14 +250,14 @@ void input_defaults(InputConfig *c) {
         [IN_START] = "Return", [IN_SELECT] = "Right Shift, Backspace",
         [IN_DUP] = "I", [IN_DDOWN] = "K", [IN_DLEFT] = "J", [IN_DRIGHT] = "L",
         [IN_CPAD_UP] = "Up", [IN_CPAD_DOWN] = "Down", [IN_CPAD_LEFT] = "Left", [IN_CPAD_RIGHT] = "Right",
-        [IN_MENU] = "F1", [IN_QUIT] = "Escape",
+        [IN_MENU] = "F1", [IN_QUIT] = "Escape", [IN_SCREEN] = "Tab",
     };
     static const char *const PAD[IN_ACTION_COUNT] = {
         [IN_A] = "auto", [IN_B] = "auto", [IN_X] = "auto", [IN_Y] = "auto",
         [IN_L] = "leftshoulder", [IN_R] = "rightshoulder", [IN_ZL] = "lefttrigger", [IN_ZR] = "righttrigger",
         [IN_START] = "start", [IN_SELECT] = "back",
         [IN_DUP] = "dpup", [IN_DDOWN] = "dpdown", [IN_DLEFT] = "dpleft", [IN_DRIGHT] = "dpright",
-        [IN_MENU] = "guide, leftstick&rightstick",
+        [IN_MENU] = "guide, leftstick&rightstick", [IN_SCREEN] = "rightstick",
     };
     for (int a = 0; a < IN_ACTION_COUNT; a++) {
         snprintf(c->key[a], IN_BIND_LEN, "%s", KEYS[a] ? KEYS[a] : "");
@@ -595,6 +595,7 @@ void input_handle_event(const union SDL_Event *ev) {
             in_ensure_cfg();
             in_kb_menu_ev |= in_key_triggers(&in_kb_bind[IN_MENU], e->key.scancode);
             in_kb_quit_ev |= in_key_triggers(&in_kb_bind[IN_QUIT], e->key.scancode);
+            in_kb_screen_ev |= in_key_triggers(&in_kb_bind[IN_SCREEN], e->key.scancode);
             in_Elem el = {EL_KEY, 0, (int16_t)e->key.scancode};
             char n[48];
             in_elem_name(&el, n, sizeof n);
@@ -689,12 +690,13 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
     in_ensure_cfg();
     const bool *ks = SDL_GetKeyboardState(NULL);
     uint32_t kb = 0, gp = 0;
-    int menu = 0, quit = 0;
+    int menu = 0, quit = 0, screen = 0;
 
     /* keyboard */
     in_Consumed kc = {{0}, 0};     /* keys of a held MENU/QUIT combination: hidden from the game */
     in_bind_held(&in_kb_bind[IN_MENU], NULL, ks, NULL, &kc);
     in_bind_held(&in_kb_bind[IN_QUIT], NULL, ks, NULL, &kc);
+    in_bind_held(&in_kb_bind[IN_SCREEN], NULL, ks, NULL, &kc);
     for (int a = 0; a <= IN_DRIGHT; a++)
         if (in_bind_held(&in_kb_bind[a], NULL, ks, &kc, NULL)) kb |= in_ACTION_BITS[a];
     int x = 0, y = 0;
@@ -713,6 +715,8 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
         in_Consumed pc = {{0}, 0};
         menu |= in_bind_held(&p->p.bind[IN_MENU], p, NULL, NULL, &pc);
         quit |= in_bind_held(&p->p.bind[IN_QUIT], p, NULL, NULL, &pc);
+        int m = in_bind_held(&p->p.bind[IN_MENU], p, NULL, NULL, NULL);
+        screen |= !m && in_bind_held(&p->p.bind[IN_SCREEN], p, NULL, NULL, &pc);   /* not inside the menu combo */
         if (!g_input_cfg.multi && p->id != in_active_id) continue;
         for (int a = 0; a <= IN_DRIGHT; a++)
             if (in_bind_held(&p->p.bind[a], p, NULL, &pc, NULL)) gp |= in_ACTION_BITS[a];
@@ -743,9 +747,11 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
     in->controllers = in_npads;
     in->menu = (menu && !in_menu_prev) || in_kb_menu_ev;
     int quit_now = (quit && !in_quit_prev) || in_kb_quit_ev;
+    in->screen = (screen && !in_screen_prev) || in_kb_screen_ev;
+    in_screen_prev = screen;
     in_menu_prev = menu;
     in_quit_prev = quit;
-    in_kb_menu_ev = in_kb_quit_ev = 0;
+    in_kb_menu_ev = in_kb_quit_ev = in_kb_screen_ev = 0;
     pthread_mutex_unlock(&in_mu);
 
     *kb_out = kb;

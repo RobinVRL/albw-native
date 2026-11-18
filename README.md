@@ -74,6 +74,8 @@ format.
 | F2 / F3 / F4 | screen layout preset / layout editor / swap screens |
 | F5 | one window or two windows |
 | F6 / F7 | save state / load state |
+| F9 | single-screen mode on / off |
+| Tab (controller: right-stick click) | single-screen mode: show the other screen (items, map) and back |
 
 A game controller works too.
 

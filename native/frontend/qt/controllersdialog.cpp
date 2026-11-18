@@ -37,7 +37,7 @@ static const char *actionLabel(int a) {
         "D-pad up", "D-pad down", "D-pad left", "D-pad right",
         "Circle pad up", "Circle pad down", "Circle pad left", "Circle pad right",
         "C-stick up", "C-stick down", "C-stick left", "C-stick right",
-        "Frontend menu", "Quit"};
+        "Frontend menu", "Quit", "Show other screen"};
     return L[a];
 }
 

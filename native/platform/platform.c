@@ -570,6 +570,7 @@ static void plat_separate_cycle(int back) {
  *                   wheel = scale, Shift = free aspect, Alt = no snapping
  *   F4              swap the screens (presets) / bring the other screen to the front (custom)
  *   F5              separate windows / one joined window
+ *   F9              single-screen mode on / off (SCREEN binding, Tab: show the other screen)
  *   Ctrl + left/right drag   move/resize a screen without entering the editor (-> custom) */
 
 #define LAYOUT_HANDLE 10.0f      /* corner handle size, window points */
@@ -603,6 +604,24 @@ static void plat_layout_changed(void) {
     if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());
 }
 
+/* single-screen mode (layout.cfg single_screen, F9, Esc menu > Video): one screen at a time, the
+ * top one; the SCREEN binding (Tab / right-stick click) brings the bottom one up in its place and
+ * back. Touch follows the screen that is shown (layout_hit). */
+static void plat_single_screen_set(int on) {
+    g_layout_cfg.single_screen = on != 0;
+    g_layout_cfg.show_bottom = 0;
+    plat_windows_visibility();
+    plat_layout_changed();
+    fprintf(stderr, "layout: single-screen mode %s\n", on ? "on (Tab / right-stick click: other screen)" : "off");
+}
+static void plat_single_screen_flip(void) {
+    if (!g_layout_cfg.single_screen) return;
+    g_layout_cfg.show_bottom ^= 1;
+    plat_windows_visibility();
+    plat_layout_update();
+    plat_layout_title();
+}
+
 static void plat_layout_cursor(int which) {
     static const SDL_SystemCursor ids[4] = {SDL_SYSTEM_CURSOR_DEFAULT, SDL_SYSTEM_CURSOR_MOVE,
                                             SDL_SYSTEM_CURSOR_NWSE_RESIZE, SDL_SYSTEM_CURSOR_NESW_RESIZE};
@@ -629,6 +648,10 @@ static int plat_layout_event(const SDL_Event *e) {
                 g_ss_slot = (g_ss_slot + ((mod & SDL_KMOD_SHIFT) ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI;
                 fprintf(stderr, "savestate: slot %d\n", g_ss_slot + 1);
             }
+            return 1;
+        }
+        if (e->key.key == SDLK_F9) {   /* single-screen mode on / off */
+            if (!e->key.repeat) plat_single_screen_set(!g_layout_cfg.single_screen);
             return 1;
         }
         if (e->key.key == SDLK_F2 && g_separate) {
@@ -1003,6 +1026,7 @@ int plat_poll(void) {
         g_menu_sel = 0;
         g_menu_note[0] = 0;
     }
+    if (in.screen) plat_single_screen_flip();
     if (g_geom_dirty_ns && plat_ticks_ns() - g_geom_dirty_ns > 500000000ull) {  /* moves settled */
         g_geom_dirty_ns = 0;
         if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());

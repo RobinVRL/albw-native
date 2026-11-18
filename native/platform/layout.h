@@ -28,6 +28,8 @@
  *   menu_style bar            Esc menu: bar (across the top) or centered (a panel in the middle)
  *   snap 1                    custom editor: snap to window edges/centre, the other screen, integer sizes
  *   custom_front bottom       screen drawn last (on top) where custom rectangles overlap
+ *   single_screen 0           1 = show one screen: the top one, and the bottom one in its place while
+ *                             the SCREEN binding (Tab / right-stick click) has it toggled up
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
  *   custom bottom 0.10000 0.50000 0.80000 0.50000 1
  * Unknown keys are ignored, missing keys keep their defaults. */
@@ -73,6 +75,8 @@ typedef struct {
     LayoutRect custom[2];    /* normalized to the window */
     int custom_visible[2];
     LayoutWindowGeom window[2];  /* separate windows, per screen */
+    int single_screen;       /* 1 = one screen at a time (overrides preset / swap / custom) */
+    int show_bottom;         /* single_screen: the bottom screen is up (runtime only, not saved) */
 } LayoutConfig;
 
 /* A computed layout for one window size. */

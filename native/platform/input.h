@@ -113,6 +113,7 @@ typedef enum InAction {
     IN_CPAD_UP, IN_CPAD_DOWN, IN_CPAD_LEFT, IN_CPAD_RIGHT,
     IN_CSTICK_UP, IN_CSTICK_DOWN, IN_CSTICK_LEFT, IN_CSTICK_RIGHT,
     IN_MENU, IN_QUIT,
+    IN_SCREEN,          /* single-screen mode: bring the other screen up / back (frontend) */
     IN_ACTION_COUNT
 } InAction;
 
