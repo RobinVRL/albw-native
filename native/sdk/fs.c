@@ -1012,6 +1012,8 @@ int32_t func_003C9A84(const uint32_t *handle, uint32_t *out_read, uint32_t offse
     }
     if (out_read)
         *out_read = (uint32_t)done;
+    fs_log("Read handle 0x%08x off 0x%llx size 0x%x -> 0x%llx", handle ? *handle : 0,
+           (unsigned long long)off, size, (unsigned long long)done);
     return RES_OK;
 }
 
