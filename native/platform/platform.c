@@ -809,6 +809,7 @@ static uint32_t scripted_keys(void) {
  *   spawn NAME [DX DZ]  spawn actor profile NAME (e.g. EnemyKeese) at Link + (DX, 0, DZ) (default 0 2)
  *   profiles        list the registered actor profile names
  *   warp X Y Z      set Link's position (debug)
+ *   event NAME      start a scripted sequence by flowchart entry name (debug)
  *   actors          list live actors (profile, position)
  *   touch X Y [N]   touch the bottom screen at (X, Y) (0..319, 0..239) for N frames (default 6), then
  *                   1 frame off
@@ -898,6 +899,12 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         float *pp = (float *)albw_debug_player_pos();
         if (pp) { pp[0] = (float)wx; pp[1] = (float)wy; pp[2] = (float)wz; }
         fprintf(stderr, "route: warp to %.2f %.2f %.2f%s\n", wx, wy, wz, pp ? "" : " (no player)");
+        done = 1;
+    } else if (!strcmp(op, "event")) {   /* debug: start a flowchart entry (SCRIPTED_EVENTS.md) */
+        extern int albw_debug_event(const char *name);
+        char nm[128] = "";
+        sscanf(rest, " %127[^; ]", nm);
+        albw_debug_event(nm);
         done = 1;
     } else if (!strcmp(op, "actors")) {
         albw_debug_list_actors();

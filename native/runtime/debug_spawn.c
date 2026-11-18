@@ -9,6 +9,7 @@
  * 004C4AF4(*data_00706E20 = actor manager, &param, 0) -> the actor (NULL on failure).
  * Link's position: 00520FC0 (EU 00520F98) = *(*data_0070FB60 + 0x1C), a Vec3 *. */
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -118,4 +119,60 @@ static void list_one(void *actor, uint32_t filter) {
 void albw_debug_list_actors(void) {
     uint32_t mgr = *(uint32_t *)data_00706E20;
     if (mgr) func_0052FD7C((void *)(uintptr_t)(mgr + 0x3DBBC), list_one, 0);
+}
+
+/* Start a scripted sequence by flowchart entry name (route step `event NAME`, debug).
+ * The game requests an event through an event component's virtual +0x48 = 00503180
+ * (component, owner actor or 0, &flag, sead::SafeString *entry): it queues the component with the
+ * event manager (004CDDEC) and copies the entry name; the manager then starts it like any talk /
+ * area event. This uses the first live actor that is such a component (AreaEventTalk and other
+ * area-event actors); the entry's flowchart must be one the current area loads
+ * (native/SCRIPTED_EVENTS.md, column "Loaded in"). Returns 1 when the request was accepted. */
+int func_00503180(void *self, int owner, uint8_t *flag, void *entry);
+extern char data_006F5988[], data_0070B728[];   /* SafeString vtable; event manager pointer */
+static uint32_t g_event_comp;
+static int is_event_vt(uint32_t vt) {
+    /* a game vtable (generated data at 0x30000000..) whose +0x48 is the event request 00503180 */
+    return vt >= 0x30000000u && vt < 0x30100000u &&
+           *(uint32_t *)(uintptr_t)(vt + 0x48) == (uint32_t)(uintptr_t)func_00503180;
+}
+static void find_event_comp(void *actor, uint32_t arg) {
+    (void)arg;
+    uint32_t a = (uint32_t)(uintptr_t)actor;
+    if (g_event_comp)
+        return;
+    /* the component is the actor itself or a member (AreaEventTalk, TagItemEvent +0x434) */
+    for (uint32_t o = 0; o < 0xB00; o += 4) {
+        if (is_event_vt(*(uint32_t *)(uintptr_t)(a + o))) {
+            g_event_comp = a + o;
+            if (getenv("ALBW_EVENT_DEBUG"))
+                fprintf(stderr, "event: component at actor %#x + %#x\n", a, o);
+            return;
+        }
+    }
+}
+int albw_debug_event(const char *name) {
+    uint32_t mgr = *(uint32_t *)data_00706E20;
+    if (!mgr) return 0;
+    g_event_comp = 0;
+    func_0052FD7C((void *)(uintptr_t)(mgr + 0x3DBBC), find_event_comp, 0);
+    if (!g_event_comp) {
+        fprintf(stderr, "event: no event component in this area\n");
+        return 0;
+    }
+    static char buf[128];
+    snprintf(buf, sizeof buf, "%s", name);
+    static uint32_t str[2];               /* sead::SafeString { vtable, cstr } */
+    str[0] = (uint32_t)(uintptr_t)data_006F5988;
+    str[1] = (uint32_t)(uintptr_t)buf;
+    uint8_t flag = 0;
+    /* the manager accepts requests only inside its update (004CDBEC sets +0x10 around the event
+     * calls); the route runs between frames, so raise it for this call */
+    uint32_t em = *(uint32_t *)data_0070B728;
+    uint8_t was = em ? *(uint8_t *)(uintptr_t)(em + 0x10) : 0;
+    if (em) *(uint8_t *)(uintptr_t)(em + 0x10) = 1;
+    int ok = func_00503180((void *)(uintptr_t)g_event_comp, 0, &flag, str);
+    if (em) *(uint8_t *)(uintptr_t)(em + 0x10) = was;
+    fprintf(stderr, "event: %s via component %#x: %s\n", name, g_event_comp, ok ? "requested" : "refused");
+    return ok;
 }
