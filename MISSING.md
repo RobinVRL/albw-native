@@ -59,7 +59,8 @@ each area: PLAN.md "Critical missing pieces"; disproven causes: native/DIDNT_WOR
 - [x] Items: all 12 Y/X items, sword, shield, bottles (5 contents), boots (L), bell, hint glasses; Bow of Light is final-battle only by design (BOOT_LOG 141-147)
 - [x] Wall merge enters / exits (BOOT_LOG 149)
 - [ ] Merged (painting) Link is not drawn on the wall
-- [ ] Overworld: map pieces unloaded / not drawn after going back and forth at an area edge; transition lag (BOOT_LOG 153)
+- [x] Overworld: terrain black after crossing an area edge (BOOT_LOG 155)
+- [ ] Overworld: lag at area transitions; blacksmith house: stuck in a loop on entering (user report)
 - [x] Route position: the game's 00520FC0 (BOOT_LOG 151)
 - [x] Thrown pots fly and land (BOOT_LOG 150)
 - [~] Enemy test spawns (`spawn NAME`): works for enemies whose pack is mounted; mount other packs first (tools/data/enemy_packs.txt) (BOOT_LOG 151-152)

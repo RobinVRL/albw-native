@@ -955,6 +955,9 @@ static BlobArgs *bargs_find(uint32_t addr) {
     }
 }
 static void bargs_put(uint32_t addr, uint32_t words, const ROp *prefix, int npre, uint32_t mapper) {
+    static int on = -1;   /* only for the ALBW_H3D_REDECODE experiment (see h3d_blob_check) */
+    if (on < 0) on = getenv("ALBW_H3D_REDECODE") != NULL;
+    if (!on) return;
     pthread_mutex_lock(&g_bargs_mx);
     if ((g_nbargs + 1) * 2 > g_capbargs) {
         size_t nc = g_capbargs ? g_capbargs * 2 : 8192;
@@ -985,6 +988,7 @@ static void bargs_put(uint32_t addr, uint32_t words, const ROp *prefix, int npre
     pthread_mutex_unlock(&g_bargs_mx);
 }
 static void convert_blob_m(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix, uint32_t mapper);
+static int g_blob_marked;
 /* called where the game records a CALL of a blob (sdk/gr.c 003CC230): the game thread, the model
  * using the blob is alive. If the blob's words (read where the decoder read them: VRAM blobs from
  * their staging copy) changed since the decode - a material's textures bound after load, e.g. an
@@ -1018,6 +1022,26 @@ void h3d_blob_check(uintptr_t a) {
 
 static void convert_blob_m(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix, uint32_t mapper) {
     if (!addr || !words) return;
+    {   /* A source holding native markers is not this model's GPU commands: the game's resource
+         * cache handed back an already-loaded file whose temporary (staging) command buffer was
+         * reused for recorded command lists. Decoding it gave materials without texture units
+         * (overworld terrain black after an area switch, BOOT_LOG 155). Keep the earlier decode of
+         * the same blob address; never replace it with a decode of markers. */
+        const uint32_t *w = (const uint32_t *)GA(stage_src(addr));
+        int marks = 0;
+        for (uint32_t i = 1; i < words; i += 2) if (w[i] == RENDER_MARK) { marks = 1; break; }
+        if (marks) {
+            static int pol = -1;   /* ALBW_H3D_MARKED=keep: keep an earlier decode (comparison) */
+            if (pol < 0) { const char *e = getenv("ALBW_H3D_MARKED"); pol = e && !strcmp(e, "keep"); }
+            if (!pol) h3d_blob_drop(GA(addr));
+            static int tr = -1;
+            if (tr < 0) tr = getenv("ALBW_H3D_REDECODE_TRACE") != NULL;
+            if (tr) fprintf(stderr, "h3d: blob %#x source %#x holds native markers: %s\n", (unsigned)addr,
+                            (unsigned)stage_src(addr), pol ? (h3d_blob_known(GA(addr)) ? "kept the earlier decode" : "no decode") : "decode dropped, markers run in place");
+            g_blob_marked++;
+            return;
+        }
+    }
     bargs_put(addr, words, prefix, nprefix, mapper);
     Dec *d = calloc(1, sizeof *d);
     if (!d) abort();
@@ -1196,6 +1220,17 @@ void h3d_register_file(uint32_t resfile) {
             }
             /* texture mapper: v0x21 pointer at +0x18, v0x20 inline at +0x18 */
             convert_blob_m(G32(mat, 0x10), G32(mat, 0x14), NULL, 0, version >= 0x21 ? G32(mat, 0x18) : mat + 0x18);
+            { /* debug: ALBW_H3D_BLOBWORDS=1: each material texture blob's source words at decode */
+                static int bw = -1;
+                if (bw < 0) bw = getenv("ALBW_H3D_BLOBWORDS") != NULL;
+                if (bw) {
+                    uint32_t a = G32(mat, 0x10), src = stage_src(a);
+                    const uint32_t *w = (const uint32_t *)GA(src);
+                    fprintf(stderr, "h3d-words: file %#x mat %u blob %#x src %#x:", (unsigned)hdr, (unsigned)k, (unsigned)a, (unsigned)src);
+                    for (int q = 0; q < 16; q++) fprintf(stderr, " %08x", w[q]);
+                    fprintf(stderr, "\n");
+                }
+            }
             if (params) {
                 ROp pre[1];
                 int npre;

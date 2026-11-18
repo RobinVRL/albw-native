@@ -613,6 +613,33 @@ static int old_image(Conv *c, const Parse *ps) {
     return 0;
 }
 
+/* the executable's initial bytes for [addr, addr+size): PROGBITS sections from /proc/self/exe,
+ * NOBITS (.bss) zero; bytes outside any section are left as they are */
+static void initial_image(uint8_t *dst, uint32_t addr, uint32_t size) {
+    static uint8_t *img;
+    static size_t imglen;
+    if (!img) {
+        FILE *f = fopen("/proc/self/exe", "rb");
+        if (!f) return;
+        fseek(f, 0, SEEK_END); imglen = (size_t)ftell(f); fseek(f, 0, SEEK_SET);
+        img = malloc(imglen);
+        if (!img || fread(img, 1, imglen, f) != imglen) { fclose(f); free(img); img = NULL; return; }
+        fclose(f);
+    }
+    const Elf32_Ehdr *eh = (const Elf32_Ehdr *)img;
+    if (imglen < sizeof *eh || memcmp(eh->e_ident, ELFMAG, SELFMAG) || eh->e_ident[EI_CLASS] != ELFCLASS32) return;
+    const Elf32_Shdr *sh = (const Elf32_Shdr *)(img + eh->e_shoff);
+    for (int i = 0; i < eh->e_shnum; i++) {
+        if (!(sh[i].sh_flags & SHF_ALLOC) || (sh[i].sh_flags & SHF_EXECINSTR)) continue;
+        uint32_t lo = sh[i].sh_addr > addr ? sh[i].sh_addr : addr;
+        uint32_t hi = sh[i].sh_addr + sh[i].sh_size < addr + size ? sh[i].sh_addr + sh[i].sh_size : addr + size;
+        if (lo >= hi) continue;
+        if (sh[i].sh_type == SHT_NOBITS) memset(dst + (lo - addr), 0, hi - lo);
+        else if (sh[i].sh_offset + (lo - sh[i].sh_addr) + (hi - lo) <= imglen)
+            memcpy(dst + (lo - addr), img + sh[i].sh_offset + (lo - sh[i].sh_addr), hi - lo);
+    }
+}
+
 int ss_convert(SsBuf *st, const SsLayout *lay, const SsRangeInfo *cur, int ncur, char *why, size_t wl) {
     Lay L = {1, lay->mh_size, lay->mh_len_off, lay->mh_sp_off, lay->th_size, lay->th_len_off, lay->th_sp_off, 4};
     Parse ps;
@@ -647,12 +674,17 @@ int ss_convert(SsBuf *st, const SsLayout *lay, const SsRangeInfo *cur, int ncur,
     if (c->err) { snprintf(why, wl, "%s", c->why); goto out; }
 
     /* 2. the static ranges, in this build's layout: start from this run's values, move the
-     *    state's data in (whole ranges or symbol by symbol), relocate what came from the state */
+     *    state's data in (whole ranges or symbol by symbol), relocate what came from the state.
+     *    Native statics ("static" ranges) start from the executable's INITIAL image instead
+     *    (.data bytes from the file, .bss zero): a variable that did not exist when the state was
+     *    made must not keep this run's pre-load value - e.g. a pointer into the pmem arena, which
+     *    the load replaces (crash after loading an older state, BOOT_LOG 155). */
     uint8_t **nb = calloc(ncur ? ncur : 1, sizeof *nb);
     size_t total = 8;
     for (int i = 0; i < ncur; i++) {
         nb[i] = malloc(cur[i].size ? cur[i].size : 1);
         memcpy(nb[i], (const void *)(uintptr_t)cur[i].addr, cur[i].size);
+        if (!strcmp(cur[i].name, "static")) initial_image(nb[i], cur[i].addr, cur[i].size);
         total += 4 + cur[i].size;
     }
     const uint8_t *od[256];

@@ -323,6 +323,29 @@ static Blob *blob_find(uintptr_t addr) {
     }
 }
 
+void h3d_blob_drop(uintptr_t addr) {   /* remove a decode: CALLs then run the words in place */
+    pthread_mutex_lock(&g_mx);
+    Blob *b = blob_find(addr);
+    if (b) {
+        /* open addressing: re-insert the rest of the cluster after removing */
+        size_t cap = g_capblob, h = (size_t)(b - g_blob);
+        pf(b->ops); b->ops = NULL; b->addr = 0; b->n = 0; g_nblob--;
+        for (size_t j = (h + 1) & (cap - 1); g_blob[j].addr; j = (j + 1) & (cap - 1)) {
+            Blob e = g_blob[j];
+            g_blob[j].addr = 0;
+            size_t k = bhash(e.addr, cap);
+            while (g_blob[k].addr) k = (k + 1) & (cap - 1);
+            g_blob[k] = e;
+        }
+    }
+    pthread_mutex_unlock(&g_mx);
+}
+int h3d_blob_known(uintptr_t addr) {
+    pthread_mutex_lock(&g_mx);
+    int k = blob_find(addr) != NULL;
+    pthread_mutex_unlock(&g_mx);
+    return k;
+}
 void h3d_blob_set(uintptr_t addr, uint32_t bytes, const ROp *ops, int n) {
     if (!addr) return;
     h3d_init();
@@ -982,7 +1005,14 @@ static void ext_op(const ROp *op) {
 static int ext_call(uintptr_t addr, uint32_t size) {
     pthread_mutex_lock(&g_mx);
     Blob *b = blob_find(addr);
-    if (!b) { pthread_mutex_unlock(&g_mx); return 0; }
+    if (!b) {
+        pthread_mutex_unlock(&g_mx);
+        static int mt = -1;   /* ALBW_H3D_MISS_TRACE=1: CALLs of blobs that were never decoded */
+        if (mt < 0) mt = getenv("ALBW_H3D_MISS_TRACE") != NULL;
+        if (mt) { extern long g_plat_frames __attribute__((weak));
+                  fprintf(stderr, "h3d-miss: f=%ld blob %#lx size %u\n", &g_plat_frames ? g_plat_frames : 0L, (unsigned long)addr, size); }
+        return 0;
+    }
     int n = b->n;
     ROp *ops = n ? xrealloc(NULL, sizeof *ops * (size_t)n) : NULL; /* the table may change while running */
     if (n) memcpy(ops, b->ops, sizeof *ops * (size_t)n);

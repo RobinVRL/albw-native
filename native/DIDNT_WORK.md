@@ -341,3 +341,8 @@ Not reproducible from a fresh early-game boot (Gulley keeps Link in the yard).
 
 Next: dump the house terrain's material texture blob (h3d `ALBW_H3D_MODELMAP`) after the switch vs a
 fresh scene load - is the unit-enable / address word 0 in game memory, or only in our decode?
+| Keep the earlier decode when the blob source holds markers (`ALBW_H3D_MARKED=keep`) | user state | 45 blobs kept a stale decode, 114 had none: still dark. The markers ARE the bound material (the game rewrote the blob with native producers); the fix is to drop the decode so they run in place (BOOT_LOG 155) |
+| (diagnosis mistake) "the new area's texture slots are empty at registration" | ALBW_H3D_MODELMAP on both paths | empty in the fresh boot too - normal: textures are bound later through material refs (+4/+8/+0xC), which were filled in both cases. The real difference was the blob SOURCE words (ALBW_H3D_BLOBWORDS): original PICA commands on a fresh load, native markers on the cached re-registration |
+| (crash, user report) loading an older state after the re-decode experiment | | the experiment's new pmem table pointer (a new static) kept its pre-load value after the arena was replaced; the converter now starts native statics from the initial image, and the experiment records nothing unless enabled |
+
+**RESOLVED (BOOT_LOG 155):** decoding a cached map file whose blobs already hold native markers.

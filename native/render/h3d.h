@@ -71,6 +71,8 @@ void h3d_init(void);
 /* load-time registration (any thread): the native ops of the blob at [addr, addr + bytes) (copied).
  * Re-registering an address replaces its ops. */
 void h3d_blob_set(uintptr_t addr, uint32_t bytes, const ROp *ops, int n);
+int h3d_blob_known(uintptr_t addr);   /* a decode is registered at addr */
+void h3d_blob_drop(uintptr_t addr);   /* remove the decode at addr */
 /* forget every blob, vertex layout and buffer inside [lo, hi) (a file unloaded / reloaded) */
 void h3d_forget_range(uintptr_t lo, uintptr_t hi);
 H3dVtx *h3d_vtx_new(void);
