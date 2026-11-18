@@ -469,6 +469,8 @@ uint32_t *func_003CC230(uint32_t *p, uint32_t *size_slot, uint32_t target, uint3
             }
         }
     }
+    { extern void h3d_blob_check(uintptr_t addr) __attribute__((weak));
+      if (h3d_blob_check) h3d_blob_check((uintptr_t)target); }   /* re-decode a patched blob (render/h3d.c) */
     ROp op = op_new(ROP_CALL);
     op.u.call.addr = (uintptr_t)target;
     op.u.call.size = size;

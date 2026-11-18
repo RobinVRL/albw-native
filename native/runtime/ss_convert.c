@@ -517,7 +517,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         /* functions that never block: a save is taken while every game thread waits in the kernel,
          * so a return address into one of these is a stale word left in a reused stack slot (the
          * thread trampoline calls 00106314 before the thread body), not a live frame: keep it */
-        static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", NULL };
+        static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", "func_003CC230", NULL };
         for (int i = 0; never_blocks[i]; i++)
             if (!strcmp(s->name, never_blocks[i])) return v;
         if (n->size != osz || !same_code(c, oc, (const uint8_t *)(uintptr_t)n->addr, osz)) {

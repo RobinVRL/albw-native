@@ -935,8 +935,90 @@ static void apply_mapper(Dec *d, uint32_t mapper) {
 
 /* decode one blob and register its ops; prefix ops (material extras) run first; mapper: the
  * material's texture mapper for its texture blob (0 otherwise) */
+/* every decoded blob's arguments, for re-decoding when the game patches its words (render/h3d.c
+ * ext_call compares the words' hash at each call; BOOT_LOG 155) */
+typedef struct { uint32_t addr, words, mapper, src; uint64_t hash; int npre; ROp pre[2]; } BlobArgs;
+static uint64_t bwords_hash(uint32_t src, uint32_t words) {
+    const uint32_t *w = (const uint32_t *)GA(src);
+    uint64_t h = 0xcbf29ce484222325ull ^ words;
+    for (uint32_t i = 0; i < words; i++) h = (h ^ w[i]) * 0x100000001b3ull;
+    return h;
+}
+static BlobArgs *g_bargs;
+static size_t g_nbargs, g_capbargs;
+static pthread_mutex_t g_bargs_mx = PTHREAD_MUTEX_INITIALIZER;
+static BlobArgs *bargs_find(uint32_t addr) {
+    if (!g_capbargs) return NULL;
+    for (size_t h = ((addr >> 2) * 2654435761u) & (g_capbargs - 1);; h = (h + 1) & (g_capbargs - 1)) {
+        if (!g_bargs[h].addr) return NULL;
+        if (g_bargs[h].addr == addr) return &g_bargs[h];
+    }
+}
+static void bargs_put(uint32_t addr, uint32_t words, const ROp *prefix, int npre, uint32_t mapper) {
+    pthread_mutex_lock(&g_bargs_mx);
+    if ((g_nbargs + 1) * 2 > g_capbargs) {
+        size_t nc = g_capbargs ? g_capbargs * 2 : 8192;
+        /* pmem (saved by save states, like the decoded-blob table): a malloc pointer in this static
+         * would dangle after loading a state */
+        BlobArgs *nb = pmem_calloc ? pmem_calloc(nc, sizeof *nb) : calloc(nc, sizeof *nb), *old = g_bargs;
+        if (!nb) abort();
+        for (size_t i = 0; i < g_capbargs; i++) {
+            if (!old[i].addr) continue;
+            size_t h = ((old[i].addr >> 2) * 2654435761u) & (nc - 1);
+            while (nb[h].addr) h = (h + 1) & (nc - 1);
+            nb[h] = old[i];
+        }
+        if (old) { if (pmem_free) pmem_free(old); else free(old); }
+        g_bargs = nb; g_capbargs = nc;
+    }
+    BlobArgs *b = bargs_find(addr);
+    if (!b) {
+        size_t h = ((addr >> 2) * 2654435761u) & (g_capbargs - 1);
+        while (g_bargs[h].addr) h = (h + 1) & (g_capbargs - 1);
+        b = &g_bargs[h]; g_nbargs++;
+    }
+    b->addr = addr; b->words = words; b->mapper = mapper;
+    b->src = stage_src(addr);   /* where the decoder reads the words (VRAM blobs: the staging copy) */
+    b->hash = bwords_hash(b->src, words);
+    b->npre = npre > 2 ? 2 : npre;
+    for (int i = 0; i < b->npre; i++) b->pre[i] = prefix[i];
+    pthread_mutex_unlock(&g_bargs_mx);
+}
+static void convert_blob_m(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix, uint32_t mapper);
+/* called where the game records a CALL of a blob (sdk/gr.c 003CC230): the game thread, the model
+ * using the blob is alive. If the blob's words (read where the decoder read them: VRAM blobs from
+ * their staging copy) changed since the decode - a material's textures bound after load, e.g. an
+ * overworld area's map model after an area switch - decode again (BOOT_LOG 155). */
+void h3d_blob_check(uintptr_t a) {
+    /* EXPERIMENT, off by default (ALBW_H3D_REDECODE=1): with the staging copy as the source the
+     * check fires on reused staging buffers and the re-decode reads garbage (whole overworld dark);
+     * from the VRAM copy it does too. Kept for the investigation of BOOT_LOG 155. */
+    static int on = -1;
+    if (on < 0) on = getenv("ALBW_H3D_REDECODE") != NULL;
+    if (!on || !a) return;
+    uint32_t addr = (uint32_t)GPTR_OF(a);
+    pthread_mutex_lock(&g_bargs_mx);
+    BlobArgs *b = bargs_find(addr), c;
+    int changed = 0;
+    if (b) {
+        uint64_t cur = bwords_hash(b->src, b->words);
+        if (cur != b->hash) { b->hash = cur; changed = 1; c = *b; }
+    }
+    pthread_mutex_unlock(&g_bargs_mx);
+    if (!changed) return;
+    static int tr = -1;
+    if (tr < 0) tr = getenv("ALBW_H3D_REDECODE_TRACE") != NULL;
+    if (tr) fprintf(stderr, "h3d: blob %#x (%u words, src %#x) changed: re-decoded\n", (unsigned)c.addr, (unsigned)c.words, (unsigned)c.src);
+    uint32_t slo = g_stage_lo, shi = g_stage_hi, ssrc = g_stage_src;
+    if (c.src != c.addr) { g_stage_lo = c.addr; g_stage_hi = c.addr + c.words * 4; g_stage_src = c.src; }
+    else g_stage_src = 0;
+    convert_blob_m(c.addr, c.words, c.pre, c.npre, c.mapper);
+    g_stage_lo = slo; g_stage_hi = shi; g_stage_src = ssrc;
+}
+
 static void convert_blob_m(uint32_t addr, uint32_t words, const ROp *prefix, int nprefix, uint32_t mapper) {
     if (!addr || !words) return;
+    bargs_put(addr, words, prefix, nprefix, mapper);
     Dec *d = calloc(1, sizeof *d);
     if (!d) abort();
     for (int i = 0; i < nprefix; i++) ol_push(&d->ops, &prefix[i]);

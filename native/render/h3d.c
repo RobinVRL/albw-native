@@ -254,7 +254,9 @@ typedef struct {
     uint32_t bytes;
     int n;
     ROp *ops;
-} Blob;
+} Blob;   /* layout kept: the table lives in pmem, which save states restore by value */
+
+
 
 typedef struct {
     uintptr_t addr;

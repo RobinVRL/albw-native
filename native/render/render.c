@@ -1106,7 +1106,9 @@ static void bind_unit(int i) {
     if (!t->dirty && t->checked_frame != R.frame) {
         /* CPU-written textures (font sheets...) are not announced: re-hash small ones once a frame */
         size_t n = level_bytes(t->fmt, t->w, t->h, 1);
-        if (!cube && n <= 256 * 1024) {
+        static int all = -1;   /* ALBW_TEX_REHASH_ALL=1: re-hash every texture once a frame (test) */
+        if (all < 0) all = getenv("ALBW_TEX_REHASH_ALL") != NULL;
+        if (!cube && (all || n <= 256 * 1024)) {
             uint64_t h = hash_bytes((const void *)t->addr, n);
             if (h != t->hash) { t->hash = h; t->dirty = true; }
         }

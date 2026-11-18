@@ -315,3 +315,29 @@ Fog (BOOT_LOG 122):
 | ALBW_EFT_SETLOG / ALBW_EFT_TRACE print nothing after a state load | debug statics of saved modules are restored with the state (off at save time); read the env per call or set from gdb (SAVESTATES.md) |
 
 | -ftrivial-auto-var-init=zero for all native decompiled files (link.sh), to stop fall-throughs (BOOT_LOG 137) | relink + pot route | Link crashed on his first step: 27 native files (e.g. compilefix 0064268C) read hidden register inputs in_r0..in_r3 that worked with leftover stack values and became NULL. Reverted; fix such files one by one (each needs its real parameters) |
+
+## Overworld terrain / grass / trees vanish after crossing an area edge (2026-11-17, BOOT_LOG 153-155, OPEN)
+
+Repro: the user's state (`~/.local/share/albw-port/states/slot2.state`, Hyrule Castle area south edge
+next to Link's house, "up toward the water" = castle area): CUP / CDOWN 300 frames each. Dark ground
+(only the dirt base layer) whenever house-area ground is on screen; green while in the castle area.
+Not reproducible from a fresh early-game boot (Gulley keeps Link in the yard).
+
+| Hypothesis / attempt | Test | Result |
+|---|---|---|
+| Stale renderer textures: large (> 256 KB) CPU-written textures are not re-hashed, reused memory keeps old contents | FlushDataCache (003E35DC / 003E35E0 / 003E3D74) now calls render_mem_written (kept: correct in itself) | no change |
+| Same, any size | `ALBW_TEX_REHASH_ALL=1` (re-hash every texture every frame, kept as a switch) | no change: not texture contents |
+| The terrain models are culled per room (room table +0x1618..+0x1624 of *data_0070B928, flags +0x34/+0x35) | gdb dump of the table on green and dark frames | all rooms visible in both |
+| Byte +0xB848 of *data_0070B928 is the active area slot | hardware watchpoint | it flips every frame inside the frustum test 00232D34 (a per-frame double buffer), not an area slot |
+| The area switch deletes the wrong slot's actors (004EF004 / 004C4FF8 / 004C505C / 004ECDE8) | read against the EU machine code; gdb: which actors are deleted at the switch (f=466) | all equal to the ARM; the 117 deleted actors are the castle area's (NpcSoldier, Impa, its MapField / MassTree / MassGrass...) - correct |
+| New-area actors get the old slot tag (+0x2D4) and are deleted with it | gdb: area +0x6A at every 004ED00C construction | new actors are created with tag 1 (correct); the actor manager's +0x3DBEC is NOT the tag (only flips at the end) |
+| "No actors are created for the new area" | hook on 004C4884 only | wrong: that hook missed the placement path; 004ED00C shows 47 actors created at f=430-432 (3 MapField, MassTreeApple, AreaLoad, NpcMaple...) |
+| The new area's resources fail to load | `ALBW_RES_TRACE=1` (00504D48 log, kept) | all load: MapActor/fld_o_2B.bch, fld_o_2C_low, fld_o_33_low, bg_*, ch_* non-NULL |
+| (finding) | `ALBW_VIS_TRACE=1` + `ALBW_RENDER_DUMP` | the new area's MapField model is listed and submitted, but its terrain draw runs with **0 textures bound** (`prog 3/40 tex 0`, full screen) instead of several `prog 3/40 tex 3` draws (good frame: fresh yard). This is the open lead |
+| Material texture blobs are patched after the one-time decode (sdk/h3d.c decodes once), re-decode when the words change - checked at execution (render ext_call) | 63 re-decodes | crash at the area switch: executed CALLs of freed / reused blobs re-decoded from stale arguments |
+| Same, record time, VRAM words as the source | | dark everywhere - **but this run (and the next) did not load the state at all** ("func_003CC230 was running and changed": editing 003CC230 made the converter refuse the state); the frames were a plain boot. Fixed by adding 003CC230 to ss_convert never_blocks |
+| Same, record time, staging copy as the source (as the decoder reads) | with the state really loaded: `ALBW_H3D_REDECODE=1` | 1 re-decode, then a crash; default off. The code stays as an opt-in experiment (sdk/h3d.c h3d_blob_check). Not shown yet that the game patches material blobs at all |
+| Adding a field to the renderer's Blob record | loading an older state | broke the renderer (layout in pmem is restored by value from states: dark + slow). Never change pmem record layouts; new data goes into new pmem tables / statics |
+
+Next: dump the house terrain's material texture blob (h3d `ALBW_H3D_MODELMAP`) after the switch vs a
+fresh scene load - is the unit-enable / address word 0 in game memory, or only in our decode?
