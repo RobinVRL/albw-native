@@ -13,9 +13,24 @@
 
 extern const uint32_t data_006C53D8[];
 
+#include <stdio.h>
+
 int32_t albw_atan_idx(float t) {
     float x = t * 128.0f;
     int32_t i = gp_vcvt_s32(x);
+    /* port guard (BOOT_LOG 160c): an index past the table reads on into the following data on the
+     * 3DS (mapped, garbage angle); in the port the read-only data ends 0x39000 bytes further and
+     * t = 231 (index 29584) faulted (user crash, throwing bushes; random). Out-of-range t is
+     * clamped to the table (128 = 45 deg) and the first occurrence is logged with its caller. */
+    if ((uint32_t)i > 128u) {
+        static int warned;
+        if (!warned) {
+            warned = 1;
+            fprintf(stderr, "atan: t=%g out of the table (caller %p)\n", (double)t, __builtin_return_address(0));
+        }
+        i = i < 0 ? 0 : 128;
+        x = (float)i;
+    }
     const uint32_t *e = &data_006C53D8[(uint32_t)i * 2u];   /* r1 + (r0 << 3), 32-bit wrap */
     float slope = gp_u2f(e[1]);
     float frac = x - (float)i;
