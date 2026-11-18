@@ -60,9 +60,13 @@ for n, ref in ((0, "0068C4BC"), (1, "00682734"), (2, "00687250")):
                " * (arity %d); the target's r0 is returned" % (n, n) if n else
                "r1..r3 are all scratch at the tail bx (arity 0); the target's r0 is returned")
     args3 = ["char *dlg"] + ["uintptr_t a%d" % i for i in range(1, n + 1)]
+    # arity 0: s0 is untouched by the tail jump, so a float argument passes through on ARM (fader
+    # listeners, BOOT_LOG 160i): forward the next stack word too
+    if n == 0: args3 = ["char *dlg", "uintptr_t s0_word"]
     T["T3_args%d" % n] = dict(
         ref={0: "0068A5A4", 1: "0068B328", 2: "0068BC7C"}[n], hdr="robust_pmf.h", ret="void", params=", ".join(args3),
-        call="albw_delegate_invoke_v%d(%s);" % (n, ", ".join(["dlg"] + ["a%d" % i for i in range(1, n + 1)])),
+        call=("albw_delegate_invoke_v1(dlg, s0_word);" if n == 0 else
+              "albw_delegate_invoke_v%d(%s);" % (n, ", ".join(["dlg"] + ["a%d" % i for i in range(1, n + 1)]))),
         consts=set(), what="void Delegate::invoke(%s) const (tail call through the pointer-to-member at +8, object at +4)"
         % ", ".join("a%d" % i for i in range(1, n + 1)),
         doc="body in robust_pmf.h",

@@ -9,6 +9,10 @@
  * Confidence: high. */
 #include "robust_pmf.h"
 
-void func_0068ADA0(char *dlg) {
-    albw_delegate_invoke_v0(dlg);
+/* s0 pass-through (BOOT_LOG 160i): the tail jump leaves s0 untouched, so a float argument reaches
+ * the target on ARM (fader listeners: Interp 0010C7F8 / 00489AD8 / 0048F288 call with the value).
+ * The "arity 0" check looked at r1..r3 only. Natively the word after dlg is forwarded unchanged
+ * (a prototyped float is one stack word); targets without an argument ignore it. */
+void func_0068ADA0(char *dlg, uintptr_t s0_word) {
+    albw_delegate_invoke_v1(dlg, s0_word);
 }

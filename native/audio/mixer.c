@@ -205,6 +205,10 @@ void aud_voice_set_state(int v, int state) {
     if (!valid(v)) return;
     aud_lock();
     Voice *x = &g_v[v];
+    if (getenv("ALBW_MIX_DIAG"))
+        fprintf(stderr, "mixdiag: voice %d state %d -> %d vol %g mix %g %g %g %g pitch %g rate %u fmt %d q %d primed %d mono %d a %g\n", v,
+                x->state, state, x->volume, x->mix[0], x->mix[1], x->mix[4], x->mix[8], x->pitch, (unsigned)x->rate, x->fmt,
+                (int)x->qcount, (int)x->primed, (int)x->mono_en, x->mono_a);
     if (state == AUD_STATE_STOP) queue_flush(x, true);
     x->state = state;
     aud_unlock();
@@ -447,7 +451,20 @@ void aud_mix_frame(float *out) {
     for (int i = 0; i < AUD_VOICES; i++) {
         if (!diag) { mix_voice(&g_v[i], ml, mr, aux, aux_on); continue; }
         float before = ml[AUD_FRAME - 1];
+        static float tmp[AUD_FRAME];
+        memcpy(tmp, ml, sizeof tmp);
         mix_voice(&g_v[i], ml, mr, aux, aux_on);
+        {
+            static double ve[AUD_VOICES]; static uint64_t vlast;
+            for (int k = 0; k < AUD_FRAME; k++) { double d = ml[k] - tmp[k]; ve[i] += d * d; }
+            if (i == AUD_VOICES - 1 && g_frames - vlast >= 40) {
+                char buf[1024]; int o = 0;
+                for (int q = 0; q < AUD_VOICES && o < 900; q++)
+                    if (ve[q] > 1e6) o += snprintf(buf + o, sizeof buf - o, " v%d=%.0f(vol %.2f mix %.2f)", q, sqrt(ve[q] / (40.0 * AUD_FRAME)), g_v[q].volume, g_v[q].mix[0]);
+                if (o) fprintf(stderr, "mixdiag: frame %llu voice rms:%s\n", (unsigned long long)g_frames, buf);
+                memset(ve, 0, sizeof ve); vlast = g_frames;
+            }
+        }
         static int told[AUD_VOICES];
         for (int k = 0; k < AUD_FRAME; k++)
             if (!(fabsf(ml[k]) < 200000.0f) && told[i] < 3) {

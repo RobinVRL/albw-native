@@ -8,12 +8,11 @@
  * implementations on i386). Without it 002569FC wrote through a garbage pointer (sound effects
  * crash, BOOT_LOG 160). Confidence: high for the ARM data flow.
  *
- * REVISED (BOOT_LOG 160b): passing the caller's `this` made the callback 002569FC write its output
- * floats (param_6[0] / [2] / [3] / [8]) into the sound object - including its vtable at +0 - and the
- * game later called through 1.3f (user crash: throwing bushes). The callback treats param_6 as an
- * output block of floats, so the pass-through reading above cannot be the whole story (OPEN: check
- * the real 6th argument against the original in Azahar). Until then the 6th argument is a private
- * zeroed scratch block per call: the callback's writes go nowhere, nothing is corrupted. */
+ * RESOLVED (BOOT_LOG 160i): the saved-r4 word is not used. The callback behind it is 00408E40
+ * (native/compilefix/func_00408E40.c), which takes c from [sp] as the output block and passes it
+ * on with a flags word; 002569FC is reached from there. Writes into the sound object (160b) came
+ * from Ghidra's 00408E40 dropping its arguments. The 6th word stays a zeroed scratch block for any
+ * other callee that reads it. */
 #include <stdint.h>
 
 typedef void (*CbFn)(void *cb, void *self, uint32_t a, uint32_t b, uint32_t c, uint32_t r4);
