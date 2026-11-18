@@ -44,7 +44,19 @@ static inline int albw_code_ptr(const void *p) {
     return (uintptr_t)p >= albw_code_lo && (uintptr_t)p < albw_code_hi;
 }
 /* the adjusted object and target of a delegate, or NULL when invoke() does nothing */
-static inline void *albw_delegate_target(char *dlg, char **self_out) {
+void albw_x87_guard(const char *where, void *ra);
+void albw_x87_clear(void);
+/* a delegate is called through an int / void pointer type: a float its target returns stays in
+ * x87 st(0) and must be dropped (native/runtime/x87guard.c, BOOT_LOG 160h) */
+static inline __attribute__((always_inline)) void albw_x87_settle(void) {
+#if defined(__i386__)
+    uint16_t sw;
+    __asm__ volatile("fnstsw %0" : "=am"(sw));
+    if (sw & 0x3800) albw_x87_clear();
+#endif
+}
+static inline __attribute__((always_inline)) void *albw_delegate_target(char *dlg, char **self_out) {
+    albw_x87_guard("delegate call", __builtin_return_address(0));
     char *obj = FLD(dlg, 0x04, char * ALBW_GP);
     if (obj == 0)
         return 0;
@@ -61,27 +73,36 @@ static inline void *albw_delegate_target(char *dlg, char **self_out) {
 }
 static inline uint32_t albw_delegate_invoke_r0(char *dlg) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
-    return fn ? ((albw_dlg_r0)fn)(self) : 0;
+    uint32_t r = fn ? ((albw_dlg_r0)fn)(self) : 0;
+    albw_x87_settle();
+    return r;
 }
 static inline uint32_t albw_delegate_invoke_r1(char *dlg, uintptr_t a1) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
-    return fn ? ((albw_dlg_r1)fn)(self, a1) : 0;
+    uint32_t r = fn ? ((albw_dlg_r1)fn)(self, a1) : 0;
+    albw_x87_settle();
+    return r;
 }
 static inline uint32_t albw_delegate_invoke_r2(char *dlg, uintptr_t a1, uintptr_t a2) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
-    return fn ? ((albw_dlg_r2)fn)(self, a1, a2) : 0;
+    uint32_t r = fn ? ((albw_dlg_r2)fn)(self, a1, a2) : 0;
+    albw_x87_settle();
+    return r;
 }
 static inline void albw_delegate_invoke_v0(char *dlg) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
     if (fn) ((albw_dlg_v0)fn)(self);
+    albw_x87_settle();
 }
 static inline void albw_delegate_invoke_v1(char *dlg, uintptr_t a1) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
     if (fn) ((albw_dlg_v1)fn)(self, a1);
+    albw_x87_settle();
 }
 static inline void albw_delegate_invoke_v2(char *dlg, uintptr_t a1, uintptr_t a2) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
     if (fn) ((albw_dlg_v2)fn)(self, a1, a2);
+    albw_x87_settle();
 }
 
 /* T4: owner->changeStateIfDifferent(newState, flag) for a state machine embedded at owner+0x960

@@ -1083,6 +1083,7 @@ static void shot_maybe(void) {
     if (!init) { init = 1; spec = getenv("ALBW_SHOT"); }
     frame++;
     g_plat_frames = frame;
+    { void albw_x87_guard(const char *, void *); albw_x87_guard("frame start", 0); }
     { /* ALBW_TRAP_FRAME=<n>: SIGTRAP once at presented frame n (gdb inspection of a given moment) */
         static long trap = -2;
         if (trap == -2) { const char *e = getenv("ALBW_TRAP_FRAME"); trap = e ? atol(e) : -1; }

@@ -89,7 +89,8 @@ def analyse(binary):
                     m = re.match(r'^[0-9a-f]+ <([^>+]+)>$', arg2)
                     if m and m.group(1) in known: return True
                     break
-                if op2.startswith(('fld', 'fild')): return True
+                # fldcw / fldenv load control state, not a value (native/runtime/x87guard.c)
+                if op2.startswith(('fld', 'fild')) and not op2.startswith(('fldcw', 'fldenv')): return True
         return False
     # declared return types from the linked sources: a function defined with a non-float return
     # never returns a float, even when its last call before `ret` is to a float-returning

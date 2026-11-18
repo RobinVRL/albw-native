@@ -5,6 +5,8 @@
  * accumulate into the main stereo mix and the two 4-channel aux buses. */
 #define _GNU_SOURCE
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
 
@@ -255,6 +257,14 @@ void aud_voice_set_mono_filter(int v, bool enable, uint32_t cutoff_hz) {
         double w = 2.0 * M_PI * (double)cutoff_hz / (double)AUD_RATE_EXACT;
         double c = 2.0 - cos(w);
         x->mono_a = (float)(c - sqrt(c * c - 1.0));
+        if (!(x->mono_a >= 0.0f && x->mono_a < 1.0f))
+        {
+            uint16_t sw, tw; uint32_t env[7];
+            __asm__ volatile("fnstenv %0" : "=m"(env)); __asm__ volatile("fldenv %0" :: "m"(env));
+            sw = (uint16_t)env[1]; tw = (uint16_t)env[2];
+            fprintf(stderr, "mixer: voice %d one-pole cut-off %u -> a %g (x87 status %04x top %d tags %04x)\n", v,
+                    (unsigned)cutoff_hz, x->mono_a, sw, (sw >> 11) & 7, tw);
+        }
     }
     aud_unlock();
 }
@@ -432,7 +442,23 @@ void aud_mix_frame(float *out) {
     memset(aux, 0, sizeof aux);
     bool aux_on[2];
     for (int b = 0; b < 2; b++) aux_on[b] = g_aux[b].fn || g_aux[b].fx[0] || g_aux[b].fx[1];
-    for (int i = 0; i < AUD_VOICES; i++) mix_voice(&g_v[i], ml, mr, aux, aux_on);
+    static int diag = -1;
+    if (diag < 0) { const char *e = getenv("ALBW_MIX_DIAG"); diag = e && *e && *e != '0'; }
+    for (int i = 0; i < AUD_VOICES; i++) {
+        if (!diag) { mix_voice(&g_v[i], ml, mr, aux, aux_on); continue; }
+        float before = ml[AUD_FRAME - 1];
+        mix_voice(&g_v[i], ml, mr, aux, aux_on);
+        static int told[AUD_VOICES];
+        for (int k = 0; k < AUD_FRAME; k++)
+            if (!(fabsf(ml[k]) < 200000.0f) && told[i] < 3) {
+                told[i]++;
+                Voice *v = &g_v[i];
+                fprintf(stderr, "mixdiag: frame %llu voice %d out %g (before %g) vol %g mix %g %g pitch %g rate %u fmt %d bq %d mono %d h %g %g %g %g mono_a %g mono_y %g frac %g by %g %g\n",
+                        (unsigned long long)g_frames, i, ml[k], before, v->volume, v->mix[0], v->mix[1], v->pitch,
+                        (unsigned)v->rate, (int)v->fmt, (int)v->bq_en, (int)v->mono_en, v->h[0], v->h[1], v->h[2], v->h[3], v->mono_a, v->mono_y, v->frac, v->by1, v->by2);
+                break;
+            }
+    }
 
     for (int b = 0; b < 2; b++) {
         if (!aux_on[b]) continue;
@@ -455,6 +481,30 @@ void aud_mix_frame(float *out) {
             while (depth-- > 0) pthread_mutex_lock(&g_mu);
         }
         float r = g_aux[b].ret;
+        if (diag) {
+            static int told_aux[2];
+            for (int i = 0; i < AUD_FRAME && told_aux[b] < 3; i++)
+                if (abs(ch[AUD_CH_FL][i]) > 200000 || !(r == r)) {
+                    told_aux[b]++;
+                    fprintf(stderr, "mixdiag: frame %llu aux %d returns %d (ret %g, fn %p fx %p %p)\n",
+                            (unsigned long long)g_frames, b, ch[AUD_CH_FL][i], r, (void *)g_aux[b].fn,
+                            (void *)g_aux[b].fx[0], (void *)g_aux[b].fx[1]);
+                    break;
+                }
+        }
+        if (diag) {
+            static double e_dry, e_aux[2]; static uint64_t last;
+            for (int i = 0; i < AUD_FRAME; i++) {
+                if (b == 0) e_dry += (double)ml[i] * ml[i];
+                double a = (double)(ch[AUD_CH_FL][i] + (int64_t)ch[AUD_CH_RL][i]) * r;
+                e_aux[b] += a * a;
+            }
+            if (b == 0 && g_frames - last >= 160) {
+                fprintf(stderr, "mixdiag: energy dry %.3g aux0 %.3g aux1 %.3g (ret %g %g)\n", e_dry, e_aux[0], e_aux[1],
+                        g_aux[0].ret, g_aux[1].ret);
+                e_dry = e_aux[0] = e_aux[1] = 0; last = g_frames;
+            }
+        }
         for (int i = 0; i < AUD_FRAME; i++) {
             ml[i] += (float)(ch[AUD_CH_FL][i] + (int64_t)ch[AUD_CH_RL][i]) * r;
             mr[i] += (float)(ch[AUD_CH_FR][i] + (int64_t)ch[AUD_CH_RR][i]) * r;

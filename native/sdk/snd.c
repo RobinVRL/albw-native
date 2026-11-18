@@ -146,7 +146,9 @@ static void init_once(void) {
 }
 static void snd_init(void) { pthread_once(&g_once, init_once); }
 
-static int vidx(const void *v) {
+void albw_x87_guard(const char *where, void *ra);
+static inline __attribute__((always_inline)) int vidx(const void *v) {
+    albw_x87_guard("snd voice call", __builtin_return_address(0));
     const SndVoice *p = v;
     if (!p || p < g_voice || p >= g_voice + AUD_VOICES) return -1;
     return (int)(p - g_voice);
@@ -791,6 +793,7 @@ void func_003E11D0(void *voice, const int16_t *coefs) {
  * Confidence: high (nw::snd 00413DF8 passes the wave's sample rate). */
 void func_003E1224(void *voice, int32_t rate) {
     int i = vidx(voice);
+    if (snd_trace()) fprintf(stderr, "snd: f=%ld voice %d rate %d\n", g_plat_frames, i, (int)rate);
     if (i >= 0) aud_voice_set_rate(i, rate < 0 ? 0 : rate);
 }
 
@@ -806,6 +809,7 @@ void func_003E145C(void *voice, int32_t count) {
  * Confidence: high. */
 void func_003E147C(void *voice, int32_t fmt) {
     int i = vidx(voice);
+    if (snd_trace()) fprintf(stderr, "snd: f=%ld voice %d format %d\n", g_plat_frames, i, (int)fmt);
     if (i >= 0) aud_voice_set_format(i, fmt & 3);
 }
 
@@ -938,6 +942,7 @@ static void thr_once(void) {
  * callback under the sound-thread lock, then "SendParameterToDsp" + the DSP frame = the mixer.
  * Exported for tests and tools (native API, not a game function). */
 void albw_snd_frame(float *out) {
+    albw_x87_guard("sound frame", __builtin_return_address(0));
     pthread_once(&g_thr_once, thr_once);
     snd_init();
     if (g_thr.cb2) g_thr.cb2(g_thr.arg2);
