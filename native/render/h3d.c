@@ -521,7 +521,29 @@ static void vtx_upload(H3dVtx *v, uint32_t verts) {
  * 28 bits are kept. The full address is the one with those low 28 bits that is nearest the
  * mesh's vertex buffer (same file, same heap block; its address register 0x203 is a full word).
  * Pure address arithmetic, decided once per draw op. */
+static int index_region_ok(uint32_t a) {
+    /* VRAM, or the fixed game memory areas (runtime/pmem.c: heap, device, arena 0x40000000..) */
+    return (a >= 0x1F000000u && a < 0x1F600000u) || (a >= 0x40000000u && a < 0x58000000u);
+}
 static uintptr_t index_addr(const H3dVtx *v, uint32_t word) {
+    /* the game memory areas now sit at fixed addresses below 0x5C000000, so the whole 31-bit
+     * offset is right: vertices copied to VRAM, indices left in device memory (Hyrule Castle
+     * entrance: base 0x1F000000 + 0x268C433C = 0x458C433C; the 28-bit form gave 0x258C433C,
+     * unmapped -> crash) */
+    uint32_t full = v->base + (word & 0x7FFFFFFFu);
+    if (index_region_ok(full)) {
+        static int tr = -1; static unsigned n;
+        if (tr < 0) tr = getenv("ALBW_IDX_TRACE") != NULL;
+        if (tr) {
+            uint32_t lo = (v->base + (word & 0x0FFFFFFFu)) & 0x0FFFFFFFu, b = (v->addr & 0xF0000000u) | lo;
+            for (int k = -1; k <= 1; k += 2) {
+                uint32_t c = (uint32_t)((v->addr & 0xF0000000u) + (uint32_t)k * 0x10000000u) | lo;
+                if (llabs((int64_t)c - (int64_t)v->addr) < llabs((int64_t)b - (int64_t)v->addr)) b = c;
+            }
+            if (b != full && n++ < 20) fprintf(stderr, "idx-diff: full %#x old %#x vtx %#x\n", full, b, (unsigned)v->addr);
+        }
+        return (uintptr_t)full;
+    }
     uint32_t low = (v->base + (word & 0x0FFFFFFFu)) & 0x0FFFFFFFu;
     uint32_t best = (v->addr & 0xF0000000u) | low;
     int64_t bd = (int64_t)best - (int64_t)v->addr;
@@ -747,6 +769,18 @@ static void draw(const ROp *op) {
     if (!v || !v->addr || !v->stride || !op->u.ext.b) { g_st.dropped++; return; }
     uintptr_t ia = op->flags & 1 ? (uintptr_t)op->u.ext.a : index_addr(v, op->u.ext.a);
     int u16 = op->flags & 1 ? op->unit : (int)(op->u.ext.a >> 31);
+    /* an index buffer outside VRAM and the game memory areas is a bad address: drop the draw,
+     * never read it (was a SIGSEGV in ibuf_upload, Hyrule Castle entrance) */
+    if (!(op->flags & 1)) {
+        if (!index_region_ok((uint32_t)ia)) {
+            static unsigned told;
+            if (told++ < 5)
+                fprintf(stderr, "h3d: draw dropped: index buffer %#lx outside game memory (vertices %#lx, index word %#x)\n",
+                        (unsigned long)ia, (unsigned long)v->addr, (unsigned)op->u.ext.a);
+            g_st.dropped++;
+            return;
+        }
+    }
     pthread_mutex_lock(&g_mx);
     Ibuf *ib = ibuf_get(ia, op->u.ext.b, u16);
     if (ib->dirty) ibuf_upload(ib);
