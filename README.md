@@ -112,6 +112,11 @@ fixed), [native/DIDNT_WORK.md](native/DIDNT_WORK.md) (what was tried and failed)
 - Shaders are hand-written GLSL; GPU command lists are never interpreted at run time.
 - No game data in the repository.
 
+## License
+
+The port's own code (`native/`, `tools/`, scripts) is under the MIT license: see
+[LICENSE](LICENSE). It does not cover the game itself or its data.
+
 ## Legal
 
 This is a fan project for preservation and study. It is not affiliated with or endorsed by
