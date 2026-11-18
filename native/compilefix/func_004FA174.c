@@ -1,5 +1,6 @@
 /* compilefix: USA 004FA174 (EU 004FA14C), the converted stage-2 text with the default case of its
- * switch inlined from the ARM (the fragment "004FA420" Ghidra cut off ran on garbage registers:
+ * switch inlined from the ARM; the Vec3 result (s0..s2 on ARM, BOOT_LOG 160l) is also published
+ * in albw_s012 (callers read y / z from it) (the fragment "004FA420" Ghidra cut off ran on garbage registers:
  * the shield crashed, BOOT_LOG 144). Confidence: high. */
 #include "ghidra_types.h"
 
@@ -15,6 +16,7 @@ extern int *DAT_004fa504;
 extern float DAT_004fa508;
 extern float DAT_004fa50c;
 extern float DAT_004fa5e8;
+extern float albw_s012[3];   /* s0..s2 of a Vec3 return (native/runtime/vec3ret.c) */
 
 // USA 004FA174 <- EU 004FA14C (Ghidra, non-matching)
 // PARAM param_4 Stack[0x0]:4 float *
@@ -116,7 +118,7 @@ code_r0x004fa3f8:
       local_54 = ALBW_AS_F32(local_2c);
       local_50 = local_28;
       func_00115DC8(&local_58);
-      return local_58;
+      { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
     }
     if (param_5 == 5) {
       if (param_6 == 3) {
@@ -137,7 +139,7 @@ code_r0x004fa3f8:
         local_54 = ALBW_AS_F32(local_2c);
         local_50 = local_28;
         func_00115DC8(&local_58);
-        return local_58;
+        { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
       }
     }
     else {
@@ -147,7 +149,7 @@ code_r0x004fa3f8:
         local_50 = local_60;
         local_54 = DAT_004fa4fc;
         func_00115DC8(&local_58);
-        return local_58;
+        { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
       }
       if (param_5 == 0xf) goto code_r0x004fa3f8;
     }
@@ -176,7 +178,7 @@ code_r0x004fa3f8:
         local_54 = local_30;
         local_50 = ALBW_AS_F32(local_2c);
         func_00115DC8(&local_58);
-        return local_58;
+        { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
       }
       if (in_r3 == 3) {
         fVar4 = DAT_004fa4fc;
@@ -185,7 +187,7 @@ code_r0x004fa3f8:
         local_50 = local_60;
         local_54 = fVar4;
         func_00115DC8(&local_58);
-        return local_58;
+        { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
       }
     }
     func_004D80A4(&local_48,**(uint **)(iVar2 + 0x24),DAT_004fa500);
@@ -219,6 +221,6 @@ code_r0x004fa3f8:
     func_00115DC8(&local_58);
     break;
   }
-  return local_58;
+  { albw_s012[0] = local_58; albw_s012[1] = local_54; albw_s012[2] = local_50; return local_58; }
 }
 

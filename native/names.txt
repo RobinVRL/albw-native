@@ -79,3 +79,17 @@ func_0053F260  player_IsPushMoving                 # player state 0x74 and 00559
 func_00176370  pushable_MoveEnter                  # SE_TombMOVE, moving flag +0x4CC
 func_001767D4  pushable_MoveUpdate                 # 90-frame move animation
 func_0054E364  pushable_IsMoving                   # vt+0x6C: byte +0x4CC
+
+# --- enemies: hits and knock-back (BOOT_LOG 160l); the graveyard Poe (EnemyGraveyardPoe)
+func_0060823C  create_EnemyGraveyardPoe            # alloc 0x9C4, EnemyBase ctor 001AD594, vtables 0x6E12D0 / +0x320
+func_001AD140  enemy_Update                        # per-frame enemy update (hits 004F8998, reactions, movement)
+func_004F8998  enemy_CheckHits
+func_004F8EA8  enemy_ProcessHit                    # hit direction (004FA174), hit record, reaction state
+func_004FA174  enemy_HitDirection                  # returns a Vec3 in s0..s2 (albw_s012 natively)
+func_0058A7E8  enemy_GetHitRecordDirection         # vt+0x58 base: Vec3 rec+0x0C in s0..s2
+func_004F5390  hitRecord_Init
+func_002ABDE8  enemyReaction_OnHit                 # reaction state machine at enemy+0x510 (self+0x34 = enemy)
+func_002AE780  enemyReaction_CopyHit               # hit record -> knock-back direction +0xF8
+func_002B0D7C  enemyReaction_StartKnockBack        # velocity +0x3C = dir * speed
+func_002AFEF0  enemyReaction_KnockBackUpdate       # decays x / z of the knock-back velocity
+func_004F48F0  enemy_ApplyVelocity                 # pos += own + push, or the reaction's velocity
