@@ -449,10 +449,17 @@ static void program_init(Program *p, const char *vs, bool fl) {
 
 static void program_build(int id) { program_init(&R.progs[id], VS_SRC[id], false); }
 
+unsigned long render_variant_builds;   /* h3d program variants compiled so far (frame-time debug) */
+static Program *build_variant(int v);
 /* the program for the current prog id / variant (extension variants compiled on first use) */
 static Program *cur_program(void) {
     if (R.prog_id != RPROG_H3D_DEFAULT || !R.ext.h3d_vs_body || !R.ext.h3d_defines) return &R.progs[R.prog_id];
     int v = R.prog_variant >= 0 && R.prog_variant < RENDER_PROG_VARIANTS ? R.prog_variant : 0;
+    return build_variant(v);
+}
+
+/* compile h3d program variant v if not done yet (first use, or the per-frame pre-build) */
+static Program *build_variant(int v) {
     Program *p = &R.variants[v];
     if (!p->prog) {
         char def[512];
@@ -461,6 +468,7 @@ static Program *cur_program(void) {
         char *src = xrealloc(NULL, n);
         snprintf(src, n, "#version 330 core\n%s\n%s", def, R.ext.h3d_vs_body);
         program_init(p, src, true); /* the DefaultShader GLSL outputs v_tangent */
+        render_variant_builds++;
         free(src);
         if (g_trace) rlog("built h3d program variant %d", v);
     }
@@ -1944,6 +1952,19 @@ void render_frame_end(void) {
     if (dumping()) rlog("dump: ==== end of render frame %lu", (unsigned long)R.frame);
     R.frame++;
     R.frag_dirty = R.tev_dirty = R.vsf_dirty = true; /* plat_end_frame changed GL state */
+    {   /* Pre-build the h3d program variants, one per frame: compiling the ones a new area needs
+         * inside its loading frame (6 compile + link in the GL driver) was most of the overworld
+         * area-switch hitch (77-95 ms frame, BOOT_LOG 156). Valid variants: skin 0..4 x light
+         * 0..2 x prog 0..3 (60). ALBW_NO_PREWARM=1: build on first use only (comparison). */
+        static int off = -1, next;
+        if (off < 0) off = getenv("ALBW_NO_PREWARM") != NULL;
+        while (!off && R.ext.h3d_vs_body && R.ext.h3d_defines && next < 5 * 3 * 4) {
+            int skin = next % 5, light = (next / 5) % 3, prog = next / 15;
+            next++;
+            int v = skin | light << 3 | prog << 5;
+            if (v < RENDER_PROG_VARIANTS && !R.variants[v].prog) { build_variant(v); break; }
+        }
+    }
     if (g_live > POOL_GC_HIGH) {
         uint32_t freed = 0;
         for (uint32_t s = 0; s < g_npool; s++) {

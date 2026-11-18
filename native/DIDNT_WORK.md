@@ -346,3 +346,13 @@ fresh scene load - is the unit-enable / address word 0 in game memory, or only i
 | (crash, user report) loading an older state after the re-decode experiment | | the experiment's new pmem table pointer (a new static) kept its pre-load value after the arena was replaced; the converter now starts native statics from the initial image, and the experiment records nothing unless enabled |
 
 **RESOLVED (BOOT_LOG 155):** decoding a cached map file whose blobs already hold native markers.
+
+## Overworld area-switch lag (2026-11-17, BOOT_LOG 156)
+
+| Hypothesis / attempt | Test | Result |
+|---|---|---|
+| The port's model conversion (h3d_register_file) is slow | `ALBW_H3D_TIME=1` | 47 files = 3.4 ms total: not it |
+| (perf, paranoid 2: kernel samples unresolved) | `perf record -k CLOCK_MONOTONIC`, samples inside the slow frame | 63% in libnvidia-eglcore (driver), tex_decode 6%: GL work, not game code |
+| Invalidate textures on FlushDataCache (BOOT_LOG 153) | `ALBW_FRAME_MS` with upload counts; `ALBW_FLUSH_INVAL=1` vs off | it CAUSED 6-36 re-uploads every frame; reverted to off |
+| Pre-build shader variants on the first run | | each costs ~140 ms without NVIDIA's shader disk cache (boot frames ~7 fps once); later runs ~free. Kept (one per frame) |
+| (test mistake) shots / timing after editing plat_end_frame | | the state was refused ("plat_end_frame was running and changed") and the run was a plain boot; the converter now maps call sites (callsite_map), and debug code lives outside plat_end_frame |

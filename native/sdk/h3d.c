@@ -58,6 +58,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1176,7 +1177,20 @@ static void register_shader(uint32_t sh) {
 
 /* Convert every command blob of a set-up ResFile (game layout: +0x2C file header, +0x30 contents
  * = section 0). Pointers in the contents are absolute (relocated by the game). */
+static void h3d_register_file_body(uint32_t resfile);
 void h3d_register_file(uint32_t resfile) {
+    static int tm = -1;   /* debug: ALBW_H3D_TIME=1: time of each file's conversion */
+    if (tm < 0) tm = getenv("ALBW_H3D_TIME") != NULL;
+    if (!tm) { h3d_register_file_body(resfile); return; }
+    struct timespec a, b;
+    clock_gettime(CLOCK_MONOTONIC, &a);
+    h3d_register_file_body(resfile);
+    clock_gettime(CLOCK_MONOTONIC, &b);
+    extern long g_plat_frames __attribute__((weak));
+    fprintf(stderr, "h3d-time: f=%ld file %#x %.2f ms\n", &g_plat_frames ? g_plat_frames : 0L, (unsigned)G32(resfile, 0x2C),
+            (b.tv_sec - a.tv_sec) * 1e3 + (b.tv_nsec - a.tv_nsec) / 1e6);
+}
+static void h3d_register_file_body(uint32_t resfile) {
     h3d_init();
     uint32_t hdr = G32(resfile, 0x2C), cont = G32(resfile, 0x30);
     if (!hdr || !cont) return;

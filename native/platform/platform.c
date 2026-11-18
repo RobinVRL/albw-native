@@ -13,6 +13,7 @@ __attribute__((weak)) void render_set_scale(int scale) { (void)scale; }
 __attribute__((weak)) void prof_frame(void) {}
 #include <SDL3/SDL.h>
 #include <stdio.h>
+#include <time.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1131,7 +1132,33 @@ static void plat_composite(const Layout *l) {
 
 #include "menu.c"   /* Esc menu overlay (pauses the game inside plat_end_frame) */
 
+/* debug: ALBW_FRAME_MS (kept out of plat_end_frame: its stack frame must stay as in older builds,
+ * save states resume inside it) */
+static __attribute__((noinline)) void frame_ms_trace(void) {
+{   /* debug: ALBW_FRAME_MS=<ms>: log every frame that took longer (game + render, wall clock) */
+    static long lim = -2;
+    static uint64_t last;
+    if (lim == -2) { const char *e = getenv("ALBW_FRAME_MS"); lim = e ? atol(e) : -1; }
+    if (lim >= 0) {
+        uint64_t now = SDL_GetTicksNS();
+        extern unsigned long render_variant_builds;
+        static unsigned long pb; static uint64_t pt;
+        RStats rs = render_stats();
+        if (last && (now - last) / 1000000 > (uint64_t)lim) {
+            struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
+            fprintf(stderr, "frame-ms: f=%ld %.1f ms end %ld.%09ld (shader variants built %lu, textures uploaded %llu)\n",
+                    g_plat_frames, (double)(now - last) / 1e6, (long)ts.tv_sec, (long)ts.tv_nsec,
+                    render_variant_builds - pb, (unsigned long long)(rs.tex_uploads - pt));
+        }
+        pb = render_variant_builds; pt = rs.tex_uploads;
+        last = now;
+    }
+}
+}
+
 void plat_end_frame(void) {
+    frame_ms_trace();
+
     /* save / load state requests (keys, menu) run here: the main game thread still holds the app
      * core (released below for the swap). A load continues from the saved frame's same point. */
     if (albw_ss_request) {   /* ALBW_SS_AT=<frame>:save|load:<slot 1..>[,...] (debug, headless tests) */

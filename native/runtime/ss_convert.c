@@ -441,6 +441,40 @@ static int after_call(const uint8_t *code, uint32_t start, uint32_t size, uint32
     return 0;
 }
 
+/* A return address into a function that changed: if it follows a direct call (E8 rel32), return
+ * after the same call in the new code - the k-th call to the same callee (by symbol), k counted
+ * from the start of the function in both versions - provided the prologue (pushes + stack frame
+ * size, the bytes up to and including the first `sub $imm, %esp`) is byte-identical, so the saved
+ * frame still fits. 0 = no safe mapping. (Edits elsewhere in a function that is on a saved stack,
+ * e.g. plat_end_frame where states are taken, no longer refuse every older state.) */
+static uint32_t callsite_map(Conv *c, const Sym *s, const Sym *n, const uint8_t *oc, uint32_t osz, uint32_t v) {
+    uint32_t off = v - s->addr;
+    if (off < 5 || off > osz || oc[off - 5] != 0xE8) return 0;
+    const uint8_t *nc = (const uint8_t *)(uintptr_t)n->addr;
+    /* prologue: up to the first sub $imm8/$imm32, %esp (83 EC ib / 81 EC id) within 32 bytes */
+    uint32_t pl = 0;
+    for (uint32_t i = 0; i + 2 < 32 && i + 2 < osz; i++) {
+        if (oc[i] == 0x83 && oc[i + 1] == 0xEC) { pl = i + 3; break; }
+        if (oc[i] == 0x81 && oc[i + 1] == 0xEC) { pl = i + 6; break; }
+    }
+    if (!pl || pl > n->size || memcmp(oc, nc, pl)) return 0;
+    uint32_t otgt = v + (uint32_t)rd32(oc + off - 4);
+    int f, k = sym_at(&c->old, otgt, &f);
+    const Sym *ot = NULL;
+    for (int i = 0; i < k; i++) if (c->old.sym[f + i].addr == otgt) { ot = &c->old.sym[f + i]; break; }
+    if (!ot) return 0;
+    const Sym *nt = find_key(c->cur, ot);
+    if (!nt) return 0;
+    int ord = 0;   /* which call to that callee, counted in the old code */
+    for (uint32_t i = 0; i + 5 <= off - 5; i++)
+        if (oc[i] == 0xE8 && s->addr + i + 5 + rd32(oc + i + 1) == otgt) ord++;
+    for (uint32_t i = 0, seen = 0; i + 5 <= n->size; i++)
+        if (nc[i] == 0xE8 && n->addr + i + 5 + rd32(nc + i + 1) == nt->addr) {
+            if ((int)seen++ == ord) return n->addr + i + 5;
+        }
+    return 0;
+}
+
 /* Heap-like memory (game heap, arena, renderer pools, static data) also holds asset bytes, floats
  * and indices that fall into the binary's range by chance. Game state points into the binary's
  * data only at saved statics (the ranges: decompiled objects' data, sdk modules) and at constants
@@ -521,6 +555,12 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         for (int i = 0; never_blocks[i]; i++)
             if (!strcmp(s->name, never_blocks[i])) return v;
         if (n->size != osz || !same_code(c, oc, (const uint8_t *)(uintptr_t)n->addr, osz)) {
+            uint32_t na = callsite_map(c, s, n, oc, osz, v);
+            if (na) {
+                c->code++;
+                logw(c, at, v, na, "ret-callsite", s->name, off);
+                return na;
+            }
             if (!c->err) snprintf(c->why, sizeof c->why, "%s was running and changed in this build", s->name);
             c->err = 1;
             return v;
