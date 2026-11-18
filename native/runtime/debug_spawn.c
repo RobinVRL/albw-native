@@ -103,3 +103,19 @@ void albw_debug_list_profiles(void) {
         fprintf(stderr, "\n");
     }
 }
+
+/* list live actors: profile name and position (actor +0x2D0 profile, +0x3D0 position); walks the
+ * actor manager's list (*data_00706E20 + 0x3DBBC) with the game's walker 0052FD7C */
+void func_0052FD7C(void *list, void (*fn)(void *, uint32_t), uint32_t arg);
+static void list_one(void *actor, uint32_t filter) {
+    uint32_t a = (uint32_t)(uintptr_t)actor;
+    uint32_t prof = *(uint32_t *)(uintptr_t)(a + 0x2D0);
+    const char *n = prof ? (const char *)(uintptr_t)*(uint32_t *)(uintptr_t)(prof + 0x10) : "?";
+    const float *p = (const float *)(uintptr_t)(a + 0x3D0);
+    (void)filter;
+    fprintf(stderr, "actor %#x %-24s %.2f %.2f %.2f\n", a, n ? n : "?", p[0], p[1], p[2]);
+}
+void albw_debug_list_actors(void) {
+    uint32_t mgr = *(uint32_t *)data_00706E20;
+    if (mgr) func_0052FD7C((void *)(uintptr_t)(mgr + 0x3DBBC), list_one, 0);
+}

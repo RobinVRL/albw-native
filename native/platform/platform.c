@@ -822,6 +822,7 @@ const float *albw_debug_player_pos(void);                         /* runtime/deb
 void *albw_debug_spawn(const char *name, float dx, float dz);
 void albw_debug_list_profiles(void);
 int albw_debug_preload(const char *name);
+void albw_debug_list_actors(void);
 static long g_spawn_wait = 45;   /* ALBW_SPAWN_WAIT: frames between the resource request and the create */
 static const float *route_player_pos(void) {
     /* the game's own player position (00520FC0); the player-update object + 0x30 used before went
@@ -888,6 +889,9 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         sscanf(rest, " %63[^ ;] %lf %lf", nm, &dx, &dz);
         if (el == 0) { albw_debug_preload(nm); const char *w = getenv("ALBW_SPAWN_WAIT"); if (w) g_spawn_wait = atol(w); }
         if (el >= g_spawn_wait) { albw_debug_spawn(nm, (float)dx, (float)dz); done = 1; }
+    } else if (!strcmp(op, "actors")) {
+        albw_debug_list_actors();
+        done = 1;
     } else if (!strcmp(op, "profiles")) {
         albw_debug_list_profiles();
         done = 1;
