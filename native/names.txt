@@ -93,3 +93,10 @@ func_002AE780  enemyReaction_CopyHit               # hit record -> knock-back di
 func_002B0D7C  enemyReaction_StartKnockBack        # velocity +0x3C = dir * speed
 func_002AFEF0  enemyReaction_KnockBackUpdate       # decays x / z of the knock-back velocity
 func_004F48F0  enemy_ApplyVelocity                 # pos += own + push, or the reaction's velocity
+
+# --- scene objects: animation sets (BOOT_LOG 160m)
+func_004B79BC  scene_SetupObjects                  # per-slot tables; obj->vt[8](obj, table) binds animations
+func_001FEA80  animSet_Bind                        # vt[8]: one animation per table entry (00169608 + 00133870)
+func_00169608  animSet_SetAnim                     # lookup 00533304(resource, name) -> slot
+func_00133870  animSet_AttachSlot                  # slot i -> 0013388C(model binder)
+func_0013388C  animSlot_Attach
