@@ -356,3 +356,12 @@ fresh scene load - is the unit-enable / address word 0 in game memory, or only i
 | Invalidate textures on FlushDataCache (BOOT_LOG 153) | `ALBW_FRAME_MS` with upload counts; `ALBW_FLUSH_INVAL=1` vs off | it CAUSED 6-36 re-uploads every frame; reverted to off |
 | Pre-build shader variants on the first run | | each costs ~140 ms without NVIDIA's shader disk cache (boot frames ~7 fps once); later runs ~free. Kept (one per frame) |
 | (test mistake) shots / timing after editing plat_end_frame | | the state was refused ("plat_end_frame was running and changed") and the run was a plain boot; the converter now maps call sites (callsite_map), and debug code lives outside plat_end_frame |
+
+## Forge entry event stalls (BOOT_LOG 158)
+
+| Tried | How | Result |
+|---|---|---|
+| Treat the actor with the garbage name as state-conversion corruption | read its vtable | it was the TagItemEvent's +0x434 area-event member, registered by a creator returning the wrong pointer: same in a fresh entry, not a state issue |
+| Suspect the AI-written 00230D18 (`work7/gpt24`) that overwrites the current flow | EU 00230D18 disassembly | matches the ARM; overwriting and clearing the slot every frame is the original's behaviour for area-event actors |
+| Hand-routing Link to the forge door with goto | rock, bushes, ledge | kept blocking; added route `warp X Y Z` |
+

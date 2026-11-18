@@ -808,6 +808,8 @@ static uint32_t scripted_keys(void) {
  *   press BTN [N]   hold a button (ALBW_PRESS names, incl. CUP..) N frames (default 6), then 1 frame off
  *   spawn NAME [DX DZ]  spawn actor profile NAME (e.g. EnemyKeese) at Link + (DX, 0, DZ) (default 0 2)
  *   profiles        list the registered actor profile names
+ *   warp X Y Z      set Link's position (debug)
+ *   actors          list live actors (profile, position)
  *   touch X Y [N]   touch the bottom screen at (X, Y) (0..319, 0..239) for N frames (default 6), then
  *                   1 frame off
  *   save S | load S save state slot S
@@ -890,6 +892,13 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         sscanf(rest, " %63[^ ;] %lf %lf", nm, &dx, &dz);
         if (el == 0) { albw_debug_preload(nm); const char *w = getenv("ALBW_SPAWN_WAIT"); if (w) g_spawn_wait = atol(w); }
         if (el >= g_spawn_wait) { albw_debug_spawn(nm, (float)dx, (float)dz); done = 1; }
+    } else if (!strcmp(op, "warp")) {   /* debug: set Link's position (x y z) */
+        double wx = 0, wy = 0, wz = 0;
+        sscanf(rest, " %lf %lf %lf", &wx, &wy, &wz);
+        float *pp = (float *)albw_debug_player_pos();
+        if (pp) { pp[0] = (float)wx; pp[1] = (float)wy; pp[2] = (float)wz; }
+        fprintf(stderr, "route: warp to %.2f %.2f %.2f%s\n", wx, wy, wz, pp ? "" : " (no player)");
+        done = 1;
     } else if (!strcmp(op, "actors")) {
         albw_debug_list_actors();
         done = 1;
