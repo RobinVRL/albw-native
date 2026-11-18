@@ -127,7 +127,7 @@ uint32_t *func_00561B30(const uint8_t *fb, uint32_t *p, uint32_t which, int32_t 
     op.u.target.dfmt = U8(fb, 0x28);
     op.u.target.w = (uint16_t)U32(fb, 0x40);
     op.u.target.h = (uint16_t)U32(fb, 0x44);
-    return render_rec(p, &op);
+    return render_rec_pinned(p, &op);   /* kept: stored and copied by the game later (BOOT_LOG 160o) */
 }
 
 /* USA 00563A5C  Viewport MakeCommand (const u32 vp[4] {x, y, w, h}, u32 *p) -> p'. The original
@@ -139,7 +139,7 @@ uint32_t *func_00563A5C(const uint32_t *vp, uint32_t *p) {
     op.u.rect.y = (int32_t)vp[1];
     op.u.rect.w = (int32_t)vp[2];
     op.u.rect.h = (int32_t)vp[3];
-    return render_rec(p, &op);
+    return render_rec_pinned(p, &op);   /* kept: stored and copied by the game later (BOOT_LOG 160o) */
 }
 
 /* USA 00563170  Scissor MakeCommand (const Scissor *s, u32 *p) -> p'. Object: +0 u8 enable,
@@ -159,7 +159,7 @@ uint32_t *func_00563170(const uint8_t *s, uint32_t *p) {
     op.u.rect.y = y;
     op.u.rect.w = x1 - x + 1;
     op.u.rect.h = y1 - y + 1;
-    return render_rec(p, &op);
+    return render_rec_pinned(p, &op);   /* kept: stored and copied by the game later (BOOT_LOG 160o) */
 }
 
 /* ================================================================== fragment operations */

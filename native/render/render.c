@@ -1969,7 +1969,13 @@ void render_frame_end(void) {
         uint32_t freed = 0;
         for (uint32_t s = 0; s < g_npool; s++) {
             PoolEnt *p = &g_pool[s];
-            if (p->live && !p->pinned && R.frame - p->last_frame > POOL_GC_AGE) {
+            /* render-target / viewport / scissor binds are kept: the game records them once into
+             * lists it copies later (renderer +0x16C: "bind the main buffer", copied by 0054D264
+             * after every render-to-texture pass, possibly minutes after boot). Freed, the marker
+             * went stale and the frame stayed on the 128x128 texture: black screen after the
+             * Sanctuary cutscene (BOOT_LOG 160o). Few distinct ops (deduplicated). */
+            if (p->live && !p->pinned && R.frame - p->last_frame > POOL_GC_AGE &&
+                p->op.type != ROP_TARGET && p->op.type != ROP_VIEWPORT && p->op.type != ROP_SCISSOR) {
                 p->live = 0;
                 p->gen++;
                 g_live--;
@@ -2285,7 +2291,18 @@ int render_exec_cmds(const void *addr, uint32_t size) {
                 continue;
             }
             const ROp *op = pool_get(w[0]);
-            if (!op) continue;
+            if (!op) {
+                static int st = -1, told;
+                if (st < 0) st = getenv("ALBW_STALE_TRACE") != NULL;
+                if (st && told < 40) {
+                    told++;
+                    uint32_t slot = (w[0] & 0xFFFFF) - 1;
+                    rlog("stale marker %#x at %p: slot %u %s type %d gen now %u", w[0], (void *)a, slot,
+                         slot < g_npool ? (g_pool[slot].live ? "live" : "freed") : "out of range",
+                         slot < g_npool ? (int)g_pool[slot].op.type : -1, slot < g_npool ? g_pool[slot].gen : 0);
+                }
+                continue;
+            }
             ROp copy = *op; /* the pool may grow (realloc) while the op runs */
             render_exec_op(&copy);
             n++;
@@ -2316,4 +2333,11 @@ RStats render_stats(void) { return R.st; }
  * needs nothing: markers of pinned ops (model data) stay valid, per-frame ops are re-recorded. */
 void render_ss_loaded(void) {
     for (size_t i = 0; i < R.ntex; i++) { R.tex[i].dirty = true; R.tex[i].hash = 0; }
+}
+
+/* debug (gdb): pool slot state = live | type << 8 | pinned << 16 | gen << 24 */
+uint32_t render_debug_pool_slot(uint32_t slot) {
+    if (slot >= g_npool) return 0xFFFFFFFFu;
+    const PoolEnt *p = &g_pool[slot];
+    return (uint32_t)p->live | (uint32_t)p->op.type << 8 | (uint32_t)p->pinned << 16 | (uint32_t)p->gen << 24;
 }

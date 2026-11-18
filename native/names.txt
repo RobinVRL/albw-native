@@ -100,3 +100,14 @@ func_001FEA80  animSet_Bind                        # vt[8]: one animation per ta
 func_00169608  animSet_SetAnim                     # lookup 00533304(resource, name) -> slot
 func_00133870  animSet_AttachSlot                  # slot i -> 0013388C(model binder)
 func_0013388C  animSlot_Attach
+
+# --- frame buffers and render-to-texture (BOOT_LOG 160o)
+func_00322CF4  renderer_Init                       # records the "bind main buffer" command lists (+0x16C / +0x178)
+func_0054D264  renderer_CopyMainTargetBind         # copies that bind list into the frame list (after a render-to-texture pass)
+func_0057E870  renderPass_BindTargetIfChanged      # binds the pass's frame buffer unless the cache (data 0x79DF64) says it is bound
+func_002FF8A4  renderTexture_Create                # 128x128 colour+depth target; records its bind list (+0x34 / +0x2C)
+func_002FF5D0  renderTexture_Draw                  # copies the bind list into the frame list, draws its models
+func_002C30E8  renderTexture_DrawAll               # per texture: draw, then renderer_CopyMainTargetBind
+func_00561B30  gr_RenderTarget_MakeCommand         # nn::gr: frame-buffer bind command (native: ROP_TARGET, kept in the op pool)
+func_0014C108  render_TopScreenPass                # left-eye top-screen pass
+func_0014B788  render_BottomScreenPass
