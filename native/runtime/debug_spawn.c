@@ -8,12 +8,14 @@
  * case), +0x4C = parent actor handle (0 = none), +0x50 = (s16)-1, +0x2C0 |= 1; then
  * 004C4AF4(*data_00706E20 = actor manager, &param, 0) -> the actor (NULL on failure).
  * Link's position: 00520FC0 (EU 00520F98) = *(*data_0070FB60 + 0x1C), a Vec3 *. */
+#define _GNU_SOURCE
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 extern char data_0070FB60[], data_00706E20[];
+extern long g_plat_frames;
 int func_0019B04C(uint32_t id);
 int func_002DFF7C(void *self);
 int func_004C4AF4(int mgr, int *param, int flags);
@@ -175,4 +177,35 @@ int albw_debug_event(const char *name) {
     if (em) *(uint8_t *)(uintptr_t)(em + 0x10) = was;
     fprintf(stderr, "event: %s via component %#x: %s\n", name, g_event_comp, ok ? "requested" : "refused");
     return ok;
+}
+
+/* robust_pmf.h guard: a delegate whose target is not code (BOOT_LOG 160e). Logged, never fatal. */
+void albw_delegate_bad(const char *dlg, const void *fn) {
+    static int n;
+    if (n++ >= 8) return;
+    const uint32_t *w = (const uint32_t *)dlg;
+    fprintf(stderr, "delegate: target %p is not code (dlg %p: %08x %08x %08x %08x, frame %ld, caller %p) - call skipped\n",
+            fn, (const void *)dlg, w[0], w[1], w[2], w[3], g_plat_frames, __builtin_return_address(0));
+}
+
+/* the executable's code segment (PT_LOAD with PF_X of the main program), for robust_pmf.h */
+#include <link.h>
+uintptr_t albw_code_lo, albw_code_hi;
+static int code_range_cb(struct dl_phdr_info *info, size_t size, void *data) {
+    (void)size; (void)data;
+    if (info->dlpi_name && info->dlpi_name[0])   /* the main program comes first, with no name */
+        return 0;
+    for (int i = 0; i < info->dlpi_phnum; i++) {
+        const ElfW(Phdr) *ph = &info->dlpi_phdr[i];
+        if (ph->p_type == PT_LOAD && (ph->p_flags & PF_X)) {
+            uintptr_t lo = info->dlpi_addr + ph->p_vaddr, hi = lo + ph->p_memsz;
+            if (!albw_code_hi || lo < albw_code_lo) albw_code_lo = lo;
+            if (hi > albw_code_hi) albw_code_hi = hi;
+        }
+    }
+    return 1;
+}
+void albw_code_range_init(void) {
+    dl_iterate_phdr(code_range_cb, 0);
+    if (!albw_code_hi) { albw_code_lo = 0; albw_code_hi = UINTPTR_MAX; }   /* unknown: never reject */
 }

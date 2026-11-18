@@ -32,6 +32,17 @@ typedef void (*albw_dlg_v0)(char *self);
 typedef void (*albw_dlg_v1)(char *self, uintptr_t a1);
 typedef void (*albw_dlg_v2)(char *self, uintptr_t a1, uintptr_t a2);
 
+/* Port guard (BOOT_LOG 160e): a delegate whose target is not code (overwritten with floats such as
+ * 1.0f / 1.3f by a sound-object use-after-free, OPEN) would jump into data. A valid game never has a
+ * non-code target here, so the check only fires on corruption: the call is skipped and logged
+ * (first 8 times). Code = this executable's text (the game and the port are one binary). */
+void albw_delegate_bad(const char *dlg, const void *fn);   /* native/runtime/debug_spawn.c */
+extern uintptr_t albw_code_lo, albw_code_hi;                /* the executable's PF_X segment */
+void albw_code_range_init(void);
+static inline int albw_code_ptr(const void *p) {
+    if (!albw_code_hi) albw_code_range_init();
+    return (uintptr_t)p >= albw_code_lo && (uintptr_t)p < albw_code_hi;
+}
 /* the adjusted object and target of a delegate, or NULL when invoke() does nothing */
 static inline void *albw_delegate_target(char *dlg, char **self_out) {
     char *obj = FLD(dlg, 0x04, char * ALBW_GP);
@@ -41,7 +52,12 @@ static inline void *albw_delegate_target(char *dlg, char **self_out) {
     if (!albw_pmf_valid(m))
         return 0;
     *self_out = albw_pmf_this(m, obj);
-    return albw_pmf_fn(m, *self_out);
+    void *fn = albw_pmf_fn(m, *self_out);
+    if (!albw_code_ptr(fn)) {
+        albw_delegate_bad(dlg, fn);
+        return 0;
+    }
+    return fn;
 }
 static inline uint32_t albw_delegate_invoke_r0(char *dlg) {
     char *self; void *fn = albw_delegate_target(dlg, &self);
