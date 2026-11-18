@@ -255,6 +255,7 @@ int plat_init(const char *title, const PlatConfig *c) {
         if (v >= 0) g_separate = v;
         else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
     }
+    if (g_layout_cfg.single_screen) g_separate = 0;   /* single-screen mode: one window (saved choice kept) */
     if (g_layout_cfg.preset != LAYOUT_TOP_ONLY && g_layout_cfg.preset != LAYOUT_BOTTOM_ONLY)
         g_last_two_preset = g_layout_cfg.preset;
     g_joined_w = TOP_W * cfg.scale;
@@ -610,6 +611,20 @@ static void plat_layout_changed(void) {
 static void plat_single_screen_set(int on) {
     g_layout_cfg.single_screen = on != 0;
     g_layout_cfg.show_bottom = 0;
+    if (on) {
+        /* always one window: join separate windows (not saved: turning the mode off restores
+         * them) and size it for one screen */
+        if (g_separate) plat_set_windows(0, 0);
+        if (!(SDL_GetWindowFlags(win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN))) {
+            int tw, th;
+            plat_separate_size(SCREEN_TOP, &tw, &th);
+            plat_set_size_restored(win, tw, th);
+        }
+    } else if (g_layout_cfg.separate && !g_separate) {
+        plat_set_windows(1, 0);
+    } else if (!g_separate && !(SDL_GetWindowFlags(win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN))) {
+        plat_set_size_restored(win, g_joined_w, g_joined_h);
+    }
     plat_windows_visibility();
     plat_layout_changed();
     fprintf(stderr, "layout: single-screen mode %s\n", on ? "on (Tab / right-stick click: other screen)" : "off");
@@ -636,7 +651,10 @@ static int plat_layout_event(const SDL_Event *e) {
     switch (e->type) {
     case SDL_EVENT_KEY_DOWN:
         if (e->key.key == SDLK_F5) {
-            if (!e->key.repeat) plat_set_windows(!g_separate, 1);
+            if (!e->key.repeat) {
+                if (g_layout_cfg.single_screen) plat_single_screen_set(0);   /* F5 leaves single-screen mode */
+                else plat_set_windows(!g_separate, 1);
+            }
             return 1;
         }
         if (e->key.key == SDLK_F6 || e->key.key == SDLK_F7) {   /* save / load state (current slot) */

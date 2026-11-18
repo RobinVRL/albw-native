@@ -304,7 +304,10 @@ static void menu_activate(int i, int dir) {
         break;
     }
     case MI_RESUME: g_menu_open = 0; break;
-    case MI_WINDOWS: plat_set_windows(!g_separate, 1); break;
+    case MI_WINDOWS:
+        if (g_layout_cfg.single_screen) plat_single_screen_set(0);   /* leaves single-screen mode */
+        else plat_set_windows(!g_separate, 1);
+        break;
     case MI_PRESET: {
         if (g_separate) { plat_separate_cycle(dir < 0); break; }   /* as F2: both / top only / bottom only */
         int n = LAYOUT_PRESET_COUNT;
