@@ -1219,7 +1219,14 @@ int plat_poll(void) {
         in.touch_y = g_route_ty;
     }
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
-    if (g_layout_cfg.single_screen) {
+    /* single-screen remaps only in the field (Link exists): at the title and the file select
+     * Start goes to the game (straight to picking a save) and its own cursor works with the D-pad */
+    /* the player update (001EA96C) sets albw_dbg_player every field frame: taken and cleared here
+     * once per frame, so a pointer left from an earlier scene (title, file select) does not count */
+    static int in_field;
+    if (&albw_dbg_player) { in_field = albw_dbg_player != NULL; albw_dbg_player = NULL; }
+    if (g_layout_cfg.single_screen && !in_field && g_layout_cfg.show_bottom) plat_single_screen_flip();
+    if (g_layout_cfg.single_screen && in_field) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
          * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
          * does not use Select on the field. */
