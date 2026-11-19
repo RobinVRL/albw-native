@@ -80,7 +80,8 @@ format.
 | Tab (controller: right-stick click) | single-screen mode: show the other screen (items, map) and back |
 
 In single-screen mode Start brings up the bottom screen (map, Gear, Items) and Select opens the
-game's Pause. Rebind any key or button in Esc > Controls (saved to `~/.config/albw-port/input.cfg`).
+game's Pause. There the D-pad moves a selector between the buttons and items and A taps the
+selected one (no mouse needed). Rebind any key or button in Esc > Controls (saved to `~/.config/albw-port/input.cfg`).
 
 A game controller works too.
 

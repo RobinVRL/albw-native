@@ -698,6 +698,7 @@ static void plat_reset_press(void) {
 static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
     g_layout_cfg.show_bottom ^= 1;
+    if (getenv("ALBW_SEL_TRACE")) fprintf(stderr, "selector: single-screen shows the %s screen\n", g_layout_cfg.show_bottom ? "bottom" : "top");
     plat_windows_visibility();
     plat_layout_update();
     plat_layout_title();
@@ -1142,6 +1143,8 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
     return keys;
 }
 
+#include "selector.c"   /* single-screen bottom-screen selector (D-pad + A) */
+
 int plat_poll(void) {
     if (g_quit_req) return 0;   /* "Quit game" in the Esc menu */
     uint32_t prev = in.held;
@@ -1227,6 +1230,7 @@ int plat_poll(void) {
         in.held &= ~KEY_START;
         if (in.held & KEY_SELECT) in.held = (in.held & ~KEY_SELECT) | KEY_START;
     }
+    sel_input(&in);   /* bottom screen up in single-screen mode: D-pad moves the selector, A taps */
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
     return 1;
@@ -1317,6 +1321,7 @@ static void plat_composite(const Layout *l) {
         glUniform4fv(loc, 1, rect);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
+    sel_composite(l);   /* single-screen selector over the bottom screen (selector.c) */
 }
 
 #include "menu.c"   /* Esc menu overlay (pauses the game inside plat_end_frame) */
