@@ -54,7 +54,10 @@ extern int func_003057B4(int param_1);
 extern int func_0030598C(int *param_1);
 extern int func_00341A34(int param_1,undefined4 *param_2,int param_3,int param_4);
 extern int func_003879AC(int param_1,float *param_2);
-extern int func_003A762C(int param_1,int param_2,float fparam_0);
+/* returns bool (only the low byte is set: `setbe al`); declared int it read eax's leftover upper
+ * bytes as "arrived" - the door / stairs walk (state 0x5F) stopped half way and Link walked back and
+ * forth between two rooms (BOOT_LOG 160aa) */
+extern bool func_003A762C(int param_1,int param_2,float fparam_0);
 extern int func_003A78A8(int param_1);
 extern int func_003A7928(int param_1,float *param_2,int param_3,float fparam_0);
 extern int func_004A1B9C(int *param_1,int param_2,uint *param_3);

@@ -140,3 +140,7 @@ func_001312BC  scene_SubmitAndCull                 # per frame: views, frustum, 
 func_003F9B70  eft_System_SetupRenderState         # records the effect pass render state block once (stencil off)
 func_00237288  grassMgr_CutOne                     # bush / grass cut, burn or break: XLink effect + SE_Grass_* sound
 func_0010DBBC  xlink_EmitByName                    # name-keyed effect / sound event on a user object
+func_002611BC  doorway_OnTouch                     # walk-through: route point beyond the doorway -> player walk request
+func_00291CF0  player_RequestDoorWalk              # target, direction, distance -> state 0x5F
+func_003A762C  playerState_WalkToTarget            # bool: arrived (xz distance <= threshold)
+func_001514C8  actor_CollisionChildCheck

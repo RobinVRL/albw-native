@@ -92,7 +92,11 @@ def byte_return(ins):
         # je other; ret`: 00552FC0 isOnGround, whose 0x...01 %eax made 00553720 refuse Link's
         # interaction with the weather vane: BOOT_LOG 131) are stepped over too; conditional
         # jumps leave this path (their targets' rets are checked on their own)
+        # stack-protector epilogue: `movl %gs:0x14, %ecx; cmpl ..(%esp), %ecx; jne __stack_chk_fail`
+        # between the result write and the ret (only %ecx / %edx / %rcx written): 003A762C, whose
+        # %al-only `arrived` result ended the door walk half way (BOOT_LOG 160aa)
         while j >= 0 and (ins[j][0] in ('popl', 'popq', 'pop') or
+                          (ins[j][0].startswith('mov') and re.fullmatch(r'%[gf]s:0x(14|28), %[re][cd]x', ins[j][1])) or
                           (ins[j][0] in ('addl', 'leal', 'addq', 'leaq') and ins[j][1].endswith(SP)) or
                           ins[j][0].startswith(('test', 'cmp')) or
                           (ins[j][0].startswith('j') and not ins[j][0].startswith('jmp'))):
