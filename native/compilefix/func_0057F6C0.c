@@ -3,9 +3,37 @@
  * projection matrix. Widescreen: the top screen's 5:3 aspect is widened by albw_ws_factor (the
  * renderer draws the top screen that much wider), other aspects are left alone. Rest unchanged. */
 float albw_ws_factor(void);
-static inline float albw_ws_aspect(float a) {
+/* The matrix is rebuilt only while the projection is dirty (byte +4, set by its setters; caller
+ * 0057D258 / 0057D5C4 then rebuilds the device matrix, byte +5). So every top-screen projection
+ * is remembered with the factor its matrix was built with, and albw_ws_refresh (each frame, from
+ * render_frame_end) marks the ones built with another factor dirty: after F10, and after loading a
+ * save state taken in the other mode (these records are restored with the game heap they describe). */
+#define WS_PROJS 64
+static struct { unsigned int proj, vt; float f; } g_ws_proj[WS_PROJS];
+static void ws_note(int param_1, float f) {
+    unsigned int p = (unsigned int)param_1, vt = *(unsigned int *)param_1;
+    int free_slot = -1;
+    for (int i = 0; i < WS_PROJS; i++) {
+        if (g_ws_proj[i].proj == p) { g_ws_proj[i].vt = vt; g_ws_proj[i].f = f; return; }
+        if (free_slot < 0 && (!g_ws_proj[i].proj || *(unsigned int *)g_ws_proj[i].proj != g_ws_proj[i].vt)) free_slot = i;
+    }
+    if (free_slot >= 0) { g_ws_proj[free_slot].proj = p; g_ws_proj[free_slot].vt = vt; g_ws_proj[free_slot].f = f; }
+}
+void albw_ws_refresh(void) {
+    float f = albw_ws_factor();
+    for (int i = 0; i < WS_PROJS; i++) {
+        unsigned int p = g_ws_proj[i].proj;
+        if (!p) continue;
+        if (*(unsigned int *)p != g_ws_proj[i].vt) { g_ws_proj[i].proj = 0; continue; }   /* object gone */
+        if (g_ws_proj[i].f != f) *(unsigned char *)(p + 4) = 1;   /* dirty: rebuilt at its next use */
+    }
+}
+static inline float albw_ws_aspect(int proj, float a) {
     /* 400/240 = 1.6667: the top screen (the bottom screen's 320/240 and square targets stay) */
-    return (a > 1.66f && a < 1.672f) ? a * albw_ws_factor() : a;
+    if (!(a > 1.66f && a < 1.672f)) return a;
+    float f = albw_ws_factor();
+    ws_note(proj, f);
+    return a * f;
 }
 #include "ghidra_types.h"
 
@@ -37,7 +65,7 @@ undefined4 func_0057F6C0(int param_1,float *param_2)
   fVar3 = DAT_0057f798;
   fVar2 = DAT_0057f790;
   fVar1 = *(float *)(param_1 + 0x94) * *(float *)(param_1 + 0xa8) * DAT_0057f790;
-  fVar5 = fVar1 * albw_ws_aspect(*(float *)(param_1 + 0xac));
+  fVar5 = fVar1 * albw_ws_aspect(param_1, *(float *)(param_1 + 0xac));
   fVar4 = *(float *)(param_1 + 0xb0) * fVar5;
   fVar5 = fVar5 * DAT_0057f794;
   fVar7 = fVar4 - fVar5;

@@ -634,8 +634,23 @@ static void plat_single_screen_set(int on) {
 /* widescreen (layout.cfg widescreen, F10, Esc menu > Video): a 16:9 top screen. The renderer
  * draws the top screen LAYOUT_WIDE_TOP_W wide and the game widens its projections to match
  * (render.c albw_ws_factor): more of the world at the sides, nothing stretched. */
+static int g_ws_pending;   /* 1 off, 2 on: applied between frames (plat_frame_end_hook) */
+static void plat_widescreen_apply(int on);
 static void plat_widescreen_set(int on) {
+    g_ws_pending = on ? 2 : 1;
+    if (!render_ready()) { g_ws_pending = 0; plat_widescreen_apply(on); }
+}
+/* render.c render_frame_end: after the present, before the next frame's game update builds its
+ * projections (pumping events can happen mid-frame) */
+void plat_frame_end_hook(void) {
+    if (!g_ws_pending) return;
+    int on = g_ws_pending == 2;
+    g_ws_pending = 0;
+    if (on != g_layout_cfg.widescreen) plat_widescreen_apply(on);
+}
+static void plat_widescreen_apply(int on) {
     g_layout_cfg.widescreen = on != 0;
+    int old_w = TOP_W;
     int w = on ? LAYOUT_WIDE_TOP_W : 400;
     layout_set_top_w(w);
     render_set_widescreen(w);
@@ -650,9 +665,12 @@ static void plat_widescreen_set(int on) {
     if (!(SDL_GetWindowFlags(tw) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN))) {
         int ww, wh;
         if (g_separate || g_layout_cfg.single_screen) {
-            g_layout_cfg.window[SCREEN_TOP].has_size = 0;
+            /* keep the user's window size, only widened / narrowed with the screen */
+            LayoutWindowGeom *gw = &g_layout_cfg.window[SCREEN_TOP];
+            if (gw->has_size) gw->w = (int)((long)gw->w * w / old_w);
             plat_separate_size(SCREEN_TOP, &ww, &wh);
-            plat_set_size_restored(tw, ww, wh);
+            if (!(g_layout_cfg.single_screen && g_layout_cfg.show_bottom))   /* bottom shown: its size stays */
+                plat_set_size_restored(tw, ww, wh);
         } else {
             plat_set_size_restored(tw, g_joined_w, g_joined_h);
         }

@@ -134,4 +134,6 @@ func_00691D68  curve_Evaluate                      # (curve, float t) -> float: 
 # --- projection / culling (BOOT_LOG 160v)
 func_0057F6C0  perspProj_UpdateMatrix              # sead PerspectiveProjection vt+0x14: near +0x94, far +0x98, tan(fovy/2) +0xA8, aspect +0xAC
 func_003FB1D0  viewFrustum_Build                   # culling frustum corners / planes from two projection matrices
+func_0057D258  proj_GetMatrix                      # rebuilds the matrix (vt+0x14) while dirty (+4), then the device matrix (+5)
+func_0057D5C4  proj_GetDeviceMatrix
 func_001312BC  scene_SubmitAndCull                 # per frame: views, frustum, model submission, map culling projection

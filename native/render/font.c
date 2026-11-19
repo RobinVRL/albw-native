@@ -33,7 +33,7 @@ const char RENDER_VS_FONT_RECT[] =
     "layout(location = 0) in vec4 v0; layout(location = 1) in vec4 v1; layout(location = 2) in vec4 v2;\n"
     "layout(location = 3) in vec4 v3; layout(location = 4) in vec4 v4; layout(location = 5) in vec4 v5;\n"
     "layout(location = 6) in vec4 v6; layout(location = 7) in vec4 v7;\n"
-    "uniform vec4 c[96]; uniform int b;\n"
+    "uniform vec4 c[96]; uniform int b; uniform float u_ws;\n"
     "out vec4 v_color; out vec4 v_tc0; out vec2 v_tc1; out vec2 v_tc2; out vec3 v_normal; out vec3 v_view;\n"
     "vec4 M(int r){ return c[clamp(r, 0, 95)].wzyx; }\n"            /* game memory order */
     "bool B(int i){ return ((b >> i) & 1) != 0; }\n"
@@ -113,6 +113,18 @@ const char RENDER_VS_FONT_RECT[] =
     "    pos.xy = pos.xy * g.xy + g.zw;\n"
     "    vec4 q = transform(pos);\n"
     "    gl_Position = pica_out(vec4(dot(M(0), q), dot(M(1), q), dot(M(2), q), dot(M(3), q)));\n"
+    /* widescreen (port, not the 3DS program): the viewport is stretched by u_ws along clip y (the
+     * top screen's long side). A pane spanning the whole width keeps the stretch (fades,
+     * backgrounds); any other pane is drawn 1:1 around the centre (HUD not stretched) */
+    "    if (u_ws > 1.0) {\n"
+    "      float lo = 1e9, hi = -1e9;\n"
+    "      for (int k = 0; k < 4; k++) {\n"
+    "        vec4 qc = transform(vec4(vec2(float(k & 1), -float(k >> 1)) * g.xy + g.zw, 0.0, 1.0));\n"
+    "        vec4 cc = vec4(dot(M(0), qc), dot(M(1), qc), dot(M(2), qc), dot(M(3), qc));\n"
+    "        float n = cc.y / cc.w; lo = min(lo, n); hi = max(hi, n);\n"
+    "      }\n"
+    "      if (!(lo <= -0.97 && hi >= 0.97)) gl_Position.y /= u_ws;\n"
+    "    }\n"
     "    v_view = -q.xyz;\n"
     "    if (r0.w <= 1.0) v_color = vec4(1.0, 1.0, 1.0, r0.w);\n"
     "    else {\n"                         /* bilinear corner colours (TL, TR, BL, BR) */
@@ -142,6 +154,7 @@ const char RENDER_VS_FONT_RECT[] =
     "    pos.y += g.y * so.y - g.y;\n"
     "    vec4 q = transform(pos);\n"
     "    gl_Position = pica_out(vec4(dot(M(0), q), dot(M(1), q), dot(M(2), q), dot(M(3), q)));\n"
+    "    if (u_ws > 1.0) gl_Position.y /= u_ws;\n"       /* text: always 1:1 (widescreen) */
     "    v_view = -q.xyz;\n"
     "    vec2 a = abs(v0.zw);\n"
     "    int ix = int(r0.z);\n"            /* texcoords (u0, v0', u1, v1') */

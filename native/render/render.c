@@ -199,10 +199,13 @@ typedef struct {
  * of such a buffer (the bottom screen draws 240x320 into the shared 0x1F000080 buffer) stay 1:1.
  * A separate static (not a field of R): save states restore static data by symbol. */
 static int g_ws_rows = 400;
-static int surf_wide_shape(const Surface *s) { return s->w == 240 && s->h == 400; }
+/* portrait 5:3 = the top screen's shape (240x400, and the 480x800 sources of anti-aliased
+ * transfers): every projection with the top screen's aspect is widened (0057F6C0), so every target
+ * of that shape is drawn wide too */
+static int surf_wide_shape(const Surface *s) { return s->w >= 120 && s->w * 5 == s->h * 3; }
 static int sph(const Surface *s) { return s->ph > 0 ? s->ph : s->h; }
+static float g_cur_fy = 1.0f;   /* stretch of the viewport last applied (apply_frag) */
 float albw_ws_factor(void) { return (float)g_ws_rows / 400.0f; }
-int render_widescreen_rows(void) { return g_ws_rows; }
 
 typedef struct { GLuint fbo; Surface *c, *d; } FboEnt;
 
@@ -233,6 +236,7 @@ typedef struct {
 typedef struct {
     GLuint prog;
     GLint c, b, tev_src, tev_cmb, tev_const, tev_buf, tev_bufcol, alpha, texcfg, tex[3], texcube, scale;
+    GLint ws;   /* u_ws: widescreen stretch of the current viewport (layout shader keeps HUD 1:1) */
     GLint fog, fog_color, fog_lut;
     bool fl;           /* fragment lighting compiled in */
     FLLoc fll;
@@ -445,6 +449,7 @@ static void program_init(Program *p, const char *vs, bool fl) {
     p->alpha = glGetUniformLocation(g, "alpha_test");
     p->texcfg = glGetUniformLocation(g, "texcfg");
     p->scale = glGetUniformLocation(g, "res_scale");
+    p->ws = glGetUniformLocation(g, "u_ws");
     p->fog = glGetUniformLocation(g, "fog");
     p->fog_color = glGetUniformLocation(g, "fog_color");
     p->fog_lut = glGetUniformLocation(g, "fog_lut");
@@ -555,7 +560,7 @@ int render_ready(void) {
 /* ================================================================== surfaces */
 
 static void surface_alloc(Surface *s) {
-    s->ph = surf_wide_shape(s) ? g_ws_rows : s->h;
+    s->ph = surf_wide_shape(s) ? (int)((long)s->h * g_ws_rows / 400) : s->h;
     int W = s->w * R.scale, H = s->ph * R.scale;
     glGenTextures(1, &s->tex);
     glBindTexture(GL_TEXTURE_2D, s->tex);
@@ -816,8 +821,11 @@ int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw
         /* widescreen: a copy of the whole top buffer takes all its physical rows (into all of the
          * destination's); a part (bottom screen) stays 1:1. In logical units times S below. */
         float sy0f = (float)sy0, sy1f = (float)sy1, dy0f = (float)dy0, dy1f = (float)dy1;
-        if (off_rows == 0 && bh == s->h && sph(s) != s->h) { sy0f = 0; sy1f = (float)sph(s); }
-        if (oh == dh && t->h == dh && sph(t) != t->h) { dy0f = 0; dy1f = (float)sph(t); }
+        /* wide buffers: rows from the start of the top buffer (the top screen's pass, drawn
+         * stretched) map in proportion; a part further in (the bottom screen's 240x320 at +80
+         * rows of the shared buffer, drawn 1:1) does not */
+        if (off_rows == 0 && sph(s) != s->h) { float k = (float)sph(s) / s->h; sy0f *= k; sy1f *= k; }
+        if (sph(t) != t->h) { float k = (float)sph(t) / t->h; dy0f *= k; dy1f *= k; }
         if (flip) { float tmp = dy0f; dy0f = dy1f; dy1f = tmp; }
         glDisable(GL_SCISSOR_TEST);
         rglColorMask(1, 1, 1, 1);
@@ -1275,13 +1283,12 @@ static void apply_frag(void) {
     /* widescreen: a viewport over all 400 rows of a top buffer covers its physical rows; the
      * scissor follows the same stretch */
     const Surface *vs = R.cur_c ? R.cur_c : R.cur_d;
+    /* every pass over the whole buffer is stretched; the 3D projections are widened to match
+     * (0057F6C0), and the layout shader (font.c, u_ws) draws HUD panes and text 1:1 and centred
+     * inside the stretch, while panes that cover the whole width (fades, backgrounds) fill it */
     float fy = 1.0f, oy = 0.0f;
-    if (vs && sph(vs) != vs->h && R.vp[1] == 0 && R.vp[3] == vs->h) {
-        if (R.prog_id == RPROG_FONT_RECT)
-            oy = (float)(sph(vs) - vs->h) * 0.5f;   /* HUD / layouts: 1:1, centred (not stretched) */
-        else
-            fy = (float)sph(vs) / (float)vs->h;     /* 3D (projection widened to match), fills */
-    }
+    if (vs && sph(vs) != vs->h && R.vp[1] == 0 && R.vp[3] == vs->h) fy = (float)sph(vs) / (float)vs->h;
+    g_cur_fy = fy;
     if (R.scissor) {
         glEnable(GL_SCISSOR_TEST);
         glScissor(R.sc[0] * R.scale, (int)((R.sc[1] * fy + oy) * R.scale), R.sc[2] * R.scale, (int)(R.sc[3] * R.scale * fy + 0.5f));
@@ -1425,8 +1432,6 @@ void render_set_program(int prog) { render_set_program_variant(prog, 0); }
 void render_set_program_variant(int prog, int variant) {
     if (prog < 0 || prog >= RPROG_COUNT) prog = RPROG_CLIP;
     if (prog != R.prog_id || variant != R.prog_variant) {
-        /* widescreen: layout / font draws get their own viewport (apply_frag) */
-        if (g_ws_rows != 400 && (prog == RPROG_FONT_RECT) != (R.prog_id == RPROG_FONT_RECT)) R.frag_dirty = true;
         R.prog_id = prog;
         R.prog_variant = variant;
         R.tev_dirty = R.vsf_dirty = true;
@@ -1584,6 +1589,7 @@ static int fog_bind(void) {
 }
 
 static void upload_uniforms(Program *p) {
+    if (p->ws >= 0) glUniform1f(p->ws, g_cur_fy);
     if (R.vsf_dirty || R.tev_dirty) {
         glUniform4fv(p->c, RENDER_VS_FLOATS, R.vsf);
         glUniform1i(p->b, R.vsb);
@@ -1999,7 +2005,13 @@ uint32_t *render_rec(uint32_t *p, const ROp *op) { return rec(p, op, 0); }
 uint32_t *render_rec_pinned(uint32_t *p, const ROp *op) { return rec(p, op, 1); }
 
 static void raw_flush(void);
+void albw_ws_refresh(void) __attribute__((weak));        /* compilefix 0057F6C0 */
+void plat_frame_end_hook(void) __attribute__((weak));    /* platform.c: deferred widescreen toggle */
 void render_frame_end(void) {
+    /* between frames (the frame was presented, the next one not begun): settings that change the
+     * top screen's shape, then projections built for the other shape are marked for a rebuild */
+    if (plat_frame_end_hook) plat_frame_end_hook();
+    if (albw_ws_refresh) albw_ws_refresh();
     lock();
     raw_flush();
     if (g_light_trace) {
