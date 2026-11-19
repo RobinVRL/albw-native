@@ -61,14 +61,14 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_RESET, MI_COUNT };
 
 typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
 #define MI_BIND_BASE 200   /* MI_BIND_BASE + InAction: one Controls row per action */
 static int menu_controls_items[2 + IN_ACTION_COUNT] = {MI_BIND_DEV, MI_BIND_RESET};   /* rest: menu_gl_init */
 static const char *const menu_controls_notes[] = {"Enter: press the new key / button   - or Delete: clear",
                                                   "Several keys: edit input.cfg (\"A, B\" or \"Ctrl&X\")", NULL};
-static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_QUIT};
+static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_RESET, MI_QUIT};
 static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_WIDE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
 static const int menu_debug_items[] = {MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
 static const char *const menu_debug_notes[] = {"Game debug menus: none in the retail code", "(dev courses E3Field / Test*: not on the ROM)",
@@ -184,6 +184,7 @@ static void menu_label(int i, char *buf, size_t n) {
     case MI_EDIT: snprintf(buf, n, "Edit layout with the mouse (F3)"); break;
     case MI_CONTROLS: snprintf(buf, n, "Reload controls (input.cfg)"); break;
     case MI_QUIT: snprintf(buf, n, "Quit game"); break;
+    case MI_RESET: snprintf(buf, n, "%s", plat_reset_armed() ? "Reset game: press again to confirm" : "Reset game (unsaved progress is lost)"); break;
     case MI_STYLE: snprintf(buf, n, "Menu style     < %s >", g_layout_cfg.menu_centered ? "Centered" : "Bar"); break;
     case MI_SS_SLOT: {
         char info[64] = "unavailable";
@@ -346,6 +347,7 @@ static void menu_activate(int i, int dir) {
                  input_config_path());
         break;
     case MI_QUIT: g_quit_req = 1; g_menu_open = 0; break;
+    case MI_RESET: plat_reset_press(); break;
     case MI_STYLE: g_layout_cfg.menu_centered ^= 1; plat_layout_changed(); break;
     case MI_SS_SLOT: g_ss_slot = (g_ss_slot + (dir < 0 ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI; break;
     case MI_SS_SAVE:

@@ -19,6 +19,7 @@ __attribute__((weak)) void prof_frame(void) {}
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 
 /* Screen layout engine (presets, custom layout, touch mapping), shared with the Qt frontend.
@@ -678,6 +679,22 @@ static void plat_widescreen_apply(int on) {
     plat_layout_changed();
     fprintf(stderr, "layout: widescreen %s (top screen %dx240)\n", on ? "on" : "off", w);
 }
+/* Esc > File > Reset game: like the console's reset, the game starts over from the boot (what was
+ * not saved in game is lost; save files and save states stay). Two presses within 3 s. The
+ * process restarts itself (same arguments, environment and working directory): a clean boot,
+ * nothing of the running game's memory or threads carried over. */
+extern char **albw_argv;
+static uint64_t g_reset_armed_ns;
+static int plat_reset_armed(void) { return g_reset_armed_ns && plat_ticks_ns() - g_reset_armed_ns < 3000000000ull; }
+static void plat_reset_press(void) {
+    if (!plat_reset_armed()) { g_reset_armed_ns = plat_ticks_ns(); return; }
+    fprintf(stderr, "menu: reset game (restarting)\n");
+    fflush(NULL);
+    plat_shutdown();
+    execv("/proc/self/exe", albw_argv);
+    fprintf(stderr, "menu: reset failed (%s)\n", strerror(errno));
+    _exit(1);
+}
 static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
     g_layout_cfg.show_bottom ^= 1;
@@ -1038,6 +1055,10 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         char nm[128] = "";
         sscanf(rest, " %127[^; ]", nm);
         albw_debug_event(nm);
+        done = 1;
+    } else if (!strcmp(op, "reset")) {   /* Esc > File > Reset game (both presses) */
+        plat_reset_press();
+        plat_reset_press();
         done = 1;
     } else if (!strcmp(op, "actors")) {
         albw_debug_list_actors();

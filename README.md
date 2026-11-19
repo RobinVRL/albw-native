@@ -69,7 +69,7 @@ format.
 
 | Key | Action |
 |---|---|
-| Esc | pause menu (window, layout, filtering, quit) |
+| Esc | pause menu (window, layout, filtering, reset game, quit) |
 | F1 | input menu |
 | F2 / F3 / F4 | screen layout preset / layout editor / swap screens |
 | F5 | one window or two windows |

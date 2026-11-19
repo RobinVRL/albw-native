@@ -27,7 +27,10 @@ void albw_sched_main_thread(void); /* native/sdk/os.c */
 struct MainArgs { int argc; char **argv; };
 static int game_main(void *p);
 
+char **albw_argv;   /* for Esc > File > Reset game (platform.c: re-exec) */
+
 int main(int argc, char **argv) {
+    albw_argv = argv;
     /* x86-64 low-4GB mode: the game runs on a low stack (game code keeps stack addresses in
      * 32-bit words), same thread; on i386 game_main is called directly (runtime/lowmem.c) */
     struct MainArgs a = {argc, argv};
