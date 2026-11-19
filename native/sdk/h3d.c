@@ -658,6 +658,7 @@ static void dec_finish(Dec *d) {
         f->stencil_test = (uint8_t)(v & 1);
         f->stencil_func = (uint8_t)((v >> 4) & 7);
         f->stencil_write = (uint8_t)(v >> 8);
+        if (d->written[0x115] && (d->reg[0x115] & 3) == 0) f->stencil_write = 0;   /* no depth/stencil write */
         f->stencil_ref = (uint8_t)(v >> 16);
         f->stencil_mask = (uint8_t)(v >> 24);
         f->stencil_fail = (uint8_t)(w & 7);
@@ -665,13 +666,21 @@ static void dec_finish(Dec *d) {
         f->stencil_zpass = (uint8_t)((w >> 8) & 7);
         ol_push(&d->ops, &op);
     }
+    /* framebuffer access (0x112 colour read, 0x113 colour write, 0x114 depth/stencil read, 0x115
+     * depth/stencil write): a pass can switch writes off as a whole. Applied to the depth /
+     * stencil / colour writes of the same block (materials write them together). Example: Link's
+     * occlusion silhouette in Hyrule Castle paints the flat colour with 0x115 = 0 (no depth
+     * write), so his normal draws after it still pass the depth test; with the depth written they
+     * failed and Link stayed teal (BOOT_LOG 160z). */
+    int fb_ds_write = !d->written[0x115] || (d->reg[0x115] & 3) != 0;
+    int fb_col_write = !d->written[0x113] || (d->reg[0x113] & 0xF) != 0;
     if (d->written[0x107]) {
         uint32_t v = d->reg[0x107];
         ROp op = op_new(ROP_DEPTH);
         op.u.frag.depth_test = (uint8_t)(v & 1);
         op.u.frag.depth_func = (uint8_t)((v >> 4) & 7);
-        op.u.frag.color_mask = (uint8_t)((v >> 8) & 0xF);
-        op.u.frag.depth_write = (uint8_t)((v >> 12) & 1);
+        op.u.frag.color_mask = (uint8_t)(fb_col_write ? ((v >> 8) & 0xF) : 0);
+        op.u.frag.depth_write = (uint8_t)(fb_ds_write ? ((v >> 12) & 1) : 0);
         ol_push(&d->ops, &op);
     }
     if (d->written[0x040]) {
@@ -1990,4 +1999,25 @@ float func_003FD364(uint32_t state, const float *rgba, uint32_t mask, uint16_t s
     memcpy((void *)GA(state + off), &w, 4);
     if (any) memcpy(&x, &last, 4);
     return x;
+}
+
+/* debug (gdb: call h3d_debug_decode(addr, words)): decode one command blob with the current
+ * decoder and print its depth / stencil / colour-mask ops (checks decoder changes against blobs in
+ * a loaded state, whose stored decodes come from the build that made it) */
+int h3d_debug_decode(uint32_t addr, uint32_t words) {
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) return -1;
+    int bad = dec_walk(d, addr, words);
+    if (!bad) dec_finish(d);
+    for (int i = 0; !bad && i < d->ops.n; i++) {
+        const ROp *o = &d->ops.v[i];
+        if (o->type == ROP_DEPTH)
+            fprintf(stderr, "h3d-debug: DEPTH test %d func %d write %d colour mask %#x\n", o->u.frag.depth_test, o->u.frag.depth_func,
+                    o->u.frag.depth_write, o->u.frag.color_mask);
+        if (o->type == ROP_STENCIL)
+            fprintf(stderr, "h3d-debug: STENCIL test %d write %#x\n", o->u.frag.stencil_test, o->u.frag.stencil_write);
+    }
+    free(d->ops.v);
+    free(d);
+    return bad;
 }
