@@ -58,7 +58,12 @@ install_deps() {
         # Ubuntu 24.04+ / Debian 13+ renamed libasound2 to libasound2t64 (64-bit time_t)
         local asound=libasound2:i386
         apt-cache show libasound2t64 >/dev/null 2>&1 && asound=libasound2t64:i386
-        $sudo apt-get install -y clang lld llvm python3 cmake ninja-build git pkg-config \
+        # the distribution's default clang can be too old (Ubuntu 24.04: 18, whose build crashed at
+        # the first frame): take the newest versioned clang (19+), found in /usr/lib/llvm-N/bin
+        local llvm_n
+        llvm_n=$(apt-cache search --names-only '^clang-[0-9]+$' | sed -E 's/^clang-([0-9]+).*/\1/' | sort -n | tail -1)
+        [[ -n $llvm_n ]] || { echo "no clang-N package found"; exit 1; }
+        $sudo apt-get install -y clang-$llvm_n lld-$llvm_n llvm-$llvm_n python3 cmake ninja-build git pkg-config \
             gcc-multilib lib32z1-dev libx11-dev libxext-dev libwayland-dev libxkbcommon-dev \
             libegl-dev libgl-dev libpulse-dev libasound2-dev \
             libgl1:i386 libegl1:i386 libx11-6:i386 libxext6:i386 libxcursor1:i386 libxi6:i386 \
@@ -77,7 +82,31 @@ install_deps() {
     fi
 }
 if [[ $DEPS == 1 ]]; then say "installing packages"; install_deps; fi
-for t in clang ld.lld llvm-nm llvm-objcopy llvm-objdump python3 pkg-config; do
+
+# ---------------------------------------------------------------- LLVM toolchain
+# clang 19 or newer: decompiled code is full of spots where compilers may differ, and the game built
+# with clang 18 (Ubuntu 24.04's default) crashed at the first frame. Debian/Ubuntu keep each version's
+# unversioned tools in /usr/lib/llvm-N/bin: the newest one goes first in PATH, and build/llvm_bin
+# remembers it for tools/link.sh run on its own.
+clang_major() { "$1" --version 2>/dev/null | sed -nE 's/.*clang version ([0-9]+).*/\1/p' | head -1; }
+best=$(command -v clang || true); best_v=$( [[ -n $best ]] && clang_major "$best" || echo 0)
+for d in $(ls -d /usr/lib/llvm-[0-9]*/bin 2>/dev/null); do
+    v=$(clang_major "$d/clang"); [[ -n $v && $v -gt ${best_v:-0} ]] && { best=$d/clang; best_v=$v; }
+done
+if [[ -z $best || ${best_v:-0} -lt 19 ]]; then
+    echo "clang ${best_v:-?} found; the game needs clang 19 or newer (with lld and llvm tools)."
+    echo "Debian/Ubuntu: sudo apt install clang-19 lld-19 llvm-19 (or newer), then rerun."
+    exit 1
+fi
+mkdir -p build
+if [[ $best == /usr/lib/llvm-* ]]; then
+    export PATH="$(dirname "$best"):$PATH"
+    dirname "$best" > build/llvm_bin
+else
+    rm -f build/llvm_bin
+fi
+say "using clang $best_v ($best)"
+for t in clang ld.lld llvm-nm llvm-objcopy llvm-objdump llvm-readelf python3 pkg-config; do
     command -v $t >/dev/null || { echo "missing tool: $t"; exit 1; }
 done
 

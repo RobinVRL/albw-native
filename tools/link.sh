@@ -22,6 +22,8 @@ if [[ "${ALBW_SANITIZE:-0}" == 1 ]]; then
     NOBJ=$B/nobj-san OUT=$B/albw-san
 fi
 # 32-bit SDL3: the distribution's (Arch lib32: /usr/lib32/pkgconfig) or build.sh's own (build/deps)
+# the clang build.sh chose (Debian/Ubuntu: /usr/lib/llvm-N/bin, newer than the default clang)
+[[ -f build/llvm_bin && -d $(cat build/llvm_bin) ]] && export PATH="$(cat build/llvm_bin):$PATH"
 PCP=${ALBW_PKG_CONFIG_PATH:-$PWD/build/deps/sdl3-i686/lib/pkgconfig:/usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig}
 SDL=$(PKG_CONFIG_LIBDIR=$PCP pkg-config --cflags --libs sdl3)
 # SDL3 built by build.sh: found at run time without installing it
