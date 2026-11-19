@@ -605,6 +605,27 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
             }
         }
     }
+    /* constant data without a symbol (anonymous tables of native code: their pointers sit in game
+     * objects): the same bytes around the target, found once in this build's .rodata. Without this
+     * a relink moved them and the user's Eastern Palace state crashed after loading (BOOT_LOG 160ac) */
+    if (c->old.ro && c->cur->ro && v >= c->old.ro_addr + 16 && v - c->old.ro_addr + 32 <= c->old.ro_size) {
+        const uint8_t *pat = c->old.ro + (v - c->old.ro_addr) - 16;
+        const uint8_t *hay = c->cur->ro;
+        size_t hn = c->cur->ro_size, pn = 48;
+        const uint8_t *hit = NULL;
+        int hits = 0;
+        for (const uint8_t *q = memmem(hay, hn, pat, pn); q && hits < 2;
+             q = memmem(q + 1, hn - (size_t)(q + 1 - hay), pat, pn)) {
+            hit = q;
+            hits++;
+        }
+        if (hits == 1 && !conv_off("rodata", pol)) {
+            uint32_t w = c->cur->ro_addr + (uint32_t)(hit - hay) + 16;
+            c->strings++;
+            logw(c, at, v, w, "rodata", os->name, v - os->addr);
+            return w;
+        }
+    }
     c->unmapped++;
     logw(c, at, v, v, "none", s ? s->name : os->name, s ? off : v - os->addr);
     return v;

@@ -1010,8 +1010,8 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         const char *ax = getenv("ALBW_ROUTE_AXES");
         if (ax && ax[0] && ax[1]) { sx = ax[0] == '-' ? -1 : 1; sz = ax[1] == '-' ? -1 : 1; }
     }
-    static long log_every = -1;
-    if (log_every < 0) { const char *l = getenv("ALBW_PLAYER_LOG"); log_every = l ? atol(l) : 0; }
+    const char *pl = getenv("ALBW_PLAYER_LOG");   /* each call: a cached static comes back from save states */
+    long log_every = pl ? atol(pl) : 0;
     const float *pp = route_player_pos();
     if (log_every > 0 && pp && g_plat_frames % log_every == 0)
         fprintf(stderr, "player f=%ld pos %.3f %.3f %.3f obj %p\n", g_plat_frames, pp[0], pp[1], pp[2], albw_dbg_player);
