@@ -1057,6 +1057,9 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         sscanf(rest, " %127[^; ]", nm);
         albw_debug_event(nm);
         done = 1;
+    } else if (!strcmp(op, "speed")) {   /* speed <percent>: like ALBW_SPEED, after a state load (0 = unlimited) */
+        g_dbg_speed = atoi(rest);
+        done = 1;
     } else if (!strcmp(op, "reset")) {   /* Esc > File > Reset game (both presses) */
         plat_reset_press();
         plat_reset_press();

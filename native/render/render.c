@@ -204,7 +204,18 @@ static int g_ws_rows = 400;
  * of that shape is drawn wide too */
 static int surf_wide_shape(const Surface *s) { return s->w >= 120 && s->w * 5 == s->h * 3; }
 static int sph(const Surface *s) { return s->ph > 0 ? s->ph : s->h; }
-static float g_cur_fy = 1.0f;   /* stretch of the viewport last applied (apply_frag) */
+/* what each program last received (upload_uniforms skips unchanged uniforms: every GL call costs
+ * a TLS lookup in the driver, which glibc makes expensive on i386 - BOOT_LOG 160ad). Not in
+ * Program: R is part of save states, its layout must stay. Index: progs, then variants. */
+typedef struct {
+    uint8_t sh_valid;
+    float sh_c[RENDER_VS_FLOATS * 4];
+    GLint sh_b, sh_src[24], sh_cmb[24], sh_buf[2], sh_at[4], sh_fog[2], sh_tc[4];
+    float sh_k[24], sh_bufcol[4], sh_fogc[3], sh_ws;
+} UniShadow;
+static UniShadow *g_ush;   /* RPROG_COUNT + RENDER_PROG_VARIANTS entries, allocated on first use */
+static float g_cur_fy = 1.0f;
+static GLuint g_glprog_bound;   /* the program bound by the renderer (0 = unknown; use_program) */   /* stretch of the viewport last applied (apply_frag) */
 float albw_ws_factor(void) { return (float)g_ws_rows / 400.0f; }
 
 typedef struct { GLuint fbo; Surface *c, *d; } FboEnt;
@@ -431,6 +442,16 @@ static char *fs_source(bool fl) {
 #define FL_LUT_UNIT 4   /* texture unit of the fragment-lighting LUT texture */
 #define FOG_LUT_UNIT 6  /* texture unit of the fog LUT (128 x 1 RG32F) */
 
+static UniShadow *ush_of(const Program *p) {
+    if (!g_ush) {
+        g_ush = calloc(RPROG_COUNT + RENDER_PROG_VARIANTS, sizeof *g_ush);
+        if (!g_ush) abort();
+    }
+    ptrdiff_t i = p - R.progs;
+    if (i < 0 || i >= RPROG_COUNT) i = RPROG_COUNT + (p - R.variants);
+    return &g_ush[i];
+}
+
 static void program_init(Program *p, const char *vs, bool fl) {
     /* gl_program aborts with the log on a compile error: these sources are fixed */
     char *fs = fs_source(fl);
@@ -439,6 +460,8 @@ static void program_init(Program *p, const char *vs, bool fl) {
     p->fl = fl;
     GLuint g = p->prog;
     glUseProgram(g);
+    g_glprog_bound = g;
+    ush_of(p)->sh_valid = 0;
     p->c = glGetUniformLocation(g, "c");
     p->b = glGetUniformLocation(g, "b");
     p->tev_src = glGetUniformLocation(g, "tev_src");
@@ -472,6 +495,10 @@ static void program_build(int id) { program_init(&R.progs[id], VS_SRC[id], false
 unsigned long render_variant_builds;   /* h3d program variants compiled so far (frame-time debug) */
 static Program *build_variant(int v);
 /* the program for the current prog id / variant (extension variants compiled on first use) */
+static void use_program(GLuint prog) {
+    if (prog != g_glprog_bound) { glUseProgram(prog); g_glprog_bound = prog; }
+}
+
 static Program *cur_program(void) {
     if (R.prog_id != RPROG_H3D_DEFAULT || !R.ext.h3d_vs_body || !R.ext.h3d_defines) return &R.progs[R.prog_id];
     int v = R.prog_variant >= 0 && R.prog_variant < RENDER_PROG_VARIANTS ? R.prog_variant : 0;
@@ -1504,8 +1531,7 @@ int render_draw_bind(void) {
         }
     }
     Program *p = cur_program();
-    glUseProgram(p->prog);
-    R.tev_dirty = R.vsf_dirty = true;
+    use_program(p->prog);
     upload_uniforms(p);
     for (int i = 0; i < 3; i++) bind_unit(i);
     if (dumping()) { g_ext_before = NULL; dump_read(&g_ext_before); }
@@ -1597,13 +1623,13 @@ static int fog_bind(void) {
     return 1;
 }
 
+#define SH_CHANGED(field, src) (!S->sh_valid || memcmp(S->field, (src), sizeof S->field))
 static void upload_uniforms(Program *p) {
-    if (p->ws >= 0) glUniform1f(p->ws, g_cur_fy);
-    if (R.vsf_dirty || R.tev_dirty) {
-        glUniform4fv(p->c, RENDER_VS_FLOATS, R.vsf);
-        glUniform1i(p->b, R.vsb);
-    }
-    if (R.tev_dirty) {
+    UniShadow *S = ush_of(p);
+    if (p->ws >= 0 && (!S->sh_valid || S->sh_ws != g_cur_fy)) { glUniform1f(p->ws, g_cur_fy); S->sh_ws = g_cur_fy; }
+    if (SH_CHANGED(sh_c, R.vsf)) { glUniform4fv(p->c, RENDER_VS_FLOATS, R.vsf); memcpy(S->sh_c, R.vsf, sizeof S->sh_c); }
+    if (!S->sh_valid || S->sh_b != (GLint)R.vsb) { glUniform1i(p->b, R.vsb); S->sh_b = R.vsb; }
+    {
         GLint src[24], cmb[24];
         float k[24];
         for (int i = 0; i < 6; i++) {
@@ -1618,12 +1644,13 @@ static void upload_uniforms(Program *p) {
             cmb[i * 4 + 3] = s->scale_a;
             for (int c = 0; c < 4; c++) k[i * 4 + c] = s->konst[c] / 255.f;
         }
-        rglUniform4iv(p->tev_src, 6, src);
-        rglUniform4iv(p->tev_cmb, 6, cmb);
-        glUniform4fv(p->tev_const, 6, k);
-        rglUniform2i(p->tev_buf, R.tev.buf_update_rgb, R.tev.buf_update_a);
-        rglUniform4f(p->tev_bufcol, R.tev.buf_color[0] / 255.f, R.tev.buf_color[1] / 255.f,
-                     R.tev.buf_color[2] / 255.f, R.tev.buf_color[3] / 255.f);
+        if (SH_CHANGED(sh_src, src)) { rglUniform4iv(p->tev_src, 6, src); memcpy(S->sh_src, src, sizeof src); }
+        if (SH_CHANGED(sh_cmb, cmb)) { rglUniform4iv(p->tev_cmb, 6, cmb); memcpy(S->sh_cmb, cmb, sizeof cmb); }
+        if (SH_CHANGED(sh_k, k)) { glUniform4fv(p->tev_const, 6, k); memcpy(S->sh_k, k, sizeof k); }
+        GLint bu[2] = {R.tev.buf_update_rgb, R.tev.buf_update_a};
+        if (SH_CHANGED(sh_buf, bu)) { rglUniform2i(p->tev_buf, bu[0], bu[1]); memcpy(S->sh_buf, bu, sizeof bu); }
+        float bc[4] = {R.tev.buf_color[0] / 255.f, R.tev.buf_color[1] / 255.f, R.tev.buf_color[2] / 255.f, R.tev.buf_color[3] / 255.f};
+        if (SH_CHANGED(sh_bufcol, bc)) { rglUniform4f(p->tev_bufcol, bc[0], bc[1], bc[2], bc[3]); memcpy(S->sh_bufcol, bc, sizeof bc); }
     }
     GLint at[4] = {R.frag.alpha_test, R.frag.alpha_func, R.frag.alpha_ref, 0};
     {   static const char *ef = (const char *)1;   /* ALBW_EFT_FRAG 'a' (see render_draw_bind) */
@@ -1639,14 +1666,15 @@ static void upload_uniforms(Program *p) {
             if (fe) at[1] = atoi(fe);
         }
     }
-    rglUniform4iv(p->alpha, 1, at);
+    if (SH_CHANGED(sh_at, at)) { rglUniform4iv(p->alpha, 1, at); memcpy(S->sh_at, at, sizeof at); }
     if (p->fog >= 0) {
         int on = R.fog.mode == 5 && !(&g_dbg_fog_off && g_dbg_fog_off) && fog_bind();   /* Esc menu Debug > Fog */
-        rglUniform2i(p->fog, on ? 5 : 0, R.fog.flip);
-        if (on) rglUniform3f(p->fog_color, R.fog.rgb[0], R.fog.rgb[1], R.fog.rgb[2]);
+        GLint fg[2] = {on ? 5 : 0, R.fog.flip};
+        if (SH_CHANGED(sh_fog, fg)) { rglUniform2i(p->fog, fg[0], fg[1]); memcpy(S->sh_fog, fg, sizeof fg); }
+        if (on && SH_CHANGED(sh_fogc, R.fog.rgb)) { rglUniform3f(p->fog_color, R.fog.rgb[0], R.fog.rgb[1], R.fog.rgb[2]); memcpy(S->sh_fogc, R.fog.rgb, sizeof S->sh_fogc); }
     }
     GLint tc[4] = {R.tex_enable, R.tex2_tc1, (R.unit[0].type == 1 || R.unit[0].type == 4) ? 1 : R.unit[0].type == 3 ? 2 : 0, 0};
-    rglUniform4iv(p->texcfg, 1, tc);
+    if (SH_CHANGED(sh_tc, tc)) { rglUniform4iv(p->texcfg, 1, tc); memcpy(S->sh_tc, tc, sizeof tc); }
     if (p->fl) fraglight_upload(&p->fll, FL_LUT_UNIT);
     if (g_light_trace) { /* debug: per-frame digest of the lighting / combiner constants all draws saw */
         uint64_t h = p->fl ? fraglight_state_hash() : 0;
@@ -1655,6 +1683,7 @@ static void upload_uniforms(Program *p) {
         g_light_digest = (g_light_digest ^ h) * 1099511628211ull;
         g_light_draws++;
     }
+    S->sh_valid = 1;
     R.vsf_dirty = R.tev_dirty = false;
 }
 
@@ -1681,10 +1710,8 @@ static bool draw_setup(uint32_t vmin, uint32_t vmax) {
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     if (R.frag_dirty) apply_frag();
     Program *p = cur_program();
-    glUseProgram(p->prog);
-    R.tev_dirty = R.tev_dirty || true; /* uniforms are per program: always refresh (cheap) */
-    R.vsf_dirty = true;
-    upload_uniforms(p);
+    use_program(p->prog);
+    upload_uniforms(p);   /* per program: only what changed since its last draw */
     for (int i = 0; i < 3; i++) bind_unit(i);
     glBindVertexArray(R.vao);
     uint32_t nv = vmax - vmin + 1;
@@ -2017,6 +2044,7 @@ static void raw_flush(void);
 void albw_ws_refresh(void) __attribute__((weak));        /* compilefix 0057F6C0 */
 void plat_frame_end_hook(void) __attribute__((weak));    /* platform.c: deferred widescreen toggle */
 void render_frame_end(void) {
+    g_glprog_bound = 0;   /* scan-out and the platform's composite bound their own programs */
     /* between frames (the frame was presented, the next one not begun): settings that change the
      * top screen's shape, then projections built for the other shape are marked for a rebuild */
     if (plat_frame_end_hook) plat_frame_end_hook();
