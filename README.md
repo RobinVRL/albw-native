@@ -1,7 +1,8 @@
 # A Link Between Worlds – native Linux port
 
 A native Linux build of *The Legend of Zelda: A Link Between Worlds* (Nintendo 3DS), made from
-decompiled game code. The game logic runs as real C on your PC. Graphics, sound, input and file
+decompiled game code (based on [albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai): see
+[Credits](#credits)). The game logic runs as real C on your PC. Graphics, sound, input and file
 access are rewritten for Linux (SDL3 + OpenGL). There is no emulator.
 
 <p align="center"><img src="docs/screenshots/title.png" alt="Title screen running in the port (top and bottom screen)" width="400"></p>
@@ -122,10 +123,25 @@ fixed), [native/DIDNT_WORK.md](native/DIDNT_WORK.md) (what was tried and failed)
 - Shaders are hand-written GLSL; GPU command lists are never interpreted at run time.
 - No game data in the repository.
 
+## Credits
+
+This port is built on **[albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai)** by
+**[7akeem0](https://github.com/7akeem0)** and contributors, the matching decompilation of
+*A Link Between Worlds*. Its matched C/C++ sources (about 16,000 functions), its function address
+map and its shared headers are the base of the game code compiled here; the `decomp/` folder is a
+snapshot of those sources as this port converts and compiles them. Thanks also to
+**[matthis](https://github.com/mmaupas/albw-decomp-ai)** for the decomp's automation tools,
+shared headers and many matches.
+
+Functions the decomp has not matched yet come from [Ghidra](https://github.com/NationalSecurityAgency/ghidra)
+(NSA) decompiler output. Windowing, input and audio use [SDL3](https://www.libsdl.org/).
+
 ## License
 
 The port's own code (`native/`, `tools/`, scripts) is under the MIT license: see
-[LICENSE](LICENSE). It does not cover the game itself or its data.
+[LICENSE](LICENSE). It does not cover the game itself or its data. The decompiled sources in `decomp/`
+come from [albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai) (and Ghidra output); that
+project has no license file yet, so the MIT license here does not cover them.
 
 ## Legal
 
