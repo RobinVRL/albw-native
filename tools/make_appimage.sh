@@ -12,7 +12,8 @@
 #     install when they are missing).
 # The AppImage holds compiled game code: share it only as far as you would share the build.
 #
-# appimagetool is downloaded once into build/appimage-tools/ (from github.com/AppImage/appimagetool).
+# appimagetool is downloaded once into build/appimage-tools/ (from github.com/AppImage/appimagetool);
+# it needs the `file` command.
 # Running the AppImage needs FUSE (libfuse2 or fuse3); without it:
 #   ./ALBW-native-x86_64.AppImage --appimage-extract-and-run [--rom ...]
 set -euo pipefail

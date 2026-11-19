@@ -55,9 +55,20 @@ remembered in `~/.config/albw-port/rom_path`). Already have the packages? Use `-
 The game is a 32-bit program for now, so the build uses 32-bit libraries. A 64-bit build is
 planned.
 
+### Download (AppImage)
+
+Each release on GitHub has `ALBW-native-x86_64.AppImage` when one is published: no build needed.
+It runs on Ubuntu 22.04 / 24.04, Debian 12+, Fedora, Arch, SteamOS and similar (x86-64), with the
+system's 32-bit C library and OpenGL driver (the launcher lists the packages if they are missing).
+Start it with `--rom /path/to/your/game.3ds`.
+
+Known issue: building *from source* on Ubuntu currently crashes at the first frame (a heap race the
+build here does not hit); the AppImage is not affected.
+
 ### AppImage
 
-After a build, `tools/make_appimage.sh` packs it into `build/ALBW-native-x86_64.AppImage` (about
+After a build, `tools/make_release_appimage.sh` packs a portable AppImage inside an Ubuntu 22.04
+container (podman or docker); `tools/make_appimage.sh` packs it with this machine's libraries into `build/ALBW-native-x86_64.AppImage` (about
 12 MB: the game, its 32-bit SDL3 and zlib, a launcher). Start it with
 `./ALBW-native-x86_64.AppImage --rom /path/to/your/game.3ds`. The path is remembered; started
 from a file manager without one, it asks with a file dialog. The game itself is not inside.
