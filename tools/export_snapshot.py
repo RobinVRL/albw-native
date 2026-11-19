@@ -11,6 +11,7 @@ Writes, from the last tools/build_decomp*.sh run (build/decomp/report.json):
   decomp/eu_usa_map.json       the EU <-> USA function address map
   decomp/returns_this.json     matched functions exported as func_X__impl (returns-this thunks)
   decomp/addr_taken.txt        address-taken game data of the last link (tools/link.sh)
+  decomp/boolret.txt           bool / small-integer return adapters of the last link (tools/boolret.py)
 No ROM data: the game's data is generated at build time from your ROM (tools/extract_code.py).
 """
 import argparse
@@ -98,6 +99,18 @@ def main():
     json.dump(sorted(impl), open(os.path.join(out, "returns_this.json"), "w"), indent=0)
     # address-taken game data of the last link (tools/link.sh): it also scans the full Ghidra dump,
     # which a snapshot build does not have
+    # bool / small-integer adapters of the last link (tools/boolret.py): found from the compiled
+    # code, which differs between compilers; a snapshot build applies at least these
+    if os.path.exists("build/boolret.s"):
+        rec, cur = [], None
+        for line in open("build/boolret.s"):
+            m = re.match(r"^(func_[0-9A-F]{8}):$", line.strip())
+            if m:
+                cur = m.group(1)
+            elif cur and line.strip().startswith("mov") and "%eax" in line:
+                rec.append("%s %s" % (cur, line.strip()))
+                cur = None
+        open(os.path.join(out, "boolret.txt"), "w").write("\n".join(sorted(rec)) + "\n")
     if os.path.exists("build/addr_taken_pool.txt"):
         shutil.copy2("build/addr_taken_pool.txt", os.path.join(out, "addr_taken.txt"))
     print("snapshot: %d sources, %d headers, %d without addresses -> %s"

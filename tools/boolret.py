@@ -137,6 +137,16 @@ def func_name(label):
 
 cands = {func_name(f) for f, ins in funcs.items() if func_name(f) and byte_return(ins)}
 EXT = {f: 'movzbl %al, %eax' for f in cands}
+# + the adapters of the tested build (decomp/boolret.txt, tools/export_snapshot.py): the machine-code
+# check above depends on the compiler's code (clang 20 on Ubuntu found 9 others and missed 10 of
+# clang 23's: the game crashed at the first frame). Recorded ones are always kept.
+_rec = os.environ.get('ALBW_BOOLRET_LIST') or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'decomp', 'boolret.txt')
+if os.path.exists(_rec) and not X64:
+    for _l in open(_rec):
+        _f, _, _ins = _l.strip().partition(' ')
+        if _f:
+            cands.add(_f)
+            EXT.setdefault(_f, _ins or 'movzbl %al, %eax')
 # Small integer returns declared in the linked source (BOOT_LOG 128): u8 / s8 / u16 / s16 results
 # come back in %al / %ax with the upper bits of %eax undefined (0054B260 `u8` = word >> 16 left in
 # %eax: the flow's rail-move test read 0x164 for 100 and Link never dashed). The ARM returns the
