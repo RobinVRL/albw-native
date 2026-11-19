@@ -35,10 +35,14 @@ and the Japanese release. Their code sits at different addresses.
 
 ## Build
 
-Supported: Fedora, Ubuntu, Linux Mint, Debian, Arch, openSUSE (x86-64).
+Supported: Fedora, Ubuntu, Linux Mint, Debian, Arch, openSUSE (x86-64). The build needs
+**clang 19 or newer**; `build.sh` installs and picks it (Ubuntu 24.04 / Mint 22: clang 20, Debian
+12 / 13: clang 22). Ubuntu 22.04 / Mint 21 only offer clang 15: install a newer one from
+[apt.llvm.org](https://apt.llvm.org) first. On Arch, enable the `[multilib]` repository in
+`/etc/pacman.conf` (32-bit libraries).
 
 ```
-git clone <this repository> albw-native
+git clone https://github.com/spacestate1/albw-native.git albw-native
 cd albw-native
 ./build.sh /path/to/your/game.3ds
 ```
