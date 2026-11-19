@@ -20,6 +20,10 @@ static float floorf_(float v) {
 }
 static float roundf_(float v) { return floorf_(v + 0.5f); }
 
+static int g_top_w = 400;
+int layout_top_w(void) { return g_top_w; }
+void layout_set_top_w(int w) { g_top_w = w < 400 ? 400 : w; }
+
 void layout_native_size(int screen, int *w, int *h) {
     *w = screen == LAYOUT_SCREEN_TOP ? LAYOUT_TOP_W : LAYOUT_BOTTOM_W;
     *h = LAYOUT_SCREEN_H;
@@ -513,6 +517,7 @@ int layout_load(LayoutConfig *c, const char *path) {
         else if (!strcmp(key, "menu_style")) c->menu_centered = !strcmp(arg, "centered");
         else if (!strcmp(key, "custom_front")) c->custom_front = !strcmp(arg, "top") ? 0 : 1;
         else if (!strcmp(key, "single_screen")) c->single_screen = iv != 0;
+        else if (!strcmp(key, "widescreen")) c->widescreen = iv != 0;
         else if (!strcmp(key, "custom")) {
             int s = !strcmp(arg, "top") ? 0 : !strcmp(arg, "bottom") ? 1 : -1;
             if (s < 0) continue;
@@ -538,9 +543,9 @@ int layout_save(const LayoutConfig *c, const char *path) {
     layout_fmt_float(r, sizeof r, clamp_ratio(c->large_ratio));
     fprintf(f, "# ALBW native port: screen layout (shared by the SDL and Qt frontends; see native/platform/layout.h)\n"
                "windows %s\npreset %s\nswap %d\ninteger_scale %d\nlinear_filter %d\nlarge_ratio %s\nkeep_aspect %d\nsnap %d\n"
-               "render_scale %d\nmenu_style %s\ncustom_front %s\nsingle_screen %d\n",
+               "render_scale %d\nmenu_style %s\ncustom_front %s\nsingle_screen %d\nwidescreen %d\n",
             c->separate ? "separate" : "joined", layout_preset_key(c->preset), c->swap, c->integer_scale, c->linear_filter, r, c->keep_aspect, c->snap,
-            c->render_scale < 1 ? 1 : c->render_scale, c->menu_centered ? "centered" : "bar", c->custom_front ? "bottom" : "top", c->single_screen);
+            c->render_scale < 1 ? 1 : c->render_scale, c->menu_centered ? "centered" : "bar", c->custom_front ? "bottom" : "top", c->single_screen, c->widescreen);
     for (int s = 0; s < 2; s++) {
         char v[4][32];
         layout_fmt_float(v[0], 32, c->custom[s].x);

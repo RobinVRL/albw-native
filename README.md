@@ -75,6 +75,7 @@ format.
 | F5 | one window or two windows |
 | F6 / F7 | save state / load state |
 | F9 | single-screen mode on / off |
+| F10 | widescreen (16:9 top screen: a wider view, not stretched) on / off |
 | F12 | screenshot of both screens (`~/.local/share/albw-port/screenshots/`) |
 | Tab (controller: right-stick click) | single-screen mode: show the other screen (items, map) and back |
 

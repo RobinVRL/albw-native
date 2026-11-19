@@ -61,7 +61,7 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_COUNT };
 
 typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
 #define MI_BIND_BASE 200   /* MI_BIND_BASE + InAction: one Controls row per action */
@@ -69,7 +69,7 @@ static int menu_controls_items[2 + IN_ACTION_COUNT] = {MI_BIND_DEV, MI_BIND_RESE
 static const char *const menu_controls_notes[] = {"Enter: press the new key / button   - or Delete: clear",
                                                   "Several keys: edit input.cfg (\"A, B\" or \"Ctrl&X\")", NULL};
 static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_QUIT};
-static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
+static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_WIDE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
 static const int menu_debug_items[] = {MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
 static const char *const menu_debug_notes[] = {"Game debug menus: none in the retail code", "(dev courses E3Field / Test*: not on the ROM)",
                                                NULL};
@@ -174,6 +174,7 @@ static void menu_label(int i, char *buf, size_t n) {
     case MI_BIND_RESET: snprintf(buf, n, "Reset %s controls to defaults", g_bind_pad ? "controller" : "keyboard"); break;
     case MI_WINDOWS: snprintf(buf, n, "Windows        < %s >", g_separate ? "Separate" : "Joined"); break;
     case MI_SINGLE: snprintf(buf, n, "Single screen  < %s >", g_layout_cfg.single_screen ? "On (Tab: other screen)" : "Off"); break;
+    case MI_WIDE: snprintf(buf, n, "Widescreen (F10)  < %s >", g_layout_cfg.widescreen ? "16:9" : "Off (5:3)"); break;
     case MI_PRESET: snprintf(buf, n, "Layout         < %s >", layout_preset_name(g_layout_cfg.preset)); break;
     case MI_SWAP: snprintf(buf, n, "Swap screens   < %s >", g_layout_cfg.swap ? "On" : "Off"); break;
     case MI_FILTER: snprintf(buf, n, "Filter         < %s >", g_layout_cfg.linear_filter ? "Linear" : "Nearest"); break;
@@ -316,6 +317,7 @@ static void menu_activate(int i, int dir) {
         break;
     }
     case MI_SINGLE: plat_single_screen_set(!g_layout_cfg.single_screen); break;
+    case MI_WIDE: plat_widescreen_set(!g_layout_cfg.widescreen); break;
     case MI_SWAP: g_layout_cfg.swap ^= 1; plat_layout_changed(); break;
     case MI_FILTER: g_layout_cfg.linear_filter ^= 1; plat_layout_changed(); break;
     case MI_INTEGER: g_layout_cfg.integer_scale ^= 1; plat_layout_changed(); break;

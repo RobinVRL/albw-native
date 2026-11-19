@@ -28,6 +28,7 @@
  *   menu_style bar            Esc menu: bar (across the top) or centered (a panel in the middle)
  *   snap 1                    custom editor: snap to window edges/centre, the other screen, integer sizes
  *   custom_front bottom       screen drawn last (on top) where custom rectangles overlap
+ *   widescreen 0              1 = 16:9 top screen: the game draws a wider view (F10)
  *   single_screen 0           1 = show one screen: the top one, and the bottom one in its place while
  *                             the SCREEN binding (Tab / right-stick click) has it toggled up
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
@@ -38,7 +39,10 @@
 extern "C" {
 #endif
 
-#define LAYOUT_TOP_W 400
+#define LAYOUT_TOP_W (layout_top_w())   /* 400, or wider in widescreen */
+int layout_top_w(void);
+void layout_set_top_w(int w);
+#define LAYOUT_WIDE_TOP_W 427   /* 16:9 at 240 rows */
 #define LAYOUT_BOTTOM_W 320
 #define LAYOUT_SCREEN_H 240
 #define LAYOUT_SCREEN_TOP 0
@@ -76,6 +80,7 @@ typedef struct {
     int custom_visible[2];
     LayoutWindowGeom window[2];  /* separate windows, per screen */
     int single_screen;       /* 1 = one screen at a time (overrides preset / swap / custom) */
+    int widescreen;          /* 1 = 16:9 top screen (wider view, not stretched) */
     int show_bottom;         /* single_screen: the bottom screen is up (runtime only, not saved) */
 } LayoutConfig;
 

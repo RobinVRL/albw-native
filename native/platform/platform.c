@@ -10,6 +10,7 @@ __attribute__((weak)) void albw_sched_block_end(void) {}
 __attribute__((weak)) int render_ready(void) { return 0; }
 __attribute__((weak)) int render_get_scale(void) { return 1; }
 __attribute__((weak)) void render_set_scale(int scale) { (void)scale; }
+__attribute__((weak)) void render_set_widescreen(int rows) { (void)rows; }
 __attribute__((weak)) void prof_frame(void) {}
 #include <SDL3/SDL.h>
 #include <stdio.h>
@@ -256,6 +257,7 @@ int plat_init(const char *title, const PlatConfig *c) {
         else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
     }
     if (g_layout_cfg.single_screen) g_separate = 0;   /* single-screen mode: one window (saved choice kept) */
+    if (g_layout_cfg.widescreen) { layout_set_top_w(LAYOUT_WIDE_TOP_W); render_set_widescreen(LAYOUT_WIDE_TOP_W); }
     if (g_layout_cfg.preset != LAYOUT_TOP_ONLY && g_layout_cfg.preset != LAYOUT_BOTTOM_ONLY)
         g_last_two_preset = g_layout_cfg.preset;
     g_joined_w = TOP_W * cfg.scale;
@@ -629,6 +631,35 @@ static void plat_single_screen_set(int on) {
     plat_layout_changed();
     fprintf(stderr, "layout: single-screen mode %s\n", on ? "on (Tab / right-stick click: other screen)" : "off");
 }
+/* widescreen (layout.cfg widescreen, F10, Esc menu > Video): a 16:9 top screen. The renderer
+ * draws the top screen LAYOUT_WIDE_TOP_W wide and the game widens its projections to match
+ * (render.c albw_ws_factor): more of the world at the sides, nothing stretched. */
+static void plat_widescreen_set(int on) {
+    g_layout_cfg.widescreen = on != 0;
+    int w = on ? LAYOUT_WIDE_TOP_W : 400;
+    layout_set_top_w(w);
+    render_set_widescreen(w);
+    Target *t = &screens[SCREEN_TOP];
+    glDeleteFramebuffers(1, &t->fbo);
+    glDeleteRenderbuffers(1, &t->depth);
+    glDeleteTextures(1, &t->color);
+    target_init(t, TOP_W * cfg.render_scale, SCREEN_H * cfg.render_scale);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    g_joined_w = TOP_W * cfg.scale;
+    SDL_Window *tw = win;   /* the top screen's window in both modes */
+    if (!(SDL_GetWindowFlags(tw) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN))) {
+        int ww, wh;
+        if (g_separate || g_layout_cfg.single_screen) {
+            g_layout_cfg.window[SCREEN_TOP].has_size = 0;
+            plat_separate_size(SCREEN_TOP, &ww, &wh);
+            plat_set_size_restored(tw, ww, wh);
+        } else {
+            plat_set_size_restored(tw, g_joined_w, g_joined_h);
+        }
+    }
+    plat_layout_changed();
+    fprintf(stderr, "layout: widescreen %s (top screen %dx240)\n", on ? "on" : "off", w);
+}
 static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
     g_layout_cfg.show_bottom ^= 1;
@@ -705,6 +736,10 @@ static int plat_layout_event(const SDL_Event *e) {
         }
         if (e->key.key == SDLK_F12) {   /* screenshot of both screens */
             if (!e->key.repeat) plat_screenshot_now();
+            return 1;
+        }
+        if (e->key.key == SDLK_F10) {   /* widescreen on / off */
+            if (!e->key.repeat) plat_widescreen_set(!g_layout_cfg.widescreen);
             return 1;
         }
         if (e->key.key == SDLK_F9) {   /* single-screen mode on / off */

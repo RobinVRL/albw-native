@@ -187,7 +187,22 @@ typedef struct {
     bool depth;
     GLuint tex;          /* GL_RGBA8 or GL_DEPTH24_STENCIL8 texture, (w*scale) x (h*scale) */
     GLuint fbo;          /* single-attachment FBO (clears, blits) */
+    int ph;              /* physical rows (logical units): h, or wider for top-screen buffers in widescreen */
 } Surface;
+
+/* ================================================================== widescreen
+ * The top screen is a 240x400 buffer stored rotated (GL rows = the 400-pixel long side). In
+ * widescreen every surface of that shape (colour, depth, display image) gets g_ws_rows physical
+ * rows instead of 400; viewports and copies that cover the whole 400 rows are stretched onto them,
+ * and the game's projections are widened by the same factor (albw_ws_factor, compilefix
+ * 0057F6C0 / 001312BC): more of the scene to the sides, nothing stretched. Passes that use a part
+ * of such a buffer (the bottom screen draws 240x320 into the shared 0x1F000080 buffer) stay 1:1.
+ * A separate static (not a field of R): save states restore static data by symbol. */
+static int g_ws_rows = 400;
+static int surf_wide_shape(const Surface *s) { return s->w == 240 && s->h == 400; }
+static int sph(const Surface *s) { return s->ph > 0 ? s->ph : s->h; }
+float albw_ws_factor(void) { return (float)g_ws_rows / 400.0f; }
+int render_widescreen_rows(void) { return g_ws_rows; }
 
 typedef struct { GLuint fbo; Surface *c, *d; } FboEnt;
 
@@ -540,7 +555,8 @@ int render_ready(void) {
 /* ================================================================== surfaces */
 
 static void surface_alloc(Surface *s) {
-    int W = s->w * R.scale, H = s->h * R.scale;
+    s->ph = surf_wide_shape(s) ? g_ws_rows : s->h;
+    int W = s->w * R.scale, H = s->ph * R.scale;
     glGenTextures(1, &s->tex);
     glBindTexture(GL_TEXTURE_2D, s->tex);
     if (s->depth) {
@@ -797,12 +813,17 @@ int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw
          * destination keeps memory row order: source memory row off_rows -> destination row 0 */
         int sy1 = s->h - off_rows, sy0 = sy1 - bh;
         int dy1 = dh, dy0 = dh - oh;
-        if (flip) { int tmp = dy0; dy0 = dy1; dy1 = tmp; }
+        /* widescreen: a copy of the whole top buffer takes all its physical rows (into all of the
+         * destination's); a part (bottom screen) stays 1:1. In logical units times S below. */
+        float sy0f = (float)sy0, sy1f = (float)sy1, dy0f = (float)dy0, dy1f = (float)dy1;
+        if (off_rows == 0 && bh == s->h && sph(s) != s->h) { sy0f = 0; sy1f = (float)sph(s); }
+        if (oh == dh && t->h == dh && sph(t) != t->h) { dy0f = 0; dy1f = (float)sph(t); }
+        if (flip) { float tmp = dy0f; dy0f = dy1f; dy1f = tmp; }
         glDisable(GL_SCISSOR_TEST);
         rglColorMask(1, 1, 1, 1);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, s->fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, t->fbo);
-        rglBlitFramebuffer(0, sy0 * S, bw * S, sy1 * S, 0, dy0 * S, ow * S, dy1 * S, GL_COLOR_BUFFER_BIT,
+        rglBlitFramebuffer(0, (int)(sy0f * S), bw * S, (int)(sy1f * S), 0, (int)(dy0f * S), ow * S, (int)(dy1f * S), GL_COLOR_BUFFER_BIT,
                            (ax > 1 || ay > 1) ? GL_LINEAR : GL_NEAREST);
         glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
         R.frag_dirty = true;
@@ -830,7 +851,7 @@ void render_block_copy(const void *src, void *dst, uint32_t size) {
             rglColorMask(1, 1, 1, 1);
             glBindFramebuffer(GL_READ_FRAMEBUFFER, s->fbo);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, t->fbo);
-            rglBlitFramebuffer(0, 0, s->w * R.scale, s->h * R.scale, 0, 0, t->w * R.scale, t->h * R.scale,
+            rglBlitFramebuffer(0, 0, s->w * R.scale, sph(s) * R.scale, 0, 0, t->w * R.scale, sph(t) * R.scale,
                                GL_COLOR_BUFFER_BIT, GL_NEAREST);
             glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
             R.frag_dirty = true;
@@ -884,7 +905,7 @@ int render_read_surface(uintptr_t color_addr, uint8_t *rgba, int *w, int *h) {
     int ok = 0;
     if (s) {
         *w = s->w * R.scale;
-        *h = s->h * R.scale;
+        *h = sph(s) * R.scale;
         if (rgba) {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, s->fbo);
             rglReadPixels(0, 0, *w, *h, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
@@ -1251,13 +1272,23 @@ static void apply_frag(void) {
     } else {
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
+    /* widescreen: a viewport over all 400 rows of a top buffer covers its physical rows; the
+     * scissor follows the same stretch */
+    const Surface *vs = R.cur_c ? R.cur_c : R.cur_d;
+    float fy = 1.0f, oy = 0.0f;
+    if (vs && sph(vs) != vs->h && R.vp[1] == 0 && R.vp[3] == vs->h) {
+        if (R.prog_id == RPROG_FONT_RECT)
+            oy = (float)(sph(vs) - vs->h) * 0.5f;   /* HUD / layouts: 1:1, centred (not stretched) */
+        else
+            fy = (float)sph(vs) / (float)vs->h;     /* 3D (projection widened to match), fills */
+    }
     if (R.scissor) {
         glEnable(GL_SCISSOR_TEST);
-        glScissor(R.sc[0] * R.scale, R.sc[1] * R.scale, R.sc[2] * R.scale, R.sc[3] * R.scale);
+        glScissor(R.sc[0] * R.scale, (int)((R.sc[1] * fy + oy) * R.scale), R.sc[2] * R.scale, (int)(R.sc[3] * R.scale * fy + 0.5f));
     } else {
         glDisable(GL_SCISSOR_TEST);
     }
-    glViewport(R.vp[0] * R.scale, R.vp[1] * R.scale, R.vp[2] * R.scale, R.vp[3] * R.scale);
+    glViewport(R.vp[0] * R.scale, (int)((R.vp[1] * fy + oy) * R.scale), R.vp[2] * R.scale, (int)(R.vp[3] * R.scale * fy + 0.5f));
     R.frag_dirty = false;
 }
 
@@ -1268,6 +1299,7 @@ static void apply_frag(void) {
  * menus, keep their picture). `old` = the scale the surface was made with. */
 static void surface_rescale(Surface *s, int old) {
     if (!s->tex) return;
+    int oph = sph(s);
     GLuint otex = s->tex, ofbo = s->fbo;
     s->tex = s->fbo = 0;
     surface_alloc(s);
@@ -1279,10 +1311,10 @@ static void surface_rescale(Surface *s, int old) {
     if (s->depth) {
         glDepthMask(GL_TRUE);
         rglStencilMask(0xFF);
-        rglBlitFramebuffer(0, 0, s->w * old, s->h * old, 0, 0, s->w * R.scale, s->h * R.scale,
+        rglBlitFramebuffer(0, 0, s->w * old, oph * old, 0, 0, s->w * R.scale, sph(s) * R.scale,
                            GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
     } else {
-        rglBlitFramebuffer(0, 0, s->w * old, s->h * old, 0, 0, s->w * R.scale, s->h * R.scale,
+        rglBlitFramebuffer(0, 0, s->w * old, oph * old, 0, 0, s->w * R.scale, sph(s) * R.scale,
                            GL_COLOR_BUFFER_BIT, GL_LINEAR);
     }
     rglDeleteFramebuffers(1, &ofbo);
@@ -1309,6 +1341,30 @@ void render_set_scale(int scale) {
         glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
         R.frag_dirty = R.tev_dirty = R.vsf_dirty = true;
         rlog("internal scale %d -> %d", old, scale);
+    }
+    unlock();
+}
+
+/* Widescreen: rows = the top screen's long side in 3DS pixels (400 = off; 427 = 16:9). The
+ * top-shaped surfaces and display images are re-created (contents stretched across). */
+void render_set_widescreen(int rows) {
+    if (rows < 400) rows = 400;
+    if (rows > 800) rows = 800;
+    if (!render_ready()) { g_ws_rows = rows; return; }
+    lock();
+    if (rows != g_ws_rows) {
+        g_ws_rows = rows;
+        for (size_t i = 0; i < R.nfbo; i++) rglDeleteFramebuffers(1, &R.fbos[i].fbo);
+        R.nfbo = 0;
+        R.cur_fbo = 0;
+        for (size_t i = 0; i < R.nsurf; i++)
+            if (surf_wide_shape(R.surf[i])) surface_rescale(R.surf[i], R.scale);
+        for (size_t i = 0; i < R.ndisp; i++)
+            if (R.disp[i].img && surf_wide_shape(R.disp[i].img)) surface_rescale(R.disp[i].img, R.scale);
+        R.cur_fbo = fbo_for(R.cur_c, R.cur_d);
+        glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
+        R.frag_dirty = R.tev_dirty = R.vsf_dirty = true;
+        rlog("widescreen: top screen %d x 240", rows);
     }
     unlock();
 }
@@ -1369,6 +1425,8 @@ void render_set_program(int prog) { render_set_program_variant(prog, 0); }
 void render_set_program_variant(int prog, int variant) {
     if (prog < 0 || prog >= RPROG_COUNT) prog = RPROG_CLIP;
     if (prog != R.prog_id || variant != R.prog_variant) {
+        /* widescreen: layout / font draws get their own viewport (apply_frag) */
+        if (g_ws_rows != 400 && (prog == RPROG_FONT_RECT) != (R.prog_id == RPROG_FONT_RECT)) R.frag_dirty = true;
         R.prog_id = prog;
         R.prog_variant = variant;
         R.tev_dirty = R.vsf_dirty = true;
@@ -1640,19 +1698,19 @@ static bool dumping(void) { return g_dump_frame >= 0 && (long)R.frame >= g_dump_
 static uint8_t *g_dump_px; static size_t g_dump_cap;
 static void dump_read(uint8_t **buf) {
     if (!R.cur_c) { *buf = NULL; return; }
-    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    size_t n = (size_t)R.cur_c->w * R.scale * sph(R.cur_c) * R.scale * 4;
     if (g_dump_cap < 2 * n) { g_dump_px = xrealloc(g_dump_px, 2 * n); g_dump_cap = 2 * n; }
     if (!*buf) *buf = g_dump_px; else *buf = g_dump_px + n;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
-    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, *buf);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, sph(R.cur_c) * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, *buf);
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
 }
 static void dump_probe(const uint8_t *before) {
     if (!before) return;
-    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    size_t n = (size_t)R.cur_c->w * R.scale * sph(R.cur_c) * R.scale * 4;
     uint8_t *after = g_dump_px + n;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
-    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, sph(R.cur_c) * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     size_t changed = 0, first = (size_t)-1;
     int minx = 1 << 30, miny = 1 << 30, maxx = -1, maxy = -1, W = R.cur_c->w * R.scale;
@@ -1690,10 +1748,10 @@ static void dump_probe(const uint8_t *before) {
 
 static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t count) {
     if (!before) { rlog("dump: %s %u: no colour target", kind, count); return; }
-    size_t n = (size_t)R.cur_c->w * R.scale * R.cur_c->h * R.scale * 4;
+    size_t n = (size_t)R.cur_c->w * R.scale * sph(R.cur_c) * R.scale * 4;
     uint8_t *after = g_dump_px + n;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, R.cur_c->fbo);
-    rglReadPixels(0, 0, R.cur_c->w * R.scale, R.cur_c->h * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
+    rglReadPixels(0, 0, R.cur_c->w * R.scale, sph(R.cur_c) * R.scale, GL_RGBA, GL_UNSIGNED_BYTE, after);
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     size_t changed = 0, lit = 0;
     int W = R.cur_c->w * R.scale, bx0 = 1 << 30, by0 = 1 << 30, bx1 = -1, by1 = -1;
@@ -1707,7 +1765,7 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
     }
     /* surface coordinates (GL rows of the 240-wide target) -> LCD pixels: lcd_x = H-1-y, lcd_y = W-1-x */
     if (changed)
-        rlog("dump:     lcd box x %d-%d y %d-%d", R.cur_c->h * R.scale - 1 - by1, R.cur_c->h * R.scale - 1 - by0,
+        rlog("dump:     lcd box x %d-%d y %d-%d", sph(R.cur_c) * R.scale - 1 - by1, sph(R.cur_c) * R.scale - 1 - by0,
              W - 1 - bx1, W - 1 - bx0);
     for (int u = 0; u < 3; u++)
         if (R.tex_enable >> u & 1)

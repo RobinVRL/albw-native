@@ -5,7 +5,8 @@
 #include "gl.h"
 
 enum { SCREEN_TOP = 0, SCREEN_BOTTOM = 1 };
-#define TOP_W 400
+int layout_top_w(void);
+#define TOP_W (layout_top_w())   /* 400, or 427 in widescreen (layout.c) */
 #define BOTTOM_W 320
 #define SCREEN_H 240
 

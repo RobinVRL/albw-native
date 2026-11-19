@@ -130,3 +130,8 @@ func_004CF600  model_InFrustum                     # bounding sphere vs frustum 
 # --- grass / bushes (BOOT_LOG 160t)
 func_00235ED4  grassMgr_Update                     # bushes / grass: cut, lift, burn (state 2 = burning: fade by curve)
 func_00691D68  curve_Evaluate                      # (curve, float t) -> float: data_00715240[kind] handlers
+
+# --- projection / culling (BOOT_LOG 160v)
+func_0057F6C0  perspProj_UpdateMatrix              # sead PerspectiveProjection vt+0x14: near +0x94, far +0x98, tan(fovy/2) +0xA8, aspect +0xAC
+func_003FB1D0  viewFrustum_Build                   # culling frustum corners / planes from two projection matrices
+func_001312BC  scene_SubmitAndCull                 # per frame: views, frustum, model submission, map culling projection

@@ -255,6 +255,9 @@ int render_pool_import(const void *in, size_t n);
 /* internal resolution: multiples of the 3DS screens (1..8, ALBW_RENDER_SCALE at start), changeable between frames */
 int render_get_scale(void);
 void render_set_scale(int scale);
+void render_set_widescreen(int rows);   /* top screen long side: 400 = off, 427 = 16:9 */
+int render_widescreen_rows(void);
+float albw_ws_factor(void);             /* rows / 400: the game widens its projections by it */
 
 /* ------------------------------------------------------------------ immediate API (GL thread)
  * What the ops do; also usable directly by native replacements that run on the GL thread at
