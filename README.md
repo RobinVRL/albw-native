@@ -99,7 +99,17 @@ In single-screen mode Start brings up the bottom screen (map, Gear, Items) and S
 game's Pause. There the D-pad moves a selector between the buttons and items and A taps the
 selected one (no mouse needed). Rebind any key or button in Esc > Controls (saved to `~/.config/albw-port/input.cfg`).
 
-A game controller works too.
+A game controller works too: the buttons sit where they are on a 3DS (the bottom face button is
+the 3DS B), and both sticks clicked together (L3+R3) or the Guide button open the Esc menu.
+
+### Steam Deck
+
+On the Deck (SteamOS, desktop mode): `./build.sh /path/to/game.3ds` builds inside a distrobox
+container (SteamOS itself is read-only; distrobox and podman come with SteamOS 3.5+) and produces
+`build/ALBW-native-x86_64.AppImage`. Add that file to Steam (Games > Add a Non-Steam Game) to play
+in Game Mode. There the game runs as one full-screen window: large top screen, bottom screen beside
+it (the touchscreen taps it), or switch to single-screen mode in the menu (L3+R3 > Video). Steam
+Input's default gamepad layout works as is. Already built elsewhere? Copy the AppImage over.
 
 ## Status
 
