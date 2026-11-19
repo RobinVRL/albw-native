@@ -1482,10 +1482,19 @@ int render_draw_bind(void) {
     if (!R.cur_fbo) { WARN_ONCE("draw without a render target (dropped)"); unlock(); return 0; }
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
     if (R.frag_dirty) apply_frag();
+    /* particle draws (nw::eft) run without the stencil test: the effect system's render state
+     * (recorded once by eft System setup 003F9B70: culling, blend, alpha, stencil off, depth) is
+     * applied on the 3DS from the PICA words of that block, which the game copies by fixed
+     * offsets; the port's markers have another layout, the stencil part is not among the copied
+     * words, and the particles inherited the shadow pass's test (stencil & 0x3F != 0): no leaves
+     * from cut bushes, no sword trails, no effect drawn outside shadows (BOOT_LOG 160y) */
+    if (R.prog_id == RPROG_EFT) {
+        glDisable(GL_STENCIL_TEST);
+        R.frag_dirty = true;   /* the next non-particle draw restores the recorded state */
+    }
     {   /* experiment: ALBW_EFT_FRAG=<letters> for particle draws (RPROG_EFT): d depth test off, a alpha
            test off, b blending off, c culling off, s stencil off (which test rejects a particle draw) */
-        static const char *ef = (const char *)1;
-        if (ef == (const char *)1) ef = getenv("ALBW_EFT_FRAG");
+        const char *ef = R.prog_id == RPROG_EFT ? getenv("ALBW_EFT_FRAG") : NULL;   /* not cached: states restore statics */
         if (ef && R.prog_id == RPROG_EFT) {
             if (strchr(ef, 'd')) glDisable(GL_DEPTH_TEST);
             if (strchr(ef, 'b')) glDisable(GL_BLEND);
@@ -2362,8 +2371,8 @@ int render_exec_cmds(const void *addr, uint32_t size) {
             }
             const ROp *op = pool_get(w[0]);
             if (!op) {
-                static int st = -1, told;
-                if (st < 0) st = getenv("ALBW_STALE_TRACE") != NULL;
+                static int told;
+                int st = getenv("ALBW_STALE_TRACE") != NULL;
                 if (st && told < 40) {
                     told++;
                     uint32_t slot = (w[0] & 0xFFFFF) - 1;

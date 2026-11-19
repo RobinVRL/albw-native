@@ -137,3 +137,6 @@ func_003FB1D0  viewFrustum_Build                   # culling frustum corners / p
 func_0057D258  proj_GetMatrix                      # rebuilds the matrix (vt+0x14) while dirty (+4), then the device matrix (+5)
 func_0057D5C4  proj_GetDeviceMatrix
 func_001312BC  scene_SubmitAndCull                 # per frame: views, frustum, model submission, map culling projection
+func_003F9B70  eft_System_SetupRenderState         # records the effect pass render state block once (stencil off)
+func_00237288  grassMgr_CutOne                     # bush / grass cut, burn or break: XLink effect + SE_Grass_* sound
+func_0010DBBC  xlink_EmitByName                    # name-keyed effect / sound event on a user object
