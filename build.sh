@@ -28,32 +28,47 @@ say() { printf '\n== %s\n' "$*"; }
 # ---------------------------------------------------------------- 1. packages
 install_deps() {
     . /etc/os-release
+    # root (containers, minimal installs without sudo) runs the package manager directly
+    local sudo=sudo
+    [[ $(id -u) == 0 ]] && sudo=""
     local id=" ${ID:-} ${ID_LIKE:-} "
     if [[ $id == *" arch "* ]]; then
-        sudo pacman -S --needed --noconfirm clang lld llvm python cmake ninja git pkgconf \
-            lib32-glibc lib32-gcc-libs lib32-zlib lib32-sdl3 lib32-mesa
+        if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+            echo "The 32-bit libraries come from Arch's [multilib] repository, which is not enabled."
+            echo "Uncomment the [multilib] section (both lines) in /etc/pacman.conf, run"
+            echo "'sudo pacman -Sy', then rerun this script."
+            exit 1
+        fi
+        $sudo pacman -Sy --needed --noconfirm clang lld llvm python cmake ninja git pkgconf \
+            lib32-glibc lib32-gcc-libs lib32-zlib lib32-sdl3 lib32-mesa lib32-libglvnd \
+            lib32-alsa-lib lib32-libpulse
     elif [[ $id == *" fedora "* || $id == *" rhel "* ]]; then
-        sudo dnf install -y clang lld llvm python3 cmake ninja-build git pkgconf-pkg-config \
-            glibc-devel.i686 libgcc.i686 zlib-devel.i686 mesa-libGL.i686 mesa-libEGL.i686 \
+        # Fedora 40+ ships zlib as zlib-ng-compat; older releases and RHEL as zlib
+        local zlib=zlib-ng-compat-devel.i686
+        dnf -q repoquery $zlib 2>/dev/null | grep -q . || zlib=zlib-devel.i686
+        $sudo dnf install -y clang lld llvm python3 cmake ninja-build git pkgconf-pkg-config \
+            glibc-devel.i686 libgcc.i686 $zlib mesa-libGL.i686 mesa-libEGL.i686 \
             libX11.i686 libXext.i686 libXcursor.i686 libXi.i686 libXrandr.i686 libxkbcommon.i686 \
             wayland-devel libX11-devel libXext-devel libxkbcommon-devel pipewire-libs.i686 \
             pulseaudio-libs.i686 alsa-lib.i686
-        sudo dnf install -y SDL3-devel.i686 || true     # else built from source below
+        $sudo dnf install -y SDL3-devel.i686 || true     # else built from source below
     elif [[ $id == *" debian "* || $id == *" ubuntu "* ]]; then
-        sudo dpkg --add-architecture i386
-        sudo apt-get update
-        sudo apt-get install -y clang lld llvm python3 cmake ninja-build git pkg-config \
+        $sudo dpkg --add-architecture i386
+        $sudo apt-get update
+        # Ubuntu 24.04+ / Debian 13+ renamed libasound2 to libasound2t64 (64-bit time_t)
+        local asound=libasound2:i386
+        apt-cache show libasound2t64 >/dev/null 2>&1 && asound=libasound2t64:i386
+        $sudo apt-get install -y clang lld llvm python3 cmake ninja-build git pkg-config \
             gcc-multilib lib32z1-dev libx11-dev libxext-dev libwayland-dev libxkbcommon-dev \
             libegl-dev libgl-dev libpulse-dev libasound2-dev \
             libgl1:i386 libegl1:i386 libx11-6:i386 libxext6:i386 libxcursor1:i386 libxi6:i386 \
             libxrandr2:i386 libxkbcommon0:i386 libwayland-client0:i386 libwayland-egl1:i386 \
-            libwayland-cursor0:i386 libpulse0:i386 libasound2:i386 || \
-        sudo apt-get install -y libasound2t64:i386     # newer Ubuntu renamed it
+            libwayland-cursor0:i386 libpulse0:i386 $asound
     elif [[ $id == *" suse "* || $id == *" opensuse "* ]]; then
-        sudo zypper install -y clang lld llvm python3 cmake ninja git pkgconf-pkg-config \
-            gcc-32bit glibc-devel-32bit zlib-devel-32bit Mesa-libGL1-32bit Mesa-libEGL1-32bit \
+        $sudo zypper install -y clang lld llvm python3 cmake ninja git pkgconf-pkg-config \
+            gcc-32bit glibc-devel-32bit libglvnd-32bit zlib-devel-32bit Mesa-libGL1-32bit Mesa-libEGL1-32bit \
             libX11-6-32bit libXext6-32bit libxkbcommon0-32bit libwayland-client0-32bit \
-            libpulse0-32bit alsa-32bit libX11-devel wayland-devel libxkbcommon-devel
+            libpulse0-32bit libasound2-32bit libX11-devel wayland-devel libxkbcommon-devel
     else
         echo "Unknown distribution ($ID). Install: clang, lld, llvm, python3, cmake, ninja, git,"
         echo "pkg-config, 32-bit glibc + zlib development files, 32-bit OpenGL/EGL, then rerun"

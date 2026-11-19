@@ -9,6 +9,8 @@ Writes, from the last tools/build_decomp*.sh run (build/decomp/report.json):
   decomp/jobs.json             [[path, [USA addresses]], ...]: what tools/build_decomp.py
                                --snapshot compiles (addresses from each object's func_ exports)
   decomp/eu_usa_map.json       the EU <-> USA function address map
+  decomp/returns_this.json     matched functions exported as func_X__impl (returns-this thunks)
+  decomp/addr_taken.txt        address-taken game data of the last link (tools/link.sh)
 No ROM data: the game's data is generated at build time from your ROM (tools/extract_code.py).
 """
 import argparse
@@ -33,10 +35,13 @@ def main():
     open(lst, "w").write("\n".join(objs))
     nm = subprocess.run(["llvm-nm", "-A", "--defined-only", "@" + lst], capture_output=True, text=True).stdout
     addrs = {}
+    impl = set()   # matched functions the build exported as func_X__impl (returns-this thunks)
     for line in nm.splitlines():
         f, _, rest = line.partition(": ")
         p = rest.split()
         if len(p) == 3:
+            if p[2].endswith("__impl") and p[1] in "TtWw":
+                impl.add(p[2][5:13])
             m = re.match(r"^func_([0-9A-F]{8})(?:__impl)?$", p[2])
             if m:
                 addrs.setdefault(f, set()).add(m.group(1))
@@ -59,11 +64,42 @@ def main():
             if n.endswith((".h", ".hpp", ".inc")):
                 shutil.copy2(os.path.join(sd, n), os.path.join(out, "src", d, n))
                 nh += 1
+    # headers a source reaches with #include "relative/path" (shared_include/, include/ of a sibling
+    # work folder, ...): followed recursively, copied to the same place under src/. Without them 40
+    # sources failed to compile in a fresh clone and their functions became tripwires (crash at boot).
+    inc_re = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.M)
+    todo = [rel for rel, _ in jobs]
+    seen = set(todo)
+    while todo:
+        rel = todo.pop()
+        try:
+            text = open(os.path.join("build/decomp", rel), errors="replace").read()
+        except OSError:
+            continue
+        for name in inc_re.findall(text):
+            hrel = os.path.normpath(os.path.join(os.path.dirname(rel), name))
+            if hrel.startswith("..") or hrel in seen or not os.path.isfile(os.path.join("build/decomp", hrel)):
+                continue   # outside the decomp tree, or a -I / shared include resolved elsewhere
+            seen.add(hrel)
+            todo.append(hrel)
+            dst = os.path.join(out, "src", hrel)
+            if not os.path.exists(dst):
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copy2(os.path.join("build/decomp", hrel), dst)
+                nh += 1
     if os.path.isdir(os.path.join(out, "include")):
         shutil.rmtree(os.path.join(out, "include"))
     shutil.copytree("build/decomp/shared/include", os.path.join(out, "include"))
     shutil.copy2("../albw-decomp-ai/shared/eu_usa_map.json", os.path.join(out, "eu_usa_map.json"))
     json.dump(jobs, open(os.path.join(out, "jobs.json"), "w"), indent=0)
+    # the returns-this set the objects were really built with (native/returns_this.json and
+    # returns_this3.json differ, and objects from different rounds used either): a fresh build from
+    # the snapshot must export the same __impl thunks, or callers lose their returned pointer
+    json.dump(sorted(impl), open(os.path.join(out, "returns_this.json"), "w"), indent=0)
+    # address-taken game data of the last link (tools/link.sh): it also scans the full Ghidra dump,
+    # which a snapshot build does not have
+    if os.path.exists("build/addr_taken_pool.txt"):
+        shutil.copy2("build/addr_taken_pool.txt", os.path.join(out, "addr_taken.txt"))
     print("snapshot: %d sources, %d headers, %d without addresses -> %s"
           % (len(jobs), nh, sum(1 for j in jobs if not j[1]), out))
 

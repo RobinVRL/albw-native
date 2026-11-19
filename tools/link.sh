@@ -69,8 +69,11 @@ llvm-nm -u --format=just-symbols "${NATIVE[@]}" | sort -u > $B/native_syms.txt
 python3 -c "import json;print('\n'.join(json.load(open('$B/decomp/report.json'))['objects']))" > $B/objs_pre.txt
 llvm-nm -A --defined-only @$B/objs_pre.txt 2>/dev/null | awk '$3 ~ /^[VvWw]$/ && $4 ~ /^data_[0-9A-F]{8}$/ {print $4}' \
     | sort -u >> $B/native_syms.txt
-grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp/ghidra_fallback native/game native/robust native/gameplay native/sdk \
-    | sed 's/^&//' | sort -u > $B/addr_taken_pool.txt
+# (+ decomp/addr_taken.txt: the list the snapshot's build used. A fresh clone has no Ghidra dump and
+# missed 18 entries, e.g. the strings "In" / "Out" of 00254EFC: data placed differently, crash at boot)
+{ grep -rhoE "&DAT_00[1-6][0-9a-f]{5}\b" $B/decomp/ghidra_fallback $B/decomp/src native/game native/robust \
+      native/gameplay native/sdk native/compilefix native/hot native/framework native/core native/route 2>/dev/null \
+      | sed 's/^&//'; [[ -f decomp/addr_taken.txt ]] && cat decomp/addr_taken.txt; } | sort -u > $B/addr_taken_pool.txt
 python3 tools/gen_data.py --addr-taken $B/addr_taken_pool.txt --code "$CODE_BIN" \
     --map "$DECOMP_MAP" --extra $B/native_syms.txt >/dev/null
 clang --target=i686-linux-gnu -c $B/data/gamedata.s -o $B/data/gamedata.o

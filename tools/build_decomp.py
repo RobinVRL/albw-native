@@ -968,7 +968,9 @@ def snapshot_main(a):
     fn_of = {int(v["eu"], 16): "func_" + k for k, v in emap.items()}
     ctors, _ = gen_data.init_tables(code, lambda x: _st.unpack_from("<I", code, x - 0x100000)[0], fn_of)
     CTORS = {c[5:] for c in ctors}
-    rt3 = os.path.join(ROOT, "native", "returns_this3.json")
+    rt3 = os.path.join(snap, "returns_this.json")   # what the snapshot's objects were built with
+    if not os.path.exists(rt3):
+        rt3 = os.path.join(ROOT, "native", "returns_this3.json")
     if os.path.exists(rt3):
         RETURNS_THIS = set(json.load(open(rt3)))
     # sources and headers into build/decomp (fresh copies only where the snapshot is newer)
