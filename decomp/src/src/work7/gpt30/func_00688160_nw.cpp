@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 #include "range.h"
 struct TreeNode30 {u32 value;TreeNode30* left;TreeNode30* right;};
 struct TreeCallbackOwner30;
@@ -6,7 +7,7 @@ struct TreeCallback30 {
     virtual ~TreeCallback30();
     TreeCallbackOwner30* owner;
     TreeMethod30 method;
-    void invoke(TreeNode30* p){if(owner&&method)(owner->*method)(p);}
+    void invoke(TreeNode30* p){if(owner&&method)ALBW_PMF_CALL(owner, method, p);}
 };
  void target(TreeNode30*p,TreeCallback30* callback){
     if(p->left)target(p->left,callback);

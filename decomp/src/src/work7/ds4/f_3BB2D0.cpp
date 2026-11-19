@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 #include "ds4.h"
 struct Base { virtual void v(); };
 typedef void (Base::*PMF)();
@@ -8,7 +9,7 @@ extern "C" void func_00352210(void*, u32, f32);
 extern "C" void func_00169A80(void*);
 extern "C" void func_00168E9C(void*, u32, u32);
 void f(T* self) {
-  (((Base*)self->m24)->*self->m2c[self->idx])();
+  ALBW_PMF_CALL(((Base*)self->m24), self->m2c[self->idx]);
   u32 c = ++self->m10;
   if (self->m20) func_00352210((void*)self->m20, 1, (f32)c);
   func_00169A80((void*)self->m38);

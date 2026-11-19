@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 typedef unsigned int u32;
 typedef int s32;
 typedef unsigned char u8;
@@ -26,7 +27,7 @@ struct StateMgr {
 };
 
 void StateMgr::execute() {
-    (owner->*exec[current])();
+    ALBW_PMF_CALL(owner, exec[current]);
     u32 n = ++count;
     if (timeline) func_00352210(timeline, 1, (f32)n);
 }

@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
@@ -35,7 +36,7 @@ struct StateMgr {
     u32 mCount; s8 mCur; s8 mNext; u8 mNum; u8 pad7; u32 mNames[2]; void* mTimeline;
     Base* mOwner; PMF* mEnter; PMF* mExec; PMF* mExit;
     void exec() {
-        (mOwner->*mExec[mCur])();
+        ALBW_PMF_CALL(mOwner, mExec[mCur]);
         u32 c = ++mCount;
         if (mTimeline) func_00352210(mTimeline, 1, (f32)c);
     }

@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 
 
 typedef unsigned char u8;
@@ -18,7 +19,7 @@ extern "C" void func_0012C790(T*);
 extern "C" void func_001B6B38(T*);
 extern void* data_007142C8;
 void f(T* self) {
-  (((Base*)self->mo)->*self->mt[self->idx])();
+  ALBW_PMF_CALL(((Base*)self->mo), self->mt[self->idx]);
 u32 c=self->mc;u32 mf=self->mf;++c;self->mc=c;if(mf)func_00352210((void*)mf,1,(f32)c);
   if (!func_0051B0B4(data_007142C8)) { func_0012C790(self); func_001B6B38(self); }
 }

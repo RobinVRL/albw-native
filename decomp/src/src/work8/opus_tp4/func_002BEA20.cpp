@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 extern "C" void func_00352210(void*, int, float);
 struct Base;
 struct Entry { void (Base::*pmf)(); };
@@ -19,7 +20,7 @@ void Cls::f() {
     m5e = 0;
     m5f = 0;
     Cls* s = this;
-    (s->obj->*(s->tbl[s->idx].pmf))();
+    ALBW_PMF_CALL(s->obj, (s->tbl[s->idx].pmf));
     unsigned int c = cnt + 1;
     cnt = c;
     if (ctx != 0) func_00352210((void*)ctx, 1, (float)c);

@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 // PMF family A=0x84
 extern "C" void func_00352210(void*, int, float);
 struct Base;
@@ -14,7 +15,7 @@ struct Cls {
     void f();
 };
 void Cls::f() {
-    (obj->*(tbl[idx].pmf))();
+    ALBW_PMF_CALL(obj, (tbl[idx].pmf));
     unsigned int c = cnt + 1;
     cnt = c;
     if (ctx != 0) func_00352210((void*)ctx, 1, (float)c);

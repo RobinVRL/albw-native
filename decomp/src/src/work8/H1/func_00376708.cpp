@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 typedef unsigned int u32;
 typedef int s32;
 typedef unsigned char u8;
@@ -22,7 +23,7 @@ struct Cls376 {
 void func_00376774(void* p, s32 flag);
 
 extern "C" void func_00376708(Cls376* self) {
-    (self->m10c->*self->m11c)();
+    ALBW_PMF_CALL(self->m10c, self->m11c);
     func_00376774(self->m110, self->m10c->m394 > -1);
     return func_00376774(self->m114, self->m10c->m394 < 0x2e);
 }

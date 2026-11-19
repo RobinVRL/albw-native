@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 
 
 typedef unsigned char u8;
@@ -16,7 +17,7 @@ struct T { u8 p0[0x48]; u32 mc; s8 idx; u8 p1[0x58 - 0x4d];
 extern "C" void func_00352210(void*, u32, f32);
 extern "C" void func_0012C718(T*);
 void f(T* self) {
-  (((Base*)self->mo)->*self->mt[self->idx])();
+  ALBW_PMF_CALL(((Base*)self->mo), self->mt[self->idx]);
 u32 c=self->mc;u32 mf=self->mf;++c;self->mc=c;if(mf)func_00352210((void*)mf,1,(f32)c);
   if (1 == self->b80) func_0012C718(self);
 }

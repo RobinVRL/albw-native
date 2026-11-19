@@ -1,3 +1,4 @@
+#include "albw_pmf.hpp"
 
 
 typedef unsigned char u8; typedef signed char s8; typedef unsigned short u16; typedef short s16;
@@ -109,7 +110,7 @@ struct Act1D0 {
 
 };
 inline void StateMgrK::execute() {
-    (mOwner->*mExec[mCur])();
+    ALBW_PMF_CALL(mOwner, mExec[mCur]);
     ++mCounter;
     if (mTimeline)
         mTimeline->func_00352210(true, (f32)mCounter);
