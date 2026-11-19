@@ -1065,8 +1065,8 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         if (pp) { pp[0] = (float)wx; pp[1] = (float)wy; pp[2] = (float)wz; }
         fprintf(stderr, "route: warp to %.2f %.2f %.2f%s\n", wx, wy, wz, pp ? "" : " (no player)");
         done = 1;
-    } else if (!strcmp(op, "goto")) {
-        /* debug: goto COURSE SCENE POINT [TRANSITION] - SCENE as in the file names (DungeonEast3 = 3;
+    } else if (!strcmp(op, "scene")) {
+        /* debug: scene COURSE SCENE POINT [TRANSITION] - SCENE as in the file names (DungeonEast3 = 3;
          * the game's own scene field counts from 0). The game's own scene change, as an exit zone
          * (005416A0) makes it: 004EF418(scene manager *data_00709DF8, &{u8 course, s32 scene @+4,
          * u16 point @+8}, transition, 0); the scene manager applies it (004EECD4: loads
@@ -1088,7 +1088,7 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         if (course < 0 && cn[0] >= '0' && cn[0] <= '9') course = atoi(cn);
         uint32_t mgr = *(uint32_t *)data_00709DF8;
         if (course < 0 || !mgr) {
-            fprintf(stderr, "route: goto %s: %s\n", cn, course < 0 ? "unknown course" : "no scene manager");
+            fprintf(stderr, "route: scene %s: %s\n", cn, course < 0 ? "unknown course" : "no scene manager");
         } else {
             _Alignas(4) uint8_t loc[12] = {0};
             loc[0] = (uint8_t)course;
@@ -1097,7 +1097,7 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
             uint16_t pt = (uint16_t)point;
             memcpy(loc + 8, &pt, 2);
             int ok = func_004EF418((int)mgr, loc, tr, 0);
-            fprintf(stderr, "route: goto course %d (%s) scene %d point %d transition %d: %s\n", course,
+            fprintf(stderr, "route: scene: course %d (%s) scene %d point %d transition %d: %s\n", course,
                     course < (int)(sizeof courses / sizeof *courses) ? courses[course] : "?", scene, point, tr,
                     ok ? "requested" : "refused");
         }
