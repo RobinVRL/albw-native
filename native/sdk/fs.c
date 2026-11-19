@@ -17,7 +17,7 @@
  * Nothing here interprets an IPC buffer or a svc: the functions are reimplemented from their
  * meaning (open/read/write/close a file, open/format an archive...).
  *
- * ROM:      env ALBW_ROM (default: the EU .3ds on this machine).  NCSD (.3ds/.cci) or bare NCCH
+ * ROM:      env ALBW_ROM, else the path build.sh saved in ~/.config/albw-port/rom_path, else rom.3ds.  NCSD (.3ds/.cci) or bare NCCH
  *           (.cxi), must be decrypted (checked via the plaintext IVFC magic).
  * Save dir: env ALBW_SAVE_DIR (default $HOME/.local/share/albw-port/save):
  *             savedata/             archive 0x4 (SaveData) - the game's "Save_%d.bin" files etc.
@@ -166,8 +166,22 @@ static void rom_open_locked(void) {
     if (rom.ready)
         return;
     const char *path = getenv("ALBW_ROM");
-    if (!path || !*path)
-        path = ROM_DEFAULT_PATH;
+    static char cfg_path[4096];
+    if (!path || !*path) {
+        /* started without run.sh: the ROM recorded by build.sh ($XDG_CONFIG_HOME or
+         * ~/.config/albw-port/rom_path), then rom.3ds in the working directory */
+        char f[4096];
+        const char *xdg = getenv("XDG_CONFIG_HOME"), *home = getenv("HOME");
+        f[0] = 0;
+        if (xdg && *xdg) snprintf(f, sizeof f, "%s/albw-port/rom_path", xdg);
+        else if (home && *home) snprintf(f, sizeof f, "%s/.config/albw-port/rom_path", home);
+        FILE *cf = f[0] ? fopen(f, "r") : NULL;
+        if (cf) {
+            if (fgets(cfg_path, sizeof cfg_path, cf)) cfg_path[strcspn(cfg_path, "\r\n")] = 0;
+            fclose(cf);
+        }
+        path = cfg_path[0] ? cfg_path : ROM_DEFAULT_PATH;
+    }
     int fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd < 0)
         runtime_fatal("fs: cannot open the ROM '%s' (%s); set ALBW_ROM to your decrypted .3ds/.cxi",
