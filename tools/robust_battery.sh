@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # robustness battery: boot a fixture save, walk / fight / use items, report crashes
 # usage: robust.sh <fixture dir> <tag>
+# tools/robust_battery.sh <fixture save dir> <tag>: boot a game save (title -> file 1 -> Begin), walk
+# all four directions (room / area changes), sword slash + spin attack, Y / X items, shield, A; prints
+# crash reports and positions (BOOT_LOG 160ae). Fixture saves: ~/.local/share/albw-port/fixtures.
 set -u
 FIX=$1; TAG=$2
 cd .
