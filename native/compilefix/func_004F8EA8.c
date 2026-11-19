@@ -5,7 +5,8 @@
  * (x, z-ish, garbage): flying enemies (Poes, type 1) were knocked back UPWARD and stayed out of
  * reach. The values come through albw_s012 (native/runtime/vec3ret.c). Confidence: high. */
 #include "ghidra_types.h"
-extern float albw_s012[3];
+float *albw_s012_get(void);   /* s0..s2 of a Vec3 return, per thread (native/runtime/vec3ret.c) */
+#define albw_s012 (albw_s012_get())
 
 extern float func_00115DC8(float *param_1);
 extern int func_002ABDE8(undefined4 *param_1,uint param_2,int param_3,undefined4 *param_4, undefined1 param_5,undefined4 param_6,int param_7);

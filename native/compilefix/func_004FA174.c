@@ -16,7 +16,8 @@ extern int *DAT_004fa504;
 extern float DAT_004fa508;
 extern float DAT_004fa50c;
 extern float DAT_004fa5e8;
-extern float albw_s012[3];   /* s0..s2 of a Vec3 return (native/runtime/vec3ret.c) */
+float *albw_s012_get(void);   /* s0..s2 of a Vec3 return, per thread (native/runtime/vec3ret.c) */
+#define albw_s012 (albw_s012_get())
 
 // USA 004FA174 <- EU 004FA14C (Ghidra, non-matching)
 // PARAM param_4 Stack[0x0]:4 float *

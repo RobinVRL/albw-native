@@ -3,7 +3,8 @@
  * published in albw_s012 (native/runtime/vec3ret.c); the return value is its x. */
 #include <stdint.h>
 
-extern float albw_s012[3];
+float *albw_s012_get(void);   /* s0..s2 of a Vec3 return, per thread (native/runtime/vec3ret.c) */
+#define albw_s012 (albw_s012_get())
 
 uint32_t func_0058A7E8(void *self, uint32_t id, char *rec)   /* bits of x: an int return, no x87 value for its int-typed callers */
 {
