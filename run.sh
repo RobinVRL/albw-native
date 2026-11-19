@@ -36,11 +36,21 @@ export ALBW_ROM
 # fall back to X11 otherwise. On NVIDIA, 32-bit EGL on Wayland also needs the 32-bit egl-wayland
 # platform library: without it EGL falls back to Mesa's software rasteriser (llvmpipe, ~25 fps,
 # all CPU cores busy), while X11/XWayland gets the GPU through the 32-bit NVIDIA GLX.
+# 32-bit library folders: Arch /usr/lib32, Debian/Ubuntu /usr/lib/i386-linux-gnu, Fedora/openSUSE /usr/lib
+lib32_has() {
+    local d
+    local dirs=(/usr/lib32 /usr/lib/i386-linux-gnu /lib/i386-linux-gnu)
+    [[ -d /usr/lib64 && ! -d /usr/lib32 ]] && dirs+=(/usr/lib)   # /usr/lib is 64-bit on Arch
+    for d in "${dirs[@]}"; do
+        compgen -G "$d/$1" >/dev/null && return 0
+    done
+    return 1
+}
 WAYLAND_GL_OK=1
-if [[ -e /proc/driver/nvidia/version ]] && ! compgen -G "/usr/lib32/libnvidia-egl-wayland.so*" >/dev/null; then
+if [[ -e /proc/driver/nvidia/version ]] && ! lib32_has "libnvidia-egl-wayland.so*"; then
     WAYLAND_GL_OK=0
 fi
-if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && -e /usr/lib32/libxkbcommon.so.0 && $WAYLAND_GL_OK == 1 ]]; then
+if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
     export SDL_VIDEO_DRIVER=wayland
 fi
 

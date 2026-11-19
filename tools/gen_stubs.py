@@ -19,8 +19,28 @@ def syms(obj, *flags):
 
 
 # ALBW_ARCH=x86_64 (tools/link64.sh, build_decomp.py --arch x86_64): the 64-bit libraries
-_LIB = "/usr/lib" if os.environ.get("ALBW_ARCH") == "x86_64" else "/usr/lib32"
-SYSTEM_LIBS = [_LIB + "/libc.so.6", _LIB + "/libm.so.6", _LIB + "/libSDL3.so.0", _LIB + "/libz.so.1"]  # libz: save states
+# Library folders differ by distribution: Arch /usr/lib32, Debian/Ubuntu /usr/lib/i386-linux-gnu (and
+# /lib/...), Fedora/openSUSE /usr/lib; build.sh's own SDL3 in build/deps. A library not found here had
+# its functions stubbed, and the stubs shadowed the real ones (Ubuntu: "stub SDL_Init called").
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.environ.get("ALBW_ARCH") == "x86_64":
+    _DIRS = ["/usr/lib", "/usr/lib/x86_64-linux-gnu", "/lib/x86_64-linux-gnu", "/usr/lib64", "/lib64"]
+else:
+    _DIRS = [os.path.join(_ROOT, "build", "deps", "sdl3-i686", "lib"), "/usr/lib32",
+             "/usr/lib/i386-linux-gnu", "/lib/i386-linux-gnu"]
+    if os.path.isdir("/usr/lib64") and not os.path.isdir("/usr/lib32"):
+        _DIRS += ["/usr/lib", "/lib"]   # Fedora / openSUSE: 32-bit in /usr/lib (64-bit on Arch)
+
+
+def _find(name):
+    for d in _DIRS:
+        p = os.path.join(d, name)
+        if os.path.exists(p):
+            return p
+    sys.exit("gen_stubs: %s not found in %s (32-bit library missing?)" % (name, ", ".join(_DIRS)))
+
+
+SYSTEM_LIBS = [_find(n) for n in ("libc.so.6", "libm.so.6", "libSDL3.so.0", "libz.so.1")]  # libz: save states
 
 
 def system_symbols():
