@@ -1875,6 +1875,11 @@ void render_draw_indexed(int prim, const void *indices, int index_u16, uint32_t 
         if (v < mn) mn = v;
         if (v > mx) mx = v;
     }
+    /* eft "primitive" emitters (Fire / Tornado Rod flames: cone and ring meshes, e.g. 240 indices over
+     * 63 vertices) bind a program family not written yet (effects.c: v0 is a 3D position there, not a
+     * quad corner). Drawn with the quad program they became screen-wide shards: skip them until that
+     * program exists. A non-instanced quad program draws one particle = 6 indices. */
+    if (R.prog_id == RPROG_EFT && !(R.vsb & 16) && count > 6) { unlock(); return; }
     if (draw_setup(mn, mx)) {
         size_t isz = (size_t)count * (index_u16 ? 2 : 1);
         size_t o = stream(GL_ELEMENT_ARRAY_BUFFER, R.ibo, &R.ibo_off, STREAM_BYTES / 4, indices, isz);
@@ -1886,6 +1891,17 @@ void render_draw_indexed(int prim, const void *indices, int index_u16, uint32_t 
         R.st.draws++;
         if (dmp) {
             dump_draw_after(before, "drawidx", count);
+            if (R.prog_id == RPROG_EFT) {   /* the particle blocks this draw used (c1.., + 10 n) */
+                const float *c = R.vsf;
+                rlog("dump:     eft bools %#x idx %u..%u c84 %g %g %g %g", R.vsb, mn, mx, c[84*4], c[84*4+1], c[84*4+2], c[84*4+3]);
+                for (int blk = 0; blk < 16 && 1 + 10 * blk + 9 < 82; blk += (blk == 1 ? 14 : 1)) {
+                    int b0 = 1 + 10 * blk;
+                    rlog("dump:     eft blk %d col %g %g %g %g | scl %g %g %g %g | pos %g %g %g | vel %g %g %g | rot %g %g %g",
+                         blk, c[b0*4], c[b0*4+1], c[b0*4+2], c[b0*4+3], c[(b0+1)*4], c[(b0+1)*4+1], c[(b0+1)*4+2], c[(b0+1)*4+3],
+                         c[(b0+4)*4], c[(b0+4)*4+1], c[(b0+4)*4+2], c[(b0+5)*4], c[(b0+5)*4+1], c[(b0+5)*4+2],
+                         c[(b0+6)*4], c[(b0+6)*4+1], c[(b0+6)*4+2]);
+                }
+            }
             glDisable(GL_BLEND); glDisable(GL_DEPTH_TEST); glDisable(GL_STENCIL_TEST); glDisable(GL_CULL_FACE);
             { static const float mag[4] = {1, 0, 1, 0.5f}; rglColorMask(1, 1, 1, 1); rglClearBufferfv(GL_COLOR, 0, mag); }
             glBindVertexArray(R.vao);

@@ -1181,6 +1181,13 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         fprintf(stderr, "route: %s at f=%ld\n", step, g_plat_frames);
         done = 1;
     } else if (!strcmp(op, "log")) {
+        {   /* + where: the scene manager's current {course, scene} (004EECD4: +0x18 / +0x1C, scene from 0) */
+            extern char data_00709DF8[];
+            uint32_t mgr = *(uint32_t *)data_00709DF8;
+            if (mgr) fprintf(stderr, "route: f=%ld course %d scene %d (file %d)\n", g_plat_frames,
+                             *(int8_t *)(uintptr_t)(mgr + 0x18), *(int32_t *)(uintptr_t)(mgr + 0x1C),
+                             *(int32_t *)(uintptr_t)(mgr + 0x1C) + 1);
+        }
         if (pp) fprintf(stderr, "route: f=%ld pos %.3f %.3f %.3f\n", g_plat_frames, pp[0], pp[1], pp[2]);
         else fprintf(stderr, "route: f=%ld no player\n", g_plat_frames);
         done = 1;
