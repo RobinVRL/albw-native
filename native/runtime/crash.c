@@ -82,6 +82,24 @@ static void report(int fd, int sig, siginfo_t *si, void *uc_v) {
     put(fd, "  frame ");
     put_dec(fd, g_plat_frames);
     put(fd, "\n  backtrace (innermost first; func_XXXXXXXX = USA game address):\n");
+    if (pc < 0x10000) {
+        /* a call through a bad pointer (pc in the low pages): the unwinder faults on such a
+         * frame (lamp / bush crash, BOOT_LOG 160t: no report at all). The caller's return
+         * address is on top of the stack. */
+        uintptr_t sp = 0;
+#if defined(__i386__)
+        if (uc_v) sp = (uintptr_t)((ucontext_t *)uc_v)->uc_mcontext.gregs[REG_ESP];
+#elif defined(__x86_64__)
+        if (uc_v) sp = (uintptr_t)((ucontext_t *)uc_v)->uc_mcontext.gregs[REG_RSP];
+#endif
+        put(fd, "  jumped to a bad address; called from:\n  ");
+        if (sp) {
+            void *ra = *(void **)sp;
+            backtrace_symbols_fd(&ra, 1, fd);
+        }
+        put(fd, "==== end of crash report\n");
+        return;
+    }
     void *bt[48];
     int n = backtrace(bt, 48);
     if (pc) {
@@ -96,16 +114,19 @@ static void report(int fd, int sig, siginfo_t *si, void *uc_v) {
 
 static void on_crash(int sig, siginfo_t *si, void *uc) {
     int saved = errno;
-    report(2, sig, si, uc);
+    /* the log file first: if writing the report faults again, the file still has it */
     if (g_log_path[0]) {
         int fd = open(g_log_path, O_WRONLY | O_CREAT | O_APPEND | O_CLOEXEC, 0644);
         if (fd >= 0) {
             report(fd, sig, si, uc);
             close(fd);
-            put(2, "crash report appended to ");
-            put(2, g_log_path);
-            put(2, "\n");
         }
+    }
+    report(2, sig, si, uc);
+    if (g_log_path[0]) {
+        put(2, "crash report appended to ");
+        put(2, g_log_path);
+        put(2, "\n");
     }
     errno = saved;
     /* SA_RESETHAND restored the default action: re-raise for the core dump / exit status (a fault

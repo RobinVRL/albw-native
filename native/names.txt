@@ -126,3 +126,7 @@ func_004B08FC  castMgr_Update                      # 16 cast slots (+0x1418), at
 func_004B7810  castMgr_RunCommands
 func_00232F40  mapRoomVis_Update                   # worker thread: per-model room-visibility (+0x35 hidden) from the camera frustum
 func_004CF600  model_InFrustum                     # bounding sphere vs frustum planes
+
+# --- grass / bushes (BOOT_LOG 160t)
+func_00235ED4  grassMgr_Update                     # bushes / grass: cut, lift, burn (state 2 = burning: fade by curve)
+func_00691D68  curve_Evaluate                      # (curve, float t) -> float: data_00715240[kind] handlers

@@ -223,8 +223,15 @@ undefined4 func_00235ED4(int *param_1)
         if (uVar6 < 0x3d) {
           fVar30 = (float)VectorUnsignedToFloat((uint)uVar22,(byte)(in_fpscr >> 0x15) & 3);
           fVar30 = fVar30 * fVar34;
-          (**(code **)**(undefined4 **)
-                        (DAT_0023624c + (uint)*(byte *)((int)param_1 + 0x64b) * 8 + 4))();
+          {
+            /* ARM EU 236030..236054: r0 = the object of table entry +4 (by byte +0x64B), its
+             * vt[0](obj, s0 = fVar30). The Ghidra call had no arguments: the callee 00691D68 got a
+             * garbage object and jumped to 0x50 (crash burning a bush with the Lamp, BOOT_LOG 160t) */
+            int *obj = *(int **)(DAT_0023624c + (uint)*(byte *)((int)param_1 + 0x64b) * 8 + 4);
+            /* the curve value (s0 after the call) is the fade factor of the four colour bytes
+             * below (EU 23608C vmla ... s0), not the input */
+            fVar30 = ((float (*)(int *, float))**(code ***)obj)(obj, fVar30);
+          }
           iVar26 = *(int *)(iVar25 + iVar24 * 0x104 + 0x10);
           pbVar18 = *(byte **)(iVar10 + (uint)*local_50 * 8);
           fVar31 = (float)VectorSignedToFloat((uint)*(byte *)(iVar26 + 0x43),
