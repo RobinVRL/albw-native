@@ -55,6 +55,15 @@ remembered in `~/.config/albw-port/rom_path`). Already have the packages? Use `-
 The game is a 32-bit program for now, so the build uses 32-bit libraries. A 64-bit build is
 planned.
 
+### AppImage
+
+After a build, `tools/make_appimage.sh` packs it into `build/ALBW-native-x86_64.AppImage` (about
+12 MB: the game, its 32-bit SDL3 and zlib, a launcher). Start it with
+`./ALBW-native-x86_64.AppImage --rom /path/to/your/game.3ds`. The path is remembered; started
+from a file manager without one, it asks with a file dialog. The game itself is not inside.
+The system still has to provide 32-bit glibc and the 32-bit OpenGL driver; the launcher lists
+the packages if they are missing. Without FUSE, add `--appimage-extract-and-run`.
+
 ## Run
 
 ```

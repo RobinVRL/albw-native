@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ALBW native port
+Comment=Native Linux port of A Link Between Worlds (needs your own game dump)
+Exec=AppRun
+Icon=albw-port
+Categories=Game;
+Terminal=false

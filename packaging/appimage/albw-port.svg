@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect x="8" y="8" width="240" height="240" rx="40" fill="#1f2a36"/>
+  <rect x="44" y="52" width="168" height="96" rx="10" fill="#3d7a5a"/>
+  <rect x="64" y="160" width="128" height="72" rx="8" fill="#6b4a2e"/>
+  <text x="128" y="114" font-family="sans-serif" font-size="44" font-weight="bold" fill="#f2efe6" text-anchor="middle">ALBW</text>
+</svg>

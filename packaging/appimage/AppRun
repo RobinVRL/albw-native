@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# AppRun of the ALBW native port AppImage. The game is a 32-bit program: the bundled libraries cover
+# SDL3 and zlib; 32-bit glibc and the 32-bit OpenGL driver must come from the system.
+#
+#   ./ALBW-native-x86_64.AppImage [--rom /path/to/game.3ds] [game options]
+#   ALBW_ROM=/path/to/game.3ds ./ALBW-native-x86_64.AppImage
+# The ROM path is remembered in ~/.config/albw-port/rom_path (the same file build.sh writes).
+HERE="$(dirname "$(readlink -f "$0")")"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}/albw-port"
+
+msg() {   # terminal, else a desktop dialog
+    if [[ -t 2 ]]; then printf '%s\n' "$*" >&2
+    elif command -v zenity >/dev/null; then zenity --error --no-wrap --text="$*" 2>/dev/null
+    elif command -v kdialog >/dev/null; then kdialog --error "$*" 2>/dev/null
+    else printf '%s\n' "$*" >&2; fi
+}
+
+ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --rom) ALBW_ROM="$2"; shift 2 ;;
+        --rom=*) ALBW_ROM="${1#--rom=}"; shift ;;
+        *) ARGS+=("$1"); shift ;;
+    esac
+done
+: "${ALBW_ROM:=$(cat "$CFG/rom_path" 2>/dev/null)}"
+if [[ ! -f "${ALBW_ROM:-}" ]]; then
+    pick=""
+    if [[ ! -t 0 ]] && command -v zenity >/dev/null; then
+        pick=$(zenity --file-selection --title="Choose your decrypted A Link Between Worlds .3ds (EU)" 2>/dev/null)
+    elif [[ ! -t 0 ]] && command -v kdialog >/dev/null; then
+        pick=$(kdialog --getopenfilename "$HOME" "*.3ds *.cci" --title "Choose your decrypted .3ds" 2>/dev/null)
+    fi
+    [[ -n $pick ]] && ALBW_ROM=$pick
+fi
+if [[ ! -f "${ALBW_ROM:-}" ]]; then
+    msg "No game file. Run with --rom /path/to/your/decrypted.3ds (EU release), or set ALBW_ROM."
+    exit 1
+fi
+mkdir -p "$CFG" && printf '%s\n' "$(readlink -f "$ALBW_ROM")" > "$CFG/rom_path"
+export ALBW_ROM
+
+# 32-bit system pieces the AppImage cannot carry (they must match the system: libc, GPU driver)
+lib32_has() {
+    local d dirs=(/usr/lib32 /usr/lib/i386-linux-gnu /lib/i386-linux-gnu)
+    [[ -d /usr/lib64 && ! -d /usr/lib32 ]] && dirs+=(/usr/lib)   # Fedora/openSUSE layout
+    for d in "${dirs[@]}"; do compgen -G "$d/$1" >/dev/null && return 0; done
+    return 1
+}
+need=0
+[[ -e /lib/ld-linux.so.2 ]] || need=1
+lib32_has "libGL.so.1" || lib32_has "libEGL.so.1" || need=1
+if [[ $need == 1 ]]; then
+    msg "This game needs the 32-bit C library and 32-bit OpenGL from your system:
+  Ubuntu/Debian/Mint: sudo dpkg --add-architecture i386; sudo apt update
+                      sudo apt install libc6:i386 libgl1:i386 libegl1:i386 libgl1-mesa-dri:i386
+  Fedora:   sudo dnf install glibc.i686 mesa-libGL.i686 mesa-libEGL.i686 mesa-dri-drivers.i686
+  Arch:     enable [multilib], then: sudo pacman -S lib32-glibc lib32-mesa
+  openSUSE: sudo zypper install glibc-32bit Mesa-libGL1-32bit Mesa-libEGL1-32bit Mesa-dri-32bit
+  NVIDIA:   also the 32-bit NVIDIA GL libraries (lib32-nvidia-utils, libnvidia-gl-*:i386, ...)"
+    exit 1
+fi
+
+# native Wayland only when its 32-bit pieces exist (same choice as run.sh); X11/XWayland otherwise
+WAYLAND_GL_OK=1
+if [[ -e /proc/driver/nvidia/version ]] && ! lib32_has "libnvidia-egl-wayland.so*"; then WAYLAND_GL_OK=0; fi
+if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
+    export SDL_VIDEO_DRIVER=wayland
+fi
+
+export LD_LIBRARY_PATH="$HERE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}"
