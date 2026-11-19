@@ -1224,18 +1224,16 @@ int plat_poll(void) {
     in.held = kb | gp | cp | (in.touch ? KEY_TOUCH : 0) | sk;
     /* single-screen remaps only in the field (Link exists): at the title and the file select
      * Start goes to the game (straight to picking a save) and its own cursor works with the D-pad */
-    /* the player update (001EA96C) sets albw_dbg_player every field frame: taken and cleared here
-     * once per frame, so a pointer left from an earlier scene (title, file select) does not count */
-    static int in_field, misses = 1000;
-    if (&albw_dbg_player) {
-        /* plat_poll also runs while the game waits for the vblank (several times a frame): out of
-         * the field only after 30 polls in a row without a player update */
-        misses = albw_dbg_player ? 0 : misses + 1;
-        albw_dbg_player = NULL;
-        in_field = misses < 30;
-    }
-    if (g_layout_cfg.single_screen && !in_field && g_layout_cfg.show_bottom) plat_single_screen_flip();
-    if (g_layout_cfg.single_screen && in_field) {
+    /* in the field = the player update (001EA96C, it sets albw_dbg_player) ran within the last 10
+     * seconds of frames: taken and cleared here. The Gear / Items menus and the Pause stop the field
+     * for as long as they are open, so a short window flipped the screen back to the top while a
+     * menu was up (it blinked); at the title after boot the player never ran at all. */
+    static long field_frame = -100000;
+    if (&albw_dbg_player && albw_dbg_player) { field_frame = g_plat_frames; albw_dbg_player = NULL; }
+    int in_field = g_plat_frames - field_frame < 600;
+    /* Start flips while the bottom screen is up (a menu may stay open any time) or in the field;
+     * not at the title / file select, where Start belongs to the game. No automatic flip. */
+    if (g_layout_cfg.single_screen && (in_field || g_layout_cfg.show_bottom)) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
          * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
          * does not use Select on the field. */
