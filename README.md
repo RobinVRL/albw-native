@@ -4,6 +4,8 @@ A native Linux build of *The Legend of Zelda: A Link Between Worlds* (Nintendo 3
 decompiled game code. The game logic runs as real C on your PC. Graphics, sound, input and file
 access are rewritten for Linux (SDL3 + OpenGL). There is no emulator.
 
+<p align="center"><img src="docs/screenshots/title.png" alt="Title screen running in the port (top and bottom screen)" width="400"></p>
+
 **Work in progress.** The game boots and is playable through large parts of the story. Expect
 bugs, glitches and crashes. See [Status](#status).
 
