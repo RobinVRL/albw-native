@@ -1223,8 +1223,14 @@ int plat_poll(void) {
      * Start goes to the game (straight to picking a save) and its own cursor works with the D-pad */
     /* the player update (001EA96C) sets albw_dbg_player every field frame: taken and cleared here
      * once per frame, so a pointer left from an earlier scene (title, file select) does not count */
-    static int in_field;
-    if (&albw_dbg_player) { in_field = albw_dbg_player != NULL; albw_dbg_player = NULL; }
+    static int in_field, misses = 1000;
+    if (&albw_dbg_player) {
+        /* plat_poll also runs while the game waits for the vblank (several times a frame): out of
+         * the field only after 30 polls in a row without a player update */
+        misses = albw_dbg_player ? 0 : misses + 1;
+        albw_dbg_player = NULL;
+        in_field = misses < 30;
+    }
     if (g_layout_cfg.single_screen && !in_field && g_layout_cfg.show_bottom) plat_single_screen_flip();
     if (g_layout_cfg.single_screen && in_field) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
