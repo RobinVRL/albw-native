@@ -62,6 +62,40 @@ if [[ -f $APPDIR/usr/lib/libSDL3.so.0 ]]; then
     done
 fi
 
+# fallbacks: 32-bit client libraries SDL3 loads at run time (X11, Wayland, keyboard, PulseAudio) and
+# their dependencies. AppRun uses one only when the system has no 32-bit copy of it (SteamOS and other
+# minimal systems); the system's own always wins. GPU drivers and glibc are never bundled.
+lib32_find() {
+    local d dirs=(/usr/lib32 /usr/lib/i386-linux-gnu /lib/i386-linux-gnu)
+    [[ -d /usr/lib64 && ! -d /usr/lib32 ]] && dirs+=(/usr/lib)
+    for d in "${dirs[@]}"; do [[ -f $d/$1 ]] && { echo "$d/$1"; return 0; }; done
+    return 1
+}
+skip_lib() {
+    case $1 in
+        libc.so*|libm.so*|libdl.so*|libpthread.so*|librt.so*|ld-linux*|libgcc_s.so*|libresolv.so*) return 0 ;;
+        libGL*|libEGL*|libGLX*|libGLdispatch*|libOpenGL*|libdrm*|libgbm*|libnvidia*|libvulkan*|libglapi*) return 0 ;;
+        libSDL3.so*|libz.so*) return 0 ;;
+    esac
+    return 1
+}
+FB=$APPDIR/usr/lib/fallback
+mkdir -p $FB
+fallback=(libX11.so.6 libX11-xcb.so.1 libXext.so.6 libXcursor.so.1 libXi.so.6 libXrandr.so.2 libXfixes.so.3
+          libXrender.so.1 libXss.so.1 libXinerama.so.1 libxcb.so.1 libXau.so.6 libXdmcp.so.6 libxkbcommon.so.0
+          libwayland-client.so.0 libwayland-egl.so.1 libwayland-cursor.so.0 libdecor-0.so.0 libpulse.so.0
+          libasound.so.2 libdbus-1.so.3)
+nfb=0
+for lib in "${fallback[@]}"; do
+    path=$(lib32_find "$lib") || { echo "   (no 32-bit $lib here: not bundled)"; continue; }
+    for dep in "$lib $path" $(ldd "$path" 2>/dev/null | awk '$3 ~ /^\// {print $1 "|" $3}'); do
+        name=${dep%%[ |]*}; file=${dep##*[ |]}
+        skip_lib "$name" && continue
+        [[ -f $FB/$name ]] || { cp -L "$file" "$FB/$name"; nfb=$((nfb + 1)); }
+    done
+done
+echo "== $nfb fallback libraries (used only where the system lacks them)"
+
 cp packaging/appimage/AppRun $APPDIR/AppRun
 chmod +x $APPDIR/AppRun
 cp packaging/appimage/albw-port.desktop $APPDIR/albw-port.desktop
@@ -71,7 +105,7 @@ mkdir -p $APPDIR/usr/share/applications $APPDIR/usr/share/icons/hicolor/scalable
 cp packaging/appimage/albw-port.desktop $APPDIR/usr/share/applications/
 cp packaging/appimage/albw-port.svg $APPDIR/usr/share/icons/hicolor/scalable/apps/
 
-echo "== bundled:"; ls -la $APPDIR/usr/bin $APPDIR/usr/lib | awk 'NF>=9 {print "   ", $5, $9}'
+echo "== bundled:"; ls -la $APPDIR/usr/bin $APPDIR/usr/lib | awk 'NF>=9 && $1 !~ /^d/ {print "   ", $5, $9}'
 
 # appimagetool itself is an AppImage: extract-and-run works without FUSE (containers, CI)
 mkdir -p "$(dirname "$OUT")"

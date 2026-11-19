@@ -690,7 +690,7 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
     in_ensure_cfg();
     const bool *ks = SDL_GetKeyboardState(NULL);
     uint32_t kb = 0, gp = 0;
-    int menu = 0, quit = 0, screen = 0;
+    int menu = 0, quit = 0, screen = 0, menu_any = 0;
 
     /* keyboard */
     in_Consumed kc = {{0}, 0};     /* keys of a held MENU/QUIT combination: hidden from the game */
@@ -716,6 +716,7 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
         menu |= in_bind_held(&p->p.bind[IN_MENU], p, NULL, NULL, &pc);
         quit |= in_bind_held(&p->p.bind[IN_QUIT], p, NULL, NULL, &pc);
         int m = in_bind_held(&p->p.bind[IN_MENU], p, NULL, NULL, NULL);
+        menu_any |= m;
         screen |= !m && in_bind_held(&p->p.bind[IN_SCREEN], p, NULL, NULL, &pc);   /* not inside the menu combo */
         if (!g_input_cfg.multi && p->id != in_active_id) continue;
         for (int a = 0; a <= IN_DRIGHT; a++)
@@ -747,7 +748,13 @@ int input_update(PlatInput *in, uint32_t *kb_out, uint32_t *gp_out, uint32_t *cp
     in->controllers = in_npads;
     in->menu = (menu && !in_menu_prev) || in_kb_menu_ev;
     int quit_now = (quit && !in_quit_prev) || in_kb_quit_ev;
-    in->screen = (screen && !in_screen_prev) || in_kb_screen_ev;
+    /* controller SCREEN (right-stick click) fires on release, and only if the menu combo (both
+     * sticks) was not held meanwhile: R3 landing a frame before L3 flipped the screen and then
+     * opened the menu */
+    static int screen_spoiled;
+    if (menu_any) screen_spoiled = 1;
+    in->screen = (!screen && in_screen_prev && !screen_spoiled) || in_kb_screen_ev;
+    if (!screen && !menu_any) screen_spoiled = 0;
     in_screen_prev = screen;
     in_menu_prev = menu;
     in_quit_prev = quit;

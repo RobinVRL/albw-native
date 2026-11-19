@@ -68,5 +68,15 @@ if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK 
     export SDL_VIDEO_DRIVER=wayland
 fi
 
-export LD_LIBRARY_PATH="$HERE/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# fallback libraries: only those the system has no 32-bit copy of (linked into a private folder)
+LIBS="$HERE/usr/lib"
+if [[ -d "$HERE/usr/lib/fallback" ]]; then
+    FBDIR="${XDG_RUNTIME_DIR:-/tmp}/albw-port-fallback-$UID"
+    rm -rf "$FBDIR" && mkdir -p "$FBDIR"
+    for f in "$HERE"/usr/lib/fallback/*; do
+        lib32_has "$(basename "$f")" || ln -s "$f" "$FBDIR/"
+    done
+    [[ -n "$(ls -A "$FBDIR")" ]] && LIBS="$LIBS:$FBDIR"
+fi
+export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}"

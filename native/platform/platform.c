@@ -115,6 +115,7 @@ GLuint gl_program(const char *vs, const char *fs) {
 static SDL_Window *win;
 static SDL_Window *win_bottom;
 static int g_separate;               /* current mode; layout.cfg "windows" is the saved choice */
+static int g_gamescope;   /* Steam Deck Game Mode / gamescope session (plat_init) */
 static int g_joined_w, g_joined_h;   /* joined window size (points), restored when joining again */
 static int g_last_two_preset = LAYOUT_DEFAULT;  /* separate F2: "both windows" returns to it */
 static uint64_t g_geom_dirty_ns;     /* a separate window moved/resized: save once it settles */
@@ -243,7 +244,14 @@ int plat_init(const char *title, const PlatConfig *c) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
     snprintf(g_layout_base_title, sizeof g_layout_base_title, "%s", title);
-    layout_load(&g_layout_cfg, NULL);  /* defaults if there is no layout.cfg yet */
+    int have_layout_cfg = layout_load(&g_layout_cfg, NULL) == 0;  /* defaults if there is no layout.cfg yet */
+    /* Steam Deck Game Mode / any gamescope session: one window is shown at a time, full screen, and
+     * there may be no keyboard. Joined window, full screen (this run only); on the first start the
+     * large-top layout (the bottom screen stays reachable through the touchscreen). */
+    const char *xdg_desk = getenv("XDG_CURRENT_DESKTOP");
+    g_gamescope = getenv("GAMESCOPE_WAYLAND_DISPLAY") || (xdg_desk && strstr(xdg_desk, "gamescope")) ||
+                  (getenv("SteamDeck") && getenv("SteamGamepadUI"));
+    if (g_gamescope && !have_layout_cfg) g_layout_cfg.preset = LAYOUT_LARGE_TOP;
     {   /* internal resolution: ALBW_RENDER_SCALE, else --render-scale, else layout.cfg render_scale */
         const char *rs = getenv("ALBW_RENDER_SCALE");
         int r = rs && atoi(rs) >= 1 && atoi(rs) <= 8 ? atoi(rs) : c->render_scale >= 1 ? c->render_scale : g_layout_cfg.render_scale;
@@ -258,6 +266,7 @@ int plat_init(const char *title, const PlatConfig *c) {
         else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
     }
     if (g_layout_cfg.single_screen) g_separate = 0;   /* single-screen mode: one window (saved choice kept) */
+    if (g_gamescope) g_separate = 0;
     if (g_layout_cfg.widescreen) { layout_set_top_w(LAYOUT_WIDE_TOP_W); render_set_widescreen(LAYOUT_WIDE_TOP_W); }
     if (g_layout_cfg.preset != LAYOUT_TOP_ONLY && g_layout_cfg.preset != LAYOUT_BOTTOM_ONLY)
         g_last_two_preset = g_layout_cfg.preset;
@@ -297,6 +306,11 @@ int plat_init(const char *title, const PlatConfig *c) {
     glGenVertexArrays(1, &blit_vao);
     /* separate: the bottom screen's window (shares ctx); sets the swap intervals in both modes */
     plat_set_windows(g_separate, 0);
+    if (g_gamescope) {
+        SDL_SetWindowFullscreen(win, true);
+        fprintf(stderr, "platform: gamescope / Steam Deck Game Mode: one full-screen window; "
+                "menu: both sticks clicked (L3+R3)\n");
+    }
     next_frame_ns = plat_ticks_ns();
     return 0;
 }
@@ -1160,10 +1174,13 @@ int plat_poll(void) {
     /* buttons (keyboard kb, controllers gp), circle pad (+ its direction bits cp), C-stick,
      * motion, frontend menu: input.c, mapping from input.cfg */
     uint32_t kb, gp, cp;
-    if (!input_update(&in, &kb, &gp, &cp)) {   /* QUIT binding (Escape): the Esc menu, not an exit */
+    int quit_ev = !input_update(&in, &kb, &gp, &cp);
+    /* QUIT binding (Escape): the Esc menu, not an exit. The MENU binding (controller: Guide, or both
+     * sticks clicked; F1) opens it as well: without a keyboard (Steam Deck) it was out of reach */
+    if (quit_ev || in.menu) {
         static int esc_quits = -1;
         if (esc_quits < 0) esc_quits = getenv("ALBW_ESC_QUITS") != NULL;
-        if (esc_quits) return 0;
+        if (esc_quits && quit_ev) return 0;
         g_menu_open = 1;
         g_menu_cur = 0;
         g_menu_sel = 0;

@@ -5,6 +5,10 @@
 #   ./build.sh                            rebuild (uses the ROM path saved by the first build)
 #   ./build.sh --no-deps ...              skip the package install step
 #
+# Steam Deck / SteamOS: the system is read-only and has no compiler, so build.sh builds inside a
+# distrobox container (Arch, created once as "albw-build"; distrobox + podman come with SteamOS 3.5+)
+# and packs the result as build/ALBW-native-x86_64.AppImage, which runs on SteamOS itself.
+#
 # You need your own decrypted European ROM dump. Nothing from it is stored in this repository;
 # the build reads the game code from it and keeps the result in build/ only.
 set -euo pipefail
@@ -20,10 +24,39 @@ for a in "$@"; do
     esac
 done
 [[ -n "$ROM" ]] || ROM="${ALBW_ROM:-$(cat "$CFG/rom_path" 2>/dev/null || true)}"
+ROM_SAVE=$ROM   # the path remembered for the game (outside build.sh's SteamOS container)
+# in the SteamOS container the host's files outside $HOME (SD card: /run/media/...) are under /run/host
+if [[ ! -f "$ROM" && -n ${ALBW_IN_BOX:-} && -f "/run/host$ROM" ]]; then ROM="/run/host$ROM"; fi
 [[ -f "$ROM" ]] || { echo "Usage: ./build.sh /path/to/your/decrypted.3ds"; exit 1; }
 ROM=$(realpath "$ROM")
+[[ -n ${ALBW_IN_BOX:-} ]] || ROM_SAVE=$ROM
 JOBS=${ALBW_JOBS:-$(nproc)}
 say() { printf '\n== %s\n' "$*"; }
+
+# ---------------------------------------------------------------- 0. SteamOS: build in a container
+OS_ID=$(. /etc/os-release && echo "${ID:-}")
+if [[ $OS_ID == steamos && -z ${ALBW_IN_BOX:-} ]]; then
+    BOX=${ALBW_BOX:-albw-build}
+    if ! command -v distrobox >/dev/null || ! command -v podman >/dev/null; then
+        echo "SteamOS: building needs distrobox and podman (included since SteamOS 3.5)."
+        echo "Update SteamOS, or build on another Linux PC and copy the AppImage over"
+        echo "(./build.sh there, then tools/make_appimage.sh)."
+        exit 1
+    fi
+    if ! distrobox list 2>/dev/null | grep -qw "$BOX"; then
+        say "SteamOS: creating the build container '$BOX' (Arch Linux, once; packages go there, not on SteamOS)"
+        distrobox create --yes --name "$BOX" --image docker.io/library/archlinux:latest
+    fi
+    flags=(); [[ $DEPS == 0 ]] && flags+=(--no-deps)
+    say "SteamOS: building inside '$BOX'"
+    distrobox enter "$BOX" -- env ALBW_IN_BOX=1 ALBW_JOBS="$JOBS" bash -c 'cd "$1" && shift && ./build.sh "$@" && tools/make_appimage.sh' \
+        _ "$ROOT" "${flags[@]+"${flags[@]}"}" "$ROM"
+    say "done. Start the game with ./build/ALBW-native-x86_64.AppImage
+   Game Mode: Steam (desktop mode) > Games > Add a Non-Steam Game > Browse > choose the AppImage.
+   Controls: Steam Input's gamepad layout; menu = both sticks clicked (L3+R3); the touchscreen is the
+   3DS bottom screen."
+    exit 0
+fi
 
 # ---------------------------------------------------------------- 1. packages
 install_deps() {
@@ -33,6 +66,10 @@ install_deps() {
     [[ $(id -u) == 0 ]] && sudo=""
     local id=" ${ID:-} ${ID_LIKE:-} "
     if [[ $id == *" arch "* ]]; then
+        if [[ -n ${ALBW_IN_BOX:-} ]] && ! grep -q '^\[multilib\]' /etc/pacman.conf; then
+            # build.sh's own SteamOS container: enable [multilib] there (never on a real system)
+            printf '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist\n' | $sudo tee -a /etc/pacman.conf >/dev/null
+        fi
         if ! grep -q '^\[multilib\]' /etc/pacman.conf; then
             echo "The 32-bit libraries come from Arch's [multilib] repository, which is not enabled."
             echo "Uncomment the [multilib] section (both lines) in /etc/pacman.conf, run"
@@ -128,7 +165,7 @@ fi
 say "reading the game code from your ROM"
 python3 tools/extract_code.py "$ROM" -o build/rom/eu_code.bin
 mkdir -p "$CFG"
-printf '%s\n' "$ROM" > "$CFG/rom_path"
+printf '%s\n' "$ROM_SAVE" > "$CFG/rom_path"
 
 # ---------------------------------------------------------------- 4. compile + link
 say "compiling the decompiled game code ($JOBS jobs; the first build takes a while)"
