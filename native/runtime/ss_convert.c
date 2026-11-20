@@ -475,6 +475,31 @@ static uint32_t callsite_map(Conv *c, const Sym *s, const Sym *n, const uint8_t 
     return 0;
 }
 
+/* The save-state entry albw_ss_frame_point itself changed (its frame size too, so callsite_map
+ * cannot reuse the frame): a return address right after its call to do_save / do_load goes to
+ * albw_ss_fp_tail (savestate.c), which finishes the old call's work and unwinds the old frame.
+ * Only for the prologue `push ebp; push ebx; push edi; push esi; sub $F, %esp`. 0 = no mapping. */
+extern uint32_t g_ss_fp_tail_frame;
+extern char albw_ss_fp_tail[];
+static uint32_t frame_point_tail(Conv *c, const Sym *s, const uint8_t *oc, uint32_t osz, uint32_t v) {
+    uint32_t off = v - s->addr, frame;
+    if (strcmp(s->name, "albw_ss_frame_point") || osz < 10 || off < 5 || off > osz || oc[off - 5] != 0xE8) return 0;
+    if (memcmp(oc, "\x55\x53\x57\x56", 4)) return 0;
+    if (oc[4] == 0x81 && oc[5] == 0xEC) frame = rd32(oc + 6);
+    else if (oc[4] == 0x83 && oc[5] == 0xEC) frame = oc[6];
+    else return 0;
+    uint32_t otgt = v + (uint32_t)rd32(oc + off - 4);
+    int f, k = sym_at(&c->old, otgt, &f);
+    for (int i = 0; i < k; i++) {
+        const Sym *t = &c->old.sym[f + i];
+        if (t->addr == otgt && (!strcmp(t->name, "do_save") || !strcmp(t->name, "do_load"))) {
+            g_ss_fp_tail_frame = frame;
+            return (uint32_t)(uintptr_t)albw_ss_fp_tail;
+        }
+    }
+    return 0;
+}
+
 /* Heap-like memory (game heap, arena, renderer pools, static data) also holds asset bytes, floats
  * and indices that fall into the binary's range by chance. Game state points into the binary's
  * data only at saved statics (the ranges: decompiled objects' data, sdk modules) and at constants
@@ -556,6 +581,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
             if (!strcmp(s->name, never_blocks[i])) return v;
         if (n->size != osz || !same_code(c, oc, (const uint8_t *)(uintptr_t)n->addr, osz)) {
             uint32_t na = callsite_map(c, s, n, oc, osz, v);
+            if (!na) na = frame_point_tail(c, s, oc, osz, v);
             if (na) {
                 c->code++;
                 logw(c, at, v, na, "ret-callsite", s->name, off);

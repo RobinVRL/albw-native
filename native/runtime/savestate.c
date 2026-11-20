@@ -476,6 +476,23 @@ void albw_ss_frame_point(void) {
     host_hold(0);
 }
 
+/* Resuming a state whose albw_ss_frame_point had a different stack frame (states saved by the
+ * short-lived build of 160ap's first attempt, 2026-11-19 21:00-21:15, frame 0x209C instead of
+ * 0x21DC): ss_convert.c maps the return address after do_save / do_load to albw_ss_fp_tail, which
+ * does what albw_ss_frame_point does after that call, then unwinds the OLD frame (size in
+ * g_ss_fp_tail_frame, set by the converter; savestate.c data is not part of a state) and returns
+ * to its caller (plat_end_frame). Prologue of both versions: push ebp, ebx, edi, esi; sub F, esp. */
+uint32_t g_ss_fp_tail_frame;
+void albw_ss_fp_tail_work(void) {
+    albw_os_ss_release_all();
+    host_hold(0);
+}
+__asm__(".text\n.globl albw_ss_fp_tail\n.type albw_ss_fp_tail, @function\nalbw_ss_fp_tail:\n"
+        "    call albw_ss_fp_tail_work\n"
+        "    addl g_ss_fp_tail_frame, %esp\n"
+        "    popl %esi\n    popl %edi\n    popl %ebx\n    popl %ebp\n    ret\n"
+        ".size albw_ss_fp_tail, .-albw_ss_fp_tail\n");
+
 void albw_ss_request(int op, int slot) {
     if (slot < 0 || slot >= SS_SLOTS) return;
     g_req_slot = slot;
