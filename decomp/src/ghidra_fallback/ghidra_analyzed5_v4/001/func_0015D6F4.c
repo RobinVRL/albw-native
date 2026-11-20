@@ -1,3 +1,14 @@
+/* YUGA'S WALL WALKER DRIVER (Eastern Palace boss, EnemyMedium). Runs every frame from his update
+ * 001608B0. It fills an input block for his wall walker (the object at +0x984) and calls the walker
+ * update 001EA96C with it, the same code Link uses to merge into walls.
+ *   - Not merged yet (+0x9AC == 0): input position = Yuga's position (+0x3D0), orientation = his
+ *     model's matrix (+0x40C -> +0x80).
+ *   - Merged (+0x9AC == 1): input = the walker's own position / orientation (+0x3B40...), and his
+ *     model follows the walker (he moves along the wall as a painting).
+ *   - After the call: walker MODE (+0x3BAE) == 1 sets +0x9AC = 1 (merged). His state 10 (0015BD40)
+ *     waits for that before he starts moving along the walls.
+ * The walker is skipped in states 7, 8, 9 after their first frame. See native/compilefix/func_001EA96C.c
+ * (WALKER: comments) and BOOT_LOG 160ar. */
 #include "ghidra_types.h"
 
 extern int func_00111A64(uint *param_1);
@@ -438,6 +449,7 @@ void func_0015D6F4(int param_1,undefined4 param_2,undefined4 param_3,int *param_
   }
   cVar2 = *(char *)(param_1 + 0x8c0);
   if (((cVar2 != '\a' && cVar2 != '\b') && cVar2 != '\t') || (*(int *)(param_1 + 0x8bc) < 2)) {
+    /* walker update: local_164.. is the input block (position, orientation, settings) */
     func_001EA96C(*(undefined4 *)(param_1 + 0x984),&local_164);
     iVar16 = *piVar14;
     iVar8 = 0;

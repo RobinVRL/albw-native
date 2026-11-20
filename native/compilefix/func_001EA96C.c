@@ -1,3 +1,31 @@
+/* ===================================================================================================
+ * WALL WALKER - what this function is (read this first)
+ *
+ * func_001EA96C(walker, input) moves a "wall walker": the part of an actor that can merge into a wall
+ * and slide along it as a painting. Link has one (called from 00342C24, his movement step). Yuga, the
+ * Eastern Palace boss, has his own (EnemyMedium +0x984, called every frame from 0015D6F4).
+ *
+ * Inputs
+ *   walker  the walker object. Fields used most:
+ *             +0x30  position (x, y, z)
+ *             +0x3B40 position written back each frame (the owner reads it)
+ *             +0x3BAE MODE: 0 = free (not in a wall), 1 = merged into a wall, 2 = leaving a wall
+ *   input   a block the owner fills each frame (like a controller for the walker):
+ *             +0x00  position          +0x0C..+0x2C  orientation rows (+0x24 = facing)
+ *             +0x44  reach (how close a wall face must be)
+ *             +0x68  owner's model      +0x90 / +0x9C / +0xA0  wall query settings and filters
+ *             +0x95  "stay merged" flag (used when MODE is not 0)
+ *
+ * Flow (line markers "WALKER:" below)
+ *   1. Already merged and +0x95 set: follow the wall, write the position, return.
+ *   2. Otherwise MODE = 0, then ask the collision system for wall faces near the position.
+ *   3. Test each face: is it close enough (reach), facing the right way, inside its edges?
+ *   4. No face passed: return 0 (stay free). This is where Yuga's walker currently stops.
+ *   5. A face passed: snap onto it, MODE = 1 (merged) or 2 (leaving), return.
+ *
+ * The rest of this file is machine-converted (Ghidra) and hard to read; only the marked places are
+ * explained. Known fixes in it are listed in the header comment below.
+ * =================================================================================================== */
 /* USA 001EA96C: converted stage-2 text (build/decomp/ghidra_fallback/ghidra_analyzed5_v4/001/func_001EA96C.c,
  * the player's per-frame update, 80 KB) with one fix: the lost FIRST store of a stack Vec3 passed by
  * address (class lostframe, BOOT_LOG 127). EU 001EAB14..001EAB38 (and the second, external-velocity
@@ -537,6 +565,7 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   #define local_1d40 (*(float *********** *)(albw_frame + 0x1f0))
   #define local_30 (*(float *********** *)(albw_frame + 0x1f00))
   #define local_2c (*(float * *)(albw_frame + 0x1f04))
+  /* WALKER: local_1e28 points at MODE (+0x3BAE); local_2c is the input block, local_30 the walker. Step 1 follows: already merged -> follow the wall and return */
   local_1e28 = (uint *)((int)param_1 + 0x3bae);
   local_1e58 = (float ************)(param_1 + 0xed3);
   local_1de0 = param_1 + 0xed6;
@@ -685,6 +714,7 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   func_0049F5FC(local_30 + 2);
   func_0049F5FC(local_30 + 6);
   pppppppppppfVar52 = local_30;
+  /* WALKER: step 2: not merged (or merge not kept): MODE = 0 (free), then look for a wall */
   *(byte *)local_1e28 = 0;
   local_1e50 = local_30 + 0xec0;
   ppppppppppfVar22 = (float **********)0x0;
@@ -799,6 +829,7 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   pppppppppppfVar52[0x26] = (float **********)local_1f00[1];
   pppppppppppfVar52[0x27] = (float **********)local_1f00[2];
   pppppppppppfVar52[0x28] = ppppppppppfVar22;
+  /* WALKER: step 2: collect wall faces near the position (collision query, or the faces given by input +0x90) */
   if (local_2c[0x24] == 0.0) {
     local_1f28[4] = (float ***********)*DAT_001eb3fc;
     local_1f14 = (float ***********)DAT_001eb3fc[1];
@@ -900,6 +931,7 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   local_1f28[3] = pppppppppppfVar52;
   local_1f28[2] = (float ***********)DAT_001ebb28;
   ppppppppppppfVar85 = (float ************)&DAT_0000000f;
+  /* WALKER: step 2: second collision query; no faces at all -> step 4 (return) */
   func_004AAF44(*DAT_001eb404,(float *)local_1f00,local_1f28 + 2,0x1f,0xf,ALBW_AS_F32(ppppppppppfVar22));
   pppppppppppfVar83 = local_30;
   if (**pppppppppppfVar52 == (float *********)0x0) goto LAB_001fe470;
@@ -1341,6 +1373,7 @@ LAB_001ec928:
       pppppppppfVar48 = (float *********)((int)pppppppppfVar48 + 1);
       in_stack_ffffe0d4 = pppppppppppfVar9;
     }
+    /* WALKER: step 4: no face passed the tests (close enough, facing, inside edges) -> stay free, return 0 */
     if (local_1e54 == (float ***********)0x0) goto LAB_001fe470;
     pppppppppppfVar83[10] = (float **********)local_1e54;
   }
@@ -3317,6 +3350,7 @@ LAB_001f6210:
     else {
       bVar20 = 2;
     }
+    /* WALKER: step 5: MODE = 2 (leaving the wall) when we were merged, else 0 */
     *(byte *)local_1e28 = bVar20;
     ppppppppppfVar22 = (float **********)0x0;
     if ((float *)ALBW_PTR_BITS(local_2c[0x27]) != (float *)0x0) {
@@ -10841,6 +10875,7 @@ LAB_001fc61c:
   }
 LAB_001fc7a8:
   pppppppppppfVar15 = local_30;
+  /* WALKER: step 5: a face was found: MODE = 1 (merged into the wall) */
   *(byte *)local_1e28 = 1;
   local_1e50[0x29] = local_1e50[0xf];
   *local_1ddc = (float **********)local_30[10][4];
@@ -11964,6 +11999,7 @@ LAB_001fe4b8:
       func_0043285C((uint *)local_1e30,ALBW_AS_F32(uVar70));
     }
   }
+/* WALKER: end: walker stays free */
 LAB_001fe470:
   *(char *)local_1e2c = '\0';
   return 0;
