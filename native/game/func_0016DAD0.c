@@ -1,7 +1,12 @@
 /* USA 0016DAD0 (EU 0016DAD0): the generated Ghidra text did not compile (a float moved into a
  * local Ghidra typed int*: "(int *)pfVar10[0xc]"), so the function was a tripwire stub. Fixed as
  * a bit copy (the EU code copies the word); rest unchanged. Confidence: medium (the rest of
- * this large float-heavy function is unreviewed Ghidra output). */
+ * this large float-heavy function is unreviewed Ghidra output).
+ * BOOT_LOG 160av: the model's bounding sphere / box (+0xD0..+0xF4: centre, radius, min, max) were
+ * stored as `param_1[i] = <float>` into an undefined4 array - a VALUE conversion (radius 1.3 -> the
+ * integer 1). Now bit copies (ALBW_AS_U32), as in the converted text and the ARM (vstr). With radius
+ * bits 0x00000001 (a denormal) the scene registration 004CE0BC (`0 < radius`) failed for models
+ * without a culling flag: Link's wall painting (merged into a wall) was never drawn. */
 #include "ghidra_types.h"
 
 extern int func_00100118(int param_1,undefined *param_2,int param_3,int param_4);
@@ -387,9 +392,9 @@ void func_0016DAD0(undefined4 *param_1,int *param_2,undefined4 param_3,undefined
       fVar27 = ALBW_AS_F32(uVar28);
       fVar34 = ALBW_AS_F32(((ulonglong)uVar33 >> 0x20));
       fVar32 = ALBW_AS_F32(uVar33);
-      param_1[0x36] = (fVar27 + fVar34) * fVar26;
-      param_1[0x34] = (fVar30 + fVar29) * fVar26;
-      param_1[0x35] = (fVar31 + fVar32) * fVar26;
+      param_1[0x36] = ALBW_AS_U32((fVar27 + fVar34) * fVar26);
+      param_1[0x34] = ALBW_AS_U32((fVar30 + fVar29) * fVar26);
+      param_1[0x35] = ALBW_AS_U32((fVar31 + fVar32) * fVar26);
       fVar25 = (fVar29 - fVar30) * fVar26;
       fVar24 = (fVar32 - fVar31) * fVar26;
       fVar26 = (fVar34 - fVar27) * fVar26;
@@ -399,13 +404,13 @@ void func_0016DAD0(undefined4 *param_1,int *param_2,undefined4 param_3,undefined
       if (fVar24 <= fVar26) {
         fVar24 = fVar26;
       }
-      param_1[0x37] = fVar24;
-      param_1[0x38] = fVar30;
-      param_1[0x39] = fVar31;
-      param_1[0x3a] = fVar27;
-      param_1[0x3b] = fVar29;
-      param_1[0x3c] = fVar32;
-      param_1[0x3d] = fVar34;
+      param_1[0x37] = ALBW_AS_U32(fVar24);
+      param_1[0x38] = ALBW_AS_U32(fVar30);
+      param_1[0x39] = ALBW_AS_U32(fVar31);
+      param_1[0x3a] = ALBW_AS_U32(fVar27);
+      param_1[0x3b] = ALBW_AS_U32(fVar29);
+      param_1[0x3c] = ALBW_AS_U32(fVar32);
+      param_1[0x3d] = ALBW_AS_U32(fVar34);
     }
   }
   return;
