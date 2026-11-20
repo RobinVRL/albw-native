@@ -2334,6 +2334,12 @@ void render_exec_op(const ROp *op) {
             render_set_attrib_const(op->unit, op->u.attrib.konst);
         break;
     case ROP_DRAW:
+        {   /* debug: ALBW_SKIP_DRAW=1 drops every plain draw op (native producers, live blocks
+               without an attribute base); 2 only those (flag 0x80) - find a draw on screen */
+            static int sk = -1;
+            if (sk < 0) { const char *e = getenv("ALBW_SKIP_DRAW"); sk = e ? atoi(e) : 0; }
+            if (sk == 1 || (sk == 2 && (op->flags & 0x80))) break;
+        }
         if (op->u.draw.indexed && (op->flags & 0x80)) {
             /* index address from a PICA index register (28-bit offset, base 0: sdk/h3d.c live
                translation): the top bits are those of the bound vertex arrays (same allocation) */

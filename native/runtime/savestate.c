@@ -223,6 +223,52 @@ static void note(const char *fmt, ...) {
     fprintf(stderr, "savestate: %s\n", g_note);
 }
 
+/* ------------------------------------------------------------------ old states: effect textures
+ * The effect library builds a texture command block for each emitter of JackAll.ptcl when the
+ * game boots (003F8674, from the file's texture records):
+ *   {0x11001 -> 0x80} {0 -> 0x81} {size -> 0x82} {sampler -> 0x83} {0 -> 0x84} {address >> 3 -> 0x85} ...
+ * States saved by builds before 160aw hold blocks whose address points at the wrong data (not a
+ * texture), so glows were drawn as solid squares (Yuga's aura, the arrow flash) for as long as
+ * one played from such a state - re-saving keeps them, because the blocks are only built at boot.
+ * The blocks sit at the same addresses in every boot, so a load repairs them: before the state's
+ * memory is written back, the current (freshly booted) blocks pointing into JackAll's texture
+ * section are recorded; afterwards, a block at the same place with the same layout, size, sampler
+ * and format but another address gets the recorded address back. */
+extern uint32_t g_eft_tex_lo, g_eft_tex_hi __attribute__((weak));
+typedef struct { uint32_t off, addr, size, samp, fmt; } EftTex;
+static int eft_block_at(const uint32_t *w, size_t i, size_t n) {
+    return i >= 11 && i + 3 < n && w[i + 1] == 0x000F0085u && w[i - 1] == 0x000F0084u && w[i - 3] == 0x000F0083u &&
+           w[i - 5] == 0x000F0082u && w[i - 7] == 0x000F0081u && w[i - 9] == 0x000F0080u && w[i + 3] == 0x000F008Eu;
+}
+static EftTex *eft_texture_scan(const uint8_t *base, size_t bytes, size_t *count) {
+    *count = 0;
+    if (!&g_eft_tex_lo || !g_eft_tex_lo) return NULL;
+    const uint32_t *w = (const uint32_t *)base;
+    size_t n = bytes / 4, cap = 0;
+    EftTex *out = NULL;
+    for (size_t i = 11; i + 3 < n; i++) {
+        if (w[i + 1] != 0x000F0085u || !eft_block_at(w, i, n)) continue;
+        uint32_t a = w[i] << 3;
+        if (a < g_eft_tex_lo || a >= g_eft_tex_hi) continue;
+        if (*count == cap) { cap = cap ? cap * 2 : 256; EftTex *t = realloc(out, cap * sizeof *out); if (!t) break; out = t; }
+        out[(*count)++] = (EftTex){(uint32_t)(i * 4), w[i], w[i - 6], w[i - 4], w[i + 2]};
+    }
+    return out;
+}
+static int eft_texture_repair(uint8_t *base, size_t bytes, const EftTex *t, size_t count) {
+    uint32_t *w = (uint32_t *)base;
+    size_t n = bytes / 4;
+    int fixed = 0;
+    for (size_t k = 0; k < count; k++) {
+        size_t i = t[k].off / 4;
+        if (!eft_block_at(w, i, n) || w[i] == t[k].addr) continue;
+        if (w[i - 6] != t[k].size || w[i - 4] != t[k].samp || w[i + 2] != t[k].fmt) continue;
+        w[i] = t[k].addr;
+        fixed++;
+    }
+    return fixed;
+}
+
 typedef struct { AlbwCtx ctx; uintptr_t sp, base; uint32_t len; } MainHdr;
 
 /* for ss_convert.c: the records' layout and the saved ranges */
@@ -422,17 +468,33 @@ static void do_load(int slot) {
     if (albw_os_ss_check(b, why, sizeof why)) goto fail;
     for (int i = 0; i < 2; i++)
         if (albw_mem_ss_resize(i, (uint32_t)memn[i])) FAIL("memory resize failed");
+    /* the freshly booted effect texture blocks, for eft_texture_repair below */
+    EftTex *eft[2];
+    size_t neft[2];
+    for (int i = 0; i < 2; i++) {
+        uint8_t *base; uint32_t c;
+        albw_mem_ss_region(i, &base, &c);
+        eft[i] = eft_texture_scan(base, c < memn[i] ? c : memn[i], &neft[i]);
+    }
     /* 2. write back (no way back from here) */
+    int eft_fixed = 0;
     for (int i = 0; i < 2; i++) {
         uint8_t *base; uint32_t c;
         albw_mem_ss_region(i, &base, &c);
         memcpy(base, mem[i], memn[i]);
+        eft_fixed += eft_texture_repair(base, memn[i], eft[i], neft[i]);
+        free(eft[i]);
     }
+    if (eft_fixed) fprintf(stderr, "savestate: %d effect texture blocks from an older build repaired\n", eft_fixed);
     uint8_t *vb; size_t vsz;
     albw_gfx_vram(&vb, &vsz);
     memcpy(vb, vram, vn < vsz ? vn : vsz);
     b->rd = rng_at;
+    uint32_t eft_lo = &g_eft_tex_lo ? g_eft_tex_lo : 0, eft_hi = &g_eft_tex_hi ? g_eft_tex_hi : 0;
     for (int i = 0; i < g_nranges; i++) { ss_get_u32(b); memcpy(g_ranges[i].p, ss_peek(b, g_ranges[i].n), g_ranges[i].n); }
+    /* the effect texture section is this boot's (states from older builds hold 0 here): keep it for
+       the next load's repair */
+    if (&g_eft_tex_lo && eft_lo) { g_eft_tex_lo = eft_lo; g_eft_tex_hi = eft_hi; }
     pmem_arena_restore(arena, an);
     h3d_ss_state((void *)h3, hn, 1);
     if (render_pool_import(pool, pn) || fraglight_import(flr, fn) || light_ss_import(lsd, ln))

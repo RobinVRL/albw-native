@@ -810,6 +810,14 @@ static void draw(const ROp *op) {
                 fprintf(stderr, "h3d-vtx: draws %u, with a colour attribute %u, of those colour scale 0: %u\n", total, with_col, zero_scale);
         }
     }
+    {   /* debug: ALBW_SKIP_TEX=<hex>: drop draws sampling that texture on unit 0 (find a draw on screen) */
+        static long skip = -2;
+        if (skip == -2) { const char *e = getenv("ALBW_SKIP_TEX"); skip = e ? (long)strtoul(e, NULL, 16) : -1; }
+        if (skip >= 0 && render_texunit(0)->addr == (uintptr_t)skip) return;
+        static int skeft = -1;   /* ALBW_SKIP_EFT=1: drop the draws of live (nw::eft) blocks */
+        if (skeft < 0) skeft = getenv("ALBW_SKIP_EFT") != NULL;
+        if (skeft && (op->flags & 2)) return;
+    }
     H3dVtx *v = g_cur;
     if (!v || !v->addr || !v->stride || !op->u.ext.b) {
         if (getenv("ALBW_H3D_DROPTRACE")) fprintf(stderr, "h3d-drop: no vertex buffer (v %p addr %#lx stride %u count %u)\n", (void *)v, v ? (unsigned long)v->addr : 0ul, v ? (unsigned)v->stride : 0u, (unsigned)op->u.ext.b);

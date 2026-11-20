@@ -34,11 +34,17 @@ void func_006003D8(uint32_t pname, uint32_t *out);
 uint32_t func_002E39E8__decomp(uint32_t self, uint32_t pass, uint32_t arg);
 void func_003F7CC4__decomp(uint32_t sys, uint32_t heap, uint32_t data, uint32_t id, uint32_t arg5);
 
+/* JackAll's texture section [lo, hi), for the save-state repair of its texture blocks
+ * (runtime/savestate.c eft_texture_repair) */
+uint32_t g_eft_tex_lo, g_eft_tex_hi;
+
 /* the programs of a PTCL's shader section, in section order */
 static void register_programs(uint32_t data) {
     static int done;   /* effects.c's table is JackAll's order: the first PTCL (JackAll, at boot) */
     if (done || !data || G32(data, 0) != 0x44425053u) return;   /* "SPBD" */
     done = 1;
+    g_eft_tex_lo = data + G32(data, 0x14);   /* header +0x14 texture section offset, +0x18 size */
+    g_eft_tex_hi = g_eft_tex_lo + G32(data, 0x18);
     uint32_t off = G32(data, 0x1C), size = G32(data, 0x20);
     if (!off || !size || size > (4u << 20)) return;
     uint32_t s0 = data + off, s1 = s0 + size, k = s0;
