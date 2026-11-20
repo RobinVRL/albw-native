@@ -1219,6 +1219,14 @@ int plat_poll(void) {
      * motion, frontend menu: input.c, mapping from input.cfg */
     uint32_t kb, gp, cp;
     int quit_ev = !input_update(&in, &kb, &gp, &cp);
+    {   /* ALBW_INPUT_TRACE=1: every change of the keyboard / controller button words (which source
+         * pressed Start, Select, ...); read per call (a save state restores statics) */
+        static uint32_t pkb, pgp;
+        if ((kb != pkb || gp != pgp) && getenv("ALBW_INPUT_TRACE"))
+            fprintf(stderr, "input: f=%ld keyboard %#x controller %#x%s%s\n", g_plat_frames, kb, gp,
+                    ((kb | gp) & KEY_START) ? " START" : "", ((kb | gp) & KEY_SELECT) ? " SELECT" : "");
+        pkb = kb; pgp = gp;
+    }
     /* QUIT binding (Escape): the Esc menu, not an exit. The MENU binding (controller: Guide, or both
      * sticks clicked; F1) opens it as well: without a keyboard (Steam Deck) it was out of reach */
     if (quit_ev || in.menu) {
