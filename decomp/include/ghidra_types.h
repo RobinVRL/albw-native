@@ -172,8 +172,13 @@ static inline uint64_t albw_bits_u64(double d) { uint64_t u; __builtin_memcpy(&u
  * operands contribute their low 32 (64) bits (Ghidra's SUBPIECE of a 64-bit value). */
 #define ALBW_AS_F32(x) _Generic((x), float: (x), \
     default: albw_bits_f32((uint32_t)(uintptr_t)(x)))
+/* double: an ARM single-precision result that C computed in double (SQRT is __builtin_sqrt,
+ * float math with a double constant): round to float and take its bits, as vmov rX, sY does.
+ * Without this case `ALBW_AS_U32(SQRT(d)) > 0x40E00000` compared the VALUE (9.0 -> 9) with
+ * float bits, so every distance test of that form failed (Yuga never left the wall). */
 #define ALBW_AS_U32(x) _Generic((x), \
     float: albw_bits_u32(_Generic((x), float: (x), default: 0.0f)), \
+    double: albw_bits_u32((float)_Generic((x), double: (x), default: 0.0)), \
     default: (uint32_t)(uintptr_t)(x))
 #define ALBW_AS_F64(x) _Generic((x), double: (x), \
     default: albw_bits_f64((uint64_t)(x)))
@@ -188,6 +193,7 @@ static inline uint64_t albw_bits_u64(double d) { uint64_t u; __builtin_memcpy(&u
 /* (T *)<float expr>: a register/slot copy of the 32 bits, never a conversion */
 #define ALBW_PTR_BITS(x) _Generic((x), \
     float: (uintptr_t)albw_bits_u32(_Generic((x), float: (x), default: 0.0f)), \
+    double: (uintptr_t)albw_bits_u32((float)_Generic((x), double: (x), default: 0.0)), \
     default: (x))
 /* X._0_3_ = v: the 3 low bytes (strh + strb) */
 static inline void albw_set3(void *p, uint32_t v)

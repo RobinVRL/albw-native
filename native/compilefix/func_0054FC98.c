@@ -35,7 +35,9 @@ extern int DAT_0054ff60;
 // GLOBAL DAT_0054ff5c float *
 // GLOBAL DAT_0054ff60 int
 
-float func_0054FC98(float *param_1,float *param_2,undefined1 *param_3,float fparam_0)
+/* returns the path entry index (an integer in r0 on ARM; it was returned as a float, i.e. in the
+ * x87 register on x86, and the caller 0015C774 never received it - BOOT_LOG 160as) */
+uint func_0054FC98(float *param_1,float *param_2,undefined1 *param_3,float fparam_0)
 
 {
   float fVar1;
@@ -163,14 +165,14 @@ float func_0054FC98(float *param_1,float *param_2,undefined1 *param_3,float fpar
       if ((uint)ALBW_AS_U32(fVar5) <= (uint)ALBW_AS_U32(fVar6)) {
         fVar6 = 0.0;
       }
-      return fVar6;
+      return ALBW_AS_U32(fVar6);
     }
     fVar6 = ALBW_AS_F32(((int)ALBW_AS_U32(fVar6) + -1));
     if ((uint)ALBW_AS_U32(fVar5) <= (uint)ALBW_AS_U32(fVar6)) {
       fVar6 = ALBW_AS_F32(((int)ALBW_AS_U32(fVar5) + -1));
     }
-    return fVar6;
+    return ALBW_AS_U32(fVar6);
   }
-  return fVar6;
+  return ALBW_AS_U32(fVar6);
 }
 

@@ -38,6 +38,9 @@
  * at the yard's south ledge and he never dropped down. */
 // MAPFIX-INTEGRATED v1
 #include "ghidra_types.h"
+extern void *stderr;
+int fprintf(void *, const char *, ...);
+char *getenv(const char *);
 
 extern int func_00100118(int param_1,undefined *param_2,int param_3,int param_4);
 extern int func_00100174(int *param_1);
@@ -450,6 +453,9 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   undefined8 in_d15;
   float ************ppppppppppppfVar85;
   #define in_stack_ffffe0d4 (*(float *********** *)(albw_frame + 0x4)) /* V4: frame slot (callee-filled) */
+  /* sp+0: x of a vector a call just wrote with &stack0xffffe0d0 (y is in_stack_ffffe0d4 = sp+4, z is
+   * local_1f28[0] = sp+8). The Ghidra text read x / y from stale variables after those calls. */
+  #define sp_x (*(float *********** *)(albw_frame + 0x0))
   #define local_1f28 ((float *********** *)(albw_frame + 0x8))
   #define local_1f14 (*(float *********** *)(albw_frame + 0x1c))
   #define local_1f10 (*(float *********** *)(albw_frame + 0x20))
@@ -1025,6 +1031,17 @@ LAB_001ebff4:
                fVar5 * ALBW_AS_F32(pppppppppppfVar74[0xc]);
       in_d11 = CONCAT44(fVar55,fVar5);
       pppppppppppfVar33 = (float ***********)ALBW_PTR_BITS((ALBW_AS_F32(pppppppppppfVar50) - fVar55));
+      if (getenv("ALBW_WALK_TRACE")) {   /* WALKER debug: one line per wall face tested */
+        extern long g_plat_frames;
+        fprintf(stderr, "walk: f=%ld walker %p face %d v (%.3f %.3f %.3f) n (%.3f %.3f %.3f) reach %.3f dist %.3f limit %.3f n2 (%.3f %.3f %.3f) n3 (%.3f %.3f %.3f) pos (%.3f %.3f %.3f)\n",
+                g_plat_frames, (void *)local_30, (int)(long)pppppppppfVar48,
+                ALBW_AS_F32(in_stack_ffffe0d4), ALBW_AS_F32(pppppppppppfVar34), fVar5,
+                ALBW_AS_F32(*pppppppppppfVar17), ALBW_AS_F32(pppppppppppfVar74[0xb]), ALBW_AS_F32(pppppppppppfVar74[0xc]),
+                ALBW_AS_F32(pppppppppppfVar50), ALBW_AS_F32(pppppppppppfVar33), ALBW_AS_F32(ppppppppppfVar22),
+                ALBW_AS_F32(*pppppppppppfVar49), ALBW_AS_F32(pppppppppppfVar74[0xe]), ALBW_AS_F32(pppppppppppfVar74[0xf]),
+                ALBW_AS_F32(*local_1f14), ALBW_AS_F32(local_1f14[1]), ALBW_AS_F32(local_1f14[2]),
+                ALBW_AS_F32(local_1f04), ALBW_AS_F32(local_1f00[0]), ALBW_AS_F32(local_1f00[1]));
+      }
       if (ALBW_AS_F32(pppppppppppfVar33) == ALBW_AS_F32(pppppppppppfVar15)) {
 LAB_001ec3a4:
         if (ALBW_AS_F32(pppppppppppfVar33) <= ALBW_AS_F32(pppppppppppfVar15)) goto LAB_001ec3c4;
@@ -1159,8 +1176,8 @@ LAB_001ec38c:
             local_1e64 = local_1ea4;
             func_00115C54((float *)&stack0xffffe0d0,(float *)(local_1f28 + 2),(float *)&local_1e6c);
             fVar5 = ALBW_AS_F32(pppppppppppfVar50) * ALBW_AS_F32(pppppppppppfVar50) -
-                    (ALBW_AS_F32(ppppppppppppfVar85) * ALBW_AS_F32(ppppppppppppfVar85) +
-                     ALBW_AS_F32(pppppppppppfVar9) * ALBW_AS_F32(pppppppppppfVar9) +
+                    (ALBW_AS_F32(sp_x) * ALBW_AS_F32(sp_x) +
+                     ALBW_AS_F32(in_stack_ffffe0d4) * ALBW_AS_F32(in_stack_ffffe0d4) +
                     ALBW_AS_F32(local_1f28[0]) * ALBW_AS_F32(local_1f28[0]));
             if (ALBW_AS_F32(pppppppppppfVar15) < fVar5) goto LAB_001ec38c;
           }
@@ -1168,6 +1185,9 @@ LAB_001ec38c:
 LAB_001ec3c4:
         bVar44 = false;
       }
+      if (getenv("ALBW_WALK_TRACE"))   /* WALKER debug: did the sphere test pass */
+        fprintf(stderr, "walk:   face %d sphere %s pen %.3f gap-limit %.3f\n", (int)(long)pppppppppfVar48, bVar44 ? "PASS" : "fail",
+                ALBW_AS_F32(pppppppppppfVar53), ALBW_AS_F32(pppppppppppfVar81));
       if (bVar44) {
         pppppppppppfVar53 = (float ***********)ALBW_PTR_BITS((ALBW_AS_F32(local_1eb0) - ALBW_AS_F32(pppppppppppfVar53)));
         if (ALBW_AS_F32(pppppppppppfVar53) <= ALBW_AS_F32(pppppppppppfVar15)) {
@@ -1218,8 +1238,8 @@ LAB_001ec3c4:
           }
           func_00115C70((float *)&stack0xffffe0d0,(float *)local_1d70,(float *)&local_1f04);
           iVar35 = 0;
-          fVar5 = *DAT_001ebfb4 * ALBW_AS_F32(ppppppppppppfVar85) +
-                  DAT_001ebfb4[1] * ALBW_AS_F32(pppppppppppfVar9) + DAT_001ebfb4[2] * ALBW_AS_F32(local_1f28[0])
+          fVar5 = *DAT_001ebfb4 * ALBW_AS_F32(sp_x) +
+                  DAT_001ebfb4[1] * ALBW_AS_F32(in_stack_ffffe0d4) + DAT_001ebfb4[2] * ALBW_AS_F32(local_1f28[0])
           ;
           uVar67 = CONCAT44(pppppppppppfVar15,fVar5);
           iVar21 = 0;
@@ -1243,36 +1263,34 @@ LAB_001ec3c4:
               iVar37 = iVar21 + 1;
             }
             else {
+              /* WALKER: slice the wall triangle at the walker's height. The edge from this corner
+               * (height fVar5) to the next one (height fVar55) crosses the slice when the heights
+               * have opposite signs: add the crossing point. EU 1EC620..1EC6EC. The Ghidra text had
+               * this test garbled (NAN branches, one direction only): walls were never found. */
               iVar37 = iVar21;
-              if (NAN(fVar5) || NAN(fVar58)) {
-                if (fVar58 < fVar55) {
-                  iVar37 = iVar21 + 1;
-                  local_1f14 = (float ***********)(local_1dd8 + iVar21 * 3);
-                  fVar5 = -fVar5 / (fVar55 - fVar5);
-                  func_00115C70((float *)&local_1d4c,(float *)ppppppppppppfVar13,
-                                (float *)ppppppppppppfVar40);
-                  local_1f28[0] = local_1d4c;
-                  local_1f28[1] = local_1d48;
-                  local_1f28[2] = local_1d44;
-                  func_00115DAC((float *)local_1f14,(float *)local_1f28,(float *)ppppppppppppfVar40,
-                                fVar5);
-                }
-              }
-              else if (fVar55 < fVar58) {
+              if ((fVar58 < fVar5 && fVar55 < fVar58) || (fVar5 < fVar58 && fVar58 < fVar55)) {
                 local_1f14 = (float ***********)(local_1dd8 + iVar21 * 3);
-                fVar5 = fVar5 / (fVar5 - fVar55);
+                fVar5 = fVar5 / (fVar5 - fVar55);   /* 0..1 along the edge */
                 func_00115C70((float *)&local_1e98,(float *)ppppppppppppfVar13,
-                              (float *)ppppppppppppfVar40);
+                              (float *)ppppppppppppfVar40);   /* edge = next - this corner */
                 local_1eac = (float ************)local_1e98;
                 local_1ea8 = local_1e94;
                 local_1ea4 = local_1e90;
                 func_00115DAC((float *)local_1f14,(float *)&local_1eac,(float *)ppppppppppppfVar40,
-                              fVar5);
+                              fVar5);   /* point = this corner + edge * t */
                 iVar37 = iVar21 + 1;
               }
             }
             fVar5 = fVar55;
           } while ((iVar37 < 2) && (iVar35 = iVar35 + 1, iVar21 = iVar37, iVar35 < 3));
+          if (getenv("ALBW_WALK_TRACE"))   /* WALKER debug: crossing points of the face at the walker's height */
+            fprintf(stderr, "walk:   face %d slice points %d tri (%.3f %.3f %.3f) (%.3f %.3f %.3f) (%.3f %.3f %.3f) pos (%.3f %.3f %.3f) up (%.3f %.3f %.3f)\n",
+                    (int)(long)pppppppppfVar48, iVar37,
+                    ALBW_AS_F32(local_1d70[0]), ALBW_AS_F32(local_1d70[1]), ALBW_AS_F32(local_1d70[2]),
+                    ALBW_AS_F32(local_1d70[3]), ALBW_AS_F32(local_1d70[4]), ALBW_AS_F32(local_1d70[5]),
+                    ALBW_AS_F32(local_1d70[6]), ALBW_AS_F32(local_1d70[7]), ALBW_AS_F32(local_1d70[8]),
+                    ALBW_AS_F32(local_1f04), ALBW_AS_F32(local_1f00[0]), ALBW_AS_F32(local_1f00[1]),
+                    DAT_001ebfb4[0], DAT_001ebfb4[1], DAT_001ebfb4[2]);
           if (iVar37 == 1) {
             fVar5 = (ALBW_AS_F32(pppppppppppfVar83[0xc]) - ALBW_AS_F32(local_1dd8[0])) *
                     (ALBW_AS_F32(pppppppppppfVar83[0xc]) - ALBW_AS_F32(local_1dd8[0])) +
@@ -1289,8 +1307,8 @@ LAB_001ec3c4:
             func_00115C70((float *)&stack0xffffe0d0,(float *)&local_1dcc,(float *)local_1dd8);
             fVar5 = ALBW_AS_F32(((ulonglong)uVar67 >> 0x20));
             local_1f14 = local_1f28[0];
-            local_1f28[3] = (float ***********)ppppppppppppfVar85;
-            local_1f28[4] = pppppppppppfVar9;
+            local_1f28[3] = sp_x;
+            local_1f28[4] = in_stack_ffffe0d4;
             fVar55 = func_0068906C((float *)&local_1e4c,(float *)(local_1f28 + 3));
             func_0042D5B0((float *)(pppppppppppfVar83 + 0xc),(float *)local_1dd8,
                           (float *)&local_1e4c,(float *)&local_1e00);
@@ -1389,9 +1407,9 @@ LAB_001ec928:
     local_1f00[1] = local_1f28[0];
     local_1e80 = local_1f28[0];
     local_1e7c = local_1eb0;
-    local_1f04 = (float ***********)ppppppppppppfVar85;
+    local_1f04 = sp_x;
     local_1f00[0] = in_stack_ffffe0d4;
-    local_1e88 = (float ***********)ppppppppppppfVar85;
+    local_1e88 = sp_x;
     local_1e84 = in_stack_ffffe0d4;
     func_00115C70((float *)&stack0xffffe0d4,(float *)&local_1e88,(float *)(ppppppppppfVar22 + 9));
     ppppppppppfVar56 = ppppppppppfVar22 + 0xf;
@@ -1471,7 +1489,7 @@ LAB_001eba4c:
           local_1dd8[2] = local_1f28[2];
           func_00115C54((float *)&stack0xffffe0d0,(float *)&local_1e08,(float *)local_1dd8);
           fVar5 = ALBW_AS_F32(pppppppppppfVar74) * ALBW_AS_F32(pppppppppppfVar74) -
-                  (ALBW_AS_F32(ppppppppppppfVar85) * ALBW_AS_F32(ppppppppppppfVar85) +
+                  (ALBW_AS_F32(sp_x) * ALBW_AS_F32(sp_x) +
                    ALBW_AS_F32(in_stack_ffffe0d4) * ALBW_AS_F32(in_stack_ffffe0d4) +
                   ALBW_AS_F32(local_1f28[0]) * ALBW_AS_F32(local_1f28[0]));
           if (ALBW_AS_F32(pppppppppppfVar15) < fVar5) goto LAB_001eba4c;
@@ -1509,7 +1527,7 @@ LAB_001ebd94:
       local_1f14 = local_1e94;
       func_00115C70((float *)&stack0xffffe0d0,(float *)&local_1f04,(float *)(local_1f28 + 3));
       local_1ea4 = local_1f28[0];
-      local_1eac = ppppppppppppfVar85;
+      local_1eac = (float ************)sp_x;
       local_1ea8 = in_stack_ffffe0d4;
       func_00115C70((float *)local_1f28,(float *)&local_1eac,(float *)(ppppppppppfVar22 + 9));
       uVar80 = (undefined4)((ulonglong)lVar69 >> 0x20);
@@ -10841,7 +10859,7 @@ LAB_001fc61c:
             func_00115C70((float *)&stack0xffffe0d0,(float *)&local_1e9c,
                           (float *)(ppppppppppfVar73 + 0xf));
             func_00115D70((float *)&local_1ec8,(float *)(ppppppppppfVar73 + 6),
-                          ALBW_AS_F32(ppppppppppfVar73[6]) * ALBW_AS_F32(pppppppppppfVar17) +
+                          ALBW_AS_F32(ppppppppppfVar73[6]) * ALBW_AS_F32(sp_x) +
                           ALBW_AS_F32(ppppppppppfVar73[7]) * ALBW_AS_F32(in_stack_ffffe0d4) +
                           ALBW_AS_F32(ppppppppppfVar73[8]) * ALBW_AS_F32(local_1f28[0]));
             local_1f28[3] = local_1ec8;
@@ -11162,7 +11180,7 @@ LAB_001fcf3c:
     }
     local_1eb0 = (float ***********)&local_1ec4;
     func_00115C54((float *)&stack0xffffe0d0,(float *)&local_1ed0,(float *)local_1eb0);
-    if ((uint)ALBW_AS_U32((fVar55 * ALBW_AS_F32(pppppppppppfVar15[0x18]) +
+    if ((uint)ALBW_AS_U32((ALBW_AS_F32(sp_x) * ALBW_AS_F32(pppppppppppfVar15[0x18]) +
                ALBW_AS_F32(in_stack_ffffe0d4) * ALBW_AS_F32(pppppppppppfVar15[0x19]) +
               ALBW_AS_F32(local_1f28[0]) * ALBW_AS_F32(pppppppppppfVar15[0x1a]))) <= (uint)ALBW_AS_U32(DAT_001fc488)) {
       pppppppppfVar48 = (float *********)0x0;
@@ -11345,7 +11363,7 @@ code_r0x001fd180:
                     local_1da0 = local_1f28[3];
                     func_00115C54((float *)&stack0xffffe0d0,(float *)&local_1d9c,
                                   (float *)&local_1da8);
-                    fVar54 = fVar55 * fVar55 + ALBW_AS_F32(in_stack_ffffe0d4) * ALBW_AS_F32(in_stack_ffffe0d4) +
+                    fVar54 = ALBW_AS_F32(sp_x) * ALBW_AS_F32(sp_x) + ALBW_AS_F32(in_stack_ffffe0d4) * ALBW_AS_F32(in_stack_ffffe0d4) +
                              ALBW_AS_F32(local_1f28[0]) * ALBW_AS_F32(local_1f28[0]);
                     fVar57 = ALBW_AS_F32(pppppppppppfVar49) * ALBW_AS_F32(pppppppppppfVar49) - fVar54;
                     pppppppppppfVar52 = local_1ebc;

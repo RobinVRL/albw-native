@@ -579,6 +579,11 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", "func_003CC230", NULL };
         for (int i = 0; never_blocks[i]; i++)
             if (!strcmp(s->name, never_blocks[i])) return v;
+        /* right after `call <next instruction>` (E8 00 00 00 00, the PIC "get my address" trick at the
+         * start of a function: the callee is the next line, it returns at once): never a live frame,
+         * a leftover word in a reused stack slot - keep it (user slot 4 was refused for
+         * func_0064E9F4+0xF after a rebuild changed that function) */
+        if (off >= 5 && oc[off - 5] == 0xE8 && rd32(oc + off - 4) == 0) return v;
         if (n->size != osz || !same_code(c, oc, (const uint8_t *)(uintptr_t)n->addr, osz)) {
             uint32_t na = callsite_map(c, s, n, oc, osz, v);
             if (!na) na = frame_point_tail(c, s, oc, osz, v);
@@ -588,6 +593,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
                 return na;
             }
             if (!c->err) snprintf(c->why, sizeof c->why, "%s was running and changed in this build", s->name);
+            logw(c, at, v, v, "REFUSED", s->name, off);   /* which stack word stopped the load */
             c->err = 1;
             return v;
         }
