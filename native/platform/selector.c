@@ -57,7 +57,7 @@ static int g_sel_autotap;                  /* frames of a tap when moving onto a
 static uint32_t g_sel_prev;
 static GLuint g_sel_tex;
 
-static int sel_active(void) { return g_layout_cfg.single_screen && g_layout_cfg.show_bottom; }
+static int sel_active(void) { return g_layout_cfg.single_screen && g_layout_cfg.show_bottom && !g_ss_front; }
 
 static int sel_nearest(int page, int x, int y) {
     const SelTarget *t = SEL_PAGES[page].t;

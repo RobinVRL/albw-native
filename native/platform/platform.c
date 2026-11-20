@@ -625,9 +625,15 @@ static void plat_layout_changed(void) {
 /* single-screen mode (layout.cfg single_screen, F9, Esc menu > Video): one screen at a time, the
  * top one; the SCREEN binding (Tab / right-stick click) brings the bottom one up in its place and
  * back. Touch follows the screen that is shown (layout_hit). */
+/* Bottom screen brought up for the title's file select (see plat_poll): while set, the game keeps
+ * Start and the D-pad (its own file cursor), the bottom-screen selector stays off, and the top
+ * screen comes back by itself once Link is in the field. */
+static int g_ss_front;
+
 static void plat_single_screen_set(int on) {
     g_layout_cfg.single_screen = on != 0;
     g_layout_cfg.show_bottom = 0;
+    g_ss_front = 0;
     if (on) {
         /* always one window: join separate windows (not saved: turning the mode off restores
          * them) and size it for one screen */
@@ -712,7 +718,9 @@ static void plat_reset_press(void) {
 static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
     g_layout_cfg.show_bottom ^= 1;
-    if (getenv("ALBW_SEL_TRACE")) fprintf(stderr, "selector: single-screen shows the %s screen\n", g_layout_cfg.show_bottom ? "bottom" : "top");
+    g_ss_front = 0;   /* a manual flip takes over from the file-select switch */
+    extern long g_plat_frames;
+    if (getenv("ALBW_SEL_TRACE")) fprintf(stderr, "selector: f=%ld single-screen shows the %s screen\n", g_plat_frames, g_layout_cfg.show_bottom ? "bottom" : "top");
     plat_windows_visibility();
     plat_layout_update();
     plat_layout_title();
@@ -1300,9 +1308,22 @@ int plat_poll(void) {
     static long field_frame = -100000;
     if (&albw_dbg_player && albw_dbg_player) { field_frame = g_plat_frames; albw_dbg_player = NULL; }
     int in_field = g_plat_frames - field_frame < 600;
+    /* File select: the save list ("Select a file") is on the bottom screen, the top only previews
+     * the highlighted file. In single-screen mode, Start or A at the title (not in the field)
+     * brings the bottom screen up; the top comes back once the player update runs (a save was
+     * loaded). The game keeps its buttons meanwhile (g_ss_front). */
+    if (g_layout_cfg.single_screen) {
+        uint32_t pressed = in.held & ~prev;
+        if (!in_field && !g_layout_cfg.show_bottom && (pressed & (KEY_START | KEY_A))) {
+            plat_single_screen_flip();
+            g_ss_front = 1;
+        } else if (in_field && g_ss_front && g_plat_frames == field_frame) {
+            plat_single_screen_flip();   /* clears g_ss_front */
+        }
+    }
     /* Start flips while the bottom screen is up (a menu may stay open any time) or in the field;
      * not at the title / file select, where Start belongs to the game. No automatic flip. */
-    if (g_layout_cfg.single_screen && (in_field || g_layout_cfg.show_bottom)) {
+    if (g_layout_cfg.single_screen && !g_ss_front && (in_field || g_layout_cfg.show_bottom)) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
          * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
          * does not use Select on the field. */
