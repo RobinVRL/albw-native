@@ -1,7 +1,7 @@
 /* USA 00171510 (EU 00171510): draw the wall painting strip (Link or Yuga merged into a wall).
  * Draw item of the painting model (class at 0x30035B14; native/PAINTING.md).
  *
- *   if the model is visible and its strip has triangles:
+ *   if the model is visible in this draw layer (param_2) and its strip has triangles:
  *     1. material setup (001708A0, as for any model); its texture = the flat-Link render texture
  *     2. the model matrix (model +0x1F0, 3x4) -> float uniforms from register *(+0x98)+0x1A
  *     3. patch the strip's command block: vertex count = triangles * 3, one more word from +0x1E4
@@ -20,12 +20,16 @@ extern int func_003CC1E4(undefined4 *param_1, uint param_2);
 extern int func_003CC230(uint *param_1, undefined4 *param_2, int param_3, uint param_4);
 uint h3d_rec_matrix34(uint cmd, int reg, uint mtx);
 void h3d_texture_word_check(uint word);
+int h3d_blob_known(uintptr_t addr);
+void h3d_blob_drop(uintptr_t addr);
 
 undefined4 func_00171510(int *param_1, undefined4 param_2, int *param_3, int param_4) {
     int ret_slot = param_4;   /* [sp]: 003CC230 stores the CALL's return slot here */
-    (void)param_2;
     int model = param_1[0x2B];   /* the painting model ("m8") */
-    if (!(**(code **)(*param_1 + 0x10))(param_1) || **(int **)(model + 0x178) * 3 == 0)
+    /* visible in this draw layer? vt+0x10 = 005234B8(item, layer): the ARM passes r1 (param_2, the
+     * layer) through unchanged; the converted text dropped it, so the test read a stray value and
+     * the painting could stay hidden (user slot 5, 160ay) */
+    if (!((int (*)(int *, undefined4))(*(int *)(*param_1 + 0x10)))(param_1, param_2) || **(int **)(model + 0x178) * 3 == 0)
         return 0;   /* hidden, or no triangles this frame */
 
     /* 1. material. Its texture block was pointed at the flat-Link render texture after load
@@ -45,6 +49,10 @@ undefined4 func_00171510(int *param_1, undefined4 param_2, int *param_3, int par
 
     /* 4. CALL the strip's command block (+0x20, +0x24 = size in 8-byte units) */
     int block = *(int *)(buf + 0x20), size8 = *(int *)(buf + 0x24);
+    /* the block is rebuilt here every frame and translated at the CALL (h3d_translate_call); a decode
+     * registered at this heap address (a model that used the memory before, kept by a save state)
+     * would run instead of the strip: drop it */
+    if (block != 0 && h3d_blob_known((uintptr_t)(uint)block)) h3d_blob_drop((uintptr_t)(uint)block);
     if (block != 0) {
         uint *p = (uint *)func_003CC1E4((undefined4 *)*param_3, (*param_3 - param_3[2] & 0xFFFFFFFCU) + 0x18);
         *param_3 = (int)p;

@@ -352,11 +352,6 @@ static void dec_write(Dec *d, uint32_t reg, uint32_t v, uint32_t mask) {
     d->reg[reg] = (d->reg[reg] & ~m) | (v & m);
     if (reg != 0xE0 || (mask & 2)) d->written[reg] = 1;   /* 0xE0 byte 1: the combiner buffer bits */
     v = d->reg[reg];
-    if (d->live && (reg == 0x85 || reg == 0x82 || reg == 0x8E)) {   /* debug ALBW_TEXREG_TRACE=1 */
-        static int tr = -1;
-        if (tr < 0) tr = getenv("ALBW_TEXREG_TRACE") != NULL;
-        if (tr) fprintf(stderr, "texreg: %#x = %#x at word %#x\n", (unsigned)reg, (unsigned)v, (unsigned)d->word_addr);
-    }
     if (d->live) {
         if (reg == 0x2CB) { d->ncode = 0; d->code_new = 1; }
         else if (reg >= 0x2CC && reg <= 0x2D3) { if (d->ncode < 512) d->code[d->ncode++] = v; }
@@ -587,9 +582,9 @@ static void dec_finish(Dec *d) {
             static int tex_trace = -1;   /* debug ALBW_TEX_TRACE=1: texture units set by live (eft) command lists */
             if (tex_trace < 0) tex_trace = getenv("ALBW_TEX_TRACE") != NULL;
             if (d->live && tex_trace)
-                fprintf(stderr, "tex: unit %d addr %#x size %ux%u fmt %u  written dim %d addr %d fmt %d  reg82 %#x at word %#x\n", u,
+                fprintf(stderr, "tex: unit %d addr %#x size %ux%u fmt %u  written dim %d addr %d fmt %d  reg82 %#x\n", u,
                         (unsigned)op.u.ext.a, (unsigned)(op.u.ext.b & 0xFFFF), (unsigned)(op.u.ext.b >> 16), (unsigned)(op.u.ext.c & 0xF),
-                        d->written[r[1]], d->written[r[4]], d->written[r[5]], (unsigned)d->reg[r[1]], (unsigned)d->word_addr);
+                        d->written[r[1]], d->written[r[4]], d->written[r[5]], (unsigned)d->reg[r[1]]);
         }
         if (d->written[r[0]] || d->written[r[2]]) {
             uint32_t pr = d->reg[r[2]];

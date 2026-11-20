@@ -13,6 +13,10 @@ CFLAGS=(-m32 -std=gnu11 -O2 -g -Wall -Wextra -Wno-unused-parameter -fno-strict-a
 # the decompiled objects stay uninstrumented (ASan still checks their malloc / memcpy / memset
 # calls). The normal build/albw is untouched.
 NOBJ=$B/nobj OUT=$B/albw LDSAN=()
+# ALBW_LINK_OUT=<path>: link a debug / experimental binary there instead of build/albw (the binary the
+# player runs: relinking it mid-session means save states taken meanwhile come from a build that
+# later disappears; its <path>.ssmap is written next to it)
+[[ -n "${ALBW_LINK_OUT:-}" ]] && OUT=$ALBW_LINK_OUT
 if [[ "${ALBW_SANITIZE:-0}" == 1 ]]; then
     # globals not instrumented: the link renames / patches objects after compilation and ASan's global
     # registration then reads a broken descriptor at start-up (odr-violation + nested crash)
