@@ -1041,6 +1041,12 @@ static void ext_op(const ROp *op) {
 }
 
 static int ext_call(uintptr_t addr, uint32_t size) {
+    {   /* debug: ALBW_H3D_CALL_TRACE=<lo>-<hi> (hex addresses): log every executed blob CALL in range */
+        static uintptr_t lo = 1, hi = 0;
+        if (lo == 1) { const char *e = getenv("ALBW_H3D_CALL_TRACE"); lo = 0; if (e) { char *x; lo = strtoul(e, &x, 16); hi = *x == '-' ? strtoul(x + 1, NULL, 16) : lo; } }
+        if (hi && addr >= lo && addr <= hi) { extern long g_plat_frames __attribute__((weak));
+            fprintf(stderr, "h3d-call: f=%ld blob %#lx size %u %s\n", &g_plat_frames ? g_plat_frames : 0L, (unsigned long)addr, size, blob_find(addr) ? "" : "(never decoded)"); }
+    }
     pthread_mutex_lock(&g_mx);
     Blob *b = blob_find(addr);
     if (!b) {

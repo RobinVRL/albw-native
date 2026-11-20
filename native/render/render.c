@@ -1910,7 +1910,13 @@ void render_draw_indexed(int prim, const void *indices, int index_u16, uint32_t 
      * 63 vertices) bind a program family not written yet (effects.c: v0 is a 3D position there, not a
      * quad corner). Drawn with the quad program they became screen-wide shards: skip them until that
      * program exists. A non-instanced quad program draws one particle = 6 indices. */
-    if (R.prog_id == RPROG_EFT && !(R.vsb & 16) && count > 6) { unlock(); return; }
+    if (R.prog_id == RPROG_EFT && !(R.vsb & 16) && count > 6) {
+        static int keep = -1, tr = -1;   /* debug: ALBW_EFT_PRIM=1 draws them anyway, ALBW_EFT_PRIM_TRACE=1 logs skips */
+        if (keep < 0) { keep = getenv("ALBW_EFT_PRIM") != NULL; tr = getenv("ALBW_EFT_PRIM_TRACE") != NULL; }
+        if (tr) { extern long g_plat_frames __attribute__((weak));
+                  fprintf(stderr, "eft-prim: f=%ld skipped %u indices (vertices %u..%u) b %#x\n", &g_plat_frames ? g_plat_frames : 0L, (unsigned)count, (unsigned)mn, (unsigned)mx, (unsigned)R.vsb); }
+        if (!keep) { unlock(); return; }
+    }
     if (draw_setup(mn, mx)) {
         size_t isz = (size_t)count * (index_u16 ? 2 : 1);
         size_t o = stream(GL_ELEMENT_ARRAY_BUFFER, R.ibo, &R.ibo_off, STREAM_BYTES / 4, indices, isz);

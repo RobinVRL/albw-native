@@ -956,12 +956,23 @@ static void apply_mapper(Dec *d, uint32_t mapper) {
 /* every decoded blob's arguments, for re-decoding when the game patches its words (render/h3d.c
  * ext_call compares the words' hash at each call; BOOT_LOG 155) */
 typedef struct { uint32_t addr, words, mapper, src; uint64_t hash; int npre; ROp pre[2]; } BlobArgs;
+/* Two 32-bit fingerprints of a blob's words, packed in one 64-bit value:
+ *   high half: the command headers only (odd word positions: register number and mask),
+ *   low half:  every word.
+ * A patch by the game (a material bound to a render texture after load, e.g. Link's wall-painting
+ * texture) changes data words only: same high half, new low half -> decode again. A staging buffer
+ * reused for unrelated data changes the headers too -> keep the old decode (that misfire darkened
+ * the overworld in the first experiment, BOOT_LOG 155). */
 static uint64_t bwords_hash(uint32_t src, uint32_t words) {
     const uint32_t *w = (const uint32_t *)GA(src);
-    uint64_t h = 0xcbf29ce484222325ull ^ words;
-    for (uint32_t i = 0; i < words; i++) h = (h ^ w[i]) * 0x100000001b3ull;
-    return h;
+    uint32_t hdr = 2166136261u ^ words, all = 2166136261u ^ words;
+    for (uint32_t i = 0; i < words; i++) {
+        all = (all ^ w[i]) * 16777619u;
+        if (i & 1) hdr = (hdr ^ w[i]) * 16777619u;
+    }
+    return (uint64_t)hdr << 32 | all;
 }
+#define BLOB_CHECK_MAX_WORDS 64   /* material texture blocks are 12 words: check small blobs only */
 static BlobArgs *g_bargs;
 static size_t g_nbargs, g_capbargs;
 static pthread_mutex_t g_bargs_mx = PTHREAD_MUTEX_INITIALIZER;
@@ -973,9 +984,9 @@ static BlobArgs *bargs_find(uint32_t addr) {
     }
 }
 static void bargs_put(uint32_t addr, uint32_t words, const ROp *prefix, int npre, uint32_t mapper) {
-    static int on = -1;   /* only for the ALBW_H3D_REDECODE experiment (see h3d_blob_check) */
-    if (on < 0) on = getenv("ALBW_H3D_REDECODE") != NULL;
-    if (!on) return;
+    static int on = -1;   /* recorded for h3d_blob_check, only with ALBW_H3D_REDECODE=1 (experiment) */
+    if (on < 0) { const char *e = getenv("ALBW_H3D_REDECODE"); on = e && strcmp(e, "0"); }
+    if (!on || words > BLOB_CHECK_MAX_WORDS) return;
     pthread_mutex_lock(&g_bargs_mx);
     if ((g_nbargs + 1) * 2 > g_capbargs) {
         size_t nc = g_capbargs ? g_capbargs * 2 : 8192;
@@ -1012,11 +1023,11 @@ static int g_blob_marked;
  * their staging copy) changed since the decode - a material's textures bound after load, e.g. an
  * overworld area's map model after an area switch - decode again (BOOT_LOG 155). */
 void h3d_blob_check(uintptr_t a) {
-    /* EXPERIMENT, off by default (ALBW_H3D_REDECODE=1): with the staging copy as the source the
-     * check fires on reused staging buffers and the re-decode reads garbage (whole overworld dark);
-     * from the VRAM copy it does too. Kept for the investigation of BOOT_LOG 155. */
+    /* Experiment, off by default (ALBW_H3D_REDECODE=1). Only small blobs are recorded
+     * (BLOB_CHECK_MAX_WORDS), and a blob is decoded again only when its data words changed but its
+     * command headers did not (see bwords_hash): a real patch, not a reused buffer. */
     static int on = -1;
-    if (on < 0) on = getenv("ALBW_H3D_REDECODE") != NULL;
+    if (on < 0) { const char *e = getenv("ALBW_H3D_REDECODE"); on = e && strcmp(e, "0"); }
     if (!on || !a) return;
     uint32_t addr = (uint32_t)GPTR_OF(a);
     pthread_mutex_lock(&g_bargs_mx);
@@ -1024,7 +1035,11 @@ void h3d_blob_check(uintptr_t a) {
     int changed = 0;
     if (b) {
         uint64_t cur = bwords_hash(b->src, b->words);
-        if (cur != b->hash) { b->hash = cur; changed = 1; c = *b; }
+        if (cur != b->hash) {
+            int same_headers = (cur >> 32) == (b->hash >> 32);
+            b->hash = cur;   /* remember the new words either way */
+            if (same_headers) { changed = 1; c = *b; }
+        }
     }
     pthread_mutex_unlock(&g_bargs_mx);
     if (!changed) return;
