@@ -974,6 +974,7 @@ static void draw(const ROp *op) {
             q_before = before;
         }
     }
+    { extern unsigned long g_render_draws; g_render_draws++; }
     glDrawElements(PRIM[op->u.ext.c % 3], (GLsizei)op->u.ext.b, u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE, 0);
     if (qon) {
         pEndQ(0x8914);

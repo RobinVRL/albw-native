@@ -811,6 +811,7 @@ static Surface *display_image(Display *d, int w, int h, int fmt) {
     return d->img;
 }
 
+unsigned long g_render_draws;   /* draws executed (both paths; ALBW_PASS_TRACE) */
 int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw, int dh, int dfmt, int flip, int aa) {
     if (!src || !dst || sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0 || !render_ready()) return 0;
     lock();
@@ -829,6 +830,24 @@ int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw
     if (!s) s = surface_get(a, sw, sh, sfmt, false);
     Display *d = display_at((uintptr_t)dst);
     Surface *t = d ? display_image(d, dw, dh, dfmt) : surface_get((uintptr_t)dst, dw, dh, dfmt, false);
+    {   /* debug ALBW_PASS_TRACE=1: each copy to a display with the draws since that display's last copy */
+        static int tr = -1;
+        static uintptr_t last_dst[4]; static unsigned long last_n[4];
+        if (tr < 0) tr = getenv("ALBW_PASS_TRACE") != NULL;
+        if (tr && d) {
+            int k = 0;
+            while (k < 4 && last_dst[k] && last_dst[k] != (uintptr_t)dst) k++;
+            if (k < 4) {
+                extern long g_plat_frames __attribute__((weak));
+                if (!last_dst[k]) { last_dst[k] = (uintptr_t)dst; last_n[k] = g_render_draws; }
+                static unsigned long last_any;
+                fprintf(stderr, "pass: f=%ld copy %p+%d rows -> display %p %dx%d draws %lu since-any %lu\n", &g_plat_frames ? g_plat_frames : 0L,
+                        (void *)a, off_rows, dst, dw, dh, g_render_draws - last_n[k], g_render_draws - last_any);
+                last_n[k] = g_render_draws;
+                last_any = g_render_draws;
+            }
+        }
+    }
     int ok = 0;
     if (s && t && s != t) {
         int S = R.scale;
@@ -1735,6 +1754,7 @@ static const GLenum ATTR_GL[4] = {GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT}
 static const GLenum PRIM_GL[3] = {GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN};
 
 static bool draw_setup(uint32_t vmin, uint32_t vmax) {
+    g_render_draws++;
     if (!R.cur_fbo) { WARN_ONCE("draw without a render target (dropped)"); return false; }
     /* the platform layer / scan-out rebind other framebuffers and state between frames */
     glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
