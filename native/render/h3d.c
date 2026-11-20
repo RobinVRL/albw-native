@@ -766,7 +766,9 @@ static void draw(const ROp *op) {
         }
     }
     H3dVtx *v = g_cur;
-    if (!v || !v->addr || !v->stride || !op->u.ext.b) { g_st.dropped++; return; }
+    if (!v || !v->addr || !v->stride || !op->u.ext.b) {
+        if (getenv("ALBW_H3D_DROPTRACE")) fprintf(stderr, "h3d-drop: no vertex buffer (v %p addr %#lx stride %u count %u)\n", (void *)v, v ? (unsigned long)v->addr : 0ul, v ? (unsigned)v->stride : 0u, (unsigned)op->u.ext.b);
+        g_st.dropped++; return; }
     uintptr_t ia = op->flags & 1 ? (uintptr_t)op->u.ext.a : index_addr(v, op->u.ext.a);
     int u16 = op->flags & 1 ? op->unit : (int)(op->u.ext.a >> 31);
     /* an index buffer outside VRAM and the game memory areas is a bad address: drop the draw,
@@ -800,7 +802,9 @@ static void draw(const ROp *op) {
         if (pr == RPROG_H3D_DEFAULT && wv == noat) { render_frag_state()->alpha_test = 0; render_frag_dirty(); }
         (void)pr;
     }
-    if (!render_draw_bind()) { pthread_mutex_unlock(&g_mx); g_st.dropped++; return; }
+    if (!render_draw_bind()) {
+        if (getenv("ALBW_H3D_DROPTRACE")) fprintf(stderr, "h3d-drop: render_draw_bind failed\n");
+        pthread_mutex_unlock(&g_mx); g_st.dropped++; return; }
     glBindVertexArray(v->vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->ibo);
     /* constant attributes, and (0, 0, 0, 1) for inputs the mesh does not provide */

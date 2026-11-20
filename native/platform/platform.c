@@ -625,6 +625,14 @@ static void plat_layout_changed(void) {
 /* single-screen mode (layout.cfg single_screen, F9, Esc menu > Video): one screen at a time, the
  * top one; the SCREEN binding (Tab / right-stick click) brings the bottom one up in its place and
  * back. Touch follows the screen that is shown (layout_hit). */
+/* At the title or the file select: no player, or the title's hidden player, which the game parks at
+ * (1000, 1000, 1000). Used by the single-screen file-select switch (plat_poll). */
+static int at_title(void) {
+    const float *albw_debug_player_pos(void);
+    const float *p = albw_debug_player_pos();
+    return !p || (p[0] == 1000.0f && p[1] == 1000.0f && p[2] == 1000.0f);
+}
+
 /* Bottom screen brought up for the title's file select (see plat_poll): while set, the game keeps
  * Start and the D-pad (its own file cursor), the bottom-screen selector stays off, and the top
  * screen comes back by itself once Link is in the field. */
@@ -1309,12 +1317,19 @@ int plat_poll(void) {
     if (&albw_dbg_player && albw_dbg_player) { field_frame = g_plat_frames; albw_dbg_player = NULL; }
     int in_field = g_plat_frames - field_frame < 600;
     /* File select: the save list ("Select a file") is on the bottom screen, the top only previews
-     * the highlighted file. In single-screen mode, Start or A at the title (not in the field)
+     * the highlighted file. In single-screen mode, Start or A at the title (no player yet)
      * brings the bottom screen up; the top comes back once the player update runs (a save was
      * loaded). The game keeps its buttons meanwhile (g_ss_front). */
     if (g_layout_cfg.single_screen) {
         uint32_t pressed = in.held & ~prev;
-        if (!in_field && !g_layout_cfg.show_bottom && (pressed & (KEY_START | KEY_A))) {
+        /* at_title(), not "!in_field": during a long
+         * cutscene (Yuga's speech) the player update pauses for over 10 s, and every A press to
+         * advance the text flipped to the bottom screen - the map covered the scene (user). */
+        if ((pressed & (KEY_START | KEY_A)) && getenv("ALBW_SEL_TRACE")) {
+            const float *albw_debug_player_pos(void); const float *pp = albw_debug_player_pos();
+            fprintf(stderr, "selector: f=%ld press, player %s %.3f %.3f %.3f\n", g_plat_frames, pp ? "yes" : "no", pp ? pp[0] : 0, pp ? pp[1] : 0, pp ? pp[2] : 0);
+        }
+        if (at_title() && !g_layout_cfg.show_bottom && (pressed & (KEY_START | KEY_A))) {
             plat_single_screen_flip();
             g_ss_front = 1;
         } else if (in_field && g_ss_front && g_plat_frames == field_frame) {

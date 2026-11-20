@@ -860,6 +860,25 @@ int render_transfer(const void *src, int sw, int sh, int sfmt, void *dst, int dw
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, t->fbo);
         rglBlitFramebuffer(0, (int)(sy0f * S), bw * S, (int)(sy1f * S), 0, (int)(dy0f * S), ow * S, (int)(dy1f * S), GL_COLOR_BUFFER_BIT,
                            (ax > 1 || ay > 1) ? GL_LINEAR : GL_NEAREST);
+        /* The colour buffer at 0x1F000080 is shared by the screens: each frame the top screen is
+         * drawn into it and copied to its display (twice, one per eye), and every other frame the
+         * bottom screen is drawn into rows 80-400 and copied to the bottom display. Once a region
+         * has been copied to a DISPLAY its contents are not needed any more: clear exactly that
+         * region (colour 0, depth far, stencil 0), so the next pass starts clean even if its own
+         * clear draw fails. Before, a pass that drew nothing (user slot 3, Eastern Palace 1F) left
+         * the bottom screen's map in the buffer and it was copied to the top screen ("the items
+         * menu keeps coming up"). Copies to other surfaces (captures used later in the frame) keep
+         * it. ALBW_KEEP_AFTER_SCANOUT=1 turns this off. */
+        if (d && s->fbo && !getenv("ALBW_KEEP_AFTER_SCANOUT")) {
+            static const float black[4] = {0, 0, 0, 0};
+            glBindFramebuffer(GL_FRAMEBUFFER, s->fbo);
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(0, (int)(sy0f * S), bw * S, (int)((sy1f - sy0f) * S));
+            glDepthMask(GL_TRUE);
+            rglClearBufferfv(GL_COLOR, 0, black);
+            rglClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0);
+            glDisable(GL_SCISSOR_TEST);
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, R.cur_fbo);
         R.frag_dirty = true;
         if (d) d->valid = true;
@@ -1539,7 +1558,15 @@ int render_draw_bind(void) {
 }
 
 void render_draw_done(void) {
-    if (dumping()) dump_draw_after(g_ext_before, "extdraw", 0);
+    if (dumping()) {
+        dump_draw_after(g_ext_before, "extdraw", 0);
+        if (R.prog_id == RPROG_EFT) {   /* particle uniforms: colour c82, texture repeat c83, block 0 scale / tex params */
+            const float *c = R.vsf;
+            rlog("dump:     eft c82 %g %g %g %g c83 %g %g %g %g | P2 %g %g %g %g P3 %g %g %g %g P4 %g %g %g %g",
+                 c[82*4], c[82*4+1], c[82*4+2], c[82*4+3], c[83*4], c[83*4+1], c[83*4+2], c[83*4+3],
+                 c[2*4], c[2*4+1], c[2*4+2], c[2*4+3], c[3*4], c[3*4+1], c[3*4+2], c[3*4+3], c[4*4], c[4*4+1], c[4*4+2], c[4*4+3]);
+        }
+    }
     glBindVertexArray(0);
     R.st.draws++;
     unlock();
@@ -1626,6 +1653,9 @@ static int fog_bind(void) {
 #define SH_CHANGED(field, src) (!S->sh_valid || memcmp(S->field, (src), sizeof S->field))
 static void upload_uniforms(Program *p) {
     UniShadow *S = ush_of(p);
+    static int no_shadow = -1;   /* debug ALBW_NO_USHADOW=1: send every uniform every draw (read once) */
+    if (no_shadow < 0) no_shadow = getenv("ALBW_NO_USHADOW") != NULL;
+    if (no_shadow) S->sh_valid = 0;
     if (p->ws >= 0 && (!S->sh_valid || S->sh_ws != g_cur_fy)) { glUniform1f(p->ws, g_cur_fy); S->sh_ws = g_cur_fy; }
     if (SH_CHANGED(sh_c, R.vsf)) { glUniform4fv(p->c, RENDER_VS_FLOATS, R.vsf); memcpy(S->sh_c, R.vsf, sizeof S->sh_c); }
     if (!S->sh_valid || S->sh_b != (GLint)R.vsb) { glUniform1i(p->b, R.vsb); S->sh_b = R.vsb; }
@@ -1815,10 +1845,11 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
                  R.unit[u].h, R.unit[u].fmt, R.unit[u].min, R.unit[u].mag, R.unit[u].min_level, R.unit[u].max_level);
     const RFragState *f = &R.frag;
     rlog("dump: %s %u prog %d/%d target %#lx vp %d,%d %dx%d sc %d(%d,%d %dx%d) cmask %x blend %d(%d,%d) depth %d/%d/%d "
-         "stencil %d alpha %d/%d/%d cull %d tex %x -> changed %zu lit %zu",
+         "stencil %d alpha %d/%d/%d cull %d tex %x eq %d/%d logic %d/%d -> changed %zu lit %zu",
          kind, count, R.prog_id, R.prog_variant, (unsigned long)R.cur_c->addr, R.vp[0], R.vp[1], R.vp[2], R.vp[3],
          R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
          f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
+         f->eq_rgb, f->eq_a, f->logic_enable, f->logic_op,
          changed, lit);
     for (int i = 0; i < 6; i++) {
         const RTevStage *t = &R.tev.stage[i];

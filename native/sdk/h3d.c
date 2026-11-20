@@ -566,6 +566,12 @@ static void dec_finish(Dec *d) {
             op.u.ext.b = (d->reg[r[1]] >> 16 & 0x7FF) | (d->reg[r[1]] & 0x7FF) << 16;
             op.u.ext.c = (d->reg[r[5]] & 0xF) | ((d->reg[r[3]] >> 16) & 0xF) << 8 | ((d->reg[r[3]] >> 24) & 0xF) << 12; /* format, max / min level (LOD register) */
             ol_push(&d->ops, &op);
+            static int tex_trace = -1;   /* debug ALBW_TEX_TRACE=1: texture units set by live (eft) command lists */
+            if (tex_trace < 0) tex_trace = getenv("ALBW_TEX_TRACE") != NULL;
+            if (d->live && tex_trace)
+                fprintf(stderr, "tex: unit %d addr %#x size %ux%u fmt %u  written dim %d addr %d fmt %d  reg82 %#x\n", u,
+                        (unsigned)op.u.ext.a, (unsigned)(op.u.ext.b & 0xFFFF), (unsigned)(op.u.ext.b >> 16), (unsigned)(op.u.ext.c & 0xF),
+                        d->written[r[1]], d->written[r[4]], d->written[r[5]], (unsigned)d->reg[r[1]]);
         }
         if (d->written[r[0]] || d->written[r[2]]) {
             uint32_t pr = d->reg[r[2]];
