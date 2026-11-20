@@ -23,6 +23,13 @@
  *   4. No face passed: return 0 (stay free). This is where Yuga's walker currently stops.
  *   5. A face passed: snap onto it, MODE = 1 (merged) or 2 (leaving), return.
  *
+ * Painting strip (what is drawn on the wall; full story in native/PAINTING.md)
+ *   While merged, the wall the actor covers is cut into segments (walker +0xA4 count, 0x9C bytes
+ *   each, start +0x70 / end +0x74 along the wall). Each frame: add the segment under the actor,
+ *   extend it over neighbouring faces (0064CB28), keep segments with length (WALK_SEG_HAS_LENGTH),
+ *   then turn them into quads in the painting model's free strip buffer (002C1658 swaps buffers,
+ *   0043285C finishes). The draw item 00171510 draws the strip with the flat sprite texture.
+ *
  * The rest of this file is machine-converted (Ghidra) and hard to read; only the marked places are
  * explained. Known fixes in it are listed in the header comment below.
  * =================================================================================================== */
@@ -455,7 +462,14 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   #define in_stack_ffffe0d4 (*(float *********** *)(albw_frame + 0x4)) /* V4: frame slot (callee-filled) */
   /* sp+0: x of a vector a call just wrote with &stack0xffffe0d0 (y is in_stack_ffffe0d4 = sp+4, z is
    * local_1f28[0] = sp+8). The Ghidra text read x / y from stale variables after those calls. */
-  #define sp_x (*(float *********** *)(albw_frame + 0x0))
+/* WALKER: a painting segment is kept only when its start (+0x70) and end (+0x74) differ by more
+ * than 2^-23. The ARM tests the bits of (start - end) against 0xB4000000 / 0x34000000 (= -/+2^-23);
+ * the converted text cast the float's value to an int instead, so every short segment read as 0 and
+ * was dropped: Link's wall painting got no strip to draw. */
+#define WALK_SEG_HAS_LENGTH(a, b) \
+  ((ALBW_AS_F32((a)[0x1c]) - ALBW_AS_F32((b)[0x1d])) < -1.1920929e-7f || \
+   (ALBW_AS_F32((a)[0x1c]) - ALBW_AS_F32((b)[0x1d])) > 1.1920929e-7f)
+#define sp_x (*(float *********** *)(albw_frame + 0x0))
   #define local_1f28 ((float *********** *)(albw_frame + 0x8))
   #define local_1f14 (*(float *********** *)(albw_frame + 0x1c))
   #define local_1f10 (*(float *********** *)(albw_frame + 0x20))
@@ -581,6 +595,12 @@ undefined4 func_001EA96C(float ***********param_1,float *param_2)
   if ((*(char *)((int)param_2 + 0x95) != '\0' && local_1dfc != (float ***********)0x0) &&
      (puVar4 = (uint *)func_002C1658((int)ALBW_AS_U32(param_2[0x1a])), pppppppppppfVar52 = local_30, *puVar4 != 0
      )) {
+    if (getenv("ALBW_WALK_TRACE")) {   /* WALKER debug: step 1 (stay merged): position and step along the wall */
+      extern long g_plat_frames;
+      fprintf(stderr, "walk: f=%ld stay walker %p pos (%.3f %.3f %.3f) step %.4f %.4f vel (%.3f %.3f %.3f) row0 (%.3f %.3f %.3f)\n",
+              g_plat_frames, (void *)local_30, local_2c[0], local_2c[1], local_2c[2], local_2c[0xc], local_2c[0xd],
+              local_2c[0xe], local_2c[0xf], local_2c[0x10], local_2c[3], local_2c[4], local_2c[5]);
+    }
     local_30[0x12] = (float **********)ALBW_PTR_BITS(local_2c[3]);
     local_30[0x13] = (float **********)ALBW_PTR_BITS(local_2c[4]);
     local_30[0x14] = (float **********)ALBW_PTR_BITS(local_2c[5]);
@@ -2164,6 +2184,13 @@ LAB_001ebd94:
   local_30[0x29] = (float **********)0x0;
   local_30[0x77c] = (float **********)0x0;
   pppppppppppfVar78 = local_30 + 0x29;
+  if (getenv("ALBW_WALK_TRACE"))   /* WALKER debug: is the painting segment list rebuilt? */
+    { extern long g_plat_frames;
+      fprintf(stderr, "walk: f=%ld seglist walker %p skip %d dist %g limit %g mode %d pos (%.3f %.3f %.3f) row0 (%.3f %.3f %.3f) row2 (%.3f %.3f %.3f) segs %d\n",
+            g_plat_frames, (void *)local_30, *(char *)(local_30 + 0xf70), ALBW_AS_F32(pppppppppppfVar15), local_2c[0xc], *(byte *)local_1e28,
+            ALBW_AS_F32(local_30[0xc]), ALBW_AS_F32(local_30[0xd]), ALBW_AS_F32(local_30[0xe]),
+            ALBW_AS_F32(local_30[0x12]), ALBW_AS_F32(local_30[0x13]), ALBW_AS_F32(local_30[0x14]),
+            ALBW_AS_F32(local_30[0x18]), ALBW_AS_F32(local_30[0x19]), ALBW_AS_F32(local_30[0x1a]), (int)(long)local_30[0x29]); }
   if (*(char *)(local_30 + 0xf70) == '\0') {
     lVar69 = ZEXT48(pppppppppppfVar15) << 0x20;
     pppppppppppfVar75 = (float ***********)ALBW_PTR_BITS(local_2c[0x15]);
@@ -2977,10 +3004,7 @@ LAB_001f5a48:
               if (ppppppppppfVar22 < ppppppppppfVar73) {
                 ppppppppppfVar30 = ppppppppppfVar30 + (int)ppppppppppfVar22 * 0x27;
               }
-              if ((0xb4000000 <
-                   (uint)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d]))) ||
-                 (0x34000000 < (int)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d])))
-                 ) {
+              if (WALK_SEG_HAS_LENGTH(ppppppppppfVar56, ppppppppppfVar30)) {
                 if (ppppppppppfVar22 < ppppppppppfVar73) {
                   ppppppppppfVar56 = pppppppppppfVar15[0x2b] + (int)ppppppppppfVar22 * 0x27;
                 }
@@ -3338,7 +3362,10 @@ LAB_001f5a48:
                (float *********)ALBW_PTR_BITS((ALBW_AS_F32(uVar72) + ALBW_AS_F32(((ulonglong)uVar72 >> 0x20))));
           pppppppppppfVar34 = local_1ec8;
           if ((int)local_1ec8 <= (int)ALBW_AS_U32(fVar5)) {
-            *(char *)(pppppppppppfVar17 + 0xf70) = '\x01';
+            /* WALKER: reset the painting strip: clear the "skip segment rebuild" flag (+0x3DC0) and the
+             * segment count. The ARM (EU 1EEA3C) stores the same zero register to both; the converted
+             * text stored 1 here, so the strip was never rebuilt and Link's wall painting stayed empty. */
+            *(char *)(pppppppppppfVar17 + 0xf70) = '\0';
             pppppppppppfVar17[0x29] = (float **********)0x0;
             pppppppppppfVar17[0x77c] = (float **********)0x0;
             pppppppppppfVar34 =
@@ -4361,8 +4388,7 @@ LAB_001ee2c4:
         if (ppppppppppfVar22 < ppppppppppfVar73) {
           ppppppppppfVar30 = ppppppppppfVar30 + (int)ppppppppppfVar22 * 0x27;
         }
-        if ((0xb4000000 < (uint)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d]))) ||
-           (0x34000000 < (int)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d])))) {
+        if (WALK_SEG_HAS_LENGTH(ppppppppppfVar56, ppppppppppfVar30)) {
           if (ppppppppppfVar22 < ppppppppppfVar73) {
             ppppppppppfVar56 = pppppppppppfVar74[0x2b] + (int)ppppppppppfVar22 * 0x27;
           }
@@ -4729,8 +4755,7 @@ LAB_001efa3c:
       if (ppppppppppfVar22 < ppppppppppfVar73) {
         ppppppppppfVar30 = ppppppppppfVar30 + (int)ppppppppppfVar22 * 0x27;
       }
-      if ((0xb4000000 < (uint)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d]))) ||
-         (0x34000000 < (int)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d])))) {
+      if (WALK_SEG_HAS_LENGTH(ppppppppppfVar56, ppppppppppfVar30)) {
         if (ppppppppppfVar22 < ppppppppppfVar73) {
           ppppppppppfVar56 = pppppppppppfVar49[2] + (int)ppppppppppfVar22 * 0x27;
         }
@@ -5185,6 +5210,8 @@ LAB_001f0fb8:
     } while (!bVar44 && (int)pppppppppppfVar49 <= (int)pppppppppppfVar9);
   }
   uVar36 = 0;
+  if (getenv("ALBW_WALK_TRACE"))   /* WALKER debug: painting segments copied from the work list */
+    fprintf(stderr, "walk: seg-copy A walker %p target %p work-count %d\n", (void *)local_30, (void *)local_1f00[0], (int)*DAT_001f063c);
   local_1f00[0][0x29] = (float **********)0x0;
   pppppppppppfVar15 = (float ***********)*DAT_001f063c;
   if (0 < (int)pppppppppppfVar15) {
@@ -7878,8 +7905,7 @@ LAB_001f72a4:
       if (ppppppppppfVar22 < ppppppppppfVar73) {
         ppppppppppfVar30 = ppppppppppfVar30 + (int)ppppppppppfVar22 * 0x27;
       }
-      if ((0xb4000000 < (uint)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d]))) ||
-         (0x34000000 < (int)(ALBW_AS_F32(ppppppppppfVar56[0x1c]) - ALBW_AS_F32(ppppppppppfVar30[0x1d])))) {
+      if (WALK_SEG_HAS_LENGTH(ppppppppppfVar56, ppppppppppfVar30)) {
         if (ppppppppppfVar22 < ppppppppppfVar73) {
           ppppppppppfVar56 = pppppppppppfVar15[2] + (int)ppppppppppfVar22 * 0x27;
         }
@@ -8688,6 +8714,8 @@ LAB_001f8858:
     } while (!bVar44 && (int)pppppppppppfVar49 <= (int)pppppppppppfVar9);
   }
   uVar36 = 0;
+  if (getenv("ALBW_WALK_TRACE"))   /* WALKER debug: second segment copy */
+    fprintf(stderr, "walk: seg-copy B walker %p target %p\n", (void *)local_30, (void *)local_1f00[1]);
   local_1f00[1][0x29] = (float **********)0x0;
   pppppppppppfVar15 = (float ***********)*DAT_001f7edc;
   if (0 < (int)pppppppppppfVar15) {

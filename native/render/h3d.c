@@ -369,6 +369,31 @@ void h3d_blob_set(uintptr_t addr, uint32_t bytes, const ROp *ops, int n) {
     pthread_mutex_unlock(&g_mx);
 }
 
+/* the decoded blob whose words contain game address a (linear search: rare callers cache it) */
+int h3d_blob_containing(uintptr_t a, uintptr_t *start, uint32_t *bytes) {
+    int found = 0;
+    pthread_mutex_lock(&g_mx);
+    for (size_t i = 0; i < g_capblob; i++)
+        if (g_blob[i].addr && a >= g_blob[i].addr && a < g_blob[i].addr + g_blob[i].bytes) {
+            *start = g_blob[i].addr; *bytes = g_blob[i].bytes; found = 1; break;
+        }
+    pthread_mutex_unlock(&g_mx);
+    return found;
+}
+/* replace the texture-unit op (H3D_TEXADDR) of one unit in a decoded blob; returns ops replaced */
+int h3d_blob_set_texaddr(uintptr_t blob, const ROp *texop) {
+    int n = 0;
+    pthread_mutex_lock(&g_mx);
+    Blob *b = blob_find(blob);
+    for (int i = 0; b && i < b->n; i++)
+        if (b->ops[i].type == ROP_EXT && b->ops[i].u.ext.kind == H3D_TEXADDR && b->ops[i].unit == texop->unit) {
+            b->ops[i] = *texop;
+            n++;
+        }
+    pthread_mutex_unlock(&g_mx);
+    return n;
+}
+
 H3dVtx *h3d_vtx_new(void) {
     H3dVtx *v = pc(1, sizeof *v);
     pthread_mutex_lock(&g_mx);
@@ -497,15 +522,35 @@ static void vtx_upload(H3dVtx *v, uint32_t verts) {
     if (!v->vbo) glGenBuffers(1, &v->vbo);
     glBindVertexArray(v->vao);
     glBindBuffer(GL_ARRAY_BUFFER, v->vbo);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)verts * v->stride, (const void *)(uintptr_t)v->addr, GL_STATIC_DRAW);
+    /* the game's vertex buffers, one after the other in the GL buffer (usually just one) */
+    int nb = h3d_vtx_ext(v) && v->nbuffers > 1 ? (v->nbuffers < H3D_MAX_VBUF ? v->nbuffers : H3D_MAX_VBUF) : 1;
+    int dyn = h3d_vtx_ext(v) && v->dynamic;
+    size_t off[H3D_MAX_VBUF] = {0}, total = 0;
+    for (int k = 0; k < nb; k++) {
+        uint32_t st = nb > 1 ? v->bstride[k] : v->stride;
+        off[k] = total;
+        total += (size_t)verts * st;
+    }
+    if (nb == 1) {
+        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)total, (const void *)(uintptr_t)v->addr,
+                     dyn ? GL_STREAM_DRAW : GL_STATIC_DRAW);
+    } else {
+        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)total, NULL, dyn ? GL_STREAM_DRAW : GL_STATIC_DRAW);
+        for (int k = 0; k < nb; k++)
+            if (v->baddr[k] && v->bstride[k])
+                glBufferSubData(GL_ARRAY_BUFFER, (GLintptr)off[k], (GLsizeiptr)verts * v->bstride[k],
+                                (const void *)(uintptr_t)v->baddr[k]);
+    }
     for (GLuint r = 0; r < 12; r++) pDisableVertexAttribArray(r);
     for (int i = 0; i < v->nattr; i++) {
         const H3dAttr *a = &v->attr[i];
         if (a->fixed || a->reg >= 12) continue;
+        int k = nb > 1 && a->buf < nb ? a->buf : 0;
+        uint32_t st = nb > 1 ? v->bstride[k] : v->stride;
         /* PICA attributes are converted to float without normalisation; the program applies the
            IrScale factors (c7 / c8) itself */
-        glVertexAttribPointer(a->reg, a->comps, ATYPE[a->type & 3], GL_FALSE, v->stride,
-                              (const void *)(uintptr_t)a->offset);
+        glVertexAttribPointer(a->reg, a->comps, ATYPE[a->type & 3], GL_FALSE, st,
+                              (const void *)(uintptr_t)(off[k] + a->offset));
         glEnableVertexAttribArray(a->reg);
     }
     glBindVertexArray(0);
@@ -785,9 +830,10 @@ static void draw(const ROp *op) {
     }
     pthread_mutex_lock(&g_mx);
     Ibuf *ib = ibuf_get(ia, op->u.ext.b, u16);
-    if (ib->dirty) ibuf_upload(ib);
-    if (v->dirty || v->verts < ib->max_index + 1)
-        vtx_upload(v, v->verts > ib->max_index + 1 && !v->dirty ? v->verts : ib->max_index + 1);
+    int dyn = h3d_vtx_ext(v) && v->dynamic;   /* the CPU rewrites its buffers every frame */
+    if (ib->dirty || dyn) ibuf_upload(ib);
+    if (v->dirty || dyn || v->verts < ib->max_index + 1)
+        vtx_upload(v, v->verts > ib->max_index + 1 && !v->dirty && !dyn ? v->verts : ib->max_index + 1);
     /* the model's own program: the material's DefaultShader variant, unless a shader bind of an
        h3d program (ROP_PROGRAM with a registered DVLE) selected one since */
     /* flag 2: a draw of a live-translated block (nw::eft, sdk/h3d.c h3d_translate_live) keeps the
@@ -1040,6 +1086,7 @@ static void ext_op(const ROp *op) {
     }
 }
 
+int h3d_translate_call(uint32_t addr, uint32_t bytes, ROp **out) __attribute__((weak));
 static int ext_call(uintptr_t addr, uint32_t size) {
     {   /* debug: ALBW_H3D_CALL_TRACE=<lo>-<hi> (hex addresses): log every executed blob CALL in range */
         static uintptr_t lo = 1, hi = 0;
@@ -1051,6 +1098,17 @@ static int ext_call(uintptr_t addr, uint32_t size) {
     Blob *b = blob_find(addr);
     if (!b) {
         pthread_mutex_unlock(&g_mx);
+        {   /* a command block the game built at run time (the wall painting strip): translated
+               now, at every CALL (sdk/h3d.c h3d_translate_call) */
+            ROp *tops = NULL;
+            int tn = h3d_translate_call ? h3d_translate_call((uint32_t)addr, size, &tops) : 0;
+            if (tn > 0) {
+                for (int i = 0; i < tn; i++) render_exec_op(&tops[i]);
+                free(tops);
+                return 1;
+            }
+            free(tops);
+        }
         static int mt = -1;   /* ALBW_H3D_MISS_TRACE=1: CALLs of blobs that were never decoded */
         if (mt < 0) mt = getenv("ALBW_H3D_MISS_TRACE") != NULL;
         if (mt) { extern long g_plat_frames __attribute__((weak));
@@ -1076,6 +1134,8 @@ static void ext_mem(uintptr_t addr, size_t size) {
     for (size_t i = 0; i < g_nvtx; i++) {
         H3dVtx *v = g_vtx[i];
         if (v->addr < e && (uintptr_t)v->addr + (uintptr_t)v->verts * v->stride > addr) v->dirty = 1;
+        for (int k = 1; h3d_vtx_ext(v) && k < v->nbuffers && k < H3D_MAX_VBUF; k++)   /* the other vertex buffers */
+            if (v->baddr[k] < e && (uintptr_t)v->baddr[k] + (uintptr_t)v->verts * v->bstride[k] > addr) v->dirty = 1;
     }
     for (size_t i = 0; i < g_nib; i++)
         if (g_ib[i]->addr < e && g_ib[i]->addr + ((uintptr_t)g_ib[i]->count << g_ib[i]->u16) > addr) g_ib[i]->dirty = 1;

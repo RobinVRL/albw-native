@@ -49,8 +49,9 @@
  * pass them unchanged.
  *
  * Fragment lighting (light environment, LUTs) is produced by native/sdk/light.c.
+ * 00171510 (wall painting strip, PAINTING.md) records its matrix through h3d_rec_matrix34.
  * Not handled yet: fog, shadows, other uniform writers (00387E58,
- * 00518694, 00171510, 002C3870), runtime patches of blob words (material animations that edit
+ * 00518694, 002C3870), runtime patches of blob words (material animations that edit
  * blobs in place would not be seen: the blobs are decoded once). */
 #include <execinfo.h>
 #include <math.h>
@@ -133,6 +134,14 @@ static uint32_t *rec_floats(uint32_t *p, int reg, const float *v, int count) {
         reg += n; v += 4 * n; count -= n;
     }
     return p;
+}
+/* for native draw replacements outside this file (native/game/func_00171510.c, the wall painting):
+ * record a 3x4 matrix (12 floats at game address mtx, rows in memory order) into float uniforms
+ * reg..reg+2 at the command pointer cmd; returns the advanced pointer */
+uint32_t h3d_rec_matrix34(uint32_t cmd, int reg, uint32_t mtx) {
+    float m[12];
+    memcpy(m, (const void *)GA(mtx), sizeof m);
+    return GPTR_OF(rec_floats(GPTR_TO(uint32_t, cmd), reg, m, 3));
 }
 static void ctx_floats(uint32_t *ctx, int reg, const float *v, int count) {
     uint32_t *p = GPTR_TO(uint32_t, ctx[0]);
@@ -470,6 +479,7 @@ static H3dVtx *emit_vertex_layout(Dec *d) {
 static H3dVtx *emit_vertex_layout_new(Dec *d) {
     d->vtx_done = 1;
     H3dVtx *v = h3d_vtx_new();
+    v->ext_magic = H3D_VTX_EXT_MAGIC;
     uint32_t fmt_lo = d->reg[0x201], fmt_hi = d->reg[0x202];
     int count = (int)(fmt_hi >> 28) + 1;
     uint32_t fixed_mask = (fmt_hi >> 16) & 0xFFF;
@@ -503,19 +513,22 @@ static H3dVtx *emit_vertex_layout_new(Dec *d) {
             H3dAttr *a = &v->attr[ci];
             uint32_t es = (uint32_t)esz[a->type & 3];
             o = (o + es - 1) & ~(es - 1);
-            if (v->nbuffers == 0) a->offset = (uint16_t)o;
+            if (v->nbuffers < H3D_MAX_VBUF) { a->offset = (uint16_t)o; a->buf = v->nbuffers; }
             o += es * a->comps;
         }
-        if (v->nbuffers == 0) {
-            v->stride = (uint16_t)((hi >> 16) & 0xFF);
-            v->addr = v->base + d->reg[0x203 + 3 * k];
-            if (d->live) v->addr = live_pa(v->addr);
+        if (v->nbuffers < H3D_MAX_VBUF) {
+            uint32_t ba = v->base + d->reg[0x203 + 3 * k];
+            if (d->live) ba = live_pa(ba);
+            v->baddr[v->nbuffers] = ba;
+            v->bstride[v->nbuffers] = (uint16_t)((hi >> 16) & 0xFF);
+            if (v->nbuffers == 0) { v->addr = ba; v->stride = v->bstride[0]; }
         }
         v->nbuffers++;
     }
-    if (v->nbuffers > 1) {
+    if (v->nbuffers > H3D_MAX_VBUF) {
         static int warned;
-        if (!warned++) fprintf(stderr, "h3d: mesh with %d vertex buffers: only the first is used\n", v->nbuffers);
+        if (!warned++) fprintf(stderr, "h3d: mesh with %d vertex buffers: only the first %d are used\n", v->nbuffers, H3D_MAX_VBUF);
+        v->nbuffers = H3D_MAX_VBUF;
     }
     ROp op = op_new(ROP_EXT);
     op.u.ext.kind = H3D_VTX;
@@ -866,6 +879,114 @@ int h3d_translate_live(uint32_t start, uint32_t end) {
     free(d);
     free(w);
     return written;
+}
+
+static int dec_walk(Dec *d, uint32_t addr, uint32_t words);
+
+/* ================================================================== texture bound after load
+ *
+ * The wall painting binds its material to a render texture after the model loaded: 002D175C
+ * rewrites the texture unit words (size, address, format) of the material's texture block, through
+ * a pointer kept at painting model +0x1E8 (native/PAINTING.md). The block was decoded at load, so
+ * the decode still showed the old texture (a strip of glyphs instead of Link). The painting's draw
+ * item (native/game/func_00171510.c) calls this with that word's address every frame: when the word
+ * changed, the block's current words are decoded and only its texture-unit ops are replaced in the
+ * load-time decode (its sampler settings and shader prefix stay). */
+void h3d_texture_word_check(uint32_t word) {
+    static struct { uint32_t word, value; uintptr_t blob; uint32_t bytes; } seen[8];
+    static int nseen;
+    if (!word) return;
+    int k;
+    for (k = 0; k < nseen && seen[k].word != word; k++) {}
+    uint32_t v = G32(word, 0);
+    if (k < nseen && seen[k].value == v) return;   /* unchanged since the last check */
+    if (k == nseen) {   /* first time: find the decoded block holding the word */
+        if (nseen == 8) k = nseen = 0;             /* tiny cache: a few paintings at most */
+        seen[k].word = word;
+        seen[k].blob = 0;
+        if (!h3d_blob_containing(word, &seen[k].blob, &seen[k].bytes)) seen[k].blob = 0;
+        nseen++;
+    }
+    seen[k].value = v;
+    if (!seen[k].blob) return;
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) abort();
+    d->vtx_done = 1;
+    int n = 0;
+    if (!dec_walk(d, (uint32_t)seen[k].blob, seen[k].bytes / 4)) {
+        dec_finish(d);
+        for (int i = 0; i < d->ops.n; i++)
+            if (d->ops.v[i].type == ROP_EXT && d->ops.v[i].u.ext.kind == H3D_TEXADDR)
+                n += h3d_blob_set_texaddr(seen[k].blob, &d->ops.v[i]);
+    }
+    free(d->ops.v);
+    free(d);
+    static int tr = -1;   /* debug ALBW_TEXWORD_TRACE=1 */
+    if (tr < 0) tr = getenv("ALBW_TEXWORD_TRACE") != NULL;
+    if (tr) fprintf(stderr, "h3d: texture word %#x = %#x (block %#lx): %d texture ops replaced\n", (unsigned)word, (unsigned)v,
+                    (unsigned long)seen[k].blob, n);
+}
+
+/* ================================================================== runtime CALL blocks
+ *
+ * A few game objects build a small GPU command block in the heap every frame and CALL it from the
+ * frame's command list. Example: the wall painting (Link or Yuga merged into a wall). The walker
+ * 001EA96C fills a strip of triangles, 0043285C writes the block (three vertex arrays, a 16-bit
+ * index buffer, the vertex count) and the draw item 00171510 CALLs it (native/PAINTING.md).
+ *
+ * Model blocks are decoded when their file loads and effect blocks where they are produced
+ * (h3d_translate_live); this block is neither, and the renderer runs only recorded ops, so the raw
+ * words drew nothing (the invisible painting). The renderer's CALL (render/h3d.c ext_call) asks
+ * here when it finds no decode. Blocks with their own complete draw (vertex arrays set + a draw
+ * kick) and no markers are translated on the spot. Nothing is cached: the block is small and its
+ * contents change every frame (the layouts it makes are marked dynamic: uploaded at every draw).
+ * Returns the number of ops in *out (malloc'ed; the caller frees), 0 = not such a block. */
+int h3d_translate_call(uint32_t addr, uint32_t bytes, ROp **out) {
+    uint32_t words = bytes / 4;
+    *out = NULL;
+    static int tr = -1;   /* debug: ALBW_CALLX_TRACE=1: every block asked about, and the answer */
+    if (tr < 0) tr = getenv("ALBW_CALLX_TRACE") != NULL;
+#define CALLX_NO(why) do { if (tr) fprintf(stderr, "h3d-callx: block %#x (%u words): %s\n", (unsigned)addr, (unsigned)words, why); return 0; } while (0)
+    if (words < 4 || words > 4096) CALLX_NO("size");
+    if (addr < 0x40000000u || addr >= 0x58000000u) CALLX_NO("not heap");   /* heap blocks only (not VRAM / files) */
+    const uint32_t *w = (const uint32_t *)GA(addr);
+    int kick = 0, arrays = 0;
+    for (uint32_t i = 0; i + 1 < words;) {   /* first look: a self-contained draw? */
+        uint32_t h = w[i + 1];
+        if (h == RENDER_MARK) CALLX_NO("has markers");
+        uint32_t reg = h & 0xFFFF, mask = (h >> 16) & 0xF, cnt = (h >> 20) & 0xFF, cons = h >> 31;
+        if (i + 2 + cnt > words) CALLX_NO("runs past its end");
+        if (reg >= 0x300 || !mask) { i += 2 + cnt; if (i & 1) i++; continue; }   /* no-op pair (dec_walk steps the same way) */
+        for (uint32_t k = 0; k <= cnt; k++) {
+            uint32_t r = cons ? reg + k : reg, v = k ? w[i + 1 + k] : w[i];
+            if ((r == 0x22F || r == 0x22E) && (v & 1)) kick = 1;
+            if (r >= 0x203 && r <= 0x224 && (r - 0x203) % 3 == 0 && v) arrays = 1;   /* a buffer address */
+        }
+        i += 2 + cnt;
+        if (i & 1) i++;
+    }
+    if (!kick || !arrays) CALLX_NO(kick ? "no vertex arrays" : "no draw");
+#undef CALLX_NO
+    Dec *d = calloc(1, sizeof *d);
+    if (!d) abort();
+    d->live = 1;          /* vertex layouts through the live cache, a new layout before each draw */
+    d->vtx_done = 1;
+    d->eft_variant = -2;  /* not an eft block: bool uniforms (0x2B0) are ordinary state */
+    int n = 0;
+    if (!dec_walk(d, addr, words)) {
+        for (int i = 0; i < d->ops.n; i++)
+            if (d->ops.v[i].type == ROP_EXT && d->ops.v[i].u.ext.kind == H3D_VTX)
+                if (h3d_vtx_ext((H3dVtx *)d->ops.v[i].u.ext.ptr)) ((H3dVtx *)d->ops.v[i].u.ext.ptr)->dynamic = 1;
+        *out = d->ops.v;
+        n = d->ops.n;
+        d->ops.v = NULL;
+    }
+    free(d->ops.v);
+    free(d);
+    {
+        if (tr) fprintf(stderr, "h3d-callx: block %#x (%u words) -> %d ops\n", (unsigned)addr, (unsigned)words, n);
+    }
+    return n;
 }
 
 /* walk a command blob in game memory: [param][header] pairs, header = reg | byte mask << 16 |

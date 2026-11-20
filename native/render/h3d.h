@@ -43,12 +43,15 @@ enum { H3D_LIGHT_ANY = 0, H3D_LIGHT_NL = 1, H3D_LIGHT_HS = 2 };
 /* "N@DefaultShader[-rs|-ss|-s2|-u2][-nl|-hs]" -> variant, -1 if not a DefaultShader name */
 int h3d_variant_of_name(const char *name);
 
+#define H3D_MAX_VBUF 4
+
 typedef struct {
     uint8_t reg;          /* vertex shader input register v0..v11 */
     uint8_t type;         /* RATTR_* (PICA attribute type) */
     uint8_t comps;        /* 1..4 */
     uint8_t fixed;        /* constant attribute: value */
-    uint16_t offset;      /* byte offset in the interleaved vertex */
+    uint16_t offset;      /* byte offset in the interleaved vertex (of its buffer) */
+    uint8_t buf;          /* which vertex buffer holds it (0..H3D_MAX_VBUF-1) */
     float value[4];
 } H3dAttr;
 
@@ -57,13 +60,24 @@ typedef struct H3dVtx {
     uint32_t addr;        /* vertex buffer address */
     uint16_t stride;
     uint8_t nattr;
-    uint8_t nbuffers;     /* vertex buffers declared (only the first one is supported) */
+    uint8_t nbuffers;     /* vertex buffers declared */
     H3dAttr attr[12];
     /* GL side (execution thread) */
     unsigned vbo, vao;
     uint32_t verts;       /* vertices uploaded */
     int dirty;
+    /* Added later, so at the end: layouts live in pmem, which save states restore byte for byte,
+     * and states from older builds hold the shorter struct (no ext_magic). Read these only when
+     * ext_magic == H3D_VTX_EXT_MAGIC (h3d_vtx_ext). */
+    uint32_t ext_magic;
+    uint8_t dynamic;      /* rebuilt by the CPU every frame (runtime CALL blocks): upload at every draw */
+    /* every buffer (buffer 0 = addr / stride above). Meshes loaded from files interleave all
+     * attributes in one buffer; runtime-built ones (the wall painting strip) use one per attribute */
+    uint32_t baddr[H3D_MAX_VBUF];
+    uint16_t bstride[H3D_MAX_VBUF];
 } H3dVtx;
+#define H3D_VTX_EXT_MAGIC 0x56425546u   /* "VBUF" */
+static inline int h3d_vtx_ext(const H3dVtx *v) { return v->ext_magic == H3D_VTX_EXT_MAGIC; }
 
 /* install the hooks in the renderer (idempotent, any thread) */
 void h3d_init(void);
@@ -76,6 +90,10 @@ void h3d_blob_drop(uintptr_t addr);   /* remove the decode at addr */
 /* forget every blob, vertex layout and buffer inside [lo, hi) (a file unloaded / reloaded) */
 void h3d_forget_range(uintptr_t lo, uintptr_t hi);
 H3dVtx *h3d_vtx_new(void);
+/* the decoded blob containing game address a (0 = none) */
+int h3d_blob_containing(uintptr_t a, uintptr_t *start, uint32_t *bytes);
+/* replace the texture-unit op (H3D_TEXADDR, same unit) in the decoded blob at blob */
+int h3d_blob_set_texaddr(uintptr_t blob, const ROp *texop);
 
 /* counters for tests / traces */
 typedef struct { uint32_t blobs, blob_calls, draws, dropped, vbo_uploads, ibo_uploads; } H3dStats;
