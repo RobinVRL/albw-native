@@ -82,13 +82,16 @@ void albw_ss_add_range(const char *name, void *p, size_t n) {
 
 extern char albw_data[];
 static char g_exe[4096];
+static char *g_ssmap_text;   /* <binary>.ssmap as read at startup (ss_preload) */
+static size_t g_ssmap_len;
 static int load_ssmap(void) {
     char path[4200];
     ssize_t n = readlink("/proc/self/exe", g_exe, sizeof g_exe - 1);
     if (n <= 0) { snprintf(g_ranges_err, sizeof g_ranges_err, "cannot find the binary"); return -1; }
     g_exe[n] = 0;
     snprintf(path, sizeof path, "%s.ssmap", g_exe);
-    FILE *f = fopen(path, "r");
+    /* the copy read at startup (ss_preload): the file may be gone by now (relinked meanwhile) */
+    FILE *f = g_ssmap_text ? fmemopen(g_ssmap_text, g_ssmap_len, "r") : fopen(path, "r");
     if (!f) { snprintf(g_ranges_err, sizeof g_ranges_err, "no %s (relink with tools/link.sh)", path); return -1; }
     char line[600], name[512];
     unsigned long a, s;
@@ -120,6 +123,29 @@ static uint64_t build_hash(void) {
         fclose(f);
     }
     return g_build = h | 1;
+}
+/* Read <binary>.ssmap and hash the binary at startup. Both used to be read at the first save /
+ * load: a relink while the game ran replaced build/albw, the running binary's path became
+ * "build/albw (deleted)" and save states stopped with "no ... (deleted).ssmap" (user report).
+ * Only the file is read here; load_ssmap still parses it at the first save / load (same range
+ * order as before), and albw_ss_frame_point is unchanged: states are saved from inside it. */
+__attribute__((constructor)) static void ss_preload(void) {
+    ssize_t n = readlink("/proc/self/exe", g_exe, sizeof g_exe - 1);
+    if (n <= 0) return;
+    g_exe[n] = 0;
+    char path[4200];
+    snprintf(path, sizeof path, "%s.ssmap", g_exe);
+    FILE *f = fopen(path, "rb");
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        long len = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        char *t = len > 0 ? malloc((size_t)len) : NULL;
+        if (t && fread(t, 1, (size_t)len, f) == (size_t)len) { g_ssmap_text = t; g_ssmap_len = (size_t)len; }
+        else free(t);
+        fclose(f);
+    }
+    build_hash();
 }
 static uint64_t g_session;   /* states of a run without fixed addresses load only in that run */
 
