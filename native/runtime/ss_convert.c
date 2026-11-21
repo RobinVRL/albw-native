@@ -580,7 +580,7 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
          * refused for func_00650A24 after the on-edge fix, 160bi) */
         static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", "func_003CC230",
                                                     "func_00650A24", "func_0064CB28", "func_0064E9F4",
-                                                    "func_001EA738", NULL };
+                                                    "func_001EA738", "func_00649E18", "func_0064B4A0", NULL };
         for (int i = 0; never_blocks[i]; i++)
             if (!strcmp(s->name, never_blocks[i])) return v;
         /* right after `call <next instruction>` (E8 00 00 00 00, the PIC "get my address" trick at the

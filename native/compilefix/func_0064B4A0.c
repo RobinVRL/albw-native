@@ -5,7 +5,12 @@
  *  - explicit casts at pointer-type mismatches (identity on the ARM) [2]
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
- * functions retyped non-void return 0, as the converter does). */
+ * functions retyped non-void return 0, as the converter does). *
+ * 160bj: param_3 is typed float * but holds integers in two places: word 0 (the current face
+ * pointer) and word 0xD (the segment index). The text converted them as numbers, (int)*param_3 /
+ * (int)param_3[0xd]: the index (a tiny denormal as a float) always became 0, and the face pointer
+ * became garbage - a crash at address 0x3564 when merged Link went past a corner (user, slots 1 / 2).
+ * Now bit copies (ALBW_AS_U32), as the ARM's plain ldr. */
 #include "ghidra_types.h"
 #include "../include/ghidra_concat44.h"
 #include "compilefix.h"
@@ -500,8 +505,8 @@ LAB_0064bf6c:
         param_2[8] = fVar5;
         pfVar30 = (float *)CF_FBITS(param_2[9]);
         if (pfVar30 != (float *)0x0) {
-          if ((uint)param_3[0xd] < (uint)ALBW_AS_U32(*pfVar30)) {
-            fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(pfVar30[2]) + (int)param_3[0xd] * 0x9c));
+          if ((uint)ALBW_AS_U32(param_3[0xd]) < (uint)ALBW_AS_U32(*pfVar30)) {
+            fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(pfVar30[2]) + (int)ALBW_AS_U32(param_3[0xd]) * 0x9c));
           }
           else {
             fVar5 = pfVar30[2];
@@ -728,8 +733,8 @@ LAB_0064c560:
     if (piVar7 == (int *)0x0) {
       pfVar14 = (float *)CF_FBITS(param_2[9]);
       if (pfVar14 != (float *)0x0) {
-        if ((uint)param_3[0xd] < (uint)ALBW_AS_U32(*pfVar14)) {
-          fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(pfVar14[2]) + (int)param_3[0xd] * 0x9c));
+        if ((uint)ALBW_AS_U32(param_3[0xd]) < (uint)ALBW_AS_U32(*pfVar14)) {
+          fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(pfVar14[2]) + (int)ALBW_AS_U32(param_3[0xd]) * 0x9c));
         }
         else {
           fVar5 = pfVar14[2];
@@ -860,7 +865,7 @@ LAB_0064c560:
             }
           }
           else {
-            piVar7 = (int *)(*(int *)((int)ALBW_AS_U32(fVar5) + 0xc) + (int)*param_3);
+            piVar7 = (int *)(*(int *)((int)ALBW_AS_U32(fVar5) + 0xc) + (int)ALBW_AS_U32(*param_3));
             iVar12 = piVar7[1];
             bVar16 = iVar12 == 0;
             if (bVar16) {
@@ -894,8 +899,8 @@ LAB_0064c9b4:
     pfVar30 = (float *)CF_FBITS(param_2[9]);
     if (pfVar30 != (float *)0x0) {
       fVar5 = pfVar30[2];
-      if ((uint)param_3[0xd] < (uint)ALBW_AS_U32(*pfVar30)) {
-        fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(fVar5) + (int)param_3[0xd] * 0x9c));
+      if ((uint)ALBW_AS_U32(param_3[0xd]) < (uint)ALBW_AS_U32(*pfVar30)) {
+        fVar5 = ALBW_AS_F32(((int)ALBW_AS_U32(fVar5) + (int)ALBW_AS_U32(param_3[0xd]) * 0x9c));
       }
       *(float *)((int)ALBW_AS_U32(fVar5) + 0x30) = param_2[1];
       *(float *)((int)ALBW_AS_U32(fVar5) + 0x34) = param_2[2];
