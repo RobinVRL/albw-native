@@ -50,6 +50,7 @@ void func_002964A4(int param_1,int param_2)
   iVar3 = *(int *)(param_1 + 0x4c);
   fVar8 = (float)VectorSignedToFloat(param_2 * param_2,(byte)(in_fpscr >> 0x15) & 3);
   fVar9 = fVar8 * DAT_0029669c;
+  /* scaled value above 4.0? (ARM: bit compare with 4.0f) */
   if ((ALBW_AS_F32(DAT_002966a0) < (fVar8 * DAT_0029669c))) {
     fVar9 = DAT_002966a4;
   }

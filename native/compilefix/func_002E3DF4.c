@@ -147,6 +147,7 @@ void func_002E3DF4(int param_1)
                   iVar13 = iVar7;
                   while (iVar14 = iVar15, iVar14 <= (int)uVar9) {
                     if ((iVar4 < 0 != SBORROW4(iVar14,uVar9)) &&
+                       /* heap sort: use the right child if the left one sorts before it (both children passed) */
                        (iVar4 = (*pcVar2)(puVar8 + iVar14 * 2 + -2, puVar8 + iVar14 * 2), iVar4 < 0)) {
                       iVar14 = iVar14 + 1;
                     }
@@ -178,6 +179,7 @@ void func_002E3DF4(int param_1)
                   do {
                     iVar13 = iVar7;
                     if ((iVar7 < (int)uVar3) &&
+                       /* heap sort: use the right child if the left one sorts before it (both children passed) */
                        (iVar15 = (*pcVar2)(puVar8 + iVar7 * 2 + -2, puVar8 + iVar7 * 2), iVar15 < 0)) {
                       iVar13 = iVar7 + 1;
                     }

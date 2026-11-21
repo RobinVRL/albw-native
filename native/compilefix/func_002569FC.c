@@ -240,6 +240,7 @@ void func_002569FC(int param_1,int param_2,float *param_3,undefined4 param_4,uin
       }
       else {
         fVar16 = *param_6;
+        /* above the limit? (ARM: bit compare with a positive float) */
         if ((ALBW_AS_F32(DAT_00256e10) < (local_b4 - fVar16))) {
           fVar16 = fVar16 + ALBW_AS_F32(uVar15);
         }
@@ -306,6 +307,7 @@ LAB_00256f3c:
     }
     else {
       fVar13 = param_6[2];
+      /* above the limit? (ARM: bit compare with a positive float) */
       if ((ALBW_AS_F32(DAT_002570d8) < (local_ac - fVar13))) {
         fVar13 = fVar13 + DAT_002570d4;
       }
@@ -328,6 +330,7 @@ LAB_00256fb0:
   }
   else {
     fVar16 = param_6[3];
+    /* above the limit? (ARM: bit compare with a positive float) */
     if ((ALBW_AS_F32(DAT_002570e0) < (local_b0 - fVar16))) {
       fVar16 = fVar16 + DAT_002570e4;
     }
@@ -366,9 +369,11 @@ LAB_00256ff0:
   }
   if (!bVar7) {
     fVar12 = param_6[4];
+    /* difference above the upper limit? (ARM: bit compare with a positive float) */
     if ((ALBW_AS_F32(DAT_002570f8) < (fVar13 - fVar12))) {
       fVar13 = fVar12 + DAT_002570fc;
     }
+    /* ... or below the lower limit? (ARM: unsigned bit compare with a negative float) */
     else if (((fVar13 - fVar12) < ALBW_AS_F32(DAT_00257100))) {
       fVar13 = fVar12 - DAT_002570fc;
     }

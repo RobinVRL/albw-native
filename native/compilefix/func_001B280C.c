@@ -31,12 +31,14 @@ undefined4 func_001B280C(int param_1)
   float fVar3;
   
   fVar3 = *(float *)(param_1 + 0x4f0);
+  /* above the upper limit? (ARM: bit compare with a positive float) */
   if ((ALBW_AS_F32(DAT_001b2954) < (fVar3 - DAT_001b2950))) {
     fVar3 = fVar3 - DAT_001b2958;
 LAB_001b2850:
     *(float *)(param_1 + 0x4f0) = fVar3;
   }
   else {
+    /* below the lower limit? (ARM: unsigned bit compare with a negative float) */
     if (((fVar3 - DAT_001b2950) < ALBW_AS_F32(DAT_001b295c))) {
       fVar3 = fVar3 + DAT_001b2958;
       goto LAB_001b2850;

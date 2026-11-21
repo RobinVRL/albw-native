@@ -14,6 +14,9 @@
  * 160bh: two edge-direction range tests work on the float BITS of a dot product (0.1 <= dot < 0.9:
  * bits - 0x3DCCCCCD < 0x0199999A, as in 0064CB28); the text converted the dot to an integer
  * (0.3 -> 0), so no edge qualified. Now ALBW_AS_U32 (the vmov the ARM code does). */
+/* An edge can be crossed when its direction against the step is between 0.1 and 0.9.
+ * The ARM code tests the float BITS: bits(dot) - bits(0.1f) < 0x0199999A (unsigned). */
+#define EDGE_DIR_IN_RANGE(dot) ((uint)((int)ALBW_AS_U32(dot) - DAT_0064f6e0) < DAT_0064f6e4)
 #include "ghidra_types.h"
 #include "../include/ghidra_concat44.h"
 #define CF_MATHCONST
@@ -1057,10 +1060,9 @@ LAB_0064f7e8:
           iVar12 = 0;
           do {
             ppppppfVar11 = (float ******)local_98[iVar12];
-            if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_150) +
+            if (EDGE_DIR_IN_RANGE(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_150) +
                              ALBW_AS_F32(ppppppfVar11[1]) * ALBW_AS_F32(local_14c) +
-                            ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_148)) - DAT_0064f6e0) <
-                DAT_0064f6e4) {
+                            ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_148))) {
               ppppppfVar2 = (float ******)
                             CF_FBITS((ALBW_AS_F32(local_210) * ALBW_AS_F32(*ppppppfVar11) +
                             ALBW_AS_F32(local_20c[0]) * ALBW_AS_F32(ppppppfVar11[1])));
@@ -1248,9 +1250,9 @@ LAB_0064f7e8:
       iVar12 = 0;
       do {
         ppppppfVar11 = (float ******)local_98[iVar12];
-        if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_200) +
+        if (EDGE_DIR_IN_RANGE(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_200) +
                          ALBW_AS_F32(ppppppfVar11[1]) * ALBW_AS_F32(local_1fc) +
-                        ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_1f8)) - DAT_0064f6e0) < DAT_0064f6e4) {
+                        ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_1f8))) {
           fVar21 = ALBW_AS_F32(local_130) * ALBW_AS_F32(*ppppppfVar11) +
                    ALBW_AS_F32(local_12c) * ALBW_AS_F32(ppppppfVar11[1]) +
                    ALBW_AS_F32(local_128) * ALBW_AS_F32(ppppppfVar11[2]);

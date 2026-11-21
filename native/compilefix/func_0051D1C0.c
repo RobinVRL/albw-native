@@ -40,12 +40,14 @@ void func_0051D1C0(undefined4 *param_1,undefined4 param_2,undefined4 param_3,flo
   fVar4 = (float)VectorUnsignedToFloat(param_3,(byte)(in_fpscr >> 0x15) & 3);
   fVar3 = fVar3 * DAT_0051d238;
   fVar4 = fVar4 * DAT_0051d238;
+  /* angle wrap: end - start > 180 deg -> move start up by 360 (ARM: bit compare with 180.0f) */
   if ((ALBW_AS_F32(DAT_0051d23c) < (fVar4 - fVar3))) {
     fVar3 = fVar3 + DAT_0051d240;
     fVar1 = DAT_0051d23c;
   }
   else {
     fVar1 = DAT_0051d244;
+    /* ... or end - start < -180 deg -> move end up by 360 (ARM: unsigned bit compare with -180.0f) */
     if (((fVar4 - fVar3) < ALBW_AS_F32(DAT_0051d244))) {
       fVar4 = fVar4 + DAT_0051d240;
     }

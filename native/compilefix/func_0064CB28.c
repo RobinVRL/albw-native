@@ -10,6 +10,9 @@
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
+/* An edge can be crossed when its direction against the step is between 0.1 and 0.9.
+ * The ARM code tests the float BITS: bits(dot) - bits(0.1f) < 0x0199999A (unsigned). */
+#define EDGE_DIR_IN_RANGE(dot) ((uint)((int)ALBW_AS_U32(dot) - DAT_0064d804) < DAT_0064d808)
 #include "ghidra_types.h"
 #include "../include/ghidra_concat44.h"
 #include "compilefix.h"
@@ -1051,9 +1054,8 @@ LAB_0064d944:
           do {
             ppppppfVar3 = (float ******)local_98[iVar9];
             ppppppfVar26 = (float ******)ppppppfVar3[1];
-            if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar3) * ALBW_AS_F32(local_f0) + ALBW_AS_F32(ppppppfVar26) * local_ec
-                            + ALBW_AS_F32(ppppppfVar3[2]) * ALBW_AS_F32(local_e8)) - DAT_0064d804) <
-                DAT_0064d808) {
+            if (EDGE_DIR_IN_RANGE(ALBW_AS_F32(*ppppppfVar3) * ALBW_AS_F32(local_f0) + ALBW_AS_F32(ppppppfVar26) * local_ec
+                            + ALBW_AS_F32(ppppppfVar3[2]) * ALBW_AS_F32(local_e8))) {
               fVar19 = ALBW_AS_F32(local_1f8[1]) * ALBW_AS_F32(ppppppfVar26);
               if (iVar9 == 2) {
                 ppppppfVar26 = pppppppfVar36[0x1a];
@@ -1212,8 +1214,8 @@ LAB_0064d944:
       do {
         pppppfVar20 = (float *****)local_a0[iVar9];
         pppppfVar22 = (float *****)pppppfVar20[1];
-        if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*pppppfVar20) * ALBW_AS_F32(local_148) + ALBW_AS_F32(pppppfVar22) * local_144 +
-                        ALBW_AS_F32(pppppfVar20[2]) * ALBW_AS_F32(local_140)) - DAT_0064d804) < DAT_0064d808) {
+        if (EDGE_DIR_IN_RANGE(ALBW_AS_F32(*pppppfVar20) * ALBW_AS_F32(local_148) + ALBW_AS_F32(pppppfVar22) * local_144 +
+                        ALBW_AS_F32(pppppfVar20[2]) * ALBW_AS_F32(local_140))) {
           fVar19 = ALBW_AS_F32(local_1f8[1]) * ALBW_AS_F32(pppppfVar22);
           if (iVar9 == 2) {
             pppppfVar22 = ppppppfVar3[0x1a];

@@ -94,6 +94,7 @@ undefined4 func_001E4D1C(ushort *param_1,int param_2,char param_3,float *param_4
       local_44 = *pfVar5;
       local_40 = pfVar5[1];
       fStack_3c = pfVar5[2];
+      /* below the limit? (ARM: unsigned bit compare with -1.0f) */
       if (((((local_40 - param_4[1]) < ALBW_AS_F32(DAT_001e50a8))) ||
           (0x3f800000 < (int)(local_40 - param_4[1]))) ||
          (DAT_001e50ac <

@@ -47,6 +47,7 @@ void func_002964B8(int param_1,int param_2)
   
   fVar7 = (float)VectorSignedToFloat(param_2 * param_2,(byte)(in_fpscr >> 0x15) & 3);
   fVar8 = fVar7 * DAT_0029669c;
+  /* scaled value above 4.0? (ARM: bit compare with 4.0f) */
   if ((ALBW_AS_F32(DAT_002966a0) < (fVar7 * DAT_0029669c))) {
     fVar8 = DAT_002966a4;
   }
