@@ -154,6 +154,8 @@ llvm-nm --defined-only --format=just-symbols "${NATIVE[@]}" $B/albw_game.o 2>/de
 NAMES=($(python3 tools/gen_names.py native/names.txt $B/defined_syms.txt))
 # the game's generated data at fixed addresses (tools/gen_data.py sections .albw_ro / .albw_rw /
 # .albw_zi): pointers into it keep their values across builds (save states, runtime/ss_convert.c)
+# (not in the sanitizer build: i386 ASan needs 0x20000000-0x3FFFFFFF for its shadow memory)
+[[ "${ALBW_SANITIZE:-0}" == 1 ]] || \
 NAMES+=(-Wl,--section-start=.albw_ro=0x30000000 -Wl,--section-start=.albw_rw=0x30100000
         -Wl,--section-start=.albw_zi=0x30200000)
 clang -m32 -no-pie "${LDSAN[@]}" -o $OUT "${NATIVE[@]}" $B/native/stubs.o $B/albw_game.o $SDL -lm -lz -rdynamic "${NAMES[@]}" -Wl,-Map=$OUT.map
