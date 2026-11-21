@@ -4,8 +4,10 @@
  * there is no mouse on a controller: the D-pad (or a circle-pad flick) moves a selector between the
  * page's touch targets and A taps the one under it. The selector is the user's grid-selector
  * graphic (native/platform/assets/grid-selector.png, embedded by selector_img.h) drawn as an
- * overlay on the bottom screen's image, not a pointer. The page is recognised from two pixels of
- * the bottom screen (Gear: red frame, Items: tan grid, else the map). Targets are in 3DS bottom
+ * overlay on the bottom screen's image, not a pointer. The page is recognised from pixels of the
+ * bottom screen: Gear (red frame), Items (tan grid), the map (its pin counter's red pin; with the
+ * bell button bottom left once Link has the bell: its yellow icon), else another page with
+ * controls of its own (the bell's warp menu), where the D-pad and A go to the game. Targets are in 3DS bottom
  * screen pixels (320 x 240, origin top left), measured on the game's pages. */
 #include "selector_img.h"
 
@@ -23,6 +25,15 @@ static const SelTarget SEL_MAP[] = {
     {22, 142, 36, 40},                       /* pin counter */
     {288, 135, 46, 46},                      /* Y item slot */
     {80, 226, 156, 26}, {240, 226, 156, 26}, /* Gear / Items tabs */
+};
+/* the map page once Link has the bell (Irene's weather-vane warp): a bell button bottom left, the
+   Gear / Items tabs move right and get narrower */
+static const SelTarget SEL_MAP_BELL[] = {
+    {22, 20, 40, 40},                        /* + (pins) */
+    {22, 142, 36, 40},                       /* pin counter */
+    {288, 135, 46, 46},                      /* Y item slot */
+    {28, 226, 52, 26},                       /* bell */
+    {124, 226, 124, 26}, {255, 226, 128, 26}, /* Gear / Items tabs */
 };
 static const SelTarget SEL_ITEMS[] = {
     {33, 27, 46, 44, 1}, {80, 27, 46, 44, 1}, {127, 27, 46, 44, 1}, {174, 27, 46, 44, 1}, {221, 27, 46, 44, 1},
@@ -43,11 +54,13 @@ static const SelTarget SEL_GEAR[] = {
     {85, 178, 40, 24}, {127, 178, 40, 24}, {165, 178, 40, 24}, {205, 178, 40, 24}, {245, 178, 40, 24}, {285, 178, 40, 24},
     {160, 226, 300, 26},                                                          /* Close */
 };
-enum { SEL_PAGE_MAP, SEL_PAGE_ITEMS, SEL_PAGE_GEAR };
-static const struct { const SelTarget *t; int n; } SEL_PAGES[3] = {
+enum { SEL_PAGE_MAP, SEL_PAGE_ITEMS, SEL_PAGE_GEAR, SEL_PAGE_MAP_BELL,
+       SEL_PAGE_OTHER /* a page with controls of its own (the bell's warp menu): input passes through */ };
+static const struct { const SelTarget *t; int n; } SEL_PAGES[4] = {
     {SEL_MAP, (int)(sizeof SEL_MAP / sizeof *SEL_MAP)},
     {SEL_ITEMS, (int)(sizeof SEL_ITEMS / sizeof *SEL_ITEMS)},
     {SEL_GEAR, (int)(sizeof SEL_GEAR / sizeof *SEL_GEAR)},
+    {SEL_MAP_BELL, (int)(sizeof SEL_MAP_BELL / sizeof *SEL_MAP_BELL)},
 };
 
 static int g_sel_page, g_sel_idx, g_sel_on;
@@ -89,6 +102,12 @@ static int sel_step(int page, int cur, int dx, int dy) {
 /* plat_poll: D-pad / circle-pad flicks move, A taps (both taken from the game while active) */
 static void sel_input(PlatInput *pin) {
     if (!sel_active()) {
+        g_sel_on = 0;
+        g_sel_touch = 0;
+        g_sel_prev = pin->held;
+        return;
+    }
+    if (g_sel_page == SEL_PAGE_OTHER) {   /* the game's own menu (bell warp list): D-pad and A are its */
         g_sel_on = 0;
         g_sel_touch = 0;
         g_sel_prev = pin->held;
@@ -142,13 +161,19 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
     static unsigned frame;
     if (frame++ % 10 == 0) {
         glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, bt->fbo);
-        uint8_t a[4] = {0}, b[4] = {0};
+        uint8_t a[4] = {0}, b[4] = {0}, c[4] = {0}, d[4] = {0};
         glReadPixels(300 * w / 320, h - 1 - 60 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, a);
         glReadPixels(160 * w / 320, h - 1 - 120 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, b);
+        glReadPixels(28 * w / 320, h - 1 - 226 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c);   /* bell icon: pure yellow */
+        glReadPixels(22 * w / 320, h - 1 - 142 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, d);   /* map: the pin counter's red pin */
         glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, 0);
         int page = (a[0] > 90 && a[1] < 45) ? SEL_PAGE_GEAR
-                 : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS : SEL_PAGE_MAP;
-        if (page != g_sel_page) {
+                 : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS
+                 : !(d[0] > 170 && d[1] < 170) ? SEL_PAGE_OTHER   /* no red pin: not the map (warp menu) */
+                 : (c[0] > 230 && c[1] > 190 && c[2] < 60) ? SEL_PAGE_MAP_BELL : SEL_PAGE_MAP;
+        if (page != g_sel_page && page == SEL_PAGE_OTHER) {
+            g_sel_page = page;
+        } else if (page != g_sel_page) {
             g_sel_page = page;
             g_sel_idx = sel_nearest(page, g_sel_x, g_sel_y);
             const SelTarget *t = &SEL_PAGES[page].t[g_sel_idx];
@@ -156,6 +181,7 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
             g_sel_y = t->y;
         }
     }
+    if (g_sel_page == SEL_PAGE_OTHER) return;   /* the game's own menu: no selector */
     if (!g_sel_tex) {
         glGenTextures(1, &g_sel_tex);
         glBindTexture(GL_TEXTURE_2D, g_sel_tex);

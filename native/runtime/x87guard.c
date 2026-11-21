@@ -39,7 +39,14 @@ void albw_x87_guard(const char *where, void *ra)
 #if defined(__i386__)
     uint16_t sw;
     __asm__ volatile("fnstsw %0" : "=am"(sw));
-    if (!(sw & 0x3800)) return;          /* stack top 0: empty (fast path) */
+    if (!(sw & 0x3800)) {
+        /* stack top 0: empty - or completely full (8 leaked values wrap TOP back to 0; the old
+           fast path let a full stack through, and every float returned on this thread was NaN
+           from then on: user crash 160ba). fxam tells them apart: C3 = 1, C2 = 0, C0 = 1 = empty */
+        uint16_t ex;
+        __asm__ volatile("fxam\n\tfnstsw %0" : "=a"(ex));
+        if ((ex & 0x4500) == 0x4100) return;
+    }
     int n = albw_x87_depth();
     if (!n) return;
     static int trace = -1, logged;
