@@ -212,6 +212,7 @@ static const char *BLIT_FS =
 int plat_init(const char *title, const PlatConfig *c) {
     cfg = *c;
     if (cfg.scale < 1) cfg.scale = 2;
+#ifndef ALBW_WINDOWS   /* Linux only (the Windows build, windows/README.md, uses SDL's own driver) */
     {
         /* GPU on NVIDIA + Wayland: this 32-bit build's EGL needs the 32-bit egl-wayland platform
          * library; without it EGL falls back to Mesa's software rasteriser (llvmpipe: ~20-25 fps,
@@ -228,6 +229,7 @@ int plat_init(const char *title, const PlatConfig *c) {
             }
         }
     }
+#endif
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         return -1;

@@ -17,6 +17,10 @@ NOBJ=$B/nobj OUT=$B/albw LDSAN=()
 # player runs: relinking it mid-session means save states taken meanwhile come from a build that
 # later disappears; its <path>.ssmap is written next to it)
 [[ -n "${ALBW_LINK_OUT:-}" ]] && OUT=$ALBW_LINK_OUT
+# ALBW_NOBJ=<dir> + ALBW_EXTRA_CFLAGS="...": native objects built with other flags in their own directory
+# (the Windows variant: windows/build_windows.sh, -femulated-tls -fno-stack-protector -DALBW_WINDOWS)
+[[ -n "${ALBW_NOBJ:-}" ]] && NOBJ=$ALBW_NOBJ
+[[ -n "${ALBW_EXTRA_CFLAGS:-}" ]] && CFLAGS+=($ALBW_EXTRA_CFLAGS)
 if [[ "${ALBW_SANITIZE:-0}" == 1 ]]; then
     # globals not instrumented: the link renames / patches objects after compilation and ASan's global
     # registration then reads a broken descriptor at start-up (odr-violation + nested crash)

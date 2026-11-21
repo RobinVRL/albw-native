@@ -1,0 +1,20 @@
+A Link Between Worlds - native PC port (Windows)
+================================================
+
+You need your own decrypted EU game dump (.3ds / .cci). No game data is included.
+
+1. Unzip this folder anywhere (keep all files together).
+2. Double-click ALBW.exe.
+3. The first time, choose your .3ds file. The choice is remembered
+   (in %USERPROFILE%\.config\albw-port\rom_path - delete that file to choose again).
+
+Saves, save states and settings live in %USERPROFILE%\.local\share\albw-port\
+The game's log is written there too (albw.log) - attach it when reporting a problem.
+
+Controls: keyboard or any controller (Xbox, PlayStation, Switch Pro ...).
+Esc opens the menu (controls, screen layout, save states, reset).
+
+If the window stays black or the game says OpenGL is missing: your PC has no OpenGL 3.3
+driver (common in virtual machines or over Remote Desktop). Install your graphics driver,
+or start ALBW.exe with the environment variable ALBW_SOFTWARE_GL=1 to use the bundled
+software renderer (mesa folder; slow).
