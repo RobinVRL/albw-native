@@ -1,7 +1,14 @@
 A Link Between Worlds - native PC port (Windows)
 ================================================
 
-You need your own decrypted EU game dump (.3ds / .cci). No game data is included.
+You need your own decrypted dump of the European release. No game data is included.
+The file:
+
+  0487 - Legend of Zelda, The - A Link Between Worlds (Europe) (En,Fr,De,Es,It) Decrypted.3ds
+  748,580,864 bytes, SHA-1 4d2da91fa0edef9eef07e471527461396cc3faf2
+
+The name does not matter (a renamed copy works); the contents must match. The USA and Japanese
+releases do not work.
 
 1. Unzip this folder anywhere (keep all files together).
 2. Double-click ALBW.exe.

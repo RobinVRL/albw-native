@@ -12,9 +12,20 @@ are rewritten with SDL3 + OpenGL. No emulator.
 ## You need your own game
 
 No game data is included: no ROM, keys, assets or saves. You need a **decrypted dump of the
-European release** that you made yourself (`.3ds`, 748,580,864 bytes, `.code` SHA-1
-`2aeee593a695f2ce1196b844026567f227472f0b` – the build checks it). The USA and Japanese releases
-do not work: the decompiled code is tied to the European release's addresses.
+European release** that you made yourself:
+
+```
+0487 - Legend of Zelda, The - A Link Between Worlds (Europe) (En,Fr,De,Es,It) Decrypted.3ds
+```
+
+| | |
+|---|---|
+| Size | 748,580,864 bytes |
+| SHA-1 | `4d2da91fa0edef9eef07e471527461396cc3faf2` |
+| `.code` SHA-1 (what the build checks) | `2aeee593a695f2ce1196b844026567f227472f0b` |
+
+The file name itself does not matter (a renamed file works); the contents must match. The USA and
+Japanese releases do not work: the decompiled code is tied to the European release's addresses.
 
 ## Play
 
