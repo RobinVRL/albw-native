@@ -25,3 +25,12 @@ If the window stays black or the game says OpenGL is missing: your PC has no Ope
 driver (common in virtual machines or over Remote Desktop). Install your graphics driver,
 or start ALBW.exe with the environment variable ALBW_SOFTWARE_GL=1 to use the bundled
 software renderer (mesa folder; slow).
+
+Trouble starting?
+  - Unzipped from a download and SDL3.dll will not load: right-click the .zip > Properties >
+    tick "Unblock" > OK, then unzip again.
+  - Slow or stuck start: the game may be on the software renderer (it says so in a message box).
+    Install / update your graphics driver.
+  - To force a mode, make a shortcut to ALBW.exe and add  --software-gl  (software renderer),
+    --system-gl (graphics driver) or --console (show the log in a window) after its path.
+  - When something goes wrong, attach albw.log (see above) to your bug report.

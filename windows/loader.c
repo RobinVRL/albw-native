@@ -46,6 +46,28 @@
 
 static char g_exe_dir[MAX_PATH];   /* this loader's directory, forward slashes */
 static char g_elf_path[MAX_PATH];  /* the ELF (exe dir + "/albw") */
+static char g_log_path[MAX_PATH * 2];   /* albw.log, empty when the output goes to a console */
+
+/* The program has no console (-mwindows), so what it prints is only in albw.log. Show the end of
+   it in a message box when the game stops with an error: without this a failed start looks like
+   "nothing happens". */
+static void show_log_tail(int code) {
+    if (!*g_log_path) return;
+    FILE *f = fopen(g_log_path, "rb");
+    if (!f) return;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    long from = n > 900 ? n - 900 : 0;
+    fseek(f, from, SEEK_SET);
+    char tail[1000];
+    size_t got = fread(tail, 1, sizeof tail - 1, f);
+    tail[got] = 0;
+    fclose(f);
+    char msg[2048];
+    snprintf(msg, sizeof msg, "The game stopped (code %d). The end of the log:\n\n%s\n\nFull log: %s\nPlease attach it when reporting a problem.",
+             code, tail, g_log_path);
+    MessageBoxA(NULL, msg, "A Link Between Worlds (native port)", MB_ICONERROR | MB_OK);
+}
 
 static void fatal(const char *fmt, ...) {
     char msg[2048];
@@ -121,9 +143,23 @@ static int in_fixed(uintptr_t a, size_t n) {
 }
 static void reserve_fixed(void) {
     for (size_t i = 0; i < sizeof g_fixed / sizeof *g_fixed; i++)
-        if (!VirtualAlloc((void *)g_fixed[i].base, g_fixed[i].size, MEM_RESERVE, PAGE_NOACCESS))
-            fatal("cannot reserve memory at %#x (+%#x): error %lu", (unsigned)g_fixed[i].base,
-                  (unsigned)g_fixed[i].size, GetLastError());
+        if (!VirtualAlloc((void *)g_fixed[i].base, g_fixed[i].size, MEM_RESERVE, PAGE_NOACCESS)) {
+            DWORD err = GetLastError();
+            /* Windows places heaps, stacks and DLLs differently on every start (ASLR): something
+               sits in a range the game needs. Starting again almost always gets a free layout. */
+            const char *r = getenv("ALBW_RELAUNCH");
+            int tries = r ? atoi(r) : 0;
+            if (tries < 12) {
+                char env[32];
+                snprintf(env, sizeof env, "ALBW_RELAUNCH=%d", tries + 1);
+                _putenv(env);
+                STARTUPINFOA si = {sizeof si};
+                PROCESS_INFORMATION pi;
+                if (CreateProcessA(NULL, GetCommandLineA(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) ExitProcess(0);
+            }
+            fatal("cannot reserve memory at %#x (+%#x): error %lu (tried %d times).\nRestart the program; if it keeps happening, tell the developer.",
+                  (unsigned)g_fixed[i].base, (unsigned)g_fixed[i].size, err, tries + 1);
+        }
 }
 
 /* ------------------------------------------------------------------ 2. the ELF image */
@@ -519,7 +555,7 @@ static int lx_cxa_atexit(void *fn, void *arg, void *dso) {
 static void run_atexit(void) {
     while (g_natexit > 0) { g_natexit--; call_elf1(g_atexit[g_natexit].fn, (uintptr_t)g_atexit[g_natexit].arg); }
 }
-static void lx_exit(int code) { run_atexit(); fflush(NULL); exit(code); }
+static void lx_exit(int code) { run_atexit(); fflush(NULL); if (code) show_log_tail(code); exit(code); }
 static void lx__exit(int code) { fflush(NULL); _exit(code); }
 static long lx_sysconf(int name) {
     if (name == 84 || name == 83) { SYSTEM_INFO si; GetSystemInfo(&si); return (long)si.dwNumberOfProcessors; }
@@ -895,6 +931,11 @@ static void choose_gl(void) {
     if (!soft && !(force && *force == '0')) soft = !system_gl_ok(what, sizeof what);
     fprintf(stderr, "albw: OpenGL: %s%s\n", soft ? "software renderer (Mesa llvmpipe)" : "system driver", *what ? (soft ? " - the system offers only " : " - ") : "");
     if (*what) fprintf(stderr, "albw:   %s\n", what);
+    if (soft && !(force && *force == '1'))
+        MessageBoxA(NULL, "No usable 32-bit OpenGL graphics driver was found, so the game will use the slow software\n"
+                          "renderer. The first start can take a minute or more and it will not run at full speed.\n\n"
+                          "Install or update your graphics driver, or see albw.log for details.",
+                    "A Link Between Worlds (native port)", MB_ICONWARNING | MB_OK);
     if (soft) {
         if (_access(mesa, 0)) fatal("No usable OpenGL driver (%s) and the software renderer %s is missing.\nInstall your graphics driver.", what, mesa);
         static char env[MAX_PATH * 2 + 32];
@@ -937,7 +978,22 @@ static void pick_rom(void) {
     _putenv(env);
 }
 
+/* --software-gl: use the bundled software renderer; --console: show the log in a console window
+   (for a shortcut: ALBW.exe --software-gl). Removed from the arguments the game sees. */
+static int take_options(int argc, char **argv) {
+    int out = 1;
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--software-gl")) _putenv("ALBW_SOFTWARE_GL=1");
+        else if (!strcmp(argv[i], "--system-gl")) _putenv("ALBW_SOFTWARE_GL=0");
+        else if (!strcmp(argv[i], "--console")) _putenv("ALBW_CONSOLE=1");
+        else argv[out++] = argv[i];
+    }
+    argv[out] = NULL;
+    return out;
+}
+
 int main(int argc, char **argv) {
+    argc = take_options(argc, argv);
     GetModuleFileNameA(NULL, g_exe_dir, sizeof g_exe_dir);
     slashes(g_exe_dir);
     char *sl = strrchr(g_exe_dir, '/');
@@ -955,13 +1011,16 @@ int main(int argc, char **argv) {
         _putenv(env);
     }
     /* the game's log (stderr): albw.log in its data folder, unless run from a console */
-    if (!getenv("ALBW_CONSOLE") && !GetConsoleWindow()) {
+    if (getenv("ALBW_CONSOLE") && !GetConsoleWindow()) {
+        if (AllocConsole()) { freopen("CONOUT$", "w", stderr); freopen("CONOUT$", "w", stdout); }
+    } else if (!getenv("ALBW_CONSOLE") && !GetConsoleWindow()) {
         char dir[MAX_PATH * 2], log[MAX_PATH * 2];
         snprintf(dir, sizeof dir, "%s/.local", getenv("HOME")); _mkdir(dir);
         snprintf(dir, sizeof dir, "%s/.local/share", getenv("HOME")); _mkdir(dir);
         snprintf(dir, sizeof dir, "%s/.local/share/albw-port", getenv("HOME")); _mkdir(dir);
         snprintf(log, sizeof log, "%s/albw.log", dir);
         freopen(log, "w", stderr);
+        snprintf(g_log_path, sizeof g_log_path, "%s", log);
     }
     setvbuf(stderr, NULL, _IONBF, 0);
     lx_stderr_value = stderr;
@@ -972,22 +1031,27 @@ int main(int argc, char **argv) {
     g_gl_tls_esp = TlsAlloc();
     if (g_gl_tls_ret >= 64 || g_gl_tls_esp >= 64) fatal("no TLS slots for the OpenGL thunks");
 
+    fprintf(stderr, "albw: stage: choosing OpenGL\n");
     choose_gl();
+    fprintf(stderr, "albw: stage: loading SDL3.dll\n");
     char sdl_path[MAX_PATH * 2];
     snprintf(sdl_path, sizeof sdl_path, "%s/SDL3.dll", g_exe_dir);
     g_sdl = LoadLibraryA(sdl_path);
-    if (!g_sdl) fatal("cannot load %s (error %lu)", sdl_path, GetLastError());
+    if (!g_sdl) fatal("cannot load %s (error %lu).\nIf you unzipped a download: right-click the .zip > Properties > tick Unblock,\nthen unzip it again. Keep all files in one folder.", sdl_path, GetLastError());
     real_GL_GetProcAddress = (void *)GetProcAddress(g_sdl, "SDL_GL_GetProcAddress");
     real_OpenAudioDeviceStream = (void *)GetProcAddress(g_sdl, "SDL_OpenAudioDeviceStream");
     real_GetGamepadGUIDForID = (void *)GetProcAddress(g_sdl, "SDL_GetGamepadGUIDForID");
     real_GetJoystickGUID = (void *)GetProcAddress(g_sdl, "SDL_GetJoystickGUID");
 
+    fprintf(stderr, "albw: stage: loading the game program\n");
     load_elf();
     AddVectoredExceptionHandler(1, on_exception);
     patch_canary();
     apply_rels(g_rel, g_relsz);
     apply_rels(g_jmprel, g_pltrelsz);
+    fprintf(stderr, "albw: stage: choosing the game file\n");
     pick_rom();
+    fprintf(stderr, "albw: stage: starting the game\n");
 
     /* argv for the game: argv[0] = the ELF's path (the game finds albw.ssmap next to it) */
     char **eargv = calloc((size_t)argc + 1, sizeof *eargv);

@@ -1,12 +1,13 @@
 # Where the port stands
 
-Last updated 2026-11-21 (release **v0.2.5**). Details of every fix:
+Last updated 2026-11-21 (release **v0.2.6**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.6](https://github.com/spacestate1/albw-native/releases/tag/v0.2.6) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | Steam Deck Game Mode launch fixes (issue 8, untested on a Deck); Windows: error and log boxes, software-renderer warning, `--software-gl` / `--console`, retry on memory clash (issue 7, untested on real Windows); NVIDIA hybrid GPU; portable mode |
 | [v0.2.5](https://github.com/spacestate1/albw-native/releases/tag/v0.2.5) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged Link no longer stuck at corner edges; crash past corners fixed |
 | [v0.2.4](https://github.com/spacestate1/albw-native/releases/tag/v0.2.4) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged camera at corners, corner wall search, float-bit tests (10 functions) |
 | [v0.2.3](https://github.com/spacestate1/albw-native/releases/tag/v0.2.3) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged-wall camera and crash at wall ends, dungeon map cursor, effect sort, stub review |
