@@ -100,6 +100,12 @@ again with no step, so Link stops. Watching the mode byte (walker +0x3BAE) in gd
 To cross an edge, the search keeps the edges whose direction is between 0.1 and 0.9 against the
 step (a test on the float's bits, see below) and picks the closest.
 
+**Steps that end exactly on an edge.** The walker shortens a step so it ends on the edge of the
+current triangle, then measures the wall above that point (a ray up the wall, `00650A24`). From a
+point on the edge the ray leaves the triangle at distance 0, under the 0.001 minimum, which reads as
+"no wall": Link stopped there for good. The port counts an exit from -0.001 to 0.001 as crossing the
+edge at 0.001, so the ray continues into the next triangle (160bi, marked PORT in the file).
+
 ## The merged camera
 
 The camera follows Link along the wall through a camera object of its own (vtable at its +0;

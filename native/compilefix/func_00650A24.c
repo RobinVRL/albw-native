@@ -79,6 +79,7 @@ extern int DAT_0065214c;
 undefined4 func_00650A24(int param_1,float *param_2,float *param_3)
 
 {
+  int exit_found = 0;   /* PORT: set when the edge loop below accepts an exit edge (see LAB_00651248) */
   uint uVar1;
   float ******ppppppfVar2;
   float *pfVar3;
@@ -436,6 +437,9 @@ LAB_00651244:
                     ALBW_AS_F32(pppppfVar20) * fVar17);
         }
         pppppppfVar26 = (float *******)CF_FBITS((fVar21 / ALBW_AS_F32(pppppppfVar18)));
+        /* PORT (160bi): a start point a hair outside this edge (distance -0.001 .. 0) is ON the edge */
+        if (ALBW_AS_F32(pppppppfVar26) < 0.0f && -ALBW_AS_F32(pppppppfVar26) < ALBW_AS_F32(DAT_00650e34))
+          pppppppfVar26 = (float *******)0;
         if (ALBW_AS_F32(pppppppfVar35) <= ALBW_AS_F32(pppppppfVar26) &&
             ALBW_AS_F32(pppppppfVar13) <= ALBW_AS_F32(pppppppfVar26)) {
           bVar16 = ALBW_AS_F32(pppppppfVar32) <= ALBW_AS_F32(pppppppfVar26);
@@ -459,14 +463,22 @@ LAB_00651244:
                ALBW_AS_F32(local_1d4) * ALBW_AS_F32(local_1fc[1][2]) <= fVar24)) &&
              ((ALBW_AS_F32(local_1dc) * ALBW_AS_F32(*local_1fc[2]) + ALBW_AS_F32(local_1d8) * ALBW_AS_F32(local_1fc[2][1]) +
                ALBW_AS_F32(local_1d4) * ALBW_AS_F32(local_1fc[2][2]) <= *(float *)((int)ALBW_AS_U32(fVar7) + 0x68) + fVar24
-              && (pppppppfVar13 = pppppppfVar25, bVar16)))) break;
+              && (pppppppfVar13 = pppppppfVar25, exit_found = 1, bVar16)))) break;
         }
       }
       iVar6 = iVar6 + 1;
     } while (iVar6 < 3);
-    if (ALBW_AS_F32(pppppppfVar13) == ALBW_AS_F32(pppppppfVar35)) goto LAB_00651244;
+    if (ALBW_AS_F32(pppppppfVar13) == ALBW_AS_F32(pppppppfVar35) && !exit_found) goto LAB_00651244;
   }
 LAB_00651248:
+  /* PORT (160bi): the start point lies ON the exit edge (distance 0 .. 0.001). The walker clamps a
+   * step to end exactly at a triangle edge, and from there the "how much wall is above" ray leaves
+   * the triangle at once; with distance < 0.001 the code below reports "no wall" and merged Link
+   * stops for good (slot 1: an edge between two triangles of one flat cliff face). Count such an
+   * exit as crossing the edge at 0.001, so the ray carries on into the neighbouring triangle as it
+   * does from any other point. Only the edge loop's own exits are affected (exit_found). */
+  if (exit_found && (int)pppppppfVar13 >= 0 && (int)pppppppfVar13 < DAT_00650e34)
+    pppppppfVar13 = (float *******)(uintptr_t)(uint)DAT_00650e34;
   if ((pppppppfVar13 == (float *******)0xff7fffff) || ((int)pppppppfVar13 < DAT_00650e34)) {
     local_420 = (float *******)0x0;
     pppppppfVar13 = pppppppfVar35;

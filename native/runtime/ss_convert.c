@@ -576,7 +576,11 @@ static uint32_t map_word(Conv *c, const uint8_t *at, uint32_t v, int pol) {
         /* functions that never block: a save is taken while every game thread waits in the kernel,
          * so a return address into one of these is a stale word left in a reused stack slot (the
          * thread trampoline calls 00106314 before the thread body), not a live frame: keep it */
-        static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", "func_003CC230", NULL };
+        /* (also the wall walker's geometry queries - pure maths, no locks or waits: user slot 1 was
+         * refused for func_00650A24 after the on-edge fix, 160bi) */
+        static const char *const never_blocks[] = { "func_00106314", "albw_fp_set_3ds_mode", "func_003CC230",
+                                                    "func_00650A24", "func_0064CB28", "func_0064E9F4",
+                                                    "func_001EA738", NULL };
         for (int i = 0; never_blocks[i]; i++)
             if (!strcmp(s->name, never_blocks[i])) return v;
         /* right after `call <next instruction>` (E8 00 00 00 00, the PIC "get my address" trick at the
