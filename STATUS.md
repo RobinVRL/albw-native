@@ -1,12 +1,13 @@
 # Where the port stands
 
-Last updated 2026-11-21 (release **v0.2.4**). Details of every fix:
+Last updated 2026-11-21 (release **v0.2.5**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.5](https://github.com/spacestate1/albw-native/releases/tag/v0.2.5) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged Link no longer stuck at corner edges; crash past corners fixed |
 | [v0.2.4](https://github.com/spacestate1/albw-native/releases/tag/v0.2.4) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged camera at corners, corner wall search, float-bit tests (10 functions) |
 | [v0.2.3](https://github.com/spacestate1/albw-native/releases/tag/v0.2.3) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged-wall camera and crash at wall ends, dungeon map cursor, effect sort, stub review |
 | [v0.2.2](https://github.com/spacestate1/albw-native/releases/tag/v0.2.2) | 2026-11-20 | Linux AppImage, Windows zip (experimental) | bell warp crash, bell selectable in single-screen mode, x87 stack guard |
