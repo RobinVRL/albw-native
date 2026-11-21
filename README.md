@@ -1,90 +1,65 @@
-# A Link Between Worlds – native Linux port
+# A Link Between Worlds – native PC port
 
-A native Linux build of *The Legend of Zelda: A Link Between Worlds* (Nintendo 3DS), made from
+A native build of *The Legend of Zelda: A Link Between Worlds* (Nintendo 3DS) for Linux, made from
 decompiled game code (based on [albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai): see
-[Credits](#credits)). The game logic runs as real C on your PC. Graphics, sound, input and file
-access are rewritten for Linux (SDL3 + OpenGL). There is no emulator.
+[Credits](#credits)). The game logic runs as real C on your PC; graphics, sound, input and files
+are rewritten with SDL3 + OpenGL. No emulator.
 
 <p align="center"><img src="docs/screenshots/title.png" alt="Title screen running in the port (top and bottom screen)" width="400"></p>
 
-**Work in progress.** The game boots and is playable through large parts of the story. Expect
-bugs, glitches and crashes. See [Status](#status).
+**Work in progress.** Playable through large parts of the story; expect bugs. See [Status](#status).
 
 ## You need your own game
 
-This repository has **no game data**: no ROM, no keys, no assets, no saves. You need a
-**decrypted** dump of the **European** release that you made yourself.
+No game data is included: no ROM, keys, assets or saves. You need a **decrypted dump of the
+European release** that you made yourself (`.3ds`, 748,580,864 bytes, `.code` SHA-1
+`2aeee593a695f2ce1196b844026567f227472f0b` – the build checks it). The USA and Japanese releases
+do not work: the decompiled code is tied to the European release's addresses.
 
-Tested dump:
+## Play
 
-| | |
-|---|---|
-| Title | The Legend of Zelda: A Link Between Worlds (Europe) (En,Fr,De,Es,It) |
-| Product code | CTR-P-BZLP, version 2 |
-| File | decrypted `.3ds`, 748,580,864 bytes |
-| SHA-1 | `4d2da91fa0edef9eef07e471527461396cc3faf2` |
-| MD5 | `b0bc337f96e8aaa4ab94aef91c3b1f6b` |
-| CRC32 | `07004847` |
-| `.code` SHA-1 (what the build checks) | `2aeee593a695f2ce1196b844026567f227472f0b` |
+### Linux: download (easiest)
 
-The file hashes depend on the dump and decryption tools. A different file can still work if its
-`.code` matches: the build checks that and stops if it does not.
+1. Download `ALBW-native-x86_64.AppImage` from the [latest release](https://github.com/spacestate1/albw-native/releases/latest).
+2. `chmod +x ALBW-native-x86_64.AppImage`
+3. `./ALBW-native-x86_64.AppImage --rom /path/to/your/game.3ds` (the path is remembered; started
+   from a file manager, it asks with a file dialog).
 
-Not supported (yet): the USA release (`.code` SHA-1 `e6ab7d66ee62e879248b0660aaf38d22202e604b`)
-and the Japanese release. Their code sits at different addresses.
+Runs on Ubuntu 22.04 / 24.04, Debian 12+, Fedora, Arch, SteamOS and similar (x86-64). It needs the
+system's 32-bit C library and OpenGL driver; if they are missing, it tells you what to install.
+No FUSE? Add `--appimage-extract-and-run`.
 
-## Build
-
-Supported: Fedora, Ubuntu, Linux Mint, Debian, Arch, openSUSE (x86-64). The build needs
-**clang 19 or newer**; `build.sh` installs and picks it (Ubuntu 24.04 / Mint 22: clang 20, Debian
-12 / 13: clang 22). Ubuntu 22.04 / Mint 21 only offer clang 15: install a newer one from
-[apt.llvm.org](https://apt.llvm.org) first. On Arch, enable the `[multilib]` repository in
-`/etc/pacman.conf` (32-bit libraries).
+### Linux: build from source
 
 ```
-git clone https://github.com/spacestate1/albw-native.git albw-native
+git clone https://github.com/spacestate1/albw-native.git
 cd albw-native
 ./build.sh /path/to/your/game.3ds
-```
-
-`build.sh` installs the packages it needs (asks for sudo), builds a 32-bit SDL3 if your
-distribution has none, reads the game code from your ROM, then compiles and links. The first
-build takes a while (about 26,000 source files). Rebuild later with `./build.sh` (the ROM path is
-remembered in `~/.config/albw-port/rom_path`). Already have the packages? Use `--no-deps`.
-
-The game is a 32-bit program for now, so the build uses 32-bit libraries. A 64-bit build is
-planned.
-
-### Download (AppImage)
-
-Each release on GitHub has `ALBW-native-x86_64.AppImage` when one is published: no build needed.
-It runs on Ubuntu 22.04 / 24.04, Debian 12+, Fedora, Arch, SteamOS and similar (x86-64), with the
-system's 32-bit C library and OpenGL driver (the launcher lists the packages if they are missing).
-Start it with `--rom /path/to/your/game.3ds`.
-
-Known issue: building *from source* on Ubuntu currently crashes at the first frame (a heap race the
-build here does not hit); the AppImage is not affected.
-
-### AppImage
-
-After a build, `tools/make_release_appimage.sh` packs a portable AppImage inside an Ubuntu 22.04
-container (podman or docker); `tools/make_appimage.sh` packs it with this machine's libraries into `build/ALBW-native-x86_64.AppImage` (about
-12 MB: the game, its 32-bit SDL3 and zlib, a launcher). Start it with
-`./ALBW-native-x86_64.AppImage --rom /path/to/your/game.3ds`. The path is remembered; started
-from a file manager without one, it asks with a file dialog. The game itself is not inside.
-The system still has to provide 32-bit glibc and the 32-bit OpenGL driver; the launcher lists
-the packages if they are missing. Without FUSE, add `--appimage-extract-and-run`.
-
-## Run
-
-```
 ./run.sh
 ```
 
-Saves go to `~/.local/share/albw-port/save`. The 3DS game saves (`Save_*.bin`) are the game's own
-format.
+`build.sh` installs what it needs (asks for sudo), reads the game code from your ROM and compiles
+(the first build takes a while: about 26,000 files). Fedora, Ubuntu, Mint, Debian, Arch (enable
+`[multilib]`), openSUSE; it needs clang 19 or newer (installed automatically where the distribution
+has it; Ubuntu 22.04 / Mint 21: get one from [apt.llvm.org](https://apt.llvm.org)). Rebuild later
+with `./build.sh`.
 
-### Controls (keyboard; rebind in Esc > Controls)
+### Steam Deck
+
+In desktop mode, `./build.sh /path/to/game.3ds` builds inside distrobox and makes
+`build/ALBW-native-x86_64.AppImage` (or copy the release AppImage over). Add it to Steam as a
+non-Steam game to play in Game Mode. L3+R3 opens the game's menu.
+
+### Windows (experimental)
+
+`windows/build_windows.sh`, run on Linux after a normal build, makes `build/ALBW-windows.zip`:
+unzip it on Windows, start `ALBW.exe` and choose your `.3ds`. It reaches the title and file select
+under Wine but is not tested on real Windows hardware yet. How it works: [windows/README.md](windows/README.md).
+
+## Controls
+
+Keyboard (rebind anything in Esc > Controls); controllers work too, with the buttons where they
+are on a 3DS.
 
 | 3DS | Key | | 3DS | Key |
 |---|---|---|---|---|
@@ -96,89 +71,71 @@ format.
 
 | Key | Action |
 |---|---|
-| Esc | pause menu (window, layout, filtering, reset game, quit) |
-| F1 | input menu |
-| F2 / F3 / F4 | screen layout preset / layout editor / swap screens |
+| Esc (controller: L3+R3 or Guide) | menu: window, layout, controls, save states, reset game, quit |
 | F5 | one window or two windows |
 | F6 / F7 | save state / load state |
 | F9 | single-screen mode on / off |
-| F10 | widescreen (16:9 top screen: a wider view, not stretched) on / off |
-| F12 | screenshot of both screens (`~/.local/share/albw-port/screenshots/`) |
-| Tab (controller: right-stick click) | single-screen mode: show the other screen (items, map) and back |
+| F10 | widescreen top screen (a wider view, not stretched) |
+| F12 | screenshot |
 
-In single-screen mode Start brings up the bottom screen (map, Gear, Items) and Select opens the
-game's Pause. There the D-pad moves a selector between the buttons and items and A taps the
-selected one (no mouse needed). Rebind any key or button in Esc > Controls (saved to `~/.config/albw-port/input.cfg`).
+### Single-screen mode
 
-A game controller works too: the buttons sit where they are on a 3DS (the bottom face button is
-the 3DS B), and both sticks clicked together (L3+R3) or the Guide button open the Esc menu.
+One window shows one screen at a time – handy on a laptop, TV or the Steam Deck. Turn it on with
+**F9** (or Esc > Video).
 
-### Steam Deck
+- The top screen (the game) is shown; **Tab** (controller: right-stick click) flips to the bottom
+  screen and back.
+- **Start** brings up the bottom screen (map, Gear, Items); **Select** opens the game's pause menu.
+- On the bottom screen the **D-pad** moves a selector between buttons and items and **A** taps the
+  selected one – no mouse needed.
+- At the file select the save list (bottom screen) is shown by itself; the game switches back to
+  the top screen when you start playing.
 
-On the Deck (SteamOS, desktop mode): `./build.sh /path/to/game.3ds` builds inside a distrobox
-container (SteamOS itself is read-only; distrobox and podman come with SteamOS 3.5+) and produces
-`build/ALBW-native-x86_64.AppImage`. Add that file to Steam (Games > Add a Non-Steam Game) to play
-in Game Mode. There the game runs as one full-screen window: large top screen, bottom screen beside
-it (the touchscreen taps it), or switch to single-screen mode in the menu (L3+R3 > Video). Steam
-Input's default gamepad layout works as is. Already built elsewhere? Copy the AppImage over.
+Saves and save states live in `~/.local/share/albw-port/`, settings in `~/.config/albw-port/`.
 
 ## Status
 
-Tested and working:
-- boot, title, file select, saving and loading
-- the opening and early story scenes, the overworld, houses, the blacksmith
-- items and equipment, enemies, combat, game over
-- loading late-game saves (Death Mountain, Lorule)
+Working: boot, title, file select, saving and loading; the story's first areas, the overworld,
+houses, items, enemies, combat; the Eastern Palace and its boss (Yuga, wall merging as a
+painting); late-game saves load (Death Mountain, Lorule).
 
-Known problems:
-- sound in gameplay is still being worked on
-- some effects (Tornado Rod, fire, trails) draw wrongly
-- some cutscenes may stop or crash: please report them
-- see [MISSING.md](MISSING.md) for the full list
+Known problems: the Fire / Tornado Rod flame cones are not drawn yet; some effects and cutscenes
+are still wrong; most dungeons after the Eastern Palace are untested. Full list:
+[MISSING.md](MISSING.md). Please report what you find.
 
 ## How it works (short)
 
-- `decomp/` – the decompiled game code (from the matching decompilation project and Ghidra),
-  converted so it compiles natively. Built with `tools/build_decomp.py --snapshot decomp`.
-- `native/` – everything written by hand: the platform layer (window, input, audio), the
-  replacements for the 3DS system libraries, the renderer, and fixes for decompiled functions
-  that were wrong (`native/compilefix/`, each with a note on what was wrong).
-- `tools/` – build and analysis scripts.
-- The game data (strings, tables) is generated from your ROM at build time and is never stored.
+- `decomp/` – the decompiled game code, converted so it compiles natively.
+- `native/` – written by hand: window, input, audio, the renderer, replacements for the 3DS system
+  libraries, and fixes for decompiled functions (`native/compilefix/`, each with a note).
+- `windows/` – the Windows loader.
+- The game's data is read from your ROM at build time and never stored in the repository.
 
-Development notes: [native/BOOT_LOG.md](native/BOOT_LOG.md) (every bug found and how it was
-fixed), [native/DIDNT_WORK.md](native/DIDNT_WORK.md) (what was tried and failed),
-[native/SCRIPTED_EVENTS.md](native/SCRIPTED_EVENTS.md) (all cutscenes, with test status).
+Notes: [native/BOOT_LOG.md](native/BOOT_LOG.md) (every bug and its fix),
+[native/PAINTING.md](native/PAINTING.md) (wall merging step by step),
+[native/DIDNT_WORK.md](native/DIDNT_WORK.md) (what was tried and failed).
 
-### Rules the port follows
-
-- No emulation: no CPU interpreter or recompiler, no GPU or OS emulation. 3DS library calls are
-  replaced function by function with native code.
-- Shaders are hand-written GLSL; GPU command lists are never interpreted at run time.
-- No game data in the repository.
+Rules: no emulation (no CPU interpreter or recompiler, no GPU or OS emulation; 3DS library calls are
+replaced function by function), hand-written GLSL shaders, no game data in the repository.
 
 ## Credits
 
-This port is built on **[albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai)** by
+Built on **[albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai)** by
 **[7akeem0](https://github.com/7akeem0)** and contributors, the matching decompilation of
-*A Link Between Worlds*. Its matched C/C++ sources (about 16,000 functions), its function address
-map and its shared headers are the base of the game code compiled here; the `decomp/` folder is a
-snapshot of those sources as this port converts and compiles them. Thanks also to
-**[matthis](https://github.com/mmaupas/albw-decomp-ai)** for the decomp's automation tools,
-shared headers and many matches.
-
-Functions the decomp has not matched yet come from [Ghidra](https://github.com/NationalSecurityAgency/ghidra)
-(NSA) decompiler output. Windowing, input and audio use [SDL3](https://www.libsdl.org/).
+*A Link Between Worlds*: its matched sources (about 16,000 functions), address map and headers are
+the base of the game code here (`decomp/` is a snapshot of them). Thanks also to
+**[matthis](https://github.com/mmaupas/albw-decomp-ai)** for the decomp's automation tools, shared
+headers and many matches. Unmatched functions come from [Ghidra](https://github.com/NationalSecurityAgency/ghidra)
+output. Windowing, input and audio use [SDL3](https://www.libsdl.org/).
 
 ## License
 
-The port's own code (`native/`, `tools/`, scripts) is under the MIT license: see
-[LICENSE](LICENSE). It does not cover the game itself or its data. The decompiled sources in `decomp/`
-come from [albw-decomp-ai](https://github.com/7akeem0/albw-decomp-ai) (and Ghidra output); that
-project has no license file yet, so the MIT license here does not cover them.
+The port's own code (`native/`, `tools/`, `windows/`, scripts) is MIT: see [LICENSE](LICENSE). It
+does not cover the game or its data. The decompiled sources in `decomp/` come from albw-decomp-ai
+(and Ghidra); that project has no license file yet, so the MIT license does not cover them.
 
 ## Legal
 
-This is a fan project for preservation and study. It is not affiliated with or endorsed by
-Nintendo. *The Legend of Zelda* and *A Link Between Worlds* are trademarks of Nintendo. You must
-own the game and dump it yourself; do not ask for ROMs or keys.
+A fan project for preservation and study, not affiliated with or endorsed by Nintendo. *The Legend
+of Zelda* and *A Link Between Worlds* are trademarks of Nintendo. You must own the game and dump it
+yourself; do not ask for ROMs or keys.
