@@ -10,7 +10,10 @@
  *    pool word, e.g. `fVar = _DAT_xxx;`, `puVar[3] = fVar;`) made bit copies [1]
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites, this function's sites checked);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
- * functions retyped non-void return 0, as the converter does). */
+ * functions retyped non-void return 0, as the converter does). *
+ * 160bh: two edge-direction range tests work on the float BITS of a dot product (0.1 <= dot < 0.9:
+ * bits - 0x3DCCCCCD < 0x0199999A, as in 0064CB28); the text converted the dot to an integer
+ * (0.3 -> 0), so no edge qualified. Now ALBW_AS_U32 (the vmov the ARM code does). */
 #include "ghidra_types.h"
 #include "../include/ghidra_concat44.h"
 #define CF_MATHCONST
@@ -1054,7 +1057,7 @@ LAB_0064f7e8:
           iVar12 = 0;
           do {
             ppppppfVar11 = (float ******)local_98[iVar12];
-            if ((uint)((int)(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_150) +
+            if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_150) +
                              ALBW_AS_F32(ppppppfVar11[1]) * ALBW_AS_F32(local_14c) +
                             ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_148)) - DAT_0064f6e0) <
                 DAT_0064f6e4) {
@@ -1245,7 +1248,7 @@ LAB_0064f7e8:
       iVar12 = 0;
       do {
         ppppppfVar11 = (float ******)local_98[iVar12];
-        if ((uint)((int)(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_200) +
+        if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar11) * ALBW_AS_F32(local_200) +
                          ALBW_AS_F32(ppppppfVar11[1]) * ALBW_AS_F32(local_1fc) +
                         ALBW_AS_F32(ppppppfVar11[2]) * ALBW_AS_F32(local_1f8)) - DAT_0064f6e0) < DAT_0064f6e4) {
           fVar21 = ALBW_AS_F32(local_130) * ALBW_AS_F32(*ppppppfVar11) +

@@ -4,6 +4,9 @@
  *  - (T *)<float expr> -> (T *)CF_FBITS(expr): 32-bit copy of the float (vmov/vstr), never a conversion [38]
  *  - implicit float<->int conversions (Ghidra COPY between a float and an int-typed variable or
  *    pool word, e.g. `fVar = _DAT_xxx;`, `puVar[3] = fVar;`) made bit copies [1]
+ *  - two edge-direction range tests (EU 0064D6D0 / 0064E690: vmov r2, s10; sub; cmp) work on the
+ *    float BITS of a dot product (0.1 <= dot < 0.9: bits - 0x3DCCCCCD < 0x0199999A); the text
+ *    converted the dot to an integer (0.3 -> 0), so no edge ever qualified (160bh)
  * Confidence: high for the fixes (each class checked against the EU disassembly on sample sites);
  * the function body otherwise has the fidelity of the Ghidra output (bare `return;` exits of
  * functions retyped non-void return 0, as the converter does). */
@@ -1048,7 +1051,7 @@ LAB_0064d944:
           do {
             ppppppfVar3 = (float ******)local_98[iVar9];
             ppppppfVar26 = (float ******)ppppppfVar3[1];
-            if ((uint)((int)(ALBW_AS_F32(*ppppppfVar3) * ALBW_AS_F32(local_f0) + ALBW_AS_F32(ppppppfVar26) * local_ec
+            if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*ppppppfVar3) * ALBW_AS_F32(local_f0) + ALBW_AS_F32(ppppppfVar26) * local_ec
                             + ALBW_AS_F32(ppppppfVar3[2]) * ALBW_AS_F32(local_e8)) - DAT_0064d804) <
                 DAT_0064d808) {
               fVar19 = ALBW_AS_F32(local_1f8[1]) * ALBW_AS_F32(ppppppfVar26);
@@ -1209,7 +1212,7 @@ LAB_0064d944:
       do {
         pppppfVar20 = (float *****)local_a0[iVar9];
         pppppfVar22 = (float *****)pppppfVar20[1];
-        if ((uint)((int)(ALBW_AS_F32(*pppppfVar20) * ALBW_AS_F32(local_148) + ALBW_AS_F32(pppppfVar22) * local_144 +
+        if ((uint)((int)ALBW_AS_U32(ALBW_AS_F32(*pppppfVar20) * ALBW_AS_F32(local_148) + ALBW_AS_F32(pppppfVar22) * local_144 +
                         ALBW_AS_F32(pppppfVar20[2]) * ALBW_AS_F32(local_140)) - DAT_0064d804) < DAT_0064d808) {
           fVar19 = ALBW_AS_F32(local_1f8[1]) * ALBW_AS_F32(pppppfVar22);
           if (iVar9 == 2) {
