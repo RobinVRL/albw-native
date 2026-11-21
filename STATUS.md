@@ -1,12 +1,13 @@
 # Where the port stands
 
-Last updated 2026-11-20, at commit `e86ce380` (release **v0.2.1**). Details of every fix:
+Last updated 2026-11-20 (release **v0.2.2**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.2](https://github.com/spacestate1/albw-native/releases/tag/v0.2.2) | 2026-11-20 | Linux AppImage, Windows zip (experimental) | bell warp crash, bell selectable in single-screen mode, x87 stack guard |
 | [v0.2.1](https://github.com/spacestate1/albw-native/releases/tag/v0.2.1) | 2026-11-20 | Linux AppImage, Windows zip (experimental) | Windows build added; same Linux game as v0.2.0 |
 | [v0.2.0](https://github.com/spacestate1/albw-native/releases/tag/v0.2.0) | 2026-11-20 | Linux AppImage | Eastern Palace boss, wall merging, square glows fixed |
 | [v0.1.0](https://github.com/spacestate1/albw-native/releases/tag/v0.1.0) | 2026-11-19 | – | first tagged build |
@@ -30,6 +31,7 @@ differing functions and every address in `native/`).
 - Single-screen mode (F9): the file select shows the save list; long cutscenes no longer flip to
   the map; Tab / right-stick click flips screens; D-pad + A on the bottom screen.
 - Late-game saves load (Death Mountain, Lorule).
+- Language: `ALBW_LANGUAGE=1..5` (1 English, 2 French, 3 German, 4 Italian, 5 Spanish; default 1).
 
 ## Recent work (2026-11-19 / 20)
 
@@ -45,6 +47,8 @@ differing functions and every address in `native/`).
 | 160ax | square particle lights: stale effect texture blocks in old states repaired on load |
 | 160ay | painting visibility test got its draw-layer argument (stayed hidden in some sessions) |
 | 160az | Windows build (below) |
+| 160ba | single-screen: the bell (map page) is selectable; x87 stack guard no longer misses a full stack (NaN floats after a leak) |
+| 160bb | crash after a bell warp (bone name "Head" passed as an address); same bug fixed for "Melt" |
 
 ## Windows build (experimental)
 
@@ -71,6 +75,10 @@ and POSIX calls; SDL3.dll; a bundled Mesa OpenGL fallback. Details: [windows/REA
 | – | Fire / Tornado Rod flame cones not drawn (effect program missing) | – |
 | – | Windows: speed on real hardware unknown | a Windows tester |
 | – | Most dungeons after the Eastern Palace untested | play-testing |
+| 14 | Slot 2 Zora's River crash (Shady Guy scene): not reproduced after the x87 fix | a report if it comes back |
+| 18 | Merge camera swings at some wall ends / doorways (the 3DS camera also swings; exact difference not found yet) | – |
+| 19 | Terrain drawn as dark mud with blue tiles (screenshots/world-error.png) | a save state there |
+| – | AddressSanitizer build crashes at frame 183 (address layout) | – |
 
 Not bugs, but old save states: states saved by older builds can carry stale data (e.g. the
 "Nāy" A-button label after merging in slot 6); playing from an in-game save fixes it.
