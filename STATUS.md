@@ -91,7 +91,7 @@ Not bugs, but old save states: states saved by older builds can carry stale data
   runs `build/albw`; relinking it mid-session makes states saved meanwhile depend on a build that
   disappears (slot 5 was lost that way: states taken inside a function whose code changed cannot
   load).
-- **Save-state compatibility:** avoid changing functions that threads park in (`sdk/h3d.c`
+- **Save-state compatibility:** avoid changing functions that threads park in (the thread start `0067628C`, `sdk/h3d.c`
   `dec_finish` / `dec_write`, `platform.c` `plat_end_frame`) unless needed.
 - **Machine limits:** builds with `ALBW_JOBS=2`; one game or gdb run at a time.
 - **Test harness:** `ALBW_ROUTE="at 60;load N;..."` (`load` is 0-based: user slot N = `load N-1`),
