@@ -5,8 +5,9 @@
  * page's touch targets and A taps the one under it. The selector is the user's grid-selector
  * graphic (native/platform/assets/grid-selector.png, embedded by selector_img.h) drawn as an
  * overlay on the bottom screen's image, not a pointer. The page is recognised from pixels of the
- * bottom screen: Gear (red frame), Items (tan grid), the map (its pin counter's red pin; with the
- * bell button bottom left once Link has the bell: its yellow icon), else another page with
+ * bottom screen: Gear (red frame), Items (tan grid), a dungeon map (blue-grey frame), the world map
+ * (orange scroll top left; with the bell button bottom left once Link has the bell: its yellow
+ * icon), else another page with
  * controls of its own (the bell's warp menu), where the D-pad and A go to the game. Targets are in 3DS bottom
  * screen pixels (320 x 240, origin top left), measured on the game's pages. */
 #include "selector_img.h"
@@ -35,6 +36,12 @@ static const SelTarget SEL_MAP_BELL[] = {
     {28, 226, 52, 26},                       /* bell */
     {124, 226, 124, 26}, {255, 226, 128, 26}, /* Gear / Items tabs */
 };
+/* a dungeon's map: floor buttons on the left instead of the pins; wide Gear / Items tabs */
+static const SelTarget SEL_DUNGEON[] = {
+    {35, 54, 62, 34}, {35, 97, 62, 34}, {35, 139, 62, 34},   /* floors */
+    {288, 138, 46, 46},                                       /* Y item slot */
+    {80, 226, 156, 26}, {240, 226, 156, 26},                  /* Gear / Items tabs */
+};
 static const SelTarget SEL_ITEMS[] = {
     {33, 27, 46, 44, 1}, {80, 27, 46, 44, 1}, {127, 27, 46, 44, 1}, {174, 27, 46, 44, 1}, {221, 27, 46, 44, 1},
     {33, 72, 46, 44, 1}, {80, 72, 46, 44, 1}, {127, 72, 46, 44, 1}, {174, 72, 46, 44, 1}, {221, 72, 46, 44, 1},
@@ -54,13 +61,14 @@ static const SelTarget SEL_GEAR[] = {
     {85, 178, 40, 24}, {127, 178, 40, 24}, {165, 178, 40, 24}, {205, 178, 40, 24}, {245, 178, 40, 24}, {285, 178, 40, 24},
     {160, 226, 300, 26},                                                          /* Close */
 };
-enum { SEL_PAGE_MAP, SEL_PAGE_ITEMS, SEL_PAGE_GEAR, SEL_PAGE_MAP_BELL,
+enum { SEL_PAGE_MAP, SEL_PAGE_ITEMS, SEL_PAGE_GEAR, SEL_PAGE_MAP_BELL, SEL_PAGE_DUNGEON,
        SEL_PAGE_OTHER /* a page with controls of its own (the bell's warp menu): input passes through */ };
-static const struct { const SelTarget *t; int n; } SEL_PAGES[4] = {
+static const struct { const SelTarget *t; int n; } SEL_PAGES[5] = {
     {SEL_MAP, (int)(sizeof SEL_MAP / sizeof *SEL_MAP)},
     {SEL_ITEMS, (int)(sizeof SEL_ITEMS / sizeof *SEL_ITEMS)},
     {SEL_GEAR, (int)(sizeof SEL_GEAR / sizeof *SEL_GEAR)},
     {SEL_MAP_BELL, (int)(sizeof SEL_MAP_BELL / sizeof *SEL_MAP_BELL)},
+    {SEL_DUNGEON, (int)(sizeof SEL_DUNGEON / sizeof *SEL_DUNGEON)},
 };
 
 static int g_sel_page, g_sel_idx, g_sel_on;
@@ -134,7 +142,7 @@ static void sel_input(PlatInput *pin) {
         static int lp = -1, li = -1, la;
         int tap = (held & KEY_A) != 0;
         if ((lp != g_sel_page || li != g_sel_idx || la != tap) && getenv("ALBW_SEL_TRACE"))
-            fprintf(stderr, "selector: page %s target %d at %d,%d%s\n", g_sel_page == SEL_PAGE_GEAR ? "gear" : g_sel_page == SEL_PAGE_ITEMS ? "items" : "map",
+            fprintf(stderr, "selector: page %s target %d at %d,%d%s\n", g_sel_page == SEL_PAGE_GEAR ? "gear" : g_sel_page == SEL_PAGE_ITEMS ? "items" : g_sel_page == SEL_PAGE_DUNGEON ? "dungeon" : g_sel_page == SEL_PAGE_MAP_BELL ? "map+bell" : "map",
                     g_sel_idx, t->x, t->y, tap ? " TAP" : "");
         lp = g_sel_page; li = g_sel_idx; la = tap;
     }
@@ -161,15 +169,16 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
     static unsigned frame;
     if (frame++ % 10 == 0) {
         glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, bt->fbo);
-        uint8_t a[4] = {0}, b[4] = {0}, c[4] = {0}, d[4] = {0};
+        uint8_t a[4] = {0}, b[4] = {0}, c[4] = {0}, d[4] = {0};   /* d: top-left corner */
         glReadPixels(300 * w / 320, h - 1 - 60 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, a);
         glReadPixels(160 * w / 320, h - 1 - 120 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, b);
         glReadPixels(28 * w / 320, h - 1 - 226 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c);   /* bell icon: pure yellow */
-        glReadPixels(22 * w / 320, h - 1 - 142 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, d);   /* map: the pin counter's red pin */
+        glReadPixels(5 * w / 320, h - 1 - 5 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, d);   /* map frame colour */
         glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, 0);
         int page = (a[0] > 90 && a[1] < 45) ? SEL_PAGE_GEAR
                  : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS
-                 : !(d[0] > 170 && d[1] < 170) ? SEL_PAGE_OTHER   /* no red pin: not the map (warp menu) */
+                 : (d[2] > 140 && d[2] > d[0] + 10) ? SEL_PAGE_DUNGEON          /* blue-grey dungeon frame */
+                 : !(d[0] > 200 && d[1] > 140 && d[2] < 110) ? SEL_PAGE_OTHER   /* no orange map scroll: warp menu */
                  : (c[0] > 230 && c[1] > 190 && c[2] < 60) ? SEL_PAGE_MAP_BELL : SEL_PAGE_MAP;
         if (page != g_sel_page && page == SEL_PAGE_OTHER) {
             g_sel_page = page;
