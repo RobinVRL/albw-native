@@ -64,7 +64,19 @@ fi
 # native Wayland only when its 32-bit pieces exist (same choice as run.sh); X11/XWayland otherwise
 WAYLAND_GL_OK=1
 if [[ -e /proc/driver/nvidia/version ]] && ! lib32_has "libnvidia-egl-wayland.so*"; then WAYLAND_GL_OK=0; fi
-if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
+# Steam Deck Game Mode (gamescope session): games run on gamescope's XWayland (DISPLAY). Native Wayland
+# there needs 32-bit pieces SteamOS does not have, so use X11 (GitHub issue 8).
+GAMESCOPE=0
+if [[ -n "${GAMESCOPE_WAYLAND_DISPLAY:-}" || "${XDG_CURRENT_DESKTOP:-}" == *gamescope* || ( -n "${SteamDeck:-}" && -n "${SteamGamepadUI:-}" ) ]]; then
+    GAMESCOPE=1
+fi
+# Steam preloads its overlay (gameoverlayrenderer.so) into every non-Steam shortcut; it hooks GL/SDL inside
+# the game and AppImages are known to fail to start with it in Game Mode. The game has its own menu
+# (L3+R3), so run without it.
+if [[ $GAMESCOPE == 1 ]]; then unset LD_PRELOAD; fi
+if [[ $GAMESCOPE == 1 && -n "${DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" ]]; then
+    export SDL_VIDEO_DRIVER=x11
+elif [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
     export SDL_VIDEO_DRIVER=wayland
 fi
 
@@ -79,4 +91,12 @@ if [[ -d "$HERE/usr/lib/fallback" ]]; then
     [[ -n "$(ls -A "$FBDIR")" ]] && LIBS="$LIBS:$FBDIR"
 fi
 export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# no terminal (Steam Game Mode, desktop launchers): keep the output in a log file, there is nowhere else to read it
+if [[ ! -t 2 ]]; then
+    LOGDIR="${XDG_STATE_HOME:-$HOME/.local/state}/albw-port"
+    if mkdir -p "$LOGDIR" 2>/dev/null; then
+        { echo "== $(date) game mode=$GAMESCOPE SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$LOGDIR/last-run.log"
+        exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$LOGDIR/last-run.log" 2>&1
+    fi
+fi
 exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}"
