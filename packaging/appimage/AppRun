@@ -90,12 +90,19 @@ if [[ -d "$HERE/usr/lib/fallback" ]]; then
     done
     [[ -n "$(ls -A "$FBDIR")" ]] && LIBS="$LIBS:$FBDIR"
 fi
-export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# Steam's run.sh points LD_LIBRARY_PATH at its own runtime libraries (older Ubuntu libstdc++, libGL, ...);
+# the game would load those instead of the system's 32-bit Mesa. Only our own folders, as the Krita
+# AppImage does for the same reason (ValveSoftware/steam-runtime#189).
+if [[ $GAMESCOPE == 1 || -n "${STEAM_RUNTIME:-}" ]]; then
+    export LD_LIBRARY_PATH="$LIBS"
+else
+    export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
 # no terminal (Steam Game Mode, desktop launchers): keep the output in a log file, there is nowhere else to read it
 if [[ ! -t 2 ]]; then
     LOGDIR="${XDG_STATE_HOME:-$HOME/.local/state}/albw-port"
     if mkdir -p "$LOGDIR" 2>/dev/null; then
-        { echo "== $(date) game mode=$GAMESCOPE SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$LOGDIR/last-run.log"
+        { echo "== $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$LOGDIR/last-run.log"
         exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$LOGDIR/last-run.log" 2>&1
     fi
 fi
