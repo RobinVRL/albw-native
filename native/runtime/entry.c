@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "../platform/platform.h"
 #include "runtime.h"
 
@@ -29,8 +31,47 @@ static int game_main(void *p);
 
 char **albw_argv;   /* for Esc > File > Reset game (platform.c: re-exec) */
 
+/* Portable mode (GitHub issue 6): keep saves, save states, settings, screenshots and logs in one
+ * folder instead of ~/.local/share, ~/.config and ~/.local/state. The folder is
+ *   ALBW_DATA_DIR=<folder>, or
+ *   a folder named "albw-data" next to the program (next to the AppImage file for the AppImage).
+ * Every path in the port comes from XDG_DATA_HOME / XDG_CONFIG_HOME / XDG_STATE_HOME, so setting
+ * those three (before anything reads them) moves everything. Runs in main, not game_main: game_main
+ * is on the saved stack of every save state and must not change. */
+static void albw_portable_dirs(void) {
+    char base[4096] = "";
+    const char *env = getenv("ALBW_DATA_DIR");
+    if (env && *env) {
+        snprintf(base, sizeof base, "%s", env);
+    } else {
+        char prog[4096] = "";
+        const char *appimage = getenv("APPIMAGE");   /* set by the AppImage runtime: the .AppImage file */
+        if (appimage && *appimage) snprintf(prog, sizeof prog, "%s", appimage);
+        else {
+            ssize_t n = readlink("/proc/self/exe", prog, sizeof prog - 1);
+            prog[n > 0 ? n : 0] = 0;
+        }
+        char *slash = strrchr(prog, '/');
+        if (!slash) return;
+        *slash = 0;
+        snprintf(base, sizeof base, "%s/albw-data", prog);
+        struct stat st;
+        if (stat(base, &st) != 0 || !S_ISDIR(st.st_mode)) return;   /* no folder: normal locations */
+    }
+    char d[4200];
+    const char *sub[3][2] = {{"XDG_DATA_HOME", "share"}, {"XDG_CONFIG_HOME", "config"}, {"XDG_STATE_HOME", "state"}};
+    mkdir(base, 0755);
+    for (int i = 0; i < 3; i++) {
+        snprintf(d, sizeof d, "%s/%s", base, sub[i][1]);
+        mkdir(d, 0755);
+        setenv(sub[i][0], d, 1);
+    }
+    fprintf(stderr, "portable: saves, settings and logs in %s\n", base);
+}
+
 int main(int argc, char **argv) {
     albw_argv = argv;
+    albw_portable_dirs();
     /* x86-64 low-4GB mode: the game runs on a low stack (game code keeps stack addresses in
      * 32-bit words), same thread; on i386 game_main is called directly (runtime/lowmem.c) */
     struct MainArgs a = {argc, argv};

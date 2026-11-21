@@ -209,6 +209,42 @@ static const char *BLIT_FS =
     "in vec2 uv; out vec4 o; uniform sampler2D tex;\n"
     "void main(){ o = texture(tex, uv); }\n";
 
+#ifndef ALBW_WINDOWS
+/* Hybrid laptops (Intel / AMD graphics + an NVIDIA GPU, "Optimus"): OpenGL runs on the built-in GPU
+ * unless the program asks for the NVIDIA one (GitHub issue 5). Ask the way NVIDIA's prime-run does:
+ * __NV_PRIME_RENDER_OFFLOAD=1 and __GLX_VENDOR_LIBRARY_NAME=nvidia, set before SDL loads OpenGL.
+ * Only when the machine has an NVIDIA GPU and another one; a value the user already set wins.
+ * ALBW_GPU=integrated keeps the built-in GPU, ALBW_GPU=nvidia forces the offload. */
+static void plat_pick_hybrid_gpu(void) {
+    const char *want = getenv("ALBW_GPU");
+    if (want && !strcmp(want, "integrated")) return;
+    int nvidia = 0, other = 0;
+    for (int i = 0; i < 8; i++) {
+        char path[64];
+        snprintf(path, sizeof path, "/sys/class/drm/card%d/device/vendor", i);
+        FILE *f = fopen(path, "r");
+        if (!f) continue;
+        unsigned vendor = 0;
+        if (fscanf(f, "%x", &vendor) == 1) {
+            if (vendor == 0x10de) nvidia = 1;            /* NVIDIA */
+            else if (vendor == 0x8086 || vendor == 0x1002) other = 1;   /* Intel, AMD */
+        }
+        fclose(f);
+    }
+    if (!(nvidia && other) && !(want && !strcmp(want, "nvidia"))) return;
+    /* the game is a 32-bit program: it needs the 32-bit NVIDIA OpenGL library */
+    if (access("/usr/lib32/libGLX_nvidia.so.0", F_OK) != 0 &&
+        access("/usr/lib/i386-linux-gnu/libGLX_nvidia.so.0", F_OK) != 0) {
+        fprintf(stderr, "platform: hybrid GPU, but the 32-bit NVIDIA OpenGL library is missing: running on the\n"
+                        "    built-in GPU. Install it (Arch: lib32-nvidia-utils; Ubuntu / Debian: libnvidia-gl-<version>:i386).\n");
+        return;
+    }
+    setenv("__NV_PRIME_RENDER_OFFLOAD", "1", 0);
+    setenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia", 0);
+    fprintf(stderr, "platform: hybrid GPU: using the NVIDIA GPU (ALBW_GPU=integrated to keep the built-in one)\n");
+}
+#endif
+
 int plat_init(const char *title, const PlatConfig *c) {
     cfg = *c;
     if (cfg.scale < 1) cfg.scale = 2;
@@ -219,6 +255,7 @@ int plat_init(const char *title, const PlatConfig *c) {
          * every core busy). X11 (XWayland) reaches the GPU through the 32-bit NVIDIA GLX, so
          * prefer it in that case unless the user chose a driver (SDL_VIDEO_DRIVER). */
         const char *drv = getenv("SDL_VIDEO_DRIVER");
+        plat_pick_hybrid_gpu();
         if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
             const char *libs[] = {"/usr/lib32/libnvidia-egl-wayland.so.1", "/usr/lib/i386-linux-gnu/libnvidia-egl-wayland.so.1"};
             int have = 0;

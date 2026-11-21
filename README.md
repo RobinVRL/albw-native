@@ -104,6 +104,14 @@ One window shows one screen at a time – handy on a laptop, TV or the Steam Dec
 
 Saves and save states live in `~/.local/share/albw-port/`, settings in `~/.config/albw-port/`.
 
+**Portable mode:** create a folder named `albw-data` next to the AppImage (or the program) and
+everything – saves, save states, settings, screenshots, logs – is kept in it. Or start with
+`ALBW_DATA_DIR=/any/folder`.
+
+**Laptops with NVIDIA + Intel / AMD graphics:** the game picks the NVIDIA GPU by itself (it needs the
+32-bit NVIDIA OpenGL library: Arch `lib32-nvidia-utils`, Ubuntu / Debian `libnvidia-gl-<version>:i386`).
+`ALBW_GPU=integrated` keeps the built-in GPU.
+
 ## Status
 
 Working: boot, title, file select, saving and loading; the story's first areas, the overworld,
