@@ -53,7 +53,7 @@ undefined4 func_004503C8(int param_1)
   piVar9 = *(int **)(param_1 + 0xf0);
   piVar14 = piVar9 + *(int *)(param_1 + 0xe8);
   piVar11 = DAT_004506f4;
-  for (; DAT_004506f4 = piVar11, piVar9 != piVar14; piVar9 = piVar9 + 1) {
+  for (; piVar9 != piVar14; piVar9 = piVar9 + 1) {   /* Ghidra wrote piVar11 back to the literal pool (read-only; same value): dropped (160bd) */
     func_004B9528(param_1,*piVar9);
     piVar11 = DAT_004506f4;
   }

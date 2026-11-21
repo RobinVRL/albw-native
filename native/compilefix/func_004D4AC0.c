@@ -65,7 +65,7 @@ void func_004D4AC0(int param_1)
     piVar8 = piVar5 + *(int *)(param_1 + 0x478);
     fVar13 = DAT_004d4cac;
     fVar16 = DAT_004d4cb0;
-    for (; DAT_004d4cac = fVar13, DAT_004d4cb0 = fVar16, piVar5 != piVar8; piVar5 = piVar5 + 1) {
+    for (; piVar5 != piVar8; piVar5 = piVar5 + 1) {   /* Ghidra wrote fVar13 / fVar16 back to the literal pool (read-only; same values): dropped (160bd) */
       sVar2 = *(short *)(*piVar5 + 0x2c);
       fVar13 = (float)VectorSignedToFloat((int)*(short *)(*piVar5 + 0x2a),
                                           (byte)(in_fpscr >> 0x15) & 3);

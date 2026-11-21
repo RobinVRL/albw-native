@@ -78,7 +78,7 @@ and POSIX calls; SDL3.dll; a bundled Mesa OpenGL fallback. Details: [windows/REA
 | 14 | Slot 2 Zora's River crash (Shady Guy scene): not reproduced after the x87 fix | a report if it comes back |
 | 18 | Merge camera swings at some wall ends / doorways (the 3DS camera also swings; exact difference not found yet) | – |
 | 19 | Terrain drawn as dark mud with blue tiles (screenshots/world-error.png) | a save state there |
-| – | AddressSanitizer build crashes at frame 183 (address layout) | – |
+| – | Sanitizer build: runs the castle route clean (160bd); cannot load save states from the normal build | routes from boot to more areas |
 
 Not bugs, but old save states: states saved by older builds can carry stale data (e.g. the
 "Nāy" A-button label after merging in slot 6); playing from an in-game save fixes it.
