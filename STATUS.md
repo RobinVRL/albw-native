@@ -1,12 +1,13 @@
 # Where the port stands
 
-Last updated 2026-11-20 (release **v0.2.2**). Details of every fix:
+Last updated 2026-11-21 (release **v0.2.3**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.3](https://github.com/spacestate1/albw-native/releases/tag/v0.2.3) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged-wall camera and crash at wall ends, dungeon map cursor, effect sort, stub review |
 | [v0.2.2](https://github.com/spacestate1/albw-native/releases/tag/v0.2.2) | 2026-11-20 | Linux AppImage, Windows zip (experimental) | bell warp crash, bell selectable in single-screen mode, x87 stack guard |
 | [v0.2.1](https://github.com/spacestate1/albw-native/releases/tag/v0.2.1) | 2026-11-20 | Linux AppImage, Windows zip (experimental) | Windows build added; same Linux game as v0.2.0 |
 | [v0.2.0](https://github.com/spacestate1/albw-native/releases/tag/v0.2.0) | 2026-11-20 | Linux AppImage | Eastern Palace boss, wall merging, square glows fixed |
