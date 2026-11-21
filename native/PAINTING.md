@@ -84,6 +84,55 @@ Earlier fixes in the walker: stale stack x / y reads (`sp_x`), the wall slice cr
 1EC620..1EC6EC), doubles through a bit cast (`ALBW_AS_U32`), and the painting resource's bounding
 spheres (`0016DAD0`, 160av).
 
+## Corners: finding the next wall face
+
+Each frame the walker asks "where does the wall continue?" for the direction Link moves:
+
+| Step | Code | Answer |
+|---|---|---|
+| Next-face search, one per direction | `0064CB28` / `0064E9F4` | the face to continue on, or 2 = none (wall end) |
+| Step across the current triangle, find the edge it leaves through | `00650A24` | 0 = on a face, 3 = no exit edge and nothing ahead |
+| Ray against a list of faces (is something in the way?) | `001EA738` | the face hit, or 0 |
+
+When the search finds no face, the walker sets mode 2; the owner step (`00342C24`) then runs it
+again with no step, so Link stops. Watching the mode byte (walker +0x3BAE) in gdb shows every stop.
+
+To cross an edge, the search keeps the edges whose direction is between 0.1 and 0.9 against the
+step (a test on the float's bits, see below) and picks the closest.
+
+## The merged camera
+
+The camera follows Link along the wall through a camera object of its own (vtable at its +0;
+update `0034F96C`):
+
+| Piece | Code | What it does |
+|---|---|---|
+| Side of the wall | `0034E4B0` | picks the side (0 or 90 degrees, +180 if the wall faces away) |
+| Eye position | `0066FA50` | eye = target + offset turned by yaw and pitch |
+| Pitch spring | `0034EFB0` | eases the pitch (+0x2C -> +8) from +0x180 to the target +0x30 |
+| Angle blends | `0051D0B0`, `0051D1C0` | general "move angle a toward b" helpers |
+| Wall-end point | `0034F08C` (via `001E8C44`) | camera point and turn at a wall end |
+| Controller | `00121634` | yaw +0x1A8 = direction from eye +0x1B0 to target +0x1BC |
+
+## The bug class behind most camera / corner faults
+
+The ARM code often compares a float by its **bits**: `vmov r0, s0` then an integer `cmp`. For a
+positive constant K a signed compare means "value > K"; for a negative K an unsigned compare means
+"value < K". Ghidra wrote these as **numeric conversions**, `(int)(v)` / `(uint)(v)`. On x86
+`(uint)(-1.0f)` is 0xFFFFFFFF and `(int)(0.3f)` is 0, so:
+
+- the pitch spring added 360 degrees whenever the target dropped a little: the camera swung a full
+  circle through the ground at corners (`0034EFB0`, 160bg);
+- the corner search could never pick an edge: `0.1 <= dot < 0.9` became `0 <= 0 < ...` (160bh).
+
+The fix is the operation the ARM does: `ALBW_AS_U32(v)` for the bits, or the plain float compare.
+To find more: look for `(int)(` / `(uint)(` applied to a float expression and compared with a
+`DAT_` whose value is a float, then check the EU code for `vmov rX, sY` before the `cmp`.
+
+Two more Ghidra slips seen here: a forwarding stub that dropped arguments (`001E8C44`: the camera
+helper wrote through a stack leftover, 160be) and a lost store before passing a stack slot by
+address (`0034E4B0`, 160be).
+
 ## Debugging
 
 - `ALBW_WALK_TRACE=1`: wall faces tested, merged position / step per frame (`seglist`, `stay`),
@@ -94,3 +143,8 @@ spheres (`0016DAD0`, 160av).
 - Test route (castle save fixture + Hyrule save): `ALBW_PRESS='1800:START,2200:A,2700:A'`,
   `ALBW_ROUTE="at 3300;scene DungeonEast 1 0;wait 300;goto -6 -4.0 0.3;hold CUP 60;wait 10;press A 6"`
   merges Link into an Eastern Palace wall; then `hold CLEFT n` / `hold CRIGHT n` walks him.
+- `ALBW_CAMWALL_TRACE=1`: the wall-end camera helper's outputs (`001E8C44`).
+- gdb without changing code (save states taken inside the walker stop loading if its code changes):
+  the walker, `0064CB28` and `00650A24` have line info, so `break func_001EA96C.c:<line>` works;
+  `watch -l *(unsigned char*)(<walker> + 0x3bae)` catches every mode change (walker address from
+  `ALBW_WALK_TRACE`).
