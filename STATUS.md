@@ -77,7 +77,7 @@ and POSIX calls; SDL3.dll; a bundled Mesa OpenGL fallback. Details: [windows/REA
 | – | Windows: speed on real hardware unknown | a Windows tester |
 | – | Most dungeons after the Eastern Palace untested | play-testing |
 | 14 | Slot 2 Zora's River crash (Shady Guy scene): not reproduced after the x87 fix | a report if it comes back |
-| 18 | Merge camera: wall-end spin fixed (160be); the slot 6 doorway wrap still to re-check | – |
+| 18 | Merge camera: wall ends (160be) and corners (160bg) fixed; the slot 6 doorway wrap still to re-check | – |
 | 19 | Terrain drawn as dark mud with blue tiles (screenshots/world-error.png) | a save state there |
 | – | Sanitizer build: runs the castle route clean (160bd); cannot load save states from the normal build | routes from boot to more areas |
 
