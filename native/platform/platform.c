@@ -269,8 +269,38 @@ int plat_init(const char *title, const PlatConfig *c) {
 #endif
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+#ifndef ALBW_WINDOWS
+        /* say why (issue 8: "x11 not available" in Steam Game Mode): can the X11 libraries load, can the display open? */
+        {
+            const char *xl[] = {"libX11.so.6", "libXext.so.6", "libXcursor.so.1", "libXi.so.6", "libXfixes.so.3",
+                                "libXrandr.so.2", "libXrender.so.1", "libXss.so.1", "libxkbcommon.so.0"};
+            for (size_t i = 0; i < sizeof xl / sizeof *xl; i++) {
+                SDL_SharedObject *h = SDL_LoadObject(xl[i]);
+                fprintf(stderr, "platform: %s: %s\n", xl[i], h ? "loads" : SDL_GetError());
+                if (h && i == 0) {
+                    void *(*xod)(const char *) = (void *(*)(const char *))SDL_LoadFunction(h, "XOpenDisplay");
+                    void *dpy = xod ? xod(getenv("DISPLAY")) : NULL;
+                    fprintf(stderr, "platform: XOpenDisplay(%s): %s\n", getenv("DISPLAY") ? getenv("DISPLAY") : "(null)",
+                            dpy ? "ok" : "failed");
+                }
+            }
+        }
+        /* second try: let SDL choose among all its drivers (Wayland on gamescope's own socket if that is all there is) */
+        if (getenv("SDL_VIDEO_DRIVER") || SDL_GetHint(SDL_HINT_VIDEO_DRIVER)) {
+            fprintf(stderr, "platform: retrying with SDL's automatic video driver choice\n");
+            unsetenv("SDL_VIDEO_DRIVER");
+            SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "");
+            const char *gw = getenv("GAMESCOPE_WAYLAND_DISPLAY");
+            if (gw && *gw && !(getenv("WAYLAND_DISPLAY") && *getenv("WAYLAND_DISPLAY"))) setenv("WAYLAND_DISPLAY", gw, 1);
+            if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) goto sdl_ok;
+            fprintf(stderr, "SDL_Init (retry): %s\n", SDL_GetError());
+        }
+#endif
         return -1;
     }
+#ifndef ALBW_WINDOWS
+sdl_ok:
+#endif
     input_init();  /* keyboard + controllers: config, mapping DB, already connected pads */
     int debug = getenv("ALBW_GL_DEBUG") != NULL;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
