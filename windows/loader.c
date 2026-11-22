@@ -163,6 +163,22 @@ static int in_fixed(uintptr_t a, size_t n) {
         if (a >= g_fixed[i].base && a + n <= g_fixed[i].base + g_fixed[i].size) return 1;
     return 0;
 }
+/* what sits in a range we need: "0x41000000 (+0x10000 bytes, mapped file) C:\\...\\x.dll" (for the error text) */
+static void describe_blocker(uintptr_t base, size_t size, char *out, size_t n) {
+    MEMORY_BASIC_INFORMATION mi;
+    out[0] = 0;
+    for (uintptr_t a = base; a < base + size; ) {
+        if (!VirtualQuery((void *)a, &mi, sizeof mi)) return;
+        if (mi.State != MEM_FREE) {
+            char mod[MAX_PATH] = "";
+            if (mi.AllocationBase) GetModuleFileNameA((HMODULE)mi.AllocationBase, mod, sizeof mod);
+            snprintf(out, n, "\nIn the way: %#x (+%#x bytes, %s) %s", (unsigned)(uintptr_t)mi.BaseAddress, (unsigned)mi.RegionSize,
+                     mi.Type == MEM_IMAGE ? "a DLL" : mi.Type == MEM_MAPPED ? "a mapped file" : "private memory", mod);
+            return;
+        }
+        a = (uintptr_t)mi.BaseAddress + mi.RegionSize;
+    }
+}
 static void reserve_fixed(void) {
     for (size_t i = 0; i < sizeof g_fixed / sizeof *g_fixed; i++)
         if (!VirtualAlloc((void *)g_fixed[i].base, g_fixed[i].size, MEM_RESERVE, PAGE_NOACCESS)) {
@@ -179,8 +195,10 @@ static void reserve_fixed(void) {
                 PROCESS_INFORMATION pi;
                 if (CreateProcessA(NULL, GetCommandLineA(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) ExitProcess(0);
             }
-            fatal("cannot reserve memory at %#x (+%#x): error %lu (tried %d times).\nRestart the program; if it keeps happening, tell the developer.",
-                  (unsigned)g_fixed[i].base, (unsigned)g_fixed[i].size, err, tries + 1);
+            char why[600];
+            describe_blocker(g_fixed[i].base, g_fixed[i].size, why, sizeof why);
+            fatal("cannot reserve memory at %#x (+%#x): error %lu (tried %d times).%s\nRestart the program; if it keeps happening, tell the developer.",
+                  (unsigned)g_fixed[i].base, (unsigned)g_fixed[i].size, err, tries + 1, why);
         }
 }
 
@@ -401,6 +419,10 @@ static FILE *lx_fopen(const char *path, const char *mode) {
     char m[16];
     snprintf(m, sizeof m, "%s%s", mode, strchr(mode, 'b') ? "" : "b");
     return fopen(path, m);
+}
+static int lx_setenv(const char *name, const char *value, int overwrite) {
+    if (!overwrite && getenv(name)) return 0;
+    return _putenv_s(name, value);
 }
 static FILE *lx_fmemopen(void *buf, size_t size, const char *mode) {
     (void)mode;
@@ -832,7 +854,7 @@ static const Imp g_imports[] = {
     I("strerror", strerror), I("atoi", atoi), I("getenv", getenv), I("qsort", lx_qsort), I("rand", lx_rand),
     I("__ctype_tolower_loc", lx_ctype_tolower_loc), I("__errno_location", lx_errno_location),
     I("cos", cos), I("pow", pow), I("powf", powf), I("sqrt", sqrt), I("sqrtf", sqrtf), I("fmodf", fmodf), I("lrintf", lrintf),
-    I("fopen", lx_fopen), I("fclose", fclose), I("fread", fread), I("fwrite", fwrite), I("fseek", fseek), I("ftell", ftell),
+    I("fopen", lx_fopen), I("freopen", freopen), I("setvbuf", setvbuf), I("putenv", _putenv), I("setenv", lx_setenv), I("strncat", strncat), I("fclose", fclose), I("fread", fread), I("fwrite", fwrite), I("fseek", fseek), I("ftell", ftell),
     I("fflush", fflush), I("fgets", fgets), I("fputc", fputc), I("ferror", ferror), I("fprintf", fprintf),
     I("vfprintf", vfprintf), I("snprintf", snprintf), I("vsnprintf", vsnprintf), I("__isoc99_sscanf", sscanf),
     I("vsscanf", vsscanf), I("vfscanf", vfscanf), I("fmemopen", lx_fmemopen),
