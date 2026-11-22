@@ -28,6 +28,12 @@
  *
  * Text: native/platform/menu_font.h (tools/gen_menu_font.py), one textured-quad program. */
 #include "menu_font.h"
+#include <sys/stat.h>
+#define SET_MAX 48
+static char set_names[SET_MAX][64];   /* save sets (File menu), below */
+static int set_n, set_sel, set_scanned;
+static void set_scan_once(void);
+static int set_armed(void);
 
 /* g_menu_open, g_menu_sel, g_quit_req, g_menu_note: declared at the top of platform.c */
 static GLuint menu_prog, menu_vao, menu_vbo, menu_tex;
@@ -64,14 +70,14 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_RESET, MI_LOG_COPY, MI_LOG_FOLDER, MI_LOG_PATH, MI_REPORT, MI_DBG_LOG, MI_ABOUT_VER, MI_ABOUT_BUILD, MI_ABOUT_SITE, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_RESET, MI_LOG_COPY, MI_LOG_FOLDER, MI_LOG_PATH, MI_REPORT, MI_DBG_LOG, MI_ABOUT_VER, MI_ABOUT_BUILD, MI_ABOUT_SITE, MI_SET_SEL, MI_SET_LOAD, MI_COUNT };
 
 typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
 #define MI_BIND_BASE 200   /* MI_BIND_BASE + InAction: one Controls row per action */
 static int menu_controls_items[2 + IN_ACTION_COUNT] = {MI_BIND_DEV, MI_BIND_RESET};   /* rest: menu_gl_init */
 static const char *const menu_controls_notes[] = {"Enter: press the new key / button   - or Delete: clear",
                                                   "Several keys: edit input.cfg (\"A, B\" or \"Ctrl&X\")", NULL};
-static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_RESET, MI_QUIT};
+static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_SET_SEL, MI_SET_LOAD, MI_CONTROLS, MI_RESET, MI_QUIT};
 static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_WIDE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
 static const int menu_help_items[] = {MI_LOG_COPY, MI_LOG_FOLDER, MI_REPORT, MI_LOG_PATH};
 static const char *const menu_help_notes[] = {"Copy log, then paste it into the GitHub issue (Ctrl+V)",
@@ -209,6 +215,14 @@ static void menu_label(int i, char *buf, size_t n) {
     }
     case MI_SS_SAVE: snprintf(buf, n, "Save state  (F6)"); break;
     case MI_SS_LOAD: snprintf(buf, n, "Load state  (F7)"); break;
+    case MI_SET_SEL:
+        set_scan_once();
+        if (set_n) snprintf(buf, n, "Save set       < %s >", set_names[set_sel]);
+        else snprintf(buf, n, "Save set       (none: see note)");
+        break;
+    case MI_SET_LOAD:
+        snprintf(buf, n, "%s", set_armed() ? "Load set: press again to confirm" : "Load this save set (restarts)");
+        break;
     case MI_ABOUT_VER: { const char *v = getenv("ALBW_VERSION"); snprintf(buf, n, "Version: %s", v && *v ? v : "(unknown)"); break; }
     case MI_ABOUT_BUILD: snprintf(buf, n, "Built: %s %s", __DATE__, __TIME__); break;
     case MI_ABOUT_SITE: snprintf(buf, n, "github.com/spacestate1/albw-native"); break;
@@ -356,6 +370,125 @@ static void log_folder(void) {
     if (!SDL_OpenURL(url)) snprintf(g_menu_note, sizeof g_menu_note, "Cannot open the folder: %s", dir);
 }
 
+/* ---- Save sets (speed runs): folders under <save folder>/../save-sets/<name>/ holding Save_0.bin ..
+ * Save_2.bin and SaveCommon.bin (directly, or in a savedata/ subfolder). "Load" backs up the current
+ * save files to ../save-backup/<time>/, copies the set over them and restarts the game (a clean boot,
+ * like Reset), so every attempt starts from the same files. */
+const char *albw_save_root(void);   /* sdk/fs.c */
+int albw_list_subdirs(const char *dir, char (*names)[64], int max);
+static uint64_t set_armed_ns;
+static int set_armed(void) { return set_armed_ns && plat_ticks_ns() - set_armed_ns < 3000000000ull; }
+static void set_dirs(char *sets, size_t n, char *backup, size_t m) {
+    char root[1024];
+    snprintf(root, sizeof root, "%s", albw_save_root());
+    char *sl = strrchr(root, '/');
+    if (!sl) sl = strrchr(root, '\\');
+    if (sl) *sl = 0;
+    snprintf(sets, n, "%s/save-sets", root);
+    snprintf(backup, m, "%s/save-backup", root);
+}
+static int set_cmp(const void *a, const void *b) { return strcmp((const char *)a, (const char *)b); }
+static void set_scan(void) {
+    char sets[1100], bk[1100];
+    set_dirs(sets, sizeof sets, bk, sizeof bk);
+    char keep[64] = "";
+    if (set_n) snprintf(keep, sizeof keep, "%s", set_names[set_sel]);
+    mkdir(sets, 0755);
+    set_n = albw_list_subdirs(sets, set_names, SET_MAX);
+    qsort(set_names, (size_t)set_n, sizeof set_names[0], set_cmp);
+    set_sel = 0;
+    for (int k = 0; k < set_n; k++) if (!strcmp(set_names[k], keep)) set_sel = k;
+    set_scanned = 1;
+}
+static void set_scan_once(void) { if (!set_scanned) set_scan(); }
+static int copy_file(const char *from, const char *to) {
+    FILE *in = fopen(from, "rb");
+    if (!in) return -1;
+    FILE *out = fopen(to, "wb");
+    if (!out) { fclose(in); return -1; }
+    char buf[8192];
+    size_t k;
+    int rc = 0;
+    while ((k = fread(buf, 1, sizeof buf, in)) > 0) if (fwrite(buf, 1, k, out) != k) { rc = -1; break; }
+    fclose(in);
+    if (fclose(out) != 0) rc = -1;
+    return rc;
+}
+static int same_file(const char *a, const char *b) {   /* 1 when both exist and have the same bytes */
+    FILE *fa = fopen(a, "rb"), *fb = fopen(b, "rb");
+    int same = fa && fb;
+    while (same) {
+        char x[4096], y[4096];
+        size_t nx = fread(x, 1, sizeof x, fa), ny = fread(y, 1, sizeof y, fb);
+        if (nx != ny || memcmp(x, y, nx)) same = 0;
+        else if (nx == 0) break;
+    }
+    if (fa) fclose(fa);
+    if (fb) fclose(fb);
+    return same;
+}
+static void set_load(void) {
+    set_scan();
+    if (!set_n) {
+        char sets[1100], bk[1100];
+        set_dirs(sets, sizeof sets, bk, sizeof bk);
+        snprintf(g_menu_note, sizeof g_menu_note, "No save sets: add folders to %s", sets);
+        return;
+    }
+    if (!set_armed()) { set_armed_ns = plat_ticks_ns(); return; }
+    set_armed_ns = 0;
+    static const char *const files[] = {"Save_0.bin", "Save_1.bin", "Save_2.bin", "SaveCommon.bin"};
+    char sets[1100], bk[1100], src[1400], dst[1400], bdir[1300];
+    set_dirs(sets, sizeof sets, bk, sizeof bk);
+    snprintf(dst, sizeof dst, "%s/savedata", albw_save_root());
+    int copied = 0, differs = 0;
+    for (size_t k = 0; k < sizeof files / sizeof *files; k++) {   /* does anything here differ from the set? */
+        char a[1500], b[1500];
+        snprintf(a, sizeof a, "%s/%s", dst, files[k]);
+        snprintf(b, sizeof b, "%s/%s/%s", sets, set_names[set_sel], files[k]);
+        FILE *t = fopen(a, "rb");
+        if (!t) continue;
+        fclose(t);
+        if (!same_file(a, b)) {
+            snprintf(b, sizeof b, "%s/%s/savedata/%s", sets, set_names[set_sel], files[k]);
+            if (!same_file(a, b)) differs = 1;
+        }
+    }
+    snprintf(bdir, sizeof bdir, "%s/%ld", bk, (long)time(NULL));
+    if (differs) {   /* back up what is there (not when a reload finds the set's own files: practice runs) */
+        mkdir(bk, 0755);
+        mkdir(bdir, 0755);
+        for (size_t k = 0; k < sizeof files / sizeof *files; k++) {
+            char a[1500], b[1500];
+            snprintf(a, sizeof a, "%s/%s", dst, files[k]); snprintf(b, sizeof b, "%s/%s", bdir, files[k]);
+            copy_file(a, b);
+        }
+    }
+    mkdir(dst, 0755);
+    for (size_t k = 0; k < sizeof files / sizeof *files; k++) {
+        char b[1500];
+        snprintf(src, sizeof src, "%s/%s/%s", sets, set_names[set_sel], files[k]);
+        FILE *t = fopen(src, "rb");
+        if (!t) { snprintf(src, sizeof src, "%s/%s/savedata/%s", sets, set_names[set_sel], files[k]); t = fopen(src, "rb"); }
+        if (!t) continue;
+        fclose(t);
+        snprintf(b, sizeof b, "%s/%s", dst, files[k]);
+        if (copy_file(src, b) == 0) copied++;
+    }
+    if (!copied) { snprintf(g_menu_note, sizeof g_menu_note, "Set %s has no Save_*.bin files", set_names[set_sel]); return; }
+    fprintf(stderr, "menu: save set %s loaded (%d files%s%s)\n", set_names[set_sel], copied, differs ? ", backup in " : ", no backup needed", differs ? bdir : "");
+    plat_restart();
+}
+
+/* ALBW_ROUTE "saveset <name>" (tests): pick the set and load it (both presses) */
+static void route_saveset(const char *name) {
+    set_scan();
+    for (int k = 0; k < set_n; k++) if (!strcmp(set_names[k], name)) set_sel = k;
+    fprintf(stderr, "route: saveset %s (%d sets)\n", set_n ? set_names[set_sel] : "-", set_n);
+    set_load();
+    set_load();
+}
+
 static void menu_activate(int i, int dir) {
     g_menu_note[0] = 0;
     if (i >= MI_BIND_BASE && i < MI_BIND_BASE + IN_ACTION_COUNT) {
@@ -425,6 +558,13 @@ static void menu_activate(int i, int dir) {
         if (!SDL_OpenURL("https://github.com/spacestate1/albw-native/issues/new"))
             snprintf(g_menu_note, sizeof g_menu_note, "Open github.com/spacestate1/albw-native/issues");
         break;
+    case MI_SET_SEL:
+        set_scan();
+        if (!set_n) { char sets[1100], bk[1100]; set_dirs(sets, sizeof sets, bk, sizeof bk); snprintf(g_menu_note, sizeof g_menu_note, "Put set folders in %s", sets); break; }
+        set_sel = (set_sel + (dir < 0 ? set_n - 1 : 1)) % set_n;
+        set_armed_ns = 0;
+        break;
+    case MI_SET_LOAD: set_load(); break;
     case MI_LOG_PATH: case MI_ABOUT_VER: case MI_ABOUT_BUILD: break;
     case MI_ABOUT_SITE: SDL_OpenURL("https://github.com/spacestate1/albw-native"); break;
     case MI_RESET: plat_reset_press(); break;

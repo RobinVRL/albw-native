@@ -1,12 +1,13 @@
 # Where the port stands
 
-Last updated 2026-11-22 (release **v0.2.7**). Details of every fix:
+Last updated 2026-11-22 (release **v0.2.8**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.8](https://github.com/spacestate1/albw-native/releases/tag/v0.2.8) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | Esc > File > Save set: switch between folders of save files (speed runs), with a backup |
 | [v0.2.7](https://github.com/spacestate1/albw-native/releases/tag/v0.2.7) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | Esc menu: Help (copy log, open log folder, report a problem), About (version, build time), Debug > Logging; version in the AppImage file name (issue 9); error dialogs copy the log |
 | [v0.2.6](https://github.com/spacestate1/albw-native/releases/tag/v0.2.6) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | Steam Deck Game Mode launch fixes (issue 8, untested on a Deck); Windows: error and log boxes, software-renderer warning, `--software-gl` / `--console`, retry on memory clash (issue 7, untested on real Windows); NVIDIA hybrid GPU; portable mode |
 | [v0.2.5](https://github.com/spacestate1/albw-native/releases/tag/v0.2.5) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | merged Link no longer stuck at corner edges; crash past corners fixed |

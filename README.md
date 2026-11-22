@@ -112,6 +112,16 @@ everything – saves, save states, settings, screenshots, logs – is kept in it
 32-bit NVIDIA OpenGL library: Arch `lib32-nvidia-utils`, Ubuntu / Debian `libnvidia-gl-<version>:i386`).
 `ALBW_GPU=integrated` keeps the built-in GPU.
 
+## Save sets (speed runs)
+
+Keep several sets of save files and switch between them in the game. Make a folder `save-sets` next
+to the game's `save` folder (`~/.local/share/albw-port/save-sets`) and put one folder per set in it
+(for example `Hyrule`, `TurtleLCastle`), each holding `Save_0.bin` to `Save_2.bin` and
+`SaveCommon.bin`. In the game press Esc > **File** > **Save set** to pick one, then **Load this save
+set** (press it twice). The current save files are backed up to `save-backup/<time>/` (only when they
+differ from the set), the set is copied in and the game restarts, so every attempt starts from the
+same files.
+
 ## Reporting a problem
 
 Press Esc in the game, then **Help > Copy log to clipboard** and paste it (Ctrl+V) into a new

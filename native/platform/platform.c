@@ -753,14 +753,19 @@ static void plat_widescreen_apply(int on) {
 extern char **albw_argv;
 static uint64_t g_reset_armed_ns;
 static int plat_reset_armed(void) { return g_reset_armed_ns && plat_ticks_ns() - g_reset_armed_ns < 3000000000ull; }
-static void plat_reset_press(void) {
-    if (!plat_reset_armed()) { g_reset_armed_ns = plat_ticks_ns(); return; }
-    fprintf(stderr, "menu: reset game (restarting)\n");
+static void route_saveset(const char *name);   /* menu.c */
+static void plat_restart(void) {
+    fprintf(stderr, "menu: restarting\n");
     fflush(NULL);
     plat_shutdown();
     execv("/proc/self/exe", albw_argv);
-    fprintf(stderr, "menu: reset failed (%s)\n", strerror(errno));
+    fprintf(stderr, "menu: restart failed (%s)\n", strerror(errno));
     _exit(1);
+}
+static void plat_reset_press(void) {
+    if (!plat_reset_armed()) { g_reset_armed_ns = plat_ticks_ns(); return; }
+    fprintf(stderr, "menu: reset game\n");
+    plat_restart();
 }
 static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
@@ -1162,6 +1167,11 @@ static uint32_t route_step(int *pad_x, int *pad_y) {
         char nm[128] = "";
         sscanf(rest, " %127[^; ]", nm);
         albw_debug_event(nm);
+        done = 1;
+    } else if (!strcmp(op, "saveset")) {   /* saveset <name>: Esc > File > Save set, then Load (restarts the game) */
+        char nm[64] = "";
+        sscanf(rest, " %63[^; ]", nm);
+        route_saveset(nm);
         done = 1;
     } else if (!strcmp(op, "speed")) {   /* speed <percent>: like ALBW_SPEED, after a state load (0 = unlimited) */
         g_dbg_speed = atoi(rest);

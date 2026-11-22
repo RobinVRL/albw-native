@@ -306,6 +306,29 @@ static const char *save_root_locked(void) {
     return save_root;
 }
 
+/* Names of the folders directly inside `dir` (at most `max`, names cut to 63 characters): the
+ * Esc > File > Save set list. Returns how many. */
+static char (*list_out)[64];
+static int list_n, list_max;
+static int list_cb(const char *path, const struct stat *st, int type, struct FTW *f) {
+    (void)st;
+    if (f->level == 1 && type == FTW_D && list_n < list_max) snprintf(list_out[list_n++], 64, "%s", path + f->base);
+    return 0;
+}
+int albw_list_subdirs(const char *dir, char (*names)[64], int max) {
+    list_out = names; list_n = 0; list_max = max;
+    nftw(dir, list_cb, 4, FTW_PHYS);
+    return list_n;
+}
+
+/* The save folder in use (Esc > File > Save set reads and writes the game's save files here). */
+const char *albw_save_root(void) {
+    pthread_mutex_lock(&fs_lock);
+    const char *r = save_root_locked();
+    pthread_mutex_unlock(&fs_lock);
+    return r;
+}
+
 static int rm_entry(const char *p, const struct stat *st, int flag, struct FTW *ftw) {
     (void)st; (void)flag; (void)ftw;
     return remove(p);
