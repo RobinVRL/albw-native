@@ -66,6 +66,20 @@ static void albw_portable_dirs(void) {
         mkdir(d, 0755);
         setenv(sub[i][0], d, 1);
     }
+    /* the save folder is not an XDG path in fs.c ($HOME/.local/share/albw-port/save): name it here, or the
+     * saves stay outside the folder (an explicit ALBW_SAVE_DIR still wins) */
+    if (!getenv("ALBW_SAVE_DIR")) {
+        static char sd[4300];
+        snprintf(sd, sizeof sd, "%s/share/albw-port/save", base);
+        setenv("ALBW_SAVE_DIR", sd, 1);
+        struct stat sst;
+        const char *home = getenv("HOME");
+        char old[4300], oldsave[4400];
+        snprintf(old, sizeof old, "%s/.local/share/albw-port/save", home ? home : ".");
+        snprintf(oldsave, sizeof oldsave, "%s/savedata", old);
+        if (stat(sd, &sst) != 0 && stat(oldsave, &sst) == 0)
+            fprintf(stderr, "portable: earlier saves exist in %s; copy the contents of that folder to %s to use them here\n", old, sd);
+    }
     fprintf(stderr, "portable: saves, settings and logs in %s\n", base);
 }
 

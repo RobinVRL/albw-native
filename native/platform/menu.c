@@ -346,9 +346,10 @@ static void log_copy(void) {
  * the game prints from here on is kept and Help > Copy log works). A launcher's log is always on. */
 static void log_enable(void) {
     if (log_file()) { snprintf(g_menu_note, sizeof g_menu_note, "Logging is on: %s", log_file()); return; }
-    const char *home = getenv("HOME");
+    const char *home = getenv("HOME"), *xs = getenv("XDG_STATE_HOME");
     static char path[1024];
-    snprintf(path, sizeof path, "%s/.local/state/albw-port/", home && *home ? home : ".");
+    if (xs && *xs) snprintf(path, sizeof path, "%s/albw-port/", xs);   /* portable mode moves it */
+    else snprintf(path, sizeof path, "%s/.local/state/albw-port/", home && *home ? home : ".");
     SDL_CreateDirectory(path);
     strncat(path, "last-run.log", sizeof path - strlen(path) - 1);
     if (!freopen(path, "w", stderr)) { snprintf(g_menu_note, sizeof g_menu_note, "Cannot write %s", path); return; }
