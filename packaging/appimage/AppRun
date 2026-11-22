@@ -129,7 +129,9 @@ if [[ ! -t 2 ]]; then
     LOGDIR="${XDG_STATE_HOME:-$HOME/.local/state}/albw-port"
     if mkdir -p "$LOGDIR" 2>/dev/null; then
         export ALBW_LOG_FILE="$LOGDIR/last-run.log"
-        { echo "== ALBW native ${ALBW_VERSION:-(unknown version)} $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} borrowed:${BORROWED:- none}"; } > "$ALBW_LOG_FILE"
+        { echo "== ALBW native ${ALBW_VERSION:-(unknown version)} $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} borrowed:${BORROWED:- none}"
+          echo "   x11 sockets: $(ls /tmp/.X11-unix 2>&1 | tr '\n' ' ') XAUTHORITY=${XAUTHORITY:-} GAMESCOPE_WAYLAND_DISPLAY=${GAMESCOPE_WAYLAND_DISPLAY:-} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-}"
+          echo "   system 32-bit libX11: $(lib32_has libX11.so.6 && echo yes || echo no)  fallback dir: $(ls "${FBDIR:-/nonexistent}" 2>/dev/null | tr '\n' ' ')"; } > "$ALBW_LOG_FILE"
         "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$ALBW_LOG_FILE" 2>&1
         rc=$?
         if [[ $rc != 0 && $GAMESCOPE == 0 ]]; then
