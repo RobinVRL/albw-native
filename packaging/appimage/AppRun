@@ -90,6 +90,28 @@ if [[ -d "$HERE/usr/lib/fallback" ]]; then
     done
     [[ -n "$(ls -A "$FBDIR")" ]] && LIBS="$LIBS:$FBDIR"
 fi
+# SteamOS has no 32-bit X11 libraries of its own: Steam's runtime provides them through the very
+# LD_LIBRARY_PATH dropped below, and without them SDL says "x11 not available" (issue 8). Borrow just those
+# 32-bit X11 libraries (not Steam's libGL / libstdc++), only for the ones the system lacks.
+BORROWED=""
+if [[ ( $GAMESCOPE == 1 || -n "${STEAM_RUNTIME:-}" ) && -n "${LD_LIBRARY_PATH:-}" ]]; then
+    mkdir -p "${FBDIR:=${XDG_RUNTIME_DIR:-/tmp}/albw-port-fallback-$UID}"
+    IFS=: read -ra SDIRS <<< "$LD_LIBRARY_PATH"
+    for d in "${SDIRS[@]}"; do
+        [[ -d "$d" ]] || continue
+        for f in "$d"/libX11.so.6* "$d"/libX11-xcb.so.1* "$d"/libXext.so.6* "$d"/libXcursor.so.1* "$d"/libXi.so.6* \
+                 "$d"/libXfixes.so.3* "$d"/libXrandr.so.2* "$d"/libXrender.so.1* "$d"/libXss.so.1* "$d"/libxcb.so.1* \
+                 "$d"/libXau.so.6* "$d"/libXdmcp.so.6* "$d"/libxkbcommon.so.0*; do
+            [[ -e "$f" ]] || continue
+            b=$(basename "$f")
+            [[ -e "$FBDIR/$b" ]] && continue
+            lib32_has "$b" && continue
+            [[ "$(od -An -tx1 -j4 -N1 "$f" 2>/dev/null | tr -d ' ')" == 01 ]] || continue   # 32-bit ELF only
+            ln -s "$f" "$FBDIR/$b" && BORROWED="$BORROWED $b"
+        done
+    done
+    case ":$LIBS:" in *":$FBDIR:"*) ;; *) [[ -n "$(ls -A "$FBDIR")" ]] && LIBS="$LIBS:$FBDIR" ;; esac
+fi
 # Steam's run.sh points LD_LIBRARY_PATH at its own runtime libraries (older Ubuntu libstdc++, libGL, ...);
 # the game would load those instead of the system's 32-bit Mesa. Only our own folders, as the Krita
 # AppImage does for the same reason (ValveSoftware/steam-runtime#189).
@@ -107,7 +129,7 @@ if [[ ! -t 2 ]]; then
     LOGDIR="${XDG_STATE_HOME:-$HOME/.local/state}/albw-port"
     if mkdir -p "$LOGDIR" 2>/dev/null; then
         export ALBW_LOG_FILE="$LOGDIR/last-run.log"
-        { echo "== ALBW native ${ALBW_VERSION:-(unknown version)} $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$ALBW_LOG_FILE"
+        { echo "== ALBW native ${ALBW_VERSION:-(unknown version)} $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} borrowed:${BORROWED:- none}"; } > "$ALBW_LOG_FILE"
         "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$ALBW_LOG_FILE" 2>&1
         rc=$?
         if [[ $rc != 0 && $GAMESCOPE == 0 ]]; then
