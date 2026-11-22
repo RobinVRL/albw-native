@@ -112,6 +112,15 @@ everything – saves, save states, settings, screenshots, logs – is kept in it
 32-bit NVIDIA OpenGL library: Arch `lib32-nvidia-utils`, Ubuntu / Debian `libnvidia-gl-<version>:i386`).
 `ALBW_GPU=integrated` keeps the built-in GPU.
 
+## Reporting a problem
+
+Press Esc in the game, then **Help > Copy log to clipboard** and paste it (Ctrl+V) into a new
+[issue](https://github.com/spacestate1/albw-native/issues/new). If the game stops with an error
+before a window opens, the AppImage shows the end of the log in a dialog (and copies it where
+`wl-copy` / `xclip` exist); on Windows the log is copied to the clipboard by itself. The log file:
+`~/.local/state/albw-port/last-run.log` (AppImage, when not started from a terminal) or
+`albw.log` (Windows). In Steam Game Mode, read the file from Desktop Mode. The log has no ROM data.
+
 ## Status
 
 Working: boot, title, file select, saving and loading; the story's first areas, the overworld,

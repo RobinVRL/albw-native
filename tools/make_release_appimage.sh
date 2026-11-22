@@ -10,7 +10,8 @@
 # not portable to systems with an older glibc.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-OUT=${1:-build/release/ALBW-native-x86_64.AppImage}
+VER=$(cat VERSION 2>/dev/null || true)
+OUT=${1:-build/release/ALBW-native${VER:+-v$VER}-x86_64.AppImage}
 [[ -x build/albw ]] || { echo "build/albw not found: run ./build.sh first"; exit 1; }
 CT=$(command -v podman || command -v docker || true)
 [[ -n $CT ]] || { echo "needs podman or docker"; exit 1; }
@@ -35,6 +36,7 @@ CC=gcc CXX=g++ cmake -S build/deps/SDL -B build/deps/SDL/b -G Ninja -DCMAKE_BUIL
     -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_STATIC=OFF >/dev/null
 cmake --build build/deps/SDL/b >/dev/null && cmake --install build/deps/SDL/b >/dev/null
 cp -r /src/tools /src/packaging /work/
+cp /src/VERSION /work/ 2>/dev/null || true
 cp /src/build/albw /work/build/
 [[ -f /src/build/albw.ssmap ]] && cp /src/build/albw.ssmap /work/build/
 export LD_LIBRARY_PATH=/work/build/deps/sdl3-i686/lib

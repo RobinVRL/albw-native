@@ -33,4 +33,6 @@ Trouble starting?
     Install / update your graphics driver.
   - To force a mode, make a shortcut to ALBW.exe and add  --software-gl  (software renderer),
     --system-gl (graphics driver) or --console (show the log in a window) after its path.
-  - When something goes wrong, attach albw.log (see above) to your bug report.
+  - When something goes wrong: press Esc in the game > Help > "Copy log to clipboard", then paste
+    it (Ctrl+V) into a new issue at github.com/spacestate1/albw-native/issues. If the game stops with
+    an error, the log is already on the clipboard. The file is albw.log (see above).

@@ -13,7 +13,10 @@
  *         Menu style (this menu as a bar across the top or as a centered panel with the same tabs)
  *  Controls  Device (keyboard / controller), one row per input.cfg action (Enter: press the new
  *         key / button, - or Delete: clear), Reset to defaults; saved to input.cfg at once
- *  Debug  Particles, Fog, Show FPS (window title), Speed (25 % .. unlimited). The retail code has
+ *  Help   Copy log to clipboard (header + end of the log file, for GitHub issues), Open log folder,
+ *         Report a problem (GitHub), log path
+ *  About  Version (from VERSION) and build date / time
+ *  Debug  Logging (starts a log file when run from a terminal), Particles, Fog, Show FPS (window title), Speed (25 % .. unlimited). The retail code has
  *         no hidden debug menu to expose (searched: the only developer leftovers are the course
  *         list's E3Field / Test* names, whose course files are not on the ROM, the Dbg:* heaps and
  *         the event flag name cmn_debug_goal_on), so this menu holds the port's own switches.
@@ -61,7 +64,7 @@ static MenuVtx menu_vtx[MENU_MAX_VTX];
 static int menu_nv;
 
 enum { MI_RESUME, MI_WINDOWS, MI_SINGLE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT,
-       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_RESET, MI_COUNT };
+       MI_CONTROLS, MI_QUIT, MI_STYLE, MI_BIND_DEV, MI_BIND_RESET, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED, MI_WIDE, MI_RESET, MI_LOG_COPY, MI_LOG_FOLDER, MI_LOG_PATH, MI_REPORT, MI_DBG_LOG, MI_ABOUT_VER, MI_ABOUT_BUILD, MI_ABOUT_SITE, MI_COUNT };
 
 typedef struct { const char *title; const int *items; int n; const char *const *notes; } MenuDef;
 #define MI_BIND_BASE 200   /* MI_BIND_BASE + InAction: one Controls row per action */
@@ -70,7 +73,12 @@ static const char *const menu_controls_notes[] = {"Enter: press the new key / bu
                                                   "Several keys: edit input.cfg (\"A, B\" or \"Ctrl&X\")", NULL};
 static const int menu_file_items[] = {MI_RESUME, MI_SS_SLOT, MI_SS_SAVE, MI_SS_LOAD, MI_CONTROLS, MI_RESET, MI_QUIT};
 static const int menu_video_items[] = {MI_WINDOWS, MI_SINGLE, MI_WIDE, MI_PRESET, MI_SWAP, MI_FILTER, MI_INTEGER, MI_RES, MI_FULLSCREEN, MI_EDIT, MI_STYLE};
-static const int menu_debug_items[] = {MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
+static const int menu_help_items[] = {MI_LOG_COPY, MI_LOG_FOLDER, MI_REPORT, MI_LOG_PATH};
+static const char *const menu_help_notes[] = {"Copy log, then paste it into the GitHub issue (Ctrl+V)",
+                                              "The log holds no ROM data or personal files", NULL};
+static const int menu_about_items[] = {MI_ABOUT_VER, MI_ABOUT_BUILD, MI_ABOUT_SITE};
+static const char *const menu_about_notes[] = {"Unofficial native port of A Link Between Worlds", "Needs your own ROM; none is included", NULL};
+static const int menu_debug_items[] = {MI_DBG_LOG, MI_DBG_EFT, MI_DBG_FOG, MI_DBG_FPS, MI_DBG_SPEED};
 static const char *const menu_debug_notes[] = {"Game debug menus: none in the retail code", "(dev courses E3Field / Test*: not on the ROM)",
                                                NULL};
 #define MENU_N(a) ((int)(sizeof(a) / sizeof(a)[0]))
@@ -78,6 +86,8 @@ static const MenuDef menu_defs[] = {
     {"File", menu_file_items, MENU_N(menu_file_items), NULL},
     {"Video", menu_video_items, MENU_N(menu_video_items), NULL},
     {"Controls", menu_controls_items, MENU_N(menu_controls_items), menu_controls_notes},
+    {"Help", menu_help_items, MENU_N(menu_help_items), menu_help_notes},
+    {"About", menu_about_items, MENU_N(menu_about_items), menu_about_notes},
     {"Debug", menu_debug_items, MENU_N(menu_debug_items), menu_debug_notes},
 };
 #define MENU_COUNT MENU_N(menu_defs)
@@ -158,6 +168,7 @@ static SDL_Window *menu_window(void) {
 
 static int menu_fullscreen(void) { return (SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN) != 0; }
 
+static const char *log_file(void) { const char *p = getenv("ALBW_LOG_FILE"); return p && *p ? p : NULL; }
 static void menu_label(int i, char *buf, size_t n) {
     if (i >= MI_BIND_BASE && i < MI_BIND_BASE + IN_ACTION_COUNT) {
         int a = i - MI_BIND_BASE;
@@ -184,6 +195,10 @@ static void menu_label(int i, char *buf, size_t n) {
     case MI_EDIT: snprintf(buf, n, "Edit layout with the mouse (F3)"); break;
     case MI_CONTROLS: snprintf(buf, n, "Reload controls (input.cfg)"); break;
     case MI_QUIT: snprintf(buf, n, "Quit game"); break;
+    case MI_LOG_COPY: snprintf(buf, n, "Copy log to clipboard"); break;
+    case MI_LOG_FOLDER: snprintf(buf, n, "Open log folder"); break;
+    case MI_REPORT: snprintf(buf, n, "Report a problem (opens GitHub)"); break;
+    case MI_LOG_PATH: snprintf(buf, n, "Log: %s", log_file() ? log_file() : "none (terminal)"); break;
     case MI_RESET: snprintf(buf, n, "%s", plat_reset_armed() ? "Reset game: press again to confirm" : "Reset game (unsaved progress is lost)"); break;
     case MI_STYLE: snprintf(buf, n, "Menu style     < %s >", g_layout_cfg.menu_centered ? "Centered" : "Bar"); break;
     case MI_SS_SLOT: {
@@ -194,6 +209,10 @@ static void menu_label(int i, char *buf, size_t n) {
     }
     case MI_SS_SAVE: snprintf(buf, n, "Save state  (F6)"); break;
     case MI_SS_LOAD: snprintf(buf, n, "Load state  (F7)"); break;
+    case MI_ABOUT_VER: { const char *v = getenv("ALBW_VERSION"); snprintf(buf, n, "Version: %s", v && *v ? v : "(unknown)"); break; }
+    case MI_ABOUT_BUILD: snprintf(buf, n, "Built: %s %s", __DATE__, __TIME__); break;
+    case MI_ABOUT_SITE: snprintf(buf, n, "github.com/spacestate1/albw-native"); break;
+    case MI_DBG_LOG: snprintf(buf, n, "Logging        < %s >", log_file() ? "On (Help > Copy log)" : "Off"); break;
     case MI_DBG_EFT: snprintf(buf, n, "Particles      < %s >", g_dbg_eft_off ? "Off" : "On"); break;
     case MI_DBG_FOG: snprintf(buf, n, "Fog            < %s >", g_dbg_fog_off ? "Off" : "On"); break;
     case MI_DBG_FPS: snprintf(buf, n, "Show FPS       < %s >", g_dbg_show_fps ? "On (title bar)" : "Off"); break;
@@ -284,6 +303,59 @@ static void menu_geom(int ww, int wh, MenuGeom *g) {
     g->dy = g->by + g->bar_h;
 }
 
+/* ---- Help menu: the log (stderr) goes to the file named by ALBW_LOG_FILE (AppRun, the Windows
+ * loader); a terminal run has none. Copy puts a header (port version, platform, GPU) and the last
+ * part of it on the clipboard, to paste into a GitHub issue. */
+#define LOG_COPY_MAX (96 * 1024)
+static void log_copy(void) {
+    const char *path = log_file();
+    if (!path) { snprintf(g_menu_note, sizeof g_menu_note, "No log file: started from a terminal (the output is there)"); return; }
+    fflush(stderr);
+    FILE *f = fopen(path, "rb");
+    if (!f) { snprintf(g_menu_note, sizeof g_menu_note, "Cannot read %s", path); return; }
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f), from = n > LOG_COPY_MAX ? n - LOG_COPY_MAX : 0;
+    fseek(f, from, SEEK_SET);
+    char *buf = malloc(LOG_COPY_MAX + 512);
+    if (!buf) { fclose(f); return; }
+    const char *ver = getenv("ALBW_VERSION");
+    int h = snprintf(buf, 400, "ALBW native port %s | %s | %s\n%s", ver && *ver ? ver : "(version unknown)", SDL_GetPlatform(),
+                     (const char *)glGetString(GL_RENDERER), from ? "[log start cut off]\n" : "");
+    size_t got = fread(buf + h, 1, LOG_COPY_MAX, f);
+    fclose(f);
+    buf[h + got] = 0;
+    if (SDL_SetClipboardText(buf)) snprintf(g_menu_note, sizeof g_menu_note, "Log copied (%zu KB): paste it into the issue", (h + got + 1023) / 1024);
+    else snprintf(g_menu_note, sizeof g_menu_note, "Cannot copy: %s", SDL_GetError());
+    free(buf);
+}
+/* Debug > Logging: a terminal run has no log file; start one now (stderr is redirected to it, so what
+ * the game prints from here on is kept and Help > Copy log works). A launcher's log is always on. */
+static void log_enable(void) {
+    if (log_file()) { snprintf(g_menu_note, sizeof g_menu_note, "Logging is on: %s", log_file()); return; }
+    const char *home = getenv("HOME");
+    static char path[1024];
+    snprintf(path, sizeof path, "%s/.local/state/albw-port/", home && *home ? home : ".");
+    SDL_CreateDirectory(path);
+    strncat(path, "last-run.log", sizeof path - strlen(path) - 1);
+    if (!freopen(path, "w", stderr)) { snprintf(g_menu_note, sizeof g_menu_note, "Cannot write %s", path); return; }
+    setvbuf(stderr, NULL, _IONBF, 0);
+    static char env[1100];
+    snprintf(env, sizeof env, "ALBW_LOG_FILE=%s", path);
+    putenv(env);
+    snprintf(g_menu_note, sizeof g_menu_note, "Logging to %s", path);
+}
+static void log_folder(void) {
+    const char *path = log_file();
+    if (!path) { snprintf(g_menu_note, sizeof g_menu_note, "No log file: started from a terminal"); return; }
+    char dir[1024], url[1100];
+    snprintf(dir, sizeof dir, "%s", path);
+    for (char *c = dir; *c; c++) if (*c == '\\') *c = '/';
+    char *sl = strrchr(dir, '/');
+    if (sl) *sl = 0;
+    snprintf(url, sizeof url, dir[1] == ':' ? "file:///%s" : "file://%s", dir);
+    if (!SDL_OpenURL(url)) snprintf(g_menu_note, sizeof g_menu_note, "Cannot open the folder: %s", dir);
+}
+
 static void menu_activate(int i, int dir) {
     g_menu_note[0] = 0;
     if (i >= MI_BIND_BASE && i < MI_BIND_BASE + IN_ACTION_COUNT) {
@@ -347,6 +419,14 @@ static void menu_activate(int i, int dir) {
                  input_config_path());
         break;
     case MI_QUIT: g_quit_req = 1; g_menu_open = 0; break;
+    case MI_LOG_COPY: log_copy(); break;
+    case MI_LOG_FOLDER: log_folder(); break;
+    case MI_REPORT:
+        if (!SDL_OpenURL("https://github.com/spacestate1/albw-native/issues/new"))
+            snprintf(g_menu_note, sizeof g_menu_note, "Open github.com/spacestate1/albw-native/issues");
+        break;
+    case MI_LOG_PATH: case MI_ABOUT_VER: case MI_ABOUT_BUILD: break;
+    case MI_ABOUT_SITE: SDL_OpenURL("https://github.com/spacestate1/albw-native"); break;
     case MI_RESET: plat_reset_press(); break;
     case MI_STYLE: g_layout_cfg.menu_centered ^= 1; plat_layout_changed(); break;
     case MI_SS_SLOT: g_ss_slot = (g_ss_slot + (dir < 0 ? SS_SLOTS_UI - 1 : 1)) % SS_SLOTS_UI; break;
@@ -356,6 +436,7 @@ static void menu_activate(int i, int dir) {
         albw_ss_request(i == MI_SS_SAVE ? 1 : 2, g_ss_slot);
         g_menu_open = 0;
         break;
+    case MI_DBG_LOG: log_enable(); break;
     case MI_DBG_EFT:
         g_dbg_eft_off ^= 1;
         snprintf(g_menu_note, sizeof g_menu_note, "Particles %s from the next frame", g_dbg_eft_off ? "off" : "on");

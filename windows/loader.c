@@ -51,6 +51,27 @@ static char g_log_path[MAX_PATH * 2];   /* albw.log, empty when the output goes 
 /* The program has no console (-mwindows), so what it prints is only in albw.log. Show the end of
    it in a message box when the game stops with an error: without this a failed start looks like
    "nothing happens". */
+/* last 60 KB of albw.log (with the version) onto the clipboard, ready to paste into an issue */
+static void copy_log_to_clipboard(void) {
+    if (!*g_log_path) return;
+    FILE *f = fopen(g_log_path, "rb");
+    if (!f) return;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f), from = n > 60000 ? n - 60000 : 0;
+    fseek(f, from, SEEK_SET);
+    HGLOBAL h = GlobalAlloc(GMEM_MOVEABLE, (SIZE_T)(n - from) + 128);
+    char *p = h ? (char *)GlobalLock(h) : NULL;
+    if (!p) { fclose(f); if (h) GlobalFree(h); return; }
+    const char *ver = getenv("ALBW_VERSION");
+    int k = snprintf(p, 120, "ALBW native port %s | Windows\r\n", ver ? ver : "(version unknown)");
+    size_t got = fread(p + k, 1, (size_t)(n - from), f);
+    p[k + got] = 0;
+    fclose(f);
+    GlobalUnlock(h);
+    if (OpenClipboard(NULL)) { EmptyClipboard(); if (!SetClipboardData(CF_TEXT, h)) GlobalFree(h); CloseClipboard(); }
+    else GlobalFree(h);
+}
+
 static void show_log_tail(int code) {
     if (!*g_log_path) return;
     FILE *f = fopen(g_log_path, "rb");
@@ -63,8 +84,9 @@ static void show_log_tail(int code) {
     size_t got = fread(tail, 1, sizeof tail - 1, f);
     tail[got] = 0;
     fclose(f);
+    copy_log_to_clipboard();
     char msg[2048];
-    snprintf(msg, sizeof msg, "The game stopped (code %d). The end of the log:\n\n%s\n\nFull log: %s\nPlease attach it when reporting a problem.",
+    snprintf(msg, sizeof msg, "The game stopped (code %d). The end of the log:\n\n%s\n\nThe log is copied to the clipboard: paste it (Ctrl+V) into your GitHub issue.\nFull log: %s",
              code, tail, g_log_path);
     MessageBoxA(NULL, msg, "A Link Between Worlds (native port)", MB_ICONERROR | MB_OK);
 }
@@ -1021,6 +1043,14 @@ int main(int argc, char **argv) {
         snprintf(log, sizeof log, "%s/albw.log", dir);
         freopen(log, "w", stderr);
         snprintf(g_log_path, sizeof g_log_path, "%s", log);
+        static char env_log[MAX_PATH * 2 + 20], env_ver[80];
+        snprintf(env_log, sizeof env_log, "ALBW_LOG_FILE=%s", log);
+        _putenv(env_log);   /* the game's Help menu (Esc) copies this file to the clipboard */
+        char vp[MAX_PATH * 2], vb[64] = "";
+        snprintf(vp, sizeof vp, "%s/VERSION", g_exe_dir);
+        FILE *vf = fopen(vp, "rb");
+        if (vf) { if (fgets(vb, sizeof vb, vf)) vb[strcspn(vb, "\r\n")] = 0; fclose(vf); }
+        if (vb[0]) { snprintf(env_ver, sizeof env_ver, "ALBW_VERSION=%s", vb); _putenv(env_ver); fprintf(stderr, "albw: version %s\n", vb); }
     }
     setvbuf(stderr, NULL, _IONBF, 0);
     lx_stderr_value = stderr;

@@ -98,6 +98,7 @@ done
 echo "== $nfb fallback libraries (used only where the system lacks them)"
 
 cp packaging/appimage/AppRun $APPDIR/AppRun
+[[ -f VERSION ]] && cp VERSION $APPDIR/VERSION
 chmod +x $APPDIR/AppRun
 cp packaging/appimage/albw-port.desktop $APPDIR/albw-port.desktop
 cp packaging/appimage/albw-port.svg $APPDIR/albw-port.svg

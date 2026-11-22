@@ -98,12 +98,31 @@ if [[ $GAMESCOPE == 1 || -n "${STEAM_RUNTIME:-}" ]]; then
 else
     export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 fi
-# no terminal (Steam Game Mode, desktop launchers): keep the output in a log file, there is nowhere else to read it
+# version (packaging/VERSION is copied next to AppRun by make_appimage.sh)
+[[ -f "$HERE/VERSION" ]] && export ALBW_VERSION="$(cat "$HERE/VERSION")"
+# no terminal (Steam Game Mode, desktop launchers): keep the output in a log file, there is nowhere else to read it.
+# The game's Help menu (Esc) copies it to the clipboard (ALBW_LOG_FILE). If the game stops with an error before
+# a window exists, show the end of the log and put it on the clipboard where a tool for that exists.
 if [[ ! -t 2 ]]; then
     LOGDIR="${XDG_STATE_HOME:-$HOME/.local/state}/albw-port"
     if mkdir -p "$LOGDIR" 2>/dev/null; then
-        { echo "== $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$LOGDIR/last-run.log"
-        exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$LOGDIR/last-run.log" 2>&1
+        export ALBW_LOG_FILE="$LOGDIR/last-run.log"
+        { echo "== ALBW native ${ALBW_VERSION:-(unknown version)} $(date) game mode=$GAMESCOPE LD_LIBRARY_PATH=$LD_LIBRARY_PATH SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-} DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-}"; } > "$ALBW_LOG_FILE"
+        "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}" >> "$ALBW_LOG_FILE" 2>&1
+        rc=$?
+        if [[ $rc != 0 && $GAMESCOPE == 0 ]]; then
+            tail -c 60000 "$ALBW_LOG_FILE" > "$LOGDIR/report.txt"
+            if   command -v wl-copy >/dev/null && [[ -n ${WAYLAND_DISPLAY:-} ]]; then wl-copy < "$LOGDIR/report.txt"
+            elif command -v xclip   >/dev/null && [[ -n ${DISPLAY:-} ]]; then xclip -selection clipboard < "$LOGDIR/report.txt"
+            elif command -v xsel    >/dev/null && [[ -n ${DISPLAY:-} ]]; then xsel -ib < "$LOGDIR/report.txt"; fi
+            msg "The game stopped (code $rc). The end of the log:
+
+$(tail -n 12 "$ALBW_LOG_FILE" | cut -c1-200)
+
+Full log: $ALBW_LOG_FILE
+When reporting a problem, attach that file (or paste it from the clipboard if your system could copy it)."
+        fi
+        exit $rc
     fi
 fi
 exec "$HERE/usr/bin/albw" "${ARGS[@]+"${ARGS[@]}"}"

@@ -83,6 +83,7 @@ if [[ -f $MESA/x86/opengl32.dll ]]; then
     cp "$MESA"/x86/{opengl32.dll,libgallium_wgl.dll} "$OUT/mesa/" 2>/dev/null || cp "$MESA"/x86/*.dll "$OUT/mesa/"
 fi
 cp windows/HOW_TO_PLAY.txt "$OUT/HOW TO PLAY.txt"
+[[ -f VERSION ]] && cp VERSION "$OUT/VERSION"
 rm -f build/ALBW-windows.zip
 (cd "$OUT" && 7z a -tzip -mx=9 "$ROOT/build/ALBW-windows.zip" . >/dev/null 2>&1 || zip -qr "$ROOT/build/ALBW-windows.zip" .)
 echo "== done: $OUT/ and build/ALBW-windows.zip"
