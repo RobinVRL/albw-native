@@ -59,7 +59,8 @@ with `./build.sh`.
 
 In desktop mode, `./build.sh /path/to/game.3ds` builds inside distrobox and makes
 `build/ALBW-native-x86_64.AppImage` (or copy the release AppImage over). Add it to Steam as a
-non-Steam game to play in Game Mode. L3+R3 opens the game's menu.
+non-Steam game to play in Game Mode (needs release v0.2.10 or newer: older AppImages could not start under
+X11/XWayland). L3+R3 opens the game's menu.
 
 ### Windows (experimental)
 

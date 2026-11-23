@@ -1,12 +1,14 @@
 # Where the port stands
 
-Last updated 2026-11-22 (release **v0.2.8**). Details of every fix:
+Last updated 2026-11-22 (release **v0.2.10**). Details of every fix:
 [native/BOOT_LOG.md](native/BOOT_LOG.md).
 
 ## Releases
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.10](https://github.com/spacestate1/albw-native/releases/tag/v0.2.10) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | **Steam Deck Game Mode now starts (issue 8, reported fixed).** The SDL3 inside the AppImage had been built without its X11 backend (the release container lacked the 32-bit X11 `-dev` packages), so it said `SDL_Init: x11 not available` everywhere except pure Wayland; `tools/make_release_appimage.sh` now installs them and fails if SDL has no X11. Windows zip unchanged |
+| [v0.2.9](https://github.com/spacestate1/albw-native/releases/tag/v0.2.9) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | **Windows: v0.2.7 / v0.2.8 did not start** ("needs 5 functions this loader does not provide", issue 10): the loader now provides `setenv putenv freopen setvbuf strncat`; the memory-clash error names the blocker; portable mode keeps saves in `albw-data` too |
 | [v0.2.8](https://github.com/spacestate1/albw-native/releases/tag/v0.2.8) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | Esc > File > Save set: switch between folders of save files (speed runs), with a backup |
 | [v0.2.7](https://github.com/spacestate1/albw-native/releases/tag/v0.2.7) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | Esc menu: Help (copy log, open log folder, report a problem), About (version, build time), Debug > Logging; version in the AppImage file name (issue 9); error dialogs copy the log |
 | [v0.2.6](https://github.com/spacestate1/albw-native/releases/tag/v0.2.6) | 2026-11-21 | Linux AppImage, Windows zip (experimental) | Steam Deck Game Mode launch fixes (issue 8, untested on a Deck); Windows: error and log boxes, software-renderer warning, `--software-gl` / `--console`, retry on memory clash (issue 7, untested on real Windows); NVIDIA hybrid GPU; portable mode |
@@ -90,6 +92,16 @@ Not bugs, but old save states: states saved by older builds can carry stale data
 "Nāy" A-button label after merging in slot 6); playing from an in-game save fixes it.
 
 ## Working notes
+
+- **Check a release before publishing it.** Two shipped bugs came from never running the real package:
+  v0.2.7's Windows loader lacked 5 libc functions the game imports (compare the game's undefined
+  symbols with the loader table: `readelf --dyn-syms -W build/win/albw`), and every AppImage up to
+  v0.2.9 carried an SDL3 without X11. For the second one, run the extracted AppImage on an X11
+  display: `DISPLAY=:1 SDL_VIDEO_DRIVER=x11 LD_LIBRARY_PATH=<extract>/usr/lib <extract>/usr/bin/albw`.
+- **Reproducing Steam Deck Game Mode without a Deck:** an Arch Linux container (`podman`, SteamOS is
+  Arch) with `[multilib]` enabled, `xorg-xwayland` and `lib32-mesa lib32-libx11 ...`, running the
+  extracted AppImage with `GAMESCOPE_WAYLAND_DISPLAY` set against a plain Xwayland. gamescope itself
+  crashes in a container without a real GPU, but the SDL failure shows without it.
 
 - **Build:** `./build.sh` (first time with the ROM path). Relink only:
   `ALBW_FCONV_INTERIM=0 ALBW_JOBS=2 tools/link.sh`.
