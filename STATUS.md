@@ -7,6 +7,7 @@ Last updated 2026-11-22 (release **v0.2.10**). Details of every fix:
 
 | Version | Date | Downloads | Notes |
 |---|---|---|---|
+| [v0.2.11](https://github.com/spacestate1/albw-native/releases/tag/v0.2.11) | 2026-11-23 | Windows zip (experimental) | **Windows: the freeze after `audio: SDL3 'wasapi'` (issue 7) found and fixed in a Windows 10 VM.** The game unlocked a C++ static-init lock from a thread that did not hold it; on real Windows that corrupts the loader's SRW lock and every thread waits for ever (Wine tolerates it). Mutexes / condition variables rewritten; boot watchdog in `albw.log`; log next to `ALBW.exe`; a `.3ds` in `roms\` is found by itself. No Linux change (use the v0.2.10 AppImage). Not yet confirmed on a real GPU |
 | [v0.2.10](https://github.com/spacestate1/albw-native/releases/tag/v0.2.10) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | **Steam Deck Game Mode now starts (issue 8, reported fixed).** The SDL3 inside the AppImage had been built without its X11 backend (the release container lacked the 32-bit X11 `-dev` packages), so it said `SDL_Init: x11 not available` everywhere except pure Wayland; `tools/make_release_appimage.sh` now installs them and fails if SDL has no X11. Windows zip unchanged |
 | [v0.2.9](https://github.com/spacestate1/albw-native/releases/tag/v0.2.9) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | **Windows: v0.2.7 / v0.2.8 did not start** ("needs 5 functions this loader does not provide", issue 10): the loader now provides `setenv putenv freopen setvbuf strncat`; the memory-clash error names the blocker; portable mode keeps saves in `albw-data` too |
 | [v0.2.8](https://github.com/spacestate1/albw-native/releases/tag/v0.2.8) | 2026-11-22 | Linux AppImage, Windows zip (experimental) | Esc > File > Save set: switch between folders of save files (speed runs), with a backup |
@@ -69,6 +70,21 @@ and POSIX calls; SDL3.dll; a bundled Mesa OpenGL fallback. Details: [windows/REA
   (1–2 fps at the file select's 3D preview; probably Wine's 32-bit OpenGL bridge). Needs a report
   from a real Windows PC.
 - Save states do not move between the Linux and Windows builds; in-game saves do.
+- **Tested in a Windows 10 VM (no GPU, KVM)**, which reproduced issue 7 (two "Not Responding" windows).
+  Found and fixed in `windows/loader.c` (not yet released):
+  - `__cxa_guard_release` unlocks the static-init lock from a thread that does not hold it. On real
+    Windows that corrupts an SRWLOCK (a locked lock with no owner, threads wait for ever: the freeze after
+    `audio: SDL3 'wasapi'`); Wine tolerates it. Mutexes and condition variables are now a
+    WaitOnAddress lock that survives a stray unlock; the first one is logged.
+  - A boot watchdog logs every thread's position (game function or DLL+offset) at 4 / 8 / 16 / 32 / 62 / 122 s.
+  - The log is `albw.log` next to `ALBW.exe`, unbuffered; a `.3ds` / `.cci` next to `ALBW.exe` or in
+    `roms\` is used when no ROM path is saved.
+  - Without a GPU driver Mesa picks Direct3D 12 / WARP, whose C++ exceptions end the process; the
+    software fallback now uses softpipe (slow; llvmpipe gave "No matching GL pixel format" there).
+  - Released as v0.2.11. Not confirmed on a real GPU yet. In the VM (softpipe) the game also died once after
+    about 9 minutes: 0xc000041d (fatal user callback exception) on a thread running in unmapped memory;
+    cause unknown (dump kept in the VM only). Open: the WARP crash itself (`_com_error` while the game runs on
+    its own stacks, FAST_FAIL_INVALID_EXCEPTION_CHAIN); a faster software renderer for no-GPU PCs.
 
 ## Open issues
 

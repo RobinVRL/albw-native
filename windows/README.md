@@ -69,8 +69,8 @@ system driver.
   `ALBW_ROM=<path>` overrides).
 - Saves, save states, settings, screenshots: `%USERPROFILE%\.local\share\albw-port\` and
   `%USERPROFILE%\.config\albw-port\` (the same layout as on Linux).
-- Log: `%USERPROFILE%\.local\share\albw-port\albw.log` (when not started from a console;
-  `ALBW_CONSOLE=1` keeps the console).
+- Log: `albw.log` next to `ALBW.exe` (or `%USERPROFILE%\.local\share\albw-port\albw.log` when that folder is not writable), not written when started from a console
+  (`ALBW_CONSOLE=1` keeps the console).
 - Crashes: the loader logs the faulting address and the game functions on the stack.
 
 ## Limits

@@ -41,6 +41,7 @@
 #include <time.h>
 #include <zlib.h>
 #include <mmsystem.h>
+#include <tlhelp32.h>
 
 /* ------------------------------------------------------------------ small helpers */
 
@@ -286,8 +287,55 @@ static const char *elf_name_of(uint32_t a, uint32_t *off) {
     return best;
 }
 static int in_elf(uint32_t a) { return (a >= 0x08048000u && a < 0x0A000000u) || (a >= 0x30000000u && a < 0x30400000u); }
+static void where_is(uint32_t a, char *out, size_t n);
 static LONG WINAPI on_exception(EXCEPTION_POINTERS *ep) {
     DWORD code = ep->ExceptionRecord->ExceptionCode;
+    {   /* every exception that is raised (first 40): real Windows kills the process on a bad SEH chain, silently */
+        static volatile LONG all;
+        if (InterlockedIncrement(&all) <= 40) {
+            NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
+            char w[300];
+            where_is((uint32_t)(uintptr_t)ep->ExceptionRecord->ExceptionAddress, w, sizeof w);
+            fprintf(stderr, "albw: exception %#lx at %s, thread %lu, esp %#lx, TEB stack %p..%p, seh %p\n", code, w, GetCurrentThreadId(),
+                    ep->ContextRecord->Esp, tib->StackLimit, tib->StackBase, tib->ExceptionList);
+            if (code == 0xE06D7363u && ep->ExceptionRecord->NumberParameters >= 3) {   /* MSVC C++ throw: name the type */
+                const uint32_t *ti = (const uint32_t *)(uintptr_t)ep->ExceptionRecord->ExceptionInformation[2];
+                MEMORY_BASIC_INFORMATION q;
+                if (ti && VirtualQuery(ti, &q, sizeof q) && q.State == MEM_COMMIT && ti[3]) {
+                    const uint32_t *arr = (const uint32_t *)(uintptr_t)ti[3];
+                    if (VirtualQuery(arr, &q, sizeof q) && q.State == MEM_COMMIT && arr[0] > 0 && arr[0] < 32) {
+                        const uint32_t *ct = (const uint32_t *)(uintptr_t)arr[1];
+                        if (VirtualQuery(ct, &q, sizeof q) && q.State == MEM_COMMIT && ct[1]) {
+                            const char *nm = (const char *)(uintptr_t)ct[1] + 8;
+                            if (VirtualQuery(nm, &q, sizeof q) && q.State == MEM_COMMIT)
+                                fprintf(stderr, "albw:    C++ type %.80s (%u catchable types)\n", nm, (unsigned)arr[0]);
+                        }
+                    }
+                }
+            }
+            /* the SEH chain as Windows will walk it */
+            int k = 0;
+            for (void **r = (void **)tib->ExceptionList; r && r != (void **)-1 && k < 14; r = (void **)r[0], k++) {
+                MEMORY_BASIC_INFORMATION mb;
+                if (!VirtualQuery(r, &mb, sizeof mb) || mb.State != MEM_COMMIT) { fprintf(stderr, "albw:    seh[%d] %p UNREADABLE\n", k, (void *)r); break; }
+                where_is((uint32_t)(uintptr_t)r[1], w, sizeof w);
+                fprintf(stderr, "albw:    seh[%d] %p -> next %p handler %s%s\n", k, (void *)r, r[0], w,
+                        ((uint8_t *)r < (uint8_t *)tib->StackLimit || (uint8_t *)r + 8 > (uint8_t *)tib->StackBase) ? "  OUTSIDE STACK BOUNDS" : "");
+            }
+            fprintf(stderr, "albw:    DeallocationStack %p guaranteed %lu\n", *(void **)((uint8_t *)tib + 0xE0C), *(unsigned long *)((uint8_t *)tib + 0xF78));
+            fflush(stderr);
+        }
+    }
+    if (0 && (code & 0xF0000000u) == 0xC0000000u && code != EXCEPTION_ACCESS_VIOLATION && code != EXCEPTION_ILLEGAL_INSTRUCTION &&
+        code != EXCEPTION_INT_DIVIDE_BY_ZERO && code != EXCEPTION_PRIV_INSTRUCTION && code != EXCEPTION_STACK_OVERFLOW) {
+        static volatile LONG other;
+        if (InterlockedIncrement(&other) <= 10) {
+            char w[300];
+            where_is((uint32_t)(uintptr_t)ep->ExceptionRecord->ExceptionAddress, w, sizeof w);
+            fprintf(stderr, "albw: exception %#lx at %s, thread %lu\n", code, w, GetCurrentThreadId());
+            fflush(stderr);
+        }
+    }
     if (code != EXCEPTION_ACCESS_VIOLATION && code != EXCEPTION_ILLEGAL_INSTRUCTION && code != EXCEPTION_INT_DIVIDE_BY_ZERO &&
         code != EXCEPTION_PRIV_INSTRUCTION && code != EXCEPTION_STACK_OVERFLOW)
         return EXCEPTION_CONTINUE_SEARCH;
@@ -311,6 +359,95 @@ static LONG WINAPI on_exception(EXCEPTION_POINTERS *ep) {
     }
     fflush(stderr);
     return EXCEPTION_CONTINUE_SEARCH;
+}
+
+
+/* ------------------------------------------------------------------ boot watchdog
+   Real-Windows reports (issue 7) end the log right after "audio: SDL3 'wasapi'" with a black window:
+   the game is stuck somewhere and nothing says where. After the game starts, a helper thread
+   samples every thread of the process (EIP, and the game functions found on its stack) a few
+   times, so the next log shows who waits for whom. A thread that sits in Windows code is named
+   by module (opengl32.dll+0x1234, SDL3.dll+..., a driver). */
+static void where_is(uint32_t a, char *out, size_t n) {
+    uint32_t off;
+    if (in_elf(a)) {
+        const char *m = elf_name_of(a, &off);
+        snprintf(out, n, "%#x %s+%#x", a, m ? m : "?", m ? off : 0);
+        return;
+    }
+    HMODULE mod = NULL;
+    char path[MAX_PATH] = "";
+    if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)(uintptr_t)a, &mod) &&
+        GetModuleFileNameA(mod, path, sizeof path)) {
+        const char *b = strrchr(path, '\\');
+        snprintf(out, n, "%#x %s+%#x", a, b ? b + 1 : path, (unsigned)(a - (uint32_t)(uintptr_t)mod));
+    } else {
+        snprintf(out, n, "%#x (unknown)", a);
+    }
+}
+/* an address inside an executable segment of the game program (return addresses, not data) */
+static int in_code(uint32_t a) {
+    const Ehdr *eh = (const Ehdr *)g_file;
+    const Phdr *ph = (const Phdr *)(g_file + eh->phoff);
+    for (int i = 0; i < eh->phnum; i++)
+        if (ph[i].type == 1 && (ph[i].flags & 1) && a >= ph[i].vaddr && a < ph[i].vaddr + ph[i].filesz) return 1;
+    return 0;
+}
+static void dump_thread(DWORD id, int round) {
+    HANDLE h = OpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION, FALSE, id);
+    if (!h) return;
+    if (SuspendThread(h) == (DWORD)-1) { CloseHandle(h); return; }
+    CONTEXT c;
+    memset(&c, 0, sizeof c);
+    c.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
+    if (GetThreadContext(h, &c)) {
+        char w[300];
+        where_is(c.Eip, w, sizeof w);
+        char line[2600];
+        int k = snprintf(line, sizeof line, "albw: watchdog %d: thread %lu eip %s esp %#lx", round, id, w, c.Esp);
+        /* return addresses: words on the stack that point into the game's code, then into other modules */
+        uint32_t *sp = (uint32_t *)(uintptr_t)c.Esp;
+        int shown = 0;
+        for (int i = 0; i < 6000 && shown < 14 && k < (int)sizeof line - 340; i++) {
+            MEMORY_BASIC_INFORMATION mbi;
+            if (!VirtualQuery(sp + i, &mbi, sizeof mbi) || mbi.State != MEM_COMMIT || (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD))) break;
+            uint32_t v = sp[i];
+            if (in_code(v)) {
+                where_is(v, w, sizeof w);
+                k += snprintf(line + k, sizeof line - (size_t)k, "\nalbw:     [esp+%#x] %s", i * 4, w);
+                shown++;
+            }
+        }
+        fprintf(stderr, "%s\n", line);
+    }
+    ResumeThread(h);
+    CloseHandle(h);
+}
+static DWORD WINAPI watchdog_main(void *p) {
+    (void)p;
+    static const int secs[] = {4, 4, 8, 16, 30, 60};   /* samples after 4, 8, 16, 32, 62, 122 s */
+    int t = 0;
+    for (unsigned r = 0; r < sizeof secs / sizeof *secs; r++) {
+        Sleep((DWORD)secs[r] * 1000);
+        t += secs[r];
+        DWORD me = GetCurrentThreadId();
+        fprintf(stderr, "albw: watchdog %u: %d s after start-up, threads of the game:\n", r + 1, t);
+        {   /* who holds the C++ static-init guard lock (runtime/cxxabi.c)? LxMutex: SRW +0, owner +4, count +8, kind +12 */
+            uint32_t ga = elf_symbol("guard_lock");
+            if (ga) {
+                volatile uint32_t *m = (volatile uint32_t *)(uintptr_t)ga;
+                fprintf(stderr, "albw: watchdog %u: guard_lock owner thread %lu, count %d, kind %d, state %#x\n", r + 1, (unsigned long)m[1], (int)m[2], (int)m[3], (unsigned)m[0]);
+            } else fprintf(stderr, "albw: watchdog %u: no guard_lock symbol\n", r + 1);
+        }
+        HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+        if (snap == INVALID_HANDLE_VALUE) continue;
+        THREADENTRY32 te = {sizeof te};
+        for (BOOL ok = Thread32First(snap, &te); ok; ok = Thread32Next(snap, &te))
+            if (te.th32OwnerProcessID == GetCurrentProcessId() && te.th32ThreadID != me) dump_thread(te.th32ThreadID, (int)r + 1);
+        CloseHandle(snap);
+        fflush(stderr);
+    }
+    return 0;
 }
 
 /* ------------------------------------------------------------------ 3. canary patch */
@@ -599,8 +736,14 @@ static int lx_cxa_atexit(void *fn, void *arg, void *dso) {
 static void run_atexit(void) {
     while (g_natexit > 0) { g_natexit--; call_elf1(g_atexit[g_natexit].fn, (uintptr_t)g_atexit[g_natexit].arg); }
 }
-static void lx_exit(int code) { run_atexit(); fflush(NULL); if (code) show_log_tail(code); exit(code); }
-static void lx__exit(int code) { fflush(NULL); _exit(code); }
+static void log_caller(const char *what, int code, void *caller) {
+    char w[300];
+    where_is((uint32_t)(uintptr_t)caller, w, sizeof w);
+    fprintf(stderr, "albw: %s(%d) called from %s (thread %lu)\n", what, code, w, GetCurrentThreadId());
+    fflush(stderr);
+}
+static void lx_exit(int code) { log_caller("exit", code, __builtin_return_address(0)); run_atexit(); fflush(NULL); if (code) show_log_tail(code); exit(code); }
+static void lx__exit(int code) { log_caller("_exit", code, __builtin_return_address(0)); fflush(NULL); _exit(code); }
 static long lx_sysconf(int name) {
     if (name == 84 || name == 83) { SYSTEM_INFO si; GetSystemInfo(&si); return (long)si.dwNumberOfProcessors; }
     if (name == 30) return 4096;
@@ -633,29 +776,61 @@ static int lx_execv(const char *path, char *const argv[]) {
 }
 static int lx_zero(void) { return 0; }
 static int lx_minus1(void) { return -1; }
-static void lx_abort(void) { fflush(NULL); abort(); }
+static void lx_abort(void) { log_caller("abort", 0, __builtin_return_address(0)); fflush(NULL); abort(); }
+static void lx_stack_chk_fail(void) { log_caller("__stack_chk_fail", 0, __builtin_return_address(0)); fflush(NULL); abort(); }
 static int lx_raise(int sig) { if (sig == 6) lx_abort(); return 0; }
 
 /* --- threads (glibc object sizes: mutex 24, cond 48, attr 36) --- */
-/* mutex: SRWLOCK at +0, owner thread id +4, recursion count +8, kind +12 (glibc's kind field:
-   PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP sets it to 1) */
-typedef struct { SRWLOCK lock; volatile DWORD owner; int count, kind; int pad[2]; } LxMutex;
-typedef struct { CONDITION_VARIABLE cv; int clock; int pad[10]; } LxCond;
+/* mutex: state word at +0 (0 free, 1 locked, 2 locked with waiters), owner thread id +4, recursion
+   count +8, kind +12 (glibc's kind field: PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP sets it to 1).
+   Not an SRWLOCK: releasing an SRW lock that is not held corrupts it on real Windows (Wine is
+   lenient), and the game does that: a hung lock with no owner (issue 7). This word-based lock
+   (WaitOnAddress) treats a stray unlock like glibc does, and the first one is logged. */
+typedef struct { volatile LONG state; volatile DWORD owner; int count, kind; int pad[2]; } LxMutex;
+/* cond: sequence number at +0, clock +4 */
+typedef struct { volatile LONG seq; int clock; int pad[10]; } LxCond;
 typedef struct { int detach; void *stack; size_t stacksize; int pad[6]; } LxAttr;
 static int lx_mutex_init(LxMutex *m, const int *attr) { memset(m, 0, sizeof *m); m->kind = attr ? *attr : 0; return 0; }
+static void mutex_acquire(LxMutex *m) {
+    LONG c = InterlockedCompareExchange(&m->state, 1, 0);
+    if (c == 0) return;
+    do {
+        if (c == 2 || InterlockedCompareExchange(&m->state, 2, 1) != 0) {
+            LONG two = 2;
+            WaitOnAddress(&m->state, &two, sizeof two, INFINITE);
+        }
+        c = InterlockedCompareExchange(&m->state, 2, 0);
+    } while (c != 0);
+}
+static int mutex_release(LxMutex *m) {   /* 0: it was not locked */
+    LONG old = InterlockedExchange(&m->state, 0);
+    if (old == 2) WakeByAddressSingle((PVOID)&m->state);
+    return old != 0;
+}
+static void stray_unlock(LxMutex *m, void *caller, const char *why) {
+    static volatile LONG n;
+    if (InterlockedIncrement(&n) > 5) return;
+    char w[300];
+    where_is((uint32_t)(uintptr_t)caller, w, sizeof w);
+    fprintf(stderr, "albw: warning: pthread_mutex_unlock of a mutex %s: mutex %p kind %d owner %lu, called from %s\n",
+            why, (void *)m, m->kind, (unsigned long)m->owner, w);
+}
 static int lx_mutex_lock(LxMutex *m) {
     DWORD me = GetCurrentThreadId();
     if (m->kind == 1 && m->owner == me) { m->count++; return 0; }
-    AcquireSRWLockExclusive(&m->lock);
+    mutex_acquire(m);
     m->owner = me;
     m->count = 1;
     return 0;
 }
 static int lx_mutex_unlock(LxMutex *m) {
-    if (m->kind == 1 && --m->count > 0) return 0;
+    if (m->kind == 1) {
+        if (m->owner != GetCurrentThreadId() || m->count <= 0) { stray_unlock(m, __builtin_return_address(0), "this thread does not hold"); return 1; /* EPERM */ }
+        if (--m->count > 0) return 0;
+    }
     m->owner = 0;
     m->count = 0;
-    ReleaseSRWLockExclusive(&m->lock);
+    if (!mutex_release(m)) stray_unlock(m, __builtin_return_address(0), "that is not locked");
     return 0;
 }
 static int lx_mutexattr_init(int *a) { *a = 0; return 0; }
@@ -664,13 +839,17 @@ static int lx_cond_init(LxCond *c, const int *attr) { memset(c, 0, sizeof *c); c
 static int lx_condattr_init(int *a) { *a = 0; return 0; }
 static int lx_condattr_setclock(int *a, int clk) { *a = clk; return 0; }
 static int cond_wait_ms(LxCond *c, LxMutex *m, DWORD ms) {
+    LONG seq = c->seq;   /* read before the mutex is released: a signal after this cannot be lost */
     int count = m->count;
     m->owner = 0;
     m->count = 0;
-    BOOL ok = SleepConditionVariableSRW(&c->cv, &m->lock, ms, 0);
+    mutex_release(m);
+    BOOL ok = WaitOnAddress(&c->seq, &seq, sizeof seq, ms);
+    int timed_out = !ok && GetLastError() == ERROR_TIMEOUT;
+    mutex_acquire(m);
     m->owner = GetCurrentThreadId();
     m->count = count;
-    return ok ? 0 : LX_ETIMEDOUT;
+    return timed_out ? LX_ETIMEDOUT : 0;
 }
 static int lx_cond_wait(LxCond *c, LxMutex *m) { return cond_wait_ms(c, m, INFINITE); }
 static int lx_cond_timedwait(LxCond *c, LxMutex *m, const LxTs *abs) {
@@ -679,24 +858,40 @@ static int lx_cond_timedwait(LxCond *c, LxMutex *m, const LxTs *abs) {
     int64_t ms = ((int64_t)abs->sec - n.sec) * 1000 + (abs->nsec - n.nsec) / 1000000;
     return cond_wait_ms(c, m, ms <= 0 ? 0 : (DWORD)ms);
 }
-static int lx_cond_signal(LxCond *c) { WakeConditionVariable(&c->cv); return 0; }
-static int lx_cond_broadcast(LxCond *c) { WakeAllConditionVariable(&c->cv); return 0; }
+static int lx_cond_signal(LxCond *c) { InterlockedIncrement(&c->seq); WakeByAddressSingle((PVOID)&c->seq); return 0; }
+static int lx_cond_broadcast(LxCond *c) { InterlockedIncrement(&c->seq); WakeByAddressAll((PVOID)&c->seq); return 0; }
 static int lx_attr_init(LxAttr *a) { memset(a, 0, sizeof *a); return 0; }
 static int lx_attr_setdetachstate(LxAttr *a, int d) { a->detach = d; return 0; }
 static int lx_attr_setstacksize(LxAttr *a, size_t n) { a->stacksize = n; return 0; }
 static int lx_attr_setstack(LxAttr *a, void *s, size_t n) { a->stack = s; a->stacksize = n; return 0; }
 
 /* run fn(arg) on another stack: the thread's stack limits in its TEB follow (stack probes and
-   exception dispatch check them), the SEH chain is cut while there */
+   exception dispatch check them). The SEH chain must stay valid: Windows 10 checks it when an
+   exception is dispatched (SEHOP: all records inside the stack, the last one is ntdll's final
+   handler record) and kills the process silently otherwise (FAST_FAIL_INVALID_EXCEPTION_CHAIN,
+   issue 7: a C++ exception inside Mesa / WASAPI while the game ran on its own stack; Wine does not
+   check). So the chain here is a copy of the thread's original last record at the top of the new
+   stack, not "end of chain". */
+typedef struct SehRec { struct SehRec *next; void *handler; } SehRec;
 static uintptr_t run_on_stack(void *fn, void *arg, uint8_t *lo, uint8_t *hi) {
     NT_TIB *tib = (NT_TIB *)NtCurrentTeb();
     void *old_base = tib->StackBase, *old_limit = tib->StackLimit, *old_seh = tib->ExceptionList;
+    void *final = NULL;
+    for (SehRec *c = (SehRec *)old_seh, *prev = NULL; c && c != (SehRec *)-1 && c != prev; prev = c, c = c->next)
+        if (c->next == (SehRec *)-1) { final = c->handler; break; }
+    SehRec *rec = (SehRec *)(((uintptr_t)hi - 32) & ~(uintptr_t)15);
+    rec->next = (SehRec *)-1;
+    rec->handler = final;
+    void **dealloc = (void **)((uint8_t *)tib + 0xE0C);   /* TEB.DeallocationStack (32-bit TEB), what SwitchToFiber also updates */
+    void *old_dealloc = *dealloc;
     tib->StackBase = hi;
     tib->StackLimit = lo;
-    tib->ExceptionList = (void *)-1;
-    uintptr_t r = stack_call(fn, arg, hi);
+    *dealloc = lo;
+    tib->ExceptionList = final ? (void *)rec : (void *)-1;
+    uintptr_t r = stack_call(fn, arg, final ? (uint8_t *)rec : hi);
     tib->StackBase = old_base;
     tib->StackLimit = old_limit;
+    *dealloc = old_dealloc;
     tib->ExceptionList = old_seh;
     return r;
 }
@@ -865,7 +1060,7 @@ static const Imp g_imports[] = {
     I("clock_gettime", lx_clock_gettime), I("nanosleep", lx_nanosleep), I("clock_nanosleep", lx_clock_nanosleep),
     I("time", lx_time), I("localtime_r", lx_localtime_r), I("strftime", lx_strftime),
     I("__cxa_atexit", lx_cxa_atexit), I("exit", lx_exit), I("_exit", lx__exit), I("abort", lx_abort),
-    I("__stack_chk_fail", lx_abort), I("raise", lx_raise), I("sysconf", lx_sysconf), I("getpid", lx_getpid),
+    I("__stack_chk_fail", lx_stack_chk_fail), I("raise", lx_raise), I("sysconf", lx_sysconf), I("getpid", lx_getpid),
     I("system", lx_system), I("execv", lx_execv),
     /* not needed on Windows (crash handler, profiler, symbol lookup): do nothing */
     I("sigaction", lx_zero), I("sigaltstack", lx_zero), I("sigemptyset", lx_zero), I("setitimer", lx_zero),
@@ -973,7 +1168,7 @@ static void choose_gl(void) {
     const char *force = getenv("ALBW_SOFTWARE_GL");
     int soft = force && *force == '1';
     if (!soft && !(force && *force == '0')) soft = !system_gl_ok(what, sizeof what);
-    fprintf(stderr, "albw: OpenGL: %s%s\n", soft ? "software renderer (Mesa llvmpipe)" : "system driver", *what ? (soft ? " - the system offers only " : " - ") : "");
+    fprintf(stderr, "albw: OpenGL: %s%s\n", soft ? "software renderer (Mesa)" : "system driver", *what ? (soft ? " - the system offers only " : " - ") : "");
     if (*what) fprintf(stderr, "albw:   %s\n", what);
     if (soft && !(force && *force == '1'))
         MessageBoxA(NULL, "No usable 32-bit OpenGL graphics driver was found, so the game will use the slow software\n"
@@ -985,6 +1180,12 @@ static void choose_gl(void) {
         static char env[MAX_PATH * 2 + 32];
         snprintf(env, sizeof env, "SDL_OPENGL_LIBRARY=%s", mesa);
         _putenv(env);
+        /* mesa-dist-win also holds a Direct3D 12 driver, which Mesa prefers on Windows 10: it runs on
+           Microsoft's WARP, whose C++ exceptions (_com_error inside D3D12Core.dll) end the whole process
+           here (observed in a Windows 10 VM without a GPU). softpipe is slow but works; llvmpipe gave "No
+           matching GL pixel format" there. Under Wine Mesa already picks llvmpipe, so leave it alone. */
+        if (!getenv("GALLIUM_DRIVER") && !GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version"))
+            _putenv("GALLIUM_DRIVER=softpipe");
         /* its libgallium_wgl.dll sits next to it: Windows looks for a DLL's dependencies in the
            program's folder, not the DLL's, so add the mesa folder to the search path */
         char dir[MAX_PATH * 2];
@@ -1002,6 +1203,21 @@ static void pick_rom(void) {
     snprintf(cfg, sizeof cfg, "%s/.config/albw-port/rom_path", home);
     FILE *f = fopen(cfg, "r");
     if (f) { if (fgets(line, sizeof line, f)) line[strcspn(line, "\r\n")] = 0; fclose(f); }
+    if (!*line || _access(line, 4)) {
+        /* no saved choice: a .3ds / .cci file next to ALBW.exe or in its roms folder is used (the first found) */
+        static const char *dirs[] = {"", "roms/"}, *pat[] = {"*.3ds", "*.cci"};
+        for (int d = 0; d < 2 && !*line; d++)
+            for (int k = 0; k < 2 && !*line; k++) {
+                char find[MAX_PATH * 2];
+                WIN32_FIND_DATAA fd;
+                snprintf(find, sizeof find, "%s/%s%s", g_exe_dir, dirs[d], pat[k]);
+                HANDLE h = FindFirstFileA(find, &fd);
+                if (h == INVALID_HANDLE_VALUE) continue;
+                if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) snprintf(line, sizeof line, "%s/%s%s", g_exe_dir, dirs[d], fd.cFileName);
+                FindClose(h);
+            }
+        if (*line) fprintf(stderr, "albw: using the game file found next to ALBW.exe: %s\n", line);
+    }
     if (!*line || _access(line, 4)) {
         OPENFILENAMEA ofn = {sizeof ofn};
         line[0] = 0;
@@ -1063,7 +1279,12 @@ int main(int argc, char **argv) {
         snprintf(dir, sizeof dir, "%s/.local/share", getenv("HOME")); _mkdir(dir);
         snprintf(dir, sizeof dir, "%s/.local/share/albw-port", getenv("HOME")); _mkdir(dir);
         snprintf(log, sizeof log, "%s/albw.log", dir);
-        freopen(log, "w", stderr);
+        /* the log goes next to ALBW.exe (easy to find and send); the user folder if that is not writable */
+        char beside[MAX_PATH * 2];
+        snprintf(beside, sizeof beside, "%s/albw.log", g_exe_dir);
+        if (freopen(beside, "w", stderr)) snprintf(log, sizeof log, "%s", beside);
+        else freopen(log, "w", stderr);
+        setvbuf(stderr, NULL, _IONBF, 0);   /* a game that hangs never flushes: every line must reach the file at once */
         snprintf(g_log_path, sizeof g_log_path, "%s", log);
         static char env_log[MAX_PATH * 2 + 20], env_ver[80];
         snprintf(env_log, sizeof env_log, "ALBW_LOG_FILE=%s", log);
@@ -1083,6 +1304,7 @@ int main(int argc, char **argv) {
     g_gl_tls_esp = TlsAlloc();
     if (g_gl_tls_ret >= 64 || g_gl_tls_esp >= 64) fatal("no TLS slots for the OpenGL thunks");
 
+    fprintf(stderr, "albw: log started (%s)\n", g_log_path[0] ? g_log_path : "console");
     fprintf(stderr, "albw: stage: choosing OpenGL\n");
     choose_gl();
     fprintf(stderr, "albw: stage: loading SDL3.dll\n");
@@ -1104,6 +1326,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "albw: stage: choosing the game file\n");
     pick_rom();
     fprintf(stderr, "albw: stage: starting the game\n");
+    if (!getenv("ALBW_NO_WATCHDOG")) { HANDLE wt = CreateThread(NULL, 256 << 10, watchdog_main, NULL, 0, NULL); if (wt) CloseHandle(wt); }
 
     /* argv for the game: argv[0] = the ELF's path (the game finds albw.ssmap next to it) */
     char **eargv = calloc((size_t)argc + 1, sizeof *eargv);

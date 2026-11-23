@@ -71,7 +71,7 @@ fi
 echo "== ALBW.exe"
 mkdir -p build/win
 $CC -O2 -mstackrealign -Wall -Wno-unused-function -I"$ZL/include" windows/loader.c -o build/win/ALBW.exe \
-    -L"$ZL/lib" -lz -lcomdlg32 -lwinmm -mwindows -static -static-libgcc \
+    -L"$ZL/lib" -lz -lcomdlg32 -lwinmm -lsynchronization -mwindows -static -static-libgcc \
     -Wl,--large-address-aware -Wl,--image-base,0x00400000
 
 # --- 6. package ------------------------------------------------------------------------------------
@@ -84,6 +84,8 @@ if [[ -f $MESA/x86/opengl32.dll ]]; then
 fi
 cp windows/HOW_TO_PLAY.txt "$OUT/HOW TO PLAY.txt"
 [[ -f VERSION ]] && cp VERSION "$OUT/VERSION"
+mkdir -p "$OUT/roms"
+printf "Put your decrypted .3ds file (European release) in this folder, then double-click ALBW.exe.\r\n" > "$OUT/roms/PUT YOUR 3DS FILE HERE.txt"
 rm -f build/ALBW-windows.zip
 (cd "$OUT" && 7z a -tzip -mx=9 "$ROOT/build/ALBW-windows.zip" . >/dev/null 2>&1 || zip -qr "$ROOT/build/ALBW-windows.zip" .)
 echo "== done: $OUT/ and build/ALBW-windows.zip"

@@ -11,12 +11,12 @@ The name does not matter (a renamed copy works); the contents must match. The US
 releases do not work.
 
 1. Unzip this folder anywhere (keep all files together).
-2. Double-click ALBW.exe.
-3. The first time, choose your .3ds file. The choice is remembered
-   (in %USERPROFILE%\.config\albw-port\rom_path - delete that file to choose again).
+2. Put your .3ds file in the "roms" folder inside it (or next to ALBW.exe).
+3. Double-click ALBW.exe. If no .3ds file is found there, it asks for one the first time; the
+   choice is remembered (in %USERPROFILE%\.config\albw-port\rom_path - delete that file to choose again).
 
 Saves, save states and settings live in %USERPROFILE%\.local\share\albw-port\
-The game's log is written there too (albw.log) - attach it when reporting a problem.
+The game's log is albw.log, next to ALBW.exe - attach it when reporting a problem.
 
 Controls: keyboard or any controller (Xbox, PlayStation, Switch Pro ...).
 Esc opens the menu (controls, screen layout, save states, reset).
@@ -24,7 +24,7 @@ Esc opens the menu (controls, screen layout, save states, reset).
 If the window stays black or the game says OpenGL is missing: your PC has no OpenGL 3.3
 driver (common in virtual machines or over Remote Desktop). Install your graphics driver,
 or start ALBW.exe with the environment variable ALBW_SOFTWARE_GL=1 to use the bundled
-software renderer (mesa folder; slow).
+software renderer (mesa folder; very slow - it is only meant to get the game to start).
 
 Trouble starting?
   - Unzipped from a download and SDL3.dll will not load: right-click the .zip > Properties >
@@ -36,3 +36,5 @@ Trouble starting?
   - When something goes wrong: press Esc in the game > Help > "Copy log to clipboard", then paste
     it (Ctrl+V) into a new issue at github.com/spacestate1/albw-native/issues. If the game stops with
     an error, the log is already on the clipboard. The file is albw.log (see above).
+  - If the window shows "Not Responding" and stays black: wait 2 minutes, then send albw.log. It lists
+    what every part of the game was doing ("albw: watchdog" lines).
