@@ -74,7 +74,11 @@ fi
 # the game and AppImages are known to fail to start with it in Game Mode. The game has its own menu
 # (L3+R3), so run without it.
 if [[ $GAMESCOPE == 1 ]]; then unset LD_PRELOAD; fi
-if [[ $GAMESCOPE == 1 && -n "${DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" ]]; then
+IS_WSL=0   # WSLg: Wayland windows never show a frame there; XWayland works
+if [[ -z "${ALBW_WSL_WAYLAND:-}" ]] && { [[ -n "${WSL_DISTRO_NAME:-}" || -e /proc/sys/fs/binfmt_misc/WSLInterop ]] || grep -qi microsoft /proc/version 2>/dev/null; }; then
+    IS_WSL=1
+fi
+if [[ ( $GAMESCOPE == 1 || $IS_WSL == 1 ) && -n "${DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" ]]; then
     export SDL_VIDEO_DRIVER=x11
 elif [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
     export SDL_VIDEO_DRIVER=wayland

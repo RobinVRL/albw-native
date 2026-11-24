@@ -256,7 +256,24 @@ int plat_init(const char *title, const PlatConfig *c) {
          * prefer it in that case unless the user chose a driver (SDL_VIDEO_DRIVER). */
         const char *drv = getenv("SDL_VIDEO_DRIVER");
         plat_pick_hybrid_gpu();
-        if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
+        /* WSL (WSLg): SDL's Wayland windows are mapped but never show a frame there (blank
+         * taskbar preview, nothing on screen); XWayland works. Prefer X11 on WSL. */
+        int wsl = (getenv("WSL_DISTRO_NAME") && *getenv("WSL_DISTRO_NAME")) ||
+                  access("/proc/sys/fs/binfmt_misc/WSLInterop", F_OK) == 0;
+        if (!wsl) {
+            FILE *pv = fopen("/proc/version", "r");
+            char line[256] = "";
+            if (pv) {
+                if (fgets(line, sizeof line, pv) && (strstr(line, "microsoft") || strstr(line, "Microsoft"))) wsl = 1;
+                fclose(pv);
+            }
+        }
+        if (getenv("ALBW_WSL_WAYLAND")) wsl = 0;   /* opt out: keep Wayland on WSL */
+        if (wsl && getenv("DISPLAY") && (!drv || !*drv || !strcmp(drv, "wayland"))) {
+            SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11,wayland");
+            if (drv && *drv) unsetenv("SDL_VIDEO_DRIVER");
+            fprintf(stderr, "platform: WSL: using X11 (WSLg's Wayland does not show this program's windows)\n");
+        } else if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
             const char *libs[] = {"/usr/lib32/libnvidia-egl-wayland.so.1", "/usr/lib/i386-linux-gnu/libnvidia-egl-wayland.so.1"};
             int have = 0;
             for (size_t i = 0; i < sizeof libs / sizeof *libs; i++) have |= access(libs[i], F_OK) == 0;
@@ -312,6 +329,9 @@ sdl_ok:
     /* the window needs no depth/stencil: the game renders into the screen targets */
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    /* no alpha channel: compositors that use it (WSLg) show a window whose alpha is 0 as fully
+     * transparent - an invisible window with a blank taskbar preview */
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
     snprintf(g_layout_base_title, sizeof g_layout_base_title, "%s", title);
     int have_layout_cfg = layout_load(&g_layout_cfg, NULL) == 0;  /* defaults if there is no layout.cfg yet */
     /* Steam Deck Game Mode / any gamescope session: one window is shown at a time, full screen, and
@@ -334,6 +354,8 @@ sdl_ok:
         if (v >= 0) g_separate = v;
         else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
     }
+    int plat_one_screen(void);
+    if (plat_one_screen()) { g_layout_cfg.single_screen = 1; g_layout_cfg.show_bottom = 0; }   /* the top screen only */
     if (g_layout_cfg.single_screen) g_separate = 0;   /* single-screen mode: one window (saved choice kept) */
     if (g_gamescope) g_separate = 0;
     if (g_layout_cfg.widescreen) { layout_set_top_w(LAYOUT_WIDE_TOP_W); render_set_widescreen(LAYOUT_WIDE_TOP_W); }
@@ -520,6 +542,18 @@ static int plat_windows_init(void) {
         SDL_GetWindowPosition(win, &px, &py);
         SDL_GetWindowSize(win, &pw, &ph);
         fprintf(stderr, "window: %s, %dx%d at %d,%d\n", SDL_GetCurrentVideoDriver(), pw, ph, px, py);
+        {
+            int nd = 0;
+            SDL_DisplayID *ds = SDL_GetDisplays(&nd);
+            for (int i = 0; ds && i < nd; i++) {
+                SDL_Rect r, u;
+                SDL_GetDisplayBounds(ds[i], &r);
+                SDL_GetDisplayUsableBounds(ds[i], &u);
+                fprintf(stderr, "display %u%s: %dx%d at %d,%d (usable %dx%d at %d,%d)\n", (unsigned)ds[i],
+                        ds[i] == SDL_GetPrimaryDisplay() ? " (primary)" : "", r.w, r.h, r.x, r.y, u.w, u.h, u.x, u.y);
+            }
+            SDL_free(ds);
+        }
     }
     return 0;
 }
@@ -748,6 +782,16 @@ static int at_title(void) {
  * screen comes back by itself once Link is in the field. */
 static int g_ss_front;
 
+/* One-screen mode (sdk/onescreen.c): the game draws the bottom screen's UI (its layouts) on the
+ * top screen and nothing on the bottom one, which is never shown: no flip, no HUD overlay, no
+ * bottom-screen selector, no automatic menu flips. ALBW_ONESCREEN=1 (in development; it is to
+ * replace single-screen mode's bottom-screen overlays). Read by game threads every frame. */
+static int g_one_screen = -1;
+int plat_one_screen(void) {
+    if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = e && *e == '1'; }
+    return g_one_screen;
+}
+
 /* Link is in the field (plat_poll's in_field, last poll): the single-screen HUD shows then only,
  * so the title, file select and cutscene-only stretches keep a clean top screen. */
 static int g_in_field;
@@ -760,12 +804,16 @@ static int g_ss_watch;
 /* single-screen HUD (layout.cfg hud_overlay): the top screen is up in single-screen mode, in the
  * field, and l (joined window) shows it */
 static int plat_hud_active(const Layout *l) {
-    if (!g_layout_cfg.single_screen || !g_layout_cfg.hud_overlay || g_layout_cfg.show_bottom) return 0;
+    if (!g_layout_cfg.single_screen || !g_layout_cfg.hud_overlay || g_layout_cfg.show_bottom || plat_one_screen()) return 0;
     if (getenv("ALBW_HUD_ALWAYS")) return l->visible[SCREEN_TOP];   /* debug: also at the title */
     return g_in_field && !g_ss_front && l->visible[SCREEN_TOP];
 }
 
 static void plat_single_screen_set(int on) {
+    if (plat_one_screen() && !on) {   /* F9 / F5 / Esc menu: no bottom screen to bring back */
+        fprintf(stderr, "layout: one-screen mode: the bottom screen is not shown\n");
+        return;
+    }
     g_layout_cfg.single_screen = on != 0;
     g_layout_cfg.show_bottom = 0;
     g_ss_front = 0;
@@ -856,7 +904,7 @@ static void plat_reset_press(void) {
     plat_restart();
 }
 static void plat_single_screen_flip(void) {
-    if (!g_layout_cfg.single_screen) return;
+    if (!g_layout_cfg.single_screen || plat_one_screen()) return;
     g_layout_cfg.show_bottom ^= 1;
     g_ss_front = 0;   /* a manual flip takes over from the file-select switch */
     g_ss_auto = 0;    /* and from a menu that opened by itself */
@@ -1480,7 +1528,7 @@ int plat_poll(void) {
      * the highlighted file. In single-screen mode, Start or A at the title (no player yet)
      * brings the bottom screen up; the top comes back once the player update runs (a save was
      * loaded). The game keeps its buttons meanwhile (g_ss_front). */
-    if (g_layout_cfg.single_screen) {
+    if (g_layout_cfg.single_screen && !plat_one_screen()) {
         uint32_t pressed = in.held & ~prev;
         /* at_title(), not "!in_field": during a long
          * cutscene (Yuga's speech) the player update pauses for over 10 s, and every A press to
@@ -1498,7 +1546,7 @@ int plat_poll(void) {
     }
     /* Start flips while the bottom screen is up (a menu may stay open any time) or in the field;
      * not at the title / file select, where Start belongs to the game. No automatic flip. */
-    if (g_layout_cfg.single_screen && !g_ss_front && (in_field || g_layout_cfg.show_bottom)) {
+    if (g_layout_cfg.single_screen && !plat_one_screen() && !g_ss_front && (in_field || g_layout_cfg.show_bottom)) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
          * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
          * does not use Select on the field. */
@@ -1660,8 +1708,38 @@ static __attribute__((noinline)) void frame_ms_trace(void) {
 }
 }
 
+/* A window whose centre is on no display is moved to the middle of the primary display. WSLg's
+ * window manager places new X11 windows itself (ignoring the position asked before mapping), at
+ * the top-left of the bounding box of all monitors: with monitors arranged so that no monitor is
+ * there, the window is invisible (blank taskbar preview). Checked during the first frames, after
+ * the window is mapped, when moves are honoured. */
+static void plat_rescue_offscreen(SDL_Window *w) {
+    if (!w || !plat_pos_known() || (SDL_GetWindowFlags(w) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MINIMIZED))) return;
+    int x, y, ww, wh, n = 0, on = 0;
+    SDL_GetWindowPosition(w, &x, &y);
+    SDL_GetWindowSize(w, &ww, &wh);
+    SDL_DisplayID *ids = SDL_GetDisplays(&n);
+    for (int i = 0; ids && i < n && !on; i++) {
+        SDL_Rect r;
+        if (SDL_GetDisplayBounds(ids[i], &r) && x + ww / 2 >= r.x && x + ww / 2 < r.x + r.w && y + wh / 2 >= r.y && y + wh / 2 < r.y + r.h) on = 1;
+    }
+    SDL_free(ids);
+    if (on || n == 0) return;
+    SDL_Rect u;
+    if (!SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &u)) return;
+    int nx = u.x + (u.w - ww) / 2, ny = u.y + (u.h - wh) / 2;
+    if (w == win_bottom && win) ny += wh / 2 + 24;   /* separate windows: keep the pair apart */
+    else if (w == win && win_bottom) ny -= wh / 2 + 24;
+    fprintf(stderr, "window: at %d,%d on no display: moving it to %d,%d (primary display)\n", x, y, nx, ny);
+    SDL_SetWindowPosition(w, nx, ny);
+}
+
 void plat_end_frame(void) {
     frame_ms_trace();
+    {
+        static int frames;
+        if (frames <= 300 && frames++ % 15 == 0) { plat_rescue_offscreen(win); plat_rescue_offscreen(win_bottom); }
+    }
 
     /* save / load state requests (keys, menu) run here: the main game thread still holds the app
      * core (released below for the swap). A load continues from the saved frame's same point. */

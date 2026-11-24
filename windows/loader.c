@@ -425,11 +425,12 @@ static void dump_thread(DWORD id, int round) {
 }
 static DWORD WINAPI watchdog_main(void *p) {
     (void)p;
-    static const int secs[] = {4, 4, 8, 16, 30, 60};   /* samples after 4, 8, 16, 32, 62, 122 s */
+    static const int secs[] = {4, 4, 8, 16, 30, 60};   /* samples after 4, 8, 16, 32, 62, 122 s, then every 30 s */
     int t = 0;
-    for (unsigned r = 0; r < sizeof secs / sizeof *secs; r++) {
-        Sleep((DWORD)secs[r] * 1000);
-        t += secs[r];
+    for (unsigned r = 0; r < 200; r++) {   /* later freezes (first cutscene) too; ~100 min of samples */
+        int s = r < sizeof secs / sizeof *secs ? secs[r] : 30;
+        Sleep((DWORD)s * 1000);
+        t += s;
         DWORD me = GetCurrentThreadId();
         fprintf(stderr, "albw: watchdog %u: %d s after start-up, threads of the game:\n", r + 1, t);
         {   /* who holds the C++ static-init guard lock (runtime/cxxabi.c)? LxMutex: SRW +0, owner +4, count +8, kind +12 */
