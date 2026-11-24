@@ -460,7 +460,7 @@ static void plat_set_size_restored(SDL_Window *w, int ww, int wh) {
 /* keep a window fully on a display: shrink it to the usable area (keeping its shape) and move it
  * inside, centred if it was off-screen */
 static void plat_keep_visible(SDL_Window *w) {
-    if (!w) return;
+    if (!w || !plat_pos_known()) return;   /* Wayland / WSLg: the compositor places it */
     SDL_SyncWindow(w);
     int x, y, ww, wh, bt = 0, bl = 0, bb = 0, br = 0;
     SDL_GetWindowPosition(w, &x, &y);
@@ -511,6 +511,11 @@ static int plat_windows_init(void) {
     if (!g_separate || layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) {
         SDL_ShowWindow(win);
         plat_keep_visible(win);
+        SDL_RaiseWindow(win);
+        int px = 0, py = 0, pw = 0, ph = 0;
+        SDL_GetWindowPosition(win, &px, &py);
+        SDL_GetWindowSize(win, &pw, &ph);
+        fprintf(stderr, "window: %s, %dx%d at %d,%d\n", SDL_GetCurrentVideoDriver(), pw, ph, px, py);
     }
     return 0;
 }

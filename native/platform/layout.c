@@ -61,6 +61,7 @@ void layout_defaults(LayoutConfig *c) {
     c->hud_overlay = 1;
     c->hud_opacity = 0.9f;
     c->menus_on_top = 1;
+    c->single_screen = 1;   /* one screen (the top, with the HUD) by default; F9 for both */
     layout_hud_defaults(c);
 }
 
