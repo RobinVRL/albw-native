@@ -60,6 +60,7 @@ void layout_defaults(LayoutConfig *c) {
     c->custom_visible[0] = c->custom_visible[1] = 1;
     c->hud_overlay = 1;
     c->hud_opacity = 0.9f;
+    c->menus_on_top = 1;
     layout_hud_defaults(c);
 }
 
@@ -195,6 +196,19 @@ static LayoutRect pixel_align(LayoutRect r) {
 void layout_compute(const LayoutConfig *c, int ww, int wh, Layout *l) {
     if (c->single_screen) {
         LayoutConfig d = single_as_preset(c);
+        if (c->show_bottom && c->menus_on_top) {
+            /* menus on the top screen: the top screen stays in place and the bottom one (file
+             * select, map, Gear, Items) is drawn over it, as tall as the top screen, centred */
+            d.preset = LAYOUT_TOP_ONLY;
+            layout_compute(&d, ww, wh, l);
+            LayoutRect t = l->r[LAYOUT_SCREEN_TOP];
+            float h = t.h, w = h * LAYOUT_BOTTOM_W / LAYOUT_SCREEN_H;
+            l->r[LAYOUT_SCREEN_BOTTOM] = pixel_align((LayoutRect){t.x + (t.w - w) / 2, t.y, w, h});
+            l->visible[LAYOUT_SCREEN_BOTTOM] = 1;
+            l->order[0] = LAYOUT_SCREEN_TOP;
+            l->order[1] = LAYOUT_SCREEN_BOTTOM;
+            return;
+        }
         layout_compute(&d, ww, wh, l);
         return;
     }
@@ -568,6 +582,7 @@ int layout_load(LayoutConfig *c, const char *path) {
         else if (!strcmp(key, "single_screen")) c->single_screen = iv != 0;
         else if (!strcmp(key, "widescreen")) c->widescreen = iv != 0;
         else if (!strcmp(key, "hud_overlay")) c->hud_overlay = iv != 0;
+        else if (!strcmp(key, "menus_on_top")) c->menus_on_top = iv != 0;
         else if (!strcmp(key, "hud_opacity")) {
             float o = layout_parse_float(arg, NULL);
             c->hud_opacity = o < 0.2f ? 0.2f : o > 1.0f ? 1.0f : o;
@@ -636,7 +651,7 @@ int layout_save(const LayoutConfig *c, const char *path) {
     {
         char o[32];
         layout_fmt_float(o, sizeof o, c->hud_opacity);
-        fprintf(f, "hud_overlay %d\nhud_opacity %s\n", c->hud_overlay, o);
+        fprintf(f, "hud_overlay %d\nhud_opacity %s\nmenus_on_top %d\n", c->hud_overlay, o, c->menus_on_top);
         for (int i = 0; i < c->hud_count; i++) {
             const LayoutHudPanel *p = &c->hud[i];
             char a[3][32];

@@ -18,6 +18,11 @@ static const char *SEL_VS =
     "uniform vec4 rect; uniform vec4 uvr; out vec2 uv;\n"
     "void main(){ vec2 p = vec2(gl_VertexID & 1, gl_VertexID >> 1); uv = uvr.xy + p * uvr.zw;\n"
     "  gl_Position = vec4(rect.xy + p * rect.zw, 0, 1); }\n";
+/* the graphic's own alpha (BLIT_FS takes an alpha uniform for the single-screen HUD instead) */
+static const char *SEL_FS =
+    "#version 330 core\n"
+    "in vec2 uv; out vec4 o; uniform sampler2D tex;\n"
+    "void main(){ o = texture(tex, uv); }\n";
 
 typedef struct { int16_t x, y, w, h; uint8_t native; } SelTarget;   /* centre, size; native: the game draws its own cursor there */
 
@@ -161,25 +166,48 @@ static void sel_input(PlatInput *pin) {
 /* plat_composite (the screens were just drawn into the window): recognise the page now and then
  * from the bottom screen's target, draw the selector over the bottom screen's place in the window.
  * Not in render_scanout / plat_end_frame: save states resume inside those (their code must stay). */
+/* the bottom screen's page, recognised from a few of its pixels (SEL_PAGE_*) */
+static int sel_detect_page(void) {
+    const Target *bt = &screens[SCREEN_BOTTOM];
+    int w = bt->w, h = bt->h;
+    if (w <= 0 || h <= 0) return SEL_PAGE_OTHER;
+    glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, bt->fbo);
+    uint8_t a[4] = {0}, b[4] = {0}, c[4] = {0}, d[4] = {0};   /* d: top-left corner */
+    glReadPixels(300 * w / 320, h - 1 - 60 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, a);
+    glReadPixels(160 * w / 320, h - 1 - 120 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, b);
+    glReadPixels(28 * w / 320, h - 1 - 226 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c);   /* bell icon: pure yellow */
+    glReadPixels(5 * w / 320, h - 1 - 5 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, d);   /* map frame colour */
+    glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, 0);
+    return (a[0] > 90 && a[1] < 45) ? SEL_PAGE_GEAR
+         : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS
+         : (d[2] > 140 && d[2] > d[0] + 10) ? SEL_PAGE_DUNGEON          /* blue-grey dungeon frame */
+         : !(d[0] > 200 && d[1] > 140 && d[2] < 110) ? SEL_PAGE_OTHER   /* no orange map scroll: warp menu */
+         : (c[0] > 230 && c[1] > 190 && c[2] < 60) ? SEL_PAGE_MAP_BELL : SEL_PAGE_MAP;
+}
+
+/* single-screen, menus on the top screen: Gear / Items opened from the HUD (a click on its tabs)
+ * come up over the top screen by themselves, and go away again when the game is back on the map.
+ * Only requests the flip (g_ss_auto_req, done in plat_poll, not in the middle of drawing). */
+static void sel_auto_menu(void) {
+    if (!g_layout_cfg.single_screen || !g_layout_cfg.menus_on_top || g_ss_front || g_ss_auto_req) return;
+    static unsigned frame;
+    if (frame++ % 10) return;
+    int page = sel_detect_page();
+    int menu = page == SEL_PAGE_GEAR || page == SEL_PAGE_ITEMS;
+    int map = page == SEL_PAGE_MAP || page == SEL_PAGE_MAP_BELL || page == SEL_PAGE_DUNGEON;
+    if (!g_layout_cfg.show_bottom && menu && g_in_field) g_ss_auto_req = 1;
+    else if (g_layout_cfg.show_bottom && g_ss_auto && map) g_ss_auto_req = 1;
+}
+
 static __attribute__((noinline)) void sel_composite(const Layout *l) {
+    sel_auto_menu();
     if (!sel_active() || !l->visible[SCREEN_BOTTOM]) return;
     const Target *bt = &screens[SCREEN_BOTTOM];
     int w = bt->w, h = bt->h;
     if (w <= 0 || h <= 0) return;
     static unsigned frame;
     if (frame++ % 10 == 0) {
-        glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, bt->fbo);
-        uint8_t a[4] = {0}, b[4] = {0}, c[4] = {0}, d[4] = {0};   /* d: top-left corner */
-        glReadPixels(300 * w / 320, h - 1 - 60 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, a);
-        glReadPixels(160 * w / 320, h - 1 - 120 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, b);
-        glReadPixels(28 * w / 320, h - 1 - 226 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, c);   /* bell icon: pure yellow */
-        glReadPixels(5 * w / 320, h - 1 - 5 * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, d);   /* map frame colour */
-        glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, 0);
-        int page = (a[0] > 90 && a[1] < 45) ? SEL_PAGE_GEAR
-                 : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS
-                 : (d[2] > 140 && d[2] > d[0] + 10) ? SEL_PAGE_DUNGEON          /* blue-grey dungeon frame */
-                 : !(d[0] > 200 && d[1] > 140 && d[2] < 110) ? SEL_PAGE_OTHER   /* no orange map scroll: warp menu */
-                 : (c[0] > 230 && c[1] > 190 && c[2] < 60) ? SEL_PAGE_MAP_BELL : SEL_PAGE_MAP;
+        int page = sel_detect_page();
         if (page != g_sel_page && page == SEL_PAGE_OTHER) {
             g_sel_page = page;
         } else if (page != g_sel_page) {
@@ -212,7 +240,7 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
         if (c[0] > 210 && c[2] > 155) return;
     }
     static GLuint prog;
-    if (!prog) prog = gl_program(SEL_VS, BLIT_FS);
+    if (!prog) prog = gl_program(SEL_VS, SEL_FS);
     float pad = g_sel_touch ? 2.0f : 5.0f;   /* closes in a little while A is held */
     float x0 = t->x - t->w * 0.5f - pad, y0 = t->y - t->h * 0.5f - pad;
     float rw = t->w + 2 * pad, rh = t->h + 2 * pad;

@@ -710,6 +710,9 @@ static int g_ss_front;
 /* Link is in the field (plat_poll's in_field, last poll): the single-screen HUD shows then only,
  * so the title, file select and cutscene-only stretches keep a clean top screen. */
 static int g_in_field;
+/* menus on the top screen (selector.c sel_auto_menu): the bottom screen is up because Gear / Items
+ * opened by themselves (g_ss_auto); a flip requested for plat_poll (g_ss_auto_req) */
+static int g_ss_auto, g_ss_auto_req;
 /* single-screen HUD (layout.cfg hud_overlay): the top screen is up in single-screen mode, in the
  * field, and l (joined window) shows it */
 static int plat_hud_active(const Layout *l) {
@@ -812,6 +815,7 @@ static void plat_single_screen_flip(void) {
     if (!g_layout_cfg.single_screen) return;
     g_layout_cfg.show_bottom ^= 1;
     g_ss_front = 0;   /* a manual flip takes over from the file-select switch */
+    g_ss_auto = 0;    /* and from a menu that opened by itself */
     extern long g_plat_frames;
     if (getenv("ALBW_SEL_TRACE")) fprintf(stderr, "selector: f=%ld single-screen shows the %s screen\n", g_plat_frames, g_layout_cfg.show_bottom ? "bottom" : "top");
     plat_windows_visibility();
@@ -1345,6 +1349,12 @@ int plat_poll(void) {
         g_menu_note[0] = 0;
     }
     if (in.screen) plat_single_screen_flip();
+    if (g_ss_auto_req) {   /* a menu opened / closed by itself (selector.c sel_auto_menu) */
+        g_ss_auto_req = 0;
+        int opening = !g_layout_cfg.show_bottom;
+        plat_single_screen_flip();
+        g_ss_auto = opening;
+    }
     if (g_geom_dirty_ns && plat_ticks_ns() - g_geom_dirty_ns > 500000000ull) {  /* moves settled */
         g_geom_dirty_ns = 0;
         if (layout_save(&g_layout_cfg, NULL)) fprintf(stderr, "layout: cannot save %s\n", layout_default_path());

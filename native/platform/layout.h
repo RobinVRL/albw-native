@@ -33,6 +33,7 @@
  *                             the SCREEN binding (Tab / right-stick click) has it toggled up
  *   hud_overlay 1             single_screen: bottom-screen map (minimap, top right) and buttons over the top screen
  *   hud_opacity 0.90000
+ *   menus_on_top 1            single_screen: file select / Gear / Items drawn over the top screen, opened automatically
  *   hud_panel minimap 44 0 220 212 1.00000 0.00000 0.50000 1     see LayoutHudPanel
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
  *   custom bottom 0.10000 0.50000 0.80000 0.50000 1
@@ -103,6 +104,8 @@ typedef struct {
     int show_bottom;         /* single_screen: the bottom screen is up (runtime only, not saved) */
     int hud_overlay;         /* single_screen: bottom-screen HUD panels over the top screen (default 1) */
     float hud_opacity;       /* 0.2 .. 1 */
+    int menus_on_top;        /* single_screen: the bottom screen, when up, is drawn over the top one
+                              * (file select, Gear, Items open there by themselves; default 1) */
     int hud_count;
     LayoutHudPanel hud[LAYOUT_HUD_MAX];
 } LayoutConfig;
