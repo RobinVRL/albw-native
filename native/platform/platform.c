@@ -457,6 +457,33 @@ static void plat_set_size_restored(SDL_Window *w, int ww, int wh) {
     SDL_SetWindowSize(w, ww, wh);
 }
 
+/* keep a window fully on a display: shrink it to the usable area (keeping its shape) and move it
+ * inside, centred if it was off-screen */
+static void plat_keep_visible(SDL_Window *w) {
+    if (!w) return;
+    SDL_SyncWindow(w);
+    int x, y, ww, wh, bt = 0, bl = 0, bb = 0, br = 0;
+    SDL_GetWindowPosition(w, &x, &y);
+    SDL_GetWindowSize(w, &ww, &wh);
+    if (!SDL_GetWindowBordersSize(w, &bt, &bl, &bb, &br)) bt = 32;
+    SDL_Rect u;
+    SDL_DisplayID d = SDL_GetDisplayForWindow(w);
+    if (!d || !SDL_GetDisplayUsableBounds(d, &u)) {
+        if (!SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &u)) return;
+    }
+    int mw = u.w - bl - br, mh = u.h - bt - bb;
+    if (mw > 0 && mh > 0 && (ww > mw || wh > mh)) {
+        float k = SDL_min((float)mw / ww, (float)mh / wh);
+        ww = (int)(ww * k);
+        wh = (int)(wh * k);
+        plat_set_size_restored(w, ww, wh);
+    }
+    int nx = x, ny = y;
+    if (x - bl < u.x || x + ww + br > u.x + u.w) nx = u.x + (u.w - ww) / 2;
+    if (y - bt < u.y || y + wh + bb > u.y + u.h) ny = u.y + bt + (u.h - bt - bb - wh) / 2;
+    if (nx != x || ny != y) SDL_SetWindowPosition(w, nx, ny);
+}
+
 /* First window: the joined window, or the top screen's window. Created hidden so that it can be
  * placed before it is mapped (window managers honour a position best at map time). */
 static int plat_windows_init(void) {
@@ -480,7 +507,11 @@ static int plat_windows_init(void) {
         else
             SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
-    if (!g_separate || layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) SDL_ShowWindow(win);
+    if (!g_separate) SDL_SetWindowPosition(win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    if (!g_separate || layout_separate_visible(&g_layout_cfg, SCREEN_TOP)) {
+        SDL_ShowWindow(win);
+        plat_keep_visible(win);
+    }
     return 0;
 }
 
@@ -508,6 +539,7 @@ static void plat_place_bottom(void) {
         y = ty;
     }
     SDL_SetWindowPosition(win_bottom, x, y);
+    plat_keep_visible(win_bottom);
 }
 
 /* Swap intervals: only one window waits for vsync (the top one, or the bottom one while the top
