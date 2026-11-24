@@ -55,7 +55,7 @@ static void pane_cfg_load(void) {
         if (sscanf(line, "%23s %31s %31s %31s %31s %31s", n, t[0], t[1], t[2], t[3], t[4]) < 2) continue;
         PaneOv *o = &g_ov[g_nov++];
         memset(o, 0, sizeof *o);
-        strcpy(o->name, n);
+        memcpy(o->name, n, strlen(n) + 1);   /* (no strcpy: the Windows loader does not provide it) */
         for (int i = 0; i < 4; i++)
             if (t[i][0] && strcmp(t[i], "-")) { o->set[i] = 1; o->v[i] = (float)atof(t[i]); }
         o->vis = (t[4][0] && strcmp(t[4], "-")) ? atoi(t[4]) : -1;
