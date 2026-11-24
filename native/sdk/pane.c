@@ -64,10 +64,11 @@ static void pane_cfg_load(void) {
 }
 
 static void pane_dump(uint32_t p, const char *name) {
-    static uint32_t seen[8192];
-    static int nseen;
-    for (int i = 0; i < nseen; i++) if (seen[i] == p) return;
-    if (nseen < 8192) seen[nseen++] = p;
+    static uint32_t seen[16384];   /* open-addressing set of logged panes */
+    uint32_t hsh = (p * 2654435761u) >> 18;
+    while (seen[hsh] && seen[hsh] != p) hsh = (hsh + 1) & 16383;
+    if (seen[hsh] == p) return;
+    seen[hsh] = p;
     if (!g_dump) {
         const char *h = getenv("HOME");
         char path[512];

@@ -745,6 +745,9 @@ static int g_in_field;
 /* menus on the top screen (selector.c sel_auto_menu): the bottom screen is up because Gear / Items
  * opened by themselves (g_ss_auto); a flip requested for plat_poll (g_ss_auto_req) */
 static int g_ss_auto, g_ss_auto_req;
+/* frames left to watch the bottom page for a menu opening (glReadPixels stalls the GPU, so the
+ * page is only read after a HUD click and while an auto-opened menu is up) */
+static int g_ss_watch;
 /* single-screen HUD (layout.cfg hud_overlay): the top screen is up in single-screen mode, in the
  * field, and l (joined window) shows it */
 static int plat_hud_active(const Layout *l) {
@@ -1421,6 +1424,7 @@ int plat_poll(void) {
             if (!touching) hud_panel = hit;
             if (hud_panel >= 0) {
                 hud = 1;
+                g_ss_watch = 180;   /* a menu may open from this click: watch the page ~3 s */
                 inside = hit == hud_panel;
                 if (inside) hud_tx = sx, hud_ty = sy;   /* outside it: the touch stays where it left */
                 tx = hud_tx, ty = hud_ty;

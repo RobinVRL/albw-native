@@ -190,6 +190,8 @@ static int sel_detect_page(void) {
  * Only requests the flip (g_ss_auto_req, done in plat_poll, not in the middle of drawing). */
 static void sel_auto_menu(void) {
     if (!g_layout_cfg.single_screen || !g_layout_cfg.menus_on_top || g_ss_front || g_ss_auto_req) return;
+    if (g_ss_watch > 0) g_ss_watch--;
+    if (!g_ss_watch && !g_ss_auto) return;   /* nothing can open by itself: no GPU read-back */
     static unsigned frame;
     if (frame++ % 10) return;
     int page = sel_detect_page();
