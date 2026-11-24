@@ -31,7 +31,7 @@ undefined4 func_00240104(int param_1)
   float fStackY_40;
   float fStackY_3c;
   float fStackY_38;
-  float afStackY_34 [7];
+  float afStackY_34 [12]; /* 004D7E0C writes a 3x3 matrix (was too small: stack smash) */
   
   uVar1 = *(uint *)(*(int *)(param_1 + 0x428) + *(char *)(param_1 + 0x410) * 8 + 4);
   pcVar3 = *(code **)(*(int *)(param_1 + 0x428) + *(char *)(param_1 + 0x410) * 8);
