@@ -19,6 +19,7 @@ static float floorf_(float v) {
     return v < i ? i - 1 : i;
 }
 static float roundf_(float v) { return floorf_(v + 0.5f); }
+static LayoutRect pixel_align(LayoutRect r);
 
 static int g_top_w = 400;
 int layout_top_w(void) { return g_top_w; }
@@ -57,6 +58,52 @@ void layout_defaults(LayoutConfig *c) {
     c->custom[0] = (LayoutRect){0.0f, 0.0f, 1.0f, 0.5f};
     c->custom[1] = (LayoutRect){0.1f, 0.5f, 0.8f, 0.5f};
     c->custom_visible[0] = c->custom_visible[1] = 1;
+    c->hud_overlay = 1;
+    c->hud_opacity = 0.9f;
+    layout_hud_defaults(c);
+}
+
+/* Default single-screen HUD panels. The field bottom screen of ALBW is a map with a strip of
+ * buttons / item slots along its top and bottom edges; the source rectangles below are a first
+ * cut of that split (tune them in layout.cfg with hud_panel lines). */
+void layout_hud_defaults(LayoutConfig *c) {
+    static const LayoutHudPanel D[] = {
+        /* name        sx  sy   sw   sh   ax    ay    scale  on */
+        {"minimap",     0, 24, 320, 192, 1.0f, 0.0f, 0.42f, 1},   /* the map, top-right corner */
+        {"top_bar",     0,  0, 320,  24, 0.5f, 1.0f, 0.70f, 1},   /* upper buttons / item slots */
+        {"bottom_bar",  0, 216, 320, 24, 0.0f, 1.0f, 0.70f, 0},   /* lower buttons (Items / Gear) */
+    };
+    int n = (int)(sizeof D / sizeof D[0]);
+    for (int i = 0; i < n; i++) c->hud[i] = D[i];
+    c->hud_count = n;
+}
+
+void layout_hud_rect(const LayoutConfig *c, const Layout *l, int i, LayoutRect *out) {
+    *out = (LayoutRect){0, 0, 0, 0};
+    if (i < 0 || i >= c->hud_count || !l->visible[LAYOUT_SCREEN_TOP]) return;
+    const LayoutHudPanel *p = &c->hud[i];
+    if (!p->on || p->sw <= 0 || p->sh <= 0) return;
+    LayoutRect t = l->r[LAYOUT_SCREEN_TOP];
+    float k = t.w / LAYOUT_TOP_W;           /* window pixels per top-screen pixel */
+    float m = 4.0f * k;                     /* margin from the screen edges */
+    float w = p->sw * p->scale * k, h = p->sh * p->scale * k;
+    float ax = fminf_(fmaxf_(p->ax, 0), 1), ay = fminf_(fmaxf_(p->ay, 0), 1);
+    LayoutRect r = {t.x + m + ax * (t.w - 2 * m - w), t.y + m + ay * (t.h - 2 * m - h), w, h};
+    *out = pixel_align(r);
+}
+
+int layout_hud_hit(const LayoutConfig *c, const Layout *l, float x, float y, int *sx, int *sy) {
+    for (int i = c->hud_count - 1; i >= 0; i--) {   /* drawn in order: last on top */
+        LayoutRect r;
+        layout_hud_rect(c, l, i, &r);
+        if (r.w < 1 || r.h < 1 || x < r.x || y < r.y || x >= r.x + r.w || y >= r.y + r.h) continue;
+        const LayoutHudPanel *p = &c->hud[i];
+        int px = p->sx + (int)((x - r.x) / r.w * p->sw), py = p->sy + (int)((y - r.y) / r.h * p->sh);
+        *sx = px < 0 ? 0 : px >= LAYOUT_BOTTOM_W ? LAYOUT_BOTTOM_W - 1 : px;
+        *sy = py < 0 ? 0 : py >= LAYOUT_SCREEN_H ? LAYOUT_SCREEN_H - 1 : py;
+        return i;
+    }
+    return -1;
 }
 
 static float clamp_ratio(float r) { return r < 1.5f ? 1.5f : r > 6.0f ? 6.0f : r; }
@@ -518,6 +565,31 @@ int layout_load(LayoutConfig *c, const char *path) {
         else if (!strcmp(key, "custom_front")) c->custom_front = !strcmp(arg, "top") ? 0 : 1;
         else if (!strcmp(key, "single_screen")) c->single_screen = iv != 0;
         else if (!strcmp(key, "widescreen")) c->widescreen = iv != 0;
+        else if (!strcmp(key, "hud_overlay")) c->hud_overlay = iv != 0;
+        else if (!strcmp(key, "hud_opacity")) {
+            float o = layout_parse_float(arg, NULL);
+            c->hud_opacity = o < 0.2f ? 0.2f : o > 1.0f ? 1.0f : o;
+        }
+        else if (!strcmp(key, "hud_panel")) {   /* name sx sy sw sh ax ay scale on */
+            int sx, sy, sw, sh, i;
+            char *e;
+            sx = (int)strtol(rest, &e, 10); rest = e;
+            sy = (int)strtol(rest, &e, 10); rest = e;
+            sw = (int)strtol(rest, &e, 10); rest = e;
+            sh = (int)strtol(rest, &e, 10); rest = e;
+            float ax = layout_parse_float(rest, &rest), ay = layout_parse_float(rest, &rest);
+            float sc = layout_parse_float(rest, &rest);
+            int on = (int)strtol(rest, &e, 10);
+            if (e == rest || sw <= 0 || sh <= 0 || sc <= 0.01f || sc > 4.0f) continue;
+            for (i = 0; i < c->hud_count && strcmp(c->hud[i].name, arg); i++) {}
+            if (i == c->hud_count) {
+                if (i >= LAYOUT_HUD_MAX) continue;
+                c->hud_count++;
+            }
+            LayoutHudPanel *p = &c->hud[i];
+            snprintf(p->name, sizeof p->name, "%s", arg);
+            p->sx = sx, p->sy = sy, p->sw = sw, p->sh = sh, p->ax = ax, p->ay = ay, p->scale = sc, p->on = on != 0;
+        }
         else if (!strcmp(key, "custom")) {
             int s = !strcmp(arg, "top") ? 0 : !strcmp(arg, "bottom") ? 1 : -1;
             if (s < 0) continue;
@@ -558,6 +630,19 @@ int layout_save(const LayoutConfig *c, const char *path) {
         const LayoutWindowGeom *g = &c->window[s];
         if (g->has_size) fprintf(f, "window_size %s %d %d\n", s ? "bottom" : "top", g->w, g->h);
         if (g->has_pos) fprintf(f, "window_pos %s %d %d\n", s ? "bottom" : "top", g->x, g->y);
+    }
+    {
+        char o[32];
+        layout_fmt_float(o, sizeof o, c->hud_opacity);
+        fprintf(f, "hud_overlay %d\nhud_opacity %s\n", c->hud_overlay, o);
+        for (int i = 0; i < c->hud_count; i++) {
+            const LayoutHudPanel *p = &c->hud[i];
+            char a[3][32];
+            layout_fmt_float(a[0], 32, p->ax);
+            layout_fmt_float(a[1], 32, p->ay);
+            layout_fmt_float(a[2], 32, p->scale);
+            fprintf(f, "hud_panel %s %d %d %d %d %s %s %s %d\n", p->name, p->sx, p->sy, p->sw, p->sh, a[0], a[1], a[2], p->on);
+        }
     }
     if (fclose(f)) return -1;
     return rename(tmp, path) ? -1 : 0;

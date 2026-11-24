@@ -201,13 +201,13 @@ static void plat_apply_render_scale(int r) {
 
 static const char *BLIT_VS =
     "#version 330 core\n"
-    "uniform vec4 rect; out vec2 uv;\n"
-    "void main(){ vec2 p = vec2(gl_VertexID & 1, gl_VertexID >> 1); uv = p;\n"
+    "uniform vec4 rect; uniform vec4 src; out vec2 uv;\n"   /* src: texture sub-rect (offset, size) */
+    "void main(){ vec2 p = vec2(gl_VertexID & 1, gl_VertexID >> 1); uv = src.xy + p * src.zw;\n"
     "  gl_Position = vec4(rect.xy + p * rect.zw, 0, 1); }\n";
 static const char *BLIT_FS =
     "#version 330 core\n"
-    "in vec2 uv; out vec4 o; uniform sampler2D tex;\n"
-    "void main(){ o = texture(tex, uv); }\n";
+    "in vec2 uv; out vec4 o; uniform sampler2D tex; uniform float alpha;\n"
+    "void main(){ o = vec4(texture(tex, uv).rgb, alpha); }\n";
 
 #ifndef ALBW_WINDOWS
 /* Hybrid laptops (Intel / AMD graphics + an NVIDIA GPU, "Optimus"): OpenGL runs on the built-in GPU
@@ -706,6 +706,17 @@ static int at_title(void) {
  * Start and the D-pad (its own file cursor), the bottom-screen selector stays off, and the top
  * screen comes back by itself once Link is in the field. */
 static int g_ss_front;
+
+/* Link is in the field (plat_poll's in_field, last poll): the single-screen HUD shows then only,
+ * so the title, file select and cutscene-only stretches keep a clean top screen. */
+static int g_in_field;
+/* single-screen HUD (layout.cfg hud_overlay): the top screen is up in single-screen mode, in the
+ * field, and l (joined window) shows it */
+static int plat_hud_active(const Layout *l) {
+    if (!g_layout_cfg.single_screen || !g_layout_cfg.hud_overlay || g_layout_cfg.show_bottom) return 0;
+    if (getenv("ALBW_HUD_ALWAYS")) return l->visible[SCREEN_TOP];   /* debug: also at the title */
+    return g_in_field && !g_ss_front && l->visible[SCREEN_TOP];
+}
 
 static void plat_single_screen_set(int on) {
     g_layout_cfg.single_screen = on != 0;
@@ -1359,8 +1370,22 @@ int plat_poll(void) {
         float pd = SDL_GetWindowPixelDensity(win);
         plat_layout_update();
         inside = layout_to_screen(&g_layout, SCREEN_BOTTOM, mx * pd, my * pd, &tx, &ty);
+        int hud = 0;
+        if (!g_layout.visible[SCREEN_BOTTOM] && plat_hud_active(&g_layout)) {
+            /* single-screen HUD: a click on a bottom-screen panel touches the bottom screen there;
+             * a drag that started on one stays a touch (clamped to the panel's source) */
+            static int hud_panel = -1, hud_tx, hud_ty;
+            int sx, sy, hit = layout_hud_hit(&g_layout_cfg, &g_layout, mx * pd, my * pd, &sx, &sy);
+            if (!touching) hud_panel = hit;
+            if (hud_panel >= 0) {
+                hud = 1;
+                inside = hit == hud_panel;
+                if (inside) hud_tx = sx, hud_ty = sy;   /* outside it: the touch stays where it left */
+                tx = hud_tx, ty = hud_ty;
+            }
+        }
         pressed = (mb & SDL_BUTTON_LMASK) && !g_layout_editing && g_layout_edit.mode == LAYOUT_EDIT_NONE &&
-                  g_layout.visible[SCREEN_BOTTOM];
+                  (g_layout.visible[SCREEN_BOTTOM] || hud);
     }
     touching = pressed && (inside || touching);
     in.touch = touching;
@@ -1395,6 +1420,7 @@ int plat_poll(void) {
     static long field_frame = -100000;
     if (&albw_dbg_player && albw_dbg_player) { field_frame = g_plat_frames; albw_dbg_player = NULL; }
     int in_field = g_plat_frames - field_frame < 600;
+    g_in_field = in_field;
     /* File select: the save list ("Select a file") is on the bottom screen, the top only previews
      * the highlighted file. In single-screen mode, Start or A at the title (no player yet)
      * brings the bottom screen up; the top comes back once the player update runs (a save was
@@ -1506,7 +1532,11 @@ static void plat_composite(const Layout *l) {
     glUseProgram(blit_prog);
     glBindVertexArray(blit_vao);
     GLint loc = glGetUniformLocation(blit_prog, "rect");
+    GLint loc_src = glGetUniformLocation(blit_prog, "src");
+    GLint loc_alpha = glGetUniformLocation(blit_prog, "alpha");
     GLint filter = g_layout_cfg.linear_filter ? GL_LINEAR : GL_NEAREST;
+    glUniform4f(loc_src, 0, 0, 1, 1);
+    glUniform1f(loc_alpha, 1);
     for (int k = 0; k < 2; k++) {
         int i = l->order[k];
         if (!l->visible[i]) continue;
@@ -1518,6 +1548,31 @@ static void plat_composite(const Layout *l) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
         glUniform4fv(loc, 1, rect);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+    if (plat_hud_active(l)) {
+        /* single-screen HUD: bottom-screen pieces (minimap, buttons) over the top screen. The
+         * bottom target is not drawn this frame but the game still renders it every frame. */
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBindTexture(GL_TEXTURE_2D, screens[SCREEN_BOTTOM].color);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   /* panels are scaled down */
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glUniform1f(loc_alpha, g_layout_cfg.hud_opacity);
+        for (int i = 0; i < g_layout_cfg.hud_count; i++) {
+            const LayoutHudPanel *p = &g_layout_cfg.hud[i];
+            LayoutRect r;
+            layout_hud_rect(&g_layout_cfg, l, i, &r);
+            if (r.w < 1 || r.h < 1) continue;
+            /* window pixels (y down) -> NDC; texture rows are bottom-up */
+            float ndc[4] = {r.x / l->ww * 2 - 1, 1 - (r.y + r.h) / l->wh * 2, r.w / l->ww * 2, r.h / l->wh * 2};
+            glUniform4fv(loc, 1, ndc);
+            glUniform4f(loc_src, (float)p->sx / BOTTOM_W, 1.0f - (float)(p->sy + p->sh) / SCREEN_H,
+                        (float)p->sw / BOTTOM_W, (float)p->sh / SCREEN_H);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+        glUniform4f(loc_src, 0, 0, 1, 1);
+        glUniform1f(loc_alpha, 1);
+        glDisable(GL_BLEND);
     }
     sel_composite(l);   /* single-screen selector over the bottom screen (selector.c) */
 }

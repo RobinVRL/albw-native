@@ -31,6 +31,9 @@
  *   widescreen 0              1 = 16:9 top screen: the game draws a wider view (F10)
  *   single_screen 0           1 = show one screen: the top one, and the bottom one in its place while
  *                             the SCREEN binding (Tab / right-stick click) has it toggled up
+ *   hud_overlay 1             single_screen: bottom-screen map (minimap, top right) and buttons over the top screen
+ *   hud_opacity 0.90000
+ *   hud_panel minimap 0 24 320 192 1.00000 0.00000 0.42000 1     see LayoutHudPanel
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
  *   custom bottom 0.10000 0.50000 0.80000 0.50000 1
  * Unknown keys are ignored, missing keys keep their defaults. */
@@ -61,6 +64,22 @@ typedef enum {
 
 typedef struct { float x, y, w, h; } LayoutRect;
 
+/* Single-screen HUD (layout.cfg hud_overlay): while the top screen is shown in single-screen
+ * mode, pieces of the bottom screen (its map, its item / menu buttons) are drawn over the top
+ * screen, so the bottom one rarely needs to be brought up. Each panel copies a rectangle of the
+ * bottom screen (native pixels, y down) to a corner / edge of the top screen:
+ *   ax, ay: 0..1 where in the top screen it sits (0 0 top-left, 1 0 top-right, 0.5 1 bottom centre)
+ *   scale:  size relative to the native bottom-screen pixels (top-screen pixel units)
+ * Clicking a panel touches the bottom screen at the matching point.
+ * layout.cfg: hud_panel <name> sx sy sw sh ax ay scale on   (overrides a default panel) */
+#define LAYOUT_HUD_MAX 8
+typedef struct {
+    char name[16];
+    int sx, sy, sw, sh;      /* source rectangle in the bottom screen (320x240, y down) */
+    float ax, ay, scale;
+    int on;
+} LayoutHudPanel;
+
 /* Remembered geometry of one separate window (window points). */
 typedef struct { int x, y, w, h, has_pos, has_size; } LayoutWindowGeom;
 
@@ -82,6 +101,10 @@ typedef struct {
     int single_screen;       /* 1 = one screen at a time (overrides preset / swap / custom) */
     int widescreen;          /* 1 = 16:9 top screen (wider view, not stretched) */
     int show_bottom;         /* single_screen: the bottom screen is up (runtime only, not saved) */
+    int hud_overlay;         /* single_screen: bottom-screen HUD panels over the top screen (default 1) */
+    float hud_opacity;       /* 0.2 .. 1 */
+    int hud_count;
+    LayoutHudPanel hud[LAYOUT_HUD_MAX];
 } LayoutConfig;
 
 /* A computed layout for one window size. */
@@ -118,6 +141,13 @@ int layout_hit(const Layout *l, float x, float y);
 int layout_to_screen(const Layout *l, int screen, float x, float y, int *sx, int *sy);
 /* Pixel rect -> OpenGL NDC rect (x, y, w, h; bottom-left origin) for a full-window viewport. */
 void layout_rect_ndc(const Layout *l, int screen, float ndc[4]);
+
+/* ---- single-screen HUD panels ---- */
+void layout_hud_defaults(LayoutConfig *c);
+/* Window-pixel rectangle of HUD panel i over the top screen of l (w = h = 0 if not drawable). */
+void layout_hud_rect(const LayoutConfig *c, const Layout *l, int i, LayoutRect *out);
+/* Topmost enabled HUD panel under window pixel (x, y), or -1; *sx, *sy = bottom-screen pixel. */
+int layout_hud_hit(const LayoutConfig *c, const Layout *l, float x, float y, int *sx, int *sy);
 
 /* Turn the current layout into the custom one (preset = custom, rects copied). */
 void layout_make_custom(LayoutConfig *c, const Layout *l);
