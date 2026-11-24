@@ -108,6 +108,11 @@ typedef struct {
                               * (file select, Gear, Items open there by themselves; default 1) */
     int hud_count;
     LayoutHudPanel hud[LAYOUT_HUD_MAX];
+    /* menus on top, file select: only the save slots of the bottom screen, cut out (sx..sh) and
+     * placed on the top screen (ax, ay, scale) between the title logo and the file preview.
+     * layout.cfg: file_slots sx sy sw sh ax ay scale on   (on 0: the whole bottom screen) */
+    LayoutHudPanel file_slots;
+    int file_select;         /* runtime: the file select is up (not saved) */
 } LayoutConfig;
 
 /* A computed layout for one window size. */
@@ -116,6 +121,8 @@ typedef struct {
     LayoutRect r[2];         /* pixel-aligned screen rectangles */
     int visible[2];
     int order[2];            /* draw order: order[0] first, order[1] last (on top) */
+    int clipped[2];          /* 1 = draw / touch screen i only inside clip[i] (pixels) */
+    LayoutRect clip[2];
 } Layout;
 
 void layout_defaults(LayoutConfig *c);

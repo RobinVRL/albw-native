@@ -4,3 +4,4 @@ func_002E39E8   per-pass effect draw -> sdk/eft.c (live translation of the eft c
 func_003F7CC4   eft System::EntryResource -> sdk/eft.c (registers the PTCL's vertex programs)
 func_003F8250   eft emitter-set calc + draw -> sdk/eft.c (translates the words it wrote at the eft cursor)
 func_0026EB74   scene fog writer -> sdk/eft.c (fog registers translated to ROP_FOG)
+func_003FF964   nw::lyt Pane::CalculateMtx -> sdk/pane.c (pane dump + per-name position overrides)

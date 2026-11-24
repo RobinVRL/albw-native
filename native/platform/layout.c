@@ -79,6 +79,19 @@ void layout_hud_defaults(LayoutConfig *c) {
     int n = (int)(sizeof D / sizeof D[0]);
     for (int i = 0; i < n; i++) c->hud[i] = D[i];
     c->hud_count = n;
+    /* the three save slots of "Select a file" (below its heading, inside the frame), shown at
+     * ~45 % in the middle of the top screen: under the logo, above the file preview */
+    c->file_slots = (LayoutHudPanel){"file_slots", 28, 24, 264, 196, 0.5f, 0.48f, 0.45f, 1};
+}
+
+/* where panel p goes over top-screen rectangle t (window pixels) */
+static LayoutRect hud_place(const LayoutHudPanel *p, LayoutRect t) {
+    float k = t.w / LAYOUT_TOP_W;           /* window pixels per top-screen pixel */
+    float m = 4.0f * k;                     /* margin from the screen edges */
+    float w = p->sw * p->scale * k, h = p->sh * p->scale * k;
+    float ax = fminf_(fmaxf_(p->ax, 0), 1), ay = fminf_(fmaxf_(p->ay, 0), 1);
+    LayoutRect r = {t.x + m + ax * (t.w - 2 * m - w), t.y + m + ay * (t.h - 2 * m - h), w, h};
+    return pixel_align(r);
 }
 
 void layout_hud_rect(const LayoutConfig *c, const Layout *l, int i, LayoutRect *out) {
@@ -86,13 +99,7 @@ void layout_hud_rect(const LayoutConfig *c, const Layout *l, int i, LayoutRect *
     if (i < 0 || i >= c->hud_count || !l->visible[LAYOUT_SCREEN_TOP]) return;
     const LayoutHudPanel *p = &c->hud[i];
     if (!p->on || p->sw <= 0 || p->sh <= 0) return;
-    LayoutRect t = l->r[LAYOUT_SCREEN_TOP];
-    float k = t.w / LAYOUT_TOP_W;           /* window pixels per top-screen pixel */
-    float m = 4.0f * k;                     /* margin from the screen edges */
-    float w = p->sw * p->scale * k, h = p->sh * p->scale * k;
-    float ax = fminf_(fmaxf_(p->ax, 0), 1), ay = fminf_(fmaxf_(p->ay, 0), 1);
-    LayoutRect r = {t.x + m + ax * (t.w - 2 * m - w), t.y + m + ay * (t.h - 2 * m - h), w, h};
-    *out = pixel_align(r);
+    *out = hud_place(p, l->r[LAYOUT_SCREEN_TOP]);
 }
 
 int layout_hud_hit(const LayoutConfig *c, const Layout *l, float x, float y, int *sx, int *sy) {
@@ -202,6 +209,22 @@ void layout_compute(const LayoutConfig *c, int ww, int wh, Layout *l) {
             d.preset = LAYOUT_TOP_ONLY;
             layout_compute(&d, ww, wh, l);
             LayoutRect t = l->r[LAYOUT_SCREEN_TOP];
+            const LayoutHudPanel *fs = &c->file_slots;
+            if (c->file_select && fs->on && fs->sw > 0 && fs->sh > 0) {
+                /* file select: only the save slots show, smaller, between the title logo and the
+                 * file preview. The whole bottom screen is placed so that its slots land on that
+                 * spot, and clipped to it (drawing and touch). */
+                LayoutRect d = hud_place(fs, t);
+                float k = d.w / fs->sw, kh = d.h / fs->sh;
+                l->r[LAYOUT_SCREEN_BOTTOM] = (LayoutRect){d.x - fs->sx * k, d.y - fs->sy * kh,
+                                                          LAYOUT_BOTTOM_W * k, LAYOUT_SCREEN_H * kh};
+                l->clip[LAYOUT_SCREEN_BOTTOM] = d;
+                l->clipped[LAYOUT_SCREEN_BOTTOM] = 1;
+                l->visible[LAYOUT_SCREEN_BOTTOM] = 1;
+                l->order[0] = LAYOUT_SCREEN_TOP;
+                l->order[1] = LAYOUT_SCREEN_BOTTOM;
+                return;
+            }
             float h = t.h, w = h * LAYOUT_BOTTOM_W / LAYOUT_SCREEN_H;
             l->r[LAYOUT_SCREEN_BOTTOM] = pixel_align((LayoutRect){t.x + (t.w - w) / 2, t.y, w, h});
             l->visible[LAYOUT_SCREEN_BOTTOM] = 1;
