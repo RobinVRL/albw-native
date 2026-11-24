@@ -46,7 +46,7 @@ int layout_preset_from_key(const char *k) {
 
 void layout_defaults(LayoutConfig *c) {
     memset(c, 0, sizeof *c);
-    c->separate = 1;   /* one window per screen unless layout.cfg says "windows joined" */
+    c->separate = 0;   /* one window (single-screen); layout.cfg "windows separate" for two */
     c->preset = LAYOUT_DEFAULT;
     c->linear_filter = 1;
     c->render_scale = 1;

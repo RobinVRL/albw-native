@@ -341,6 +341,10 @@ sdl_ok:
         g_last_two_preset = g_layout_cfg.preset;
     g_joined_w = TOP_W * cfg.scale;
     g_joined_h = SCREEN_H * 2 * cfg.scale;
+    if (g_layout_cfg.single_screen) {   /* one screen: a 480p window (854x480 widescreen) */
+        g_joined_w = TOP_W * 480 / SCREEN_H;
+        g_joined_h = 480;
+    }
     if (plat_windows_init()) return -1;
     ctx = SDL_GL_CreateContext(win);
     if (!ctx) {
