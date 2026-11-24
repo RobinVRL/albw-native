@@ -113,6 +113,11 @@ install_deps() {
             libgl1:i386 libegl1:i386 libx11-6:i386 libxext6:i386 libxcursor1:i386 libxi6:i386 \
             libxrandr2:i386 libxkbcommon0:i386 libwayland-client0:i386 libwayland-egl1:i386 \
             libwayland-cursor0:i386 libpulse0:i386 $asound
+        # gcc-multilib also provides /usr/include/asm for -m32 (x86's asm headers are shared by
+        # 32 and 64 bit); without it, point it at the 64-bit ones
+        if [[ $multilib != gcc-multilib && ! -e /usr/include/asm && -d /usr/include/x86_64-linux-gnu/asm ]]; then
+            $sudo ln -s x86_64-linux-gnu/asm /usr/include/asm
+        fi
     elif [[ $id == *" suse "* || $id == *" opensuse "* ]]; then
         $sudo zypper install -y clang lld llvm python3 cmake ninja git pkgconf-pkg-config \
             gcc-32bit glibc-devel-32bit libglvnd-32bit zlib-devel-32bit Mesa-libGL1-32bit Mesa-libEGL1-32bit \
