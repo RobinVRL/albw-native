@@ -100,8 +100,15 @@ install_deps() {
         local llvm_n
         llvm_n=$(apt-cache search --names-only '^clang-[0-9]+$' | sed -E 's/^clang-([0-9]+).*/\1/' | sort -n | tail -1)
         [[ -n $llvm_n ]] || { echo "no clang-N package found"; exit 1; }
+        # gcc-multilib conflicts with installed ARM cross compilers (gcc-arm-linux-gnueabihf);
+        # libc6-dev-i386 + lib32gcc-N-dev give the same 32-bit headers / crt files without it
+        local multilib=gcc-multilib gcc_n
+        if ! apt-get -s install gcc-multilib >/dev/null 2>&1; then
+            gcc_n=$(gcc -dumpversion 2>/dev/null | cut -d. -f1)
+            [[ -n $gcc_n ]] && multilib="libc6-dev-i386 lib32gcc-$gcc_n-dev"
+        fi
         $sudo apt-get install -y clang-$llvm_n lld-$llvm_n llvm-$llvm_n python3 cmake ninja-build git pkg-config \
-            gcc-multilib lib32z1-dev libx11-dev libxext-dev libwayland-dev libxkbcommon-dev \
+            $multilib lib32z1-dev libx11-dev libxext-dev libwayland-dev libxkbcommon-dev \
             libegl-dev libgl-dev libpulse-dev libasound2-dev \
             libgl1:i386 libegl1:i386 libx11-6:i386 libxext6:i386 libxcursor1:i386 libxi6:i386 \
             libxrandr2:i386 libxkbcommon0:i386 libwayland-client0:i386 libwayland-egl1:i386 \
