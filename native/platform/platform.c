@@ -1535,7 +1535,8 @@ static void plat_composite(const Layout *l) {
     GLint loc_src = glGetUniformLocation(blit_prog, "src");
     GLint loc_alpha = glGetUniformLocation(blit_prog, "alpha");
     GLint filter = g_layout_cfg.linear_filter ? GL_LINEAR : GL_NEAREST;
-    glUniform4f(loc_src, 0, 0, 1, 1);
+    static const float full_src[4] = {0, 0, 1, 1};
+    glUniform4fv(loc_src, 1, full_src);
     glUniform1f(loc_alpha, 1);
     for (int k = 0; k < 2; k++) {
         int i = l->order[k];
@@ -1566,11 +1567,12 @@ static void plat_composite(const Layout *l) {
             /* window pixels (y down) -> NDC; texture rows are bottom-up */
             float ndc[4] = {r.x / l->ww * 2 - 1, 1 - (r.y + r.h) / l->wh * 2, r.w / l->ww * 2, r.h / l->wh * 2};
             glUniform4fv(loc, 1, ndc);
-            glUniform4f(loc_src, (float)p->sx / BOTTOM_W, 1.0f - (float)(p->sy + p->sh) / SCREEN_H,
-                        (float)p->sw / BOTTOM_W, (float)p->sh / SCREEN_H);
+            float src[4] = {(float)p->sx / BOTTOM_W, 1.0f - (float)(p->sy + p->sh) / SCREEN_H,
+                            (float)p->sw / BOTTOM_W, (float)p->sh / SCREEN_H};
+            glUniform4fv(loc_src, 1, src);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
-        glUniform4f(loc_src, 0, 0, 1, 1);
+        glUniform4fv(loc_src, 1, full_src);
         glUniform1f(loc_alpha, 1);
         glDisable(GL_BLEND);
     }

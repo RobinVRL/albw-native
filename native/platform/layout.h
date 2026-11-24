@@ -33,7 +33,7 @@
  *                             the SCREEN binding (Tab / right-stick click) has it toggled up
  *   hud_overlay 1             single_screen: bottom-screen map (minimap, top right) and buttons over the top screen
  *   hud_opacity 0.90000
- *   hud_panel minimap 0 24 320 192 1.00000 0.00000 0.42000 1     see LayoutHudPanel
+ *   hud_panel minimap 44 0 220 212 1.00000 0.00000 0.50000 1     see LayoutHudPanel
  *   custom top 0.00000 0.00000 1.00000 0.50000 1      x y w h (normalized to the window) visible
  *   custom bottom 0.10000 0.50000 0.80000 0.50000 1
  * Unknown keys are ignored, missing keys keep their defaults. */

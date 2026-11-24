@@ -63,15 +63,17 @@ void layout_defaults(LayoutConfig *c) {
     layout_hud_defaults(c);
 }
 
-/* Default single-screen HUD panels. The field bottom screen of ALBW is a map with a strip of
- * buttons / item slots along its top and bottom edges; the source rectangles below are a first
- * cut of that split (tune them in layout.cfg with hud_panel lines). */
+/* Default single-screen HUD panels, cut from the field bottom screen (the map page; positions as
+ * measured for the selector, selector.c SEL_MAP): pins / floor buttons in a column on the left
+ * (x 0..44), the Y item slot on the right (centre 288,135), the Gear / Items tabs along the bottom
+ * (y 213..239), the map in between. Tune them in layout.cfg with hud_panel lines. */
 void layout_hud_defaults(LayoutConfig *c) {
     static const LayoutHudPanel D[] = {
-        /* name        sx  sy   sw   sh   ax    ay    scale  on */
-        {"minimap",     0, 24, 320, 192, 1.0f, 0.0f, 0.42f, 1},   /* the map, top-right corner */
-        {"top_bar",     0,  0, 320,  24, 0.5f, 1.0f, 0.70f, 1},   /* upper buttons / item slots */
-        {"bottom_bar",  0, 216, 320, 24, 0.0f, 1.0f, 0.70f, 0},   /* lower buttons (Items / Gear) */
+        /* name         sx   sy   sw   sh   ax    ay    scale  on */
+        {"minimap",     44,   0, 220, 212, 1.0f, 0.0f, 0.50f, 1},   /* the map, top-right corner */
+        {"y_item",     263, 110,  50,  50, 1.0f, 0.62f, 0.70f, 1},  /* Y item slot, under the minimap */
+        {"tabs",         0, 213, 320,  27, 0.5f, 1.0f, 0.60f, 1},   /* Gear / Items tabs, bottom centre */
+        {"map_buttons",  0,   0,  44, 170, 0.0f, 0.5f, 0.60f, 0},   /* pins / floors (off: rarely needed) */
     };
     int n = (int)(sizeof D / sizeof D[0]);
     for (int i = 0; i < n; i++) c->hud[i] = D[i];
