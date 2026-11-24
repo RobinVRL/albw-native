@@ -791,6 +791,25 @@ int plat_one_screen(void) {
     if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = e && *e == '1'; }
     return g_one_screen;
 }
+/* One-screen pause menu (Ocarina of Time style; onescreen_input below): in the field the bottom
+ * UI is a minimap in the top-right corner; Start opens it 1:1 over the top screen on the Items
+ * page, L / R go round Items -> Map -> Gear, Start or B closes it (back to the map page, then the
+ * minimap). Select is the game's Start (Pause: save / quit). Pages are changed by tapping the
+ * game's own tabs / Close button; the page shown is recognised from the top screen's pixels. */
+static int g_os_menu;            /* the menu is open */
+static int g_os_goal = -1;       /* page heading for (SEL_PAGE_*), -1 none */
+static int g_os_goal_t;          /* frames spent heading for it (gives up after ~5 s) */
+static int g_os_tap, g_os_tap_x, g_os_tap_y;   /* frames of a synthesized touch left, where */
+static int g_os_wait;            /* frames until the next step (the page is re-read meanwhile) */
+static int g_os_closing;         /* closing: once on the map page, back to the minimap */
+static int g_os_page_fresh;      /* the page was read since the last tap */
+static int at_title(void);
+/* sdk/onescreen.c: 0 the bottom UI 1:1 (title, file select), 1 minimap, 2 the menu (1:1) */
+int plat_one_screen_view(void) {
+    if (!plat_one_screen()) return 0;
+    if (g_os_menu) return 2;
+    return at_title() ? 0 : 1;
+}
 
 /* Link is in the field (plat_poll's in_field, last poll): the single-screen HUD shows then only,
  * so the title, file select and cutscene-only stretches keep a clean top screen. */
@@ -1487,6 +1506,26 @@ int plat_poll(void) {
                 tx = hud_tx, ty = hud_ty;
             }
         }
+        if (plat_one_screen() && g_layout.visible[SCREEN_TOP] && !at_title()) {
+            /* one-screen: in the pause menu the mouse touches the bottom UI drawn 1:1 in the top
+             * screen's centre; a click on the minimap opens the menu on the map page */
+            static int mouse_prev;
+            int down = (mb & SDL_BUTTON_LMASK) != 0, sx, sy;
+            int ins = layout_to_screen(&g_layout, SCREEN_TOP, mx * pd, my * pd, &sx, &sy);
+            if (g_os_menu) {
+                hud = 1;
+                tx = sx - (TOP_W - 320) / 2;
+                ty = sy;
+                inside = ins && tx >= 0 && tx < 320;
+                tx = tx < 0 ? 0 : tx > 319 ? 319 : tx;
+            } else if (down && !mouse_prev && ins) {
+                void albw_minimap_rect(float r[4]);
+                float r[4], x400 = sx - (TOP_W - 400) / 2.0f;
+                albw_minimap_rect(r);
+                if (x400 >= r[0] && x400 < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) os_open(SEL_PAGE_MAP);
+            }
+            mouse_prev = down;
+        }
         pressed = (mb & SDL_BUTTON_LMASK) && !g_layout_editing && g_layout_edit.mode == LAYOUT_EDIT_NONE &&
                   (g_layout.visible[SCREEN_BOTTOM] || hud);
     }
@@ -1557,6 +1596,7 @@ int plat_poll(void) {
         in.held &= ~KEY_START;
         if (in.held & KEY_SELECT) in.held = (in.held & ~KEY_SELECT) | KEY_START;
     }
+    if (plat_one_screen()) onescreen_input(&in);   /* minimap / pause menu (selector.c) */
     sel_input(&in);   /* bottom screen up in single-screen mode: D-pad moves the selector, A taps */
     in.down = in.held & ~prev;
     in.up = prev & ~in.held;
@@ -1679,6 +1719,7 @@ static void plat_composite(const Layout *l) {
         glUniform1f(loc_alpha, 1);
         glDisable(GL_BLEND);
     }
+    sel_dim_sides(l);   /* one-screen pause menu: the world beside it darkened (selector.c) */
     sel_composite(l);   /* single-screen selector over the bottom screen (selector.c) */
 }
 

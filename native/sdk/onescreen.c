@@ -158,6 +158,58 @@ int func_0012E00C(uint32_t m) {   /* the extra bottom layout +0x1844 (end of the
     return func_0012E00C__decomp(m);
 }
 
+/* ---- minimap ----
+ * In the field the bottom screen's UI is drawn small in the top screen's top-right corner, cut to
+ * the map's frame (a scissor rectangle), instead of 1:1 over the whole screen; the pause menu
+ * (platform.c, Start) draws it 1:1 again. Geometry in layout units of the top screen (origin at
+ * its centre, y up, 400 x 240), the source in bottom-screen pixels (320 x 240, y down):
+ *   ALBW_MINIMAP="scale margin_right margin_top"   (default 0.42 6 6)
+ *   ALBW_MINIMAP_SRC="x y w h"                     (default 48 4 202 200: the map and its frame) */
+static float g_mm_scale = 0.42f, g_mm_mr = 6, g_mm_mt = 6;
+static float g_mm_src[4] = {48, 4, 202, 200};
+
+static void minimap_cfg(void) {
+    static int done;
+    if (done) return;
+    done = 1;
+    const char *e = getenv("ALBW_MINIMAP");
+    if (e) sscanf(e, "%f %f %f", &g_mm_scale, &g_mm_mr, &g_mm_mt);
+    e = getenv("ALBW_MINIMAP_SRC");
+    if (e) sscanf(e, "%f %f %f %f", &g_mm_src[0], &g_mm_src[1], &g_mm_src[2], &g_mm_src[3]);
+    if (g_mm_scale < 0.05f || g_mm_scale > 1.0f) g_mm_scale = 0.42f;
+}
+
+/* the minimap's rectangle on the top screen, in top-screen pixels of the 400-unit layout space
+ * (x from the left, y down): for the platform's mouse hit test */
+void albw_minimap_rect(float r[4]) {
+    minimap_cfg();
+    r[2] = g_mm_src[2] * g_mm_scale;
+    r[3] = g_mm_src[3] * g_mm_scale;
+    r[0] = 400.0f - g_mm_mr - r[2];
+    r[1] = g_mm_mt;
+}
+
+uint32_t *func_00563170(const uint8_t *s, uint32_t *p);   /* sdk/gr.c: Scissor MakeCommand */
+void func_006003D8(uint32_t pname, uint32_t *out);        /* sdk/gfx.c: nngxGetCmdlistParameteri */
+void func_00601378(int32_t bytes);                         /* sdk/gfx.c: nngxMoveCommandbufferPointer */
+
+/* a scissor command (rectangle in the top buffer's 240 x 400 portrait space) */
+static uint32_t *scissor_cmd(uint32_t *p, int on, int x, int y, int w, int h) {
+    struct { uint8_t en, pad[3]; int32_t x, y, w, h, bw, bh; } s = {on != 0, {0}, x, y, w, h, 240, 400};
+    return func_00563170((const uint8_t *)&s, p);
+}
+
+/* scissor off, straight into the bound command list (after the minimap's groups) */
+static void scissor_off_now(void) {
+    uint32_t cur = 0;
+    func_006003D8(0x208, &cur);
+    if (!cur) return;
+    uint32_t *e = scissor_cmd((uint32_t *)(uintptr_t)cur, 0, 0, 0, 240, 400);
+    func_00601378((int32_t)((uint8_t *)e - (uint8_t *)(uintptr_t)cur));
+}
+
+int plat_one_screen_view(void);   /* platform.c: 0 bottom UI 1:1 (title, file select), 1 minimap, 2 menu */
+
 /* the bottom groups, in the top pass: +0x179C maps 320 layout units onto the screen's width;
  * scaling the matrix's x input (column 0 of the row-major nn::math MTX44, clip = M * v) by
  * 320 / 400 makes it map 400 units, the top screen's width (widescreen: the layout shader keeps
@@ -174,9 +226,40 @@ static void bottom_ui_on_top(void) {
     uint32_t blk = U32(m, BOTTOM_STATE), len = U32(m, BOTTOM_STATE + 4);
     U32(m, BOTTOM_STATE) = U32(m, TOP_STATE);
     U32(m, BOTTOM_STATE + 4) = U32(m, TOP_STATE + 4);
+    int mini = plat_one_screen_view() == 1;
+    static uint32_t mblk[256];   /* the top's block + the minimap's scissor */
+    if (mini) {
+        minimap_cfg();
+        float s = g_mm_scale, r[4];
+        albw_minimap_rect(r);
+        /* layout point v -> s * (v - c) + d: c the source's centre, d the target's (centre
+         * origin, y up); P' = P * [s 0 0 tx; 0 s 0 ty; 0 0 1 0; 0 0 0 1] */
+        float cx = g_mm_src[0] + g_mm_src[2] * 0.5f - 160.0f, cy = 120.0f - (g_mm_src[1] + g_mm_src[3] * 0.5f);
+        float dx = r[0] + r[2] * 0.5f - 200.0f, dy = 120.0f - (r[1] + r[3] * 0.5f);
+        float tx = dx - s * cx, ty = dy - s * cy;
+        for (int row = 0; row < 4; row++) {
+            float *q = P + row * 4;
+            q[3] += q[0] * tx + q[1] * ty;
+            q[0] *= s;
+            q[1] *= s;
+        }
+        /* scissor to the target, in the top buffer's portrait space: buffer x = layout y + 120,
+         * buffer y = 200 - layout x */
+        float lx0 = r[0] - 200.0f, lx1 = lx0 + r[2];
+        float ly1 = 120.0f - r[1], ly0 = ly1 - r[3];
+        uint32_t tw = U32(m, TOP_STATE + 4);
+        if (tw + 8 <= sizeof mblk / sizeof *mblk && U32(m, TOP_STATE)) {
+            memcpy(mblk, (void *)(uintptr_t)U32(m, TOP_STATE), tw * 4);
+            uint32_t *e = scissor_cmd(mblk + tw, 1, (int)(ly0 + 120.0f), (int)(200.0f - lx1),
+                                      (int)(ly1 - ly0 + 0.5f), (int)(lx1 - lx0 + 0.5f));
+            U32(m, BOTTOM_STATE) = (uint32_t)(uintptr_t)mblk;
+            U32(m, BOTTOM_STATE + 4) = (uint32_t)(e - mblk);
+        }
+    }
     func_0012EA48__decomp(m);
     func_0012E00C__decomp(m);
     func_0012D9A8__decomp(m);
+    if (mini) scissor_off_now();
     U32(m, BOTTOM_STATE) = blk;
     U32(m, BOTTOM_STATE + 4) = len;
     memcpy(P, save, sizeof save);
