@@ -5,3 +5,7 @@ func_003F7CC4   eft System::EntryResource -> sdk/eft.c (registers the PTCL's ver
 func_003F8250   eft emitter-set calc + draw -> sdk/eft.c (translates the words it wrote at the eft cursor)
 func_0026EB74   scene fog writer -> sdk/eft.c (fog registers translated to ROP_FOG)
 func_003FF964   nw::lyt Pane::CalculateMtx -> sdk/pane.c (pane dump + per-name position overrides)
+func_0012EA48   bottom-screen layouts -> sdk/onescreen.c (one-screen mode: drawn in the top pass)
+func_0012D9A8   bottom-screen front layouts -> sdk/onescreen.c
+func_0012E00C   extra bottom-screen layout (+0x1844) -> sdk/onescreen.c
+func_0014A40C   screen 2D layer end (front layouts + faders) -> sdk/onescreen.c

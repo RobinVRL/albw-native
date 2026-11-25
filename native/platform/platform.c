@@ -256,7 +256,24 @@ int plat_init(const char *title, const PlatConfig *c) {
          * prefer it in that case unless the user chose a driver (SDL_VIDEO_DRIVER). */
         const char *drv = getenv("SDL_VIDEO_DRIVER");
         plat_pick_hybrid_gpu();
-        if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
+        /* WSL (WSLg): SDL's Wayland windows are mapped but never show a frame there (blank
+         * taskbar preview, nothing on screen); XWayland works. Prefer X11 on WSL. */
+        int wsl = (getenv("WSL_DISTRO_NAME") && *getenv("WSL_DISTRO_NAME")) ||
+                  access("/proc/sys/fs/binfmt_misc/WSLInterop", F_OK) == 0;
+        if (!wsl) {
+            FILE *pv = fopen("/proc/version", "r");
+            char line[256] = "";
+            if (pv) {
+                if (fgets(line, sizeof line, pv) && (strstr(line, "microsoft") || strstr(line, "Microsoft"))) wsl = 1;
+                fclose(pv);
+            }
+        }
+        if (getenv("ALBW_WSL_WAYLAND")) wsl = 0;   /* opt out: keep Wayland on WSL */
+        if (wsl && getenv("DISPLAY") && (!drv || !*drv || !strcmp(drv, "wayland"))) {
+            SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11,wayland");
+            if (drv && *drv) unsetenv("SDL_VIDEO_DRIVER");
+            fprintf(stderr, "platform: WSL: using X11 (WSLg's Wayland does not show this program's windows)\n");
+        } else if ((!drv || !*drv) && getenv("DISPLAY") && access("/proc/driver/nvidia/version", F_OK) == 0) {
             const char *libs[] = {"/usr/lib32/libnvidia-egl-wayland.so.1", "/usr/lib/i386-linux-gnu/libnvidia-egl-wayland.so.1"};
             int have = 0;
             for (size_t i = 0; i < sizeof libs / sizeof *libs; i++) have |= access(libs[i], F_OK) == 0;
@@ -334,6 +351,8 @@ sdl_ok:
         if (v >= 0) g_separate = v;
         else fprintf(stderr, "ALBW_WINDOWS=%s: expected separate or joined\n", wm);
     }
+    int plat_one_screen(void);
+    if (plat_one_screen()) { g_layout_cfg.single_screen = 1; g_layout_cfg.show_bottom = 0; }   /* the top screen only */
     if (g_layout_cfg.single_screen) g_separate = 0;   /* single-screen mode: one window (saved choice kept) */
     if (g_gamescope) g_separate = 0;
     if (g_layout_cfg.widescreen) { layout_set_top_w(LAYOUT_WIDE_TOP_W); render_set_widescreen(LAYOUT_WIDE_TOP_W); }
@@ -748,6 +767,16 @@ static int at_title(void) {
  * screen comes back by itself once Link is in the field. */
 static int g_ss_front;
 
+/* One-screen mode (sdk/onescreen.c): the game draws the bottom screen's UI (its layouts) on the
+ * top screen and nothing on the bottom one, which is never shown: no flip, no HUD overlay, no
+ * bottom-screen selector, no automatic menu flips. ALBW_ONESCREEN=1 (in development; it is to
+ * replace single-screen mode's bottom-screen overlays). Read by game threads every frame. */
+static int g_one_screen = -1;
+int plat_one_screen(void) {
+    if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = e && *e == '1'; }
+    return g_one_screen;
+}
+
 /* Link is in the field (plat_poll's in_field, last poll): the single-screen HUD shows then only,
  * so the title, file select and cutscene-only stretches keep a clean top screen. */
 static int g_in_field;
@@ -760,12 +789,16 @@ static int g_ss_watch;
 /* single-screen HUD (layout.cfg hud_overlay): the top screen is up in single-screen mode, in the
  * field, and l (joined window) shows it */
 static int plat_hud_active(const Layout *l) {
-    if (!g_layout_cfg.single_screen || !g_layout_cfg.hud_overlay || g_layout_cfg.show_bottom) return 0;
+    if (!g_layout_cfg.single_screen || !g_layout_cfg.hud_overlay || g_layout_cfg.show_bottom || plat_one_screen()) return 0;
     if (getenv("ALBW_HUD_ALWAYS")) return l->visible[SCREEN_TOP];   /* debug: also at the title */
     return g_in_field && !g_ss_front && l->visible[SCREEN_TOP];
 }
 
 static void plat_single_screen_set(int on) {
+    if (plat_one_screen() && !on) {   /* F9 / F5 / Esc menu: no bottom screen to bring back */
+        fprintf(stderr, "layout: one-screen mode: the bottom screen is not shown\n");
+        return;
+    }
     g_layout_cfg.single_screen = on != 0;
     g_layout_cfg.show_bottom = 0;
     g_ss_front = 0;
@@ -856,7 +889,7 @@ static void plat_reset_press(void) {
     plat_restart();
 }
 static void plat_single_screen_flip(void) {
-    if (!g_layout_cfg.single_screen) return;
+    if (!g_layout_cfg.single_screen || plat_one_screen()) return;
     g_layout_cfg.show_bottom ^= 1;
     g_ss_front = 0;   /* a manual flip takes over from the file-select switch */
     g_ss_auto = 0;    /* and from a menu that opened by itself */
@@ -1480,7 +1513,7 @@ int plat_poll(void) {
      * the highlighted file. In single-screen mode, Start or A at the title (no player yet)
      * brings the bottom screen up; the top comes back once the player update runs (a save was
      * loaded). The game keeps its buttons meanwhile (g_ss_front). */
-    if (g_layout_cfg.single_screen) {
+    if (g_layout_cfg.single_screen && !plat_one_screen()) {
         uint32_t pressed = in.held & ~prev;
         /* at_title(), not "!in_field": during a long
          * cutscene (Yuga's speech) the player update pauses for over 10 s, and every A press to
@@ -1498,7 +1531,7 @@ int plat_poll(void) {
     }
     /* Start flips while the bottom screen is up (a menu may stay open any time) or in the field;
      * not at the title / file select, where Start belongs to the game. No automatic flip. */
-    if (g_layout_cfg.single_screen && !g_ss_front && (in_field || g_layout_cfg.show_bottom)) {
+    if (g_layout_cfg.single_screen && !plat_one_screen() && !g_ss_front && (in_field || g_layout_cfg.show_bottom)) {
         /* single-screen mode: Start brings the bottom screen (map, Gear, Items) up and back instead
          * of the game's Pause box; Select is the game's Start (Pause: Continue / Quit). The game
          * does not use Select on the field. */

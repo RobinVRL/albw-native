@@ -50,7 +50,15 @@ WAYLAND_GL_OK=1
 if [[ -e /proc/driver/nvidia/version ]] && ! lib32_has "libnvidia-egl-wayland.so*"; then
     WAYLAND_GL_OK=0
 fi
-if [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
+# WSL (WSLg): Wayland windows of this 32-bit build are mapped but never show a frame (blank
+# taskbar preview, nothing on screen); XWayland works. Use X11 there.
+IS_WSL=0
+if [[ -z "${ALBW_WSL_WAYLAND:-}" ]] && { [[ -n "${WSL_DISTRO_NAME:-}" || -e /proc/sys/fs/binfmt_misc/WSLInterop ]] || grep -qi microsoft /proc/version 2>/dev/null; }; then
+    IS_WSL=1
+fi
+if [[ $IS_WSL == 1 && -z "${SDL_VIDEO_DRIVER:-}" && -n "${DISPLAY:-}" ]]; then
+    export SDL_VIDEO_DRIVER=x11
+elif [[ -n "${WAYLAND_DISPLAY:-}" && -z "${SDL_VIDEO_DRIVER:-}" && $WAYLAND_GL_OK == 1 ]] && lib32_has "libxkbcommon.so.0"; then
     export SDL_VIDEO_DRIVER=wayland
 fi
 

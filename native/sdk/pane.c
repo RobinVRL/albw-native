@@ -41,6 +41,9 @@ static const char *pane_name(uint32_t p, char out[24]) {
     return out;
 }
 
+/* for sdk/onescreen.c (layout dump) */
+const char *albw_pane_name(uint32_t p, char out[24]) { return pane_name(p, out); }
+
 static void pane_cfg_load(void) {
     g_nov = 0;
     const char *h = getenv("HOME");
