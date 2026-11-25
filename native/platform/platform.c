@@ -791,23 +791,23 @@ int plat_one_screen(void) {
     if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = e && *e == '1'; }
     return g_one_screen;
 }
-/* One-screen pause menu (Ocarina of Time style; onescreen_input below): in the field the bottom
- * UI is a minimap in the top-right corner; Start opens it 1:1 over the top screen on the Items
- * page, L / R go round Items -> Map -> Gear, Start or B closes it (back to the map page, then the
- * minimap). Select is the game's Start (Pause: save / quit). Pages are changed by tapping the
- * game's own tabs / Close button; the page shown is recognised from the top screen's pixels. */
-static int g_os_menu;            /* the menu is open */
-static int g_os_goal = -1;       /* page heading for (SEL_PAGE_*), -1 none */
-static int g_os_goal_t;          /* frames spent heading for it (gives up after ~5 s) */
-static int g_os_tap, g_os_tap_x, g_os_tap_y;   /* frames of a synthesized touch left, where */
-static int g_os_wait;            /* frames until the next step (the page is re-read meanwhile) */
-static int g_os_closing;         /* closing: once on the map page, back to the minimap */
-static int g_os_page_fresh;      /* the page was read since the last tap */
+/* One-screen pause menu (pause.c, Ocarina of Time style): Start in the field (onescreen_input,
+ * selector.c) asks for it; the game then runs a few more frames drawing its bottom screen normally
+ * (view 2: the map page goes to the bottom target, for the menu's Map page, and the top screen has
+ * no minimap), then the menu runs modally inside plat_end_frame over that frame. Select is the
+ * game's Start (Pause: save / quit). */
+enum { PAUSE_FACE_ITEMS, PAUSE_FACE_GEAR, PAUSE_FACE_MAP, PAUSE_FACES };
+static int g_pause_open;         /* the menu is up (pause_run) */
+static int g_pause_capture;      /* frames left before it opens (the bottom screen drawn meanwhile) */
+static int g_pause_face_req;     /* the page it opens on (PAUSE_FACE_*) */
+static uint32_t g_pause_mask;    /* buttons held when it closed: hidden from the game until released */
+static void pause_request(int face);
 static int at_title(void);
-/* sdk/onescreen.c: 0 the bottom UI 1:1 (title, file select), 1 minimap, 2 the menu (1:1) */
+/* sdk/onescreen.c: 0 the bottom UI 1:1 (title, file select), 1 minimap, 2 the bottom screen drawn
+ * normally and no minimap (the pause menu's capture) */
 int plat_one_screen_view(void) {
     if (!plat_one_screen()) return 0;
-    if (g_os_menu) return 2;
+    if (g_pause_capture > 0 || g_pause_open) return 2;
     return at_title() ? 0 : 1;
 }
 
@@ -1507,22 +1507,15 @@ int plat_poll(void) {
             }
         }
         if (plat_one_screen() && g_layout.visible[SCREEN_TOP] && !at_title()) {
-            /* one-screen: in the pause menu the mouse touches the bottom UI drawn 1:1 in the top
-             * screen's centre; a click on the minimap opens the menu on the map page */
+            /* one-screen: a click on the minimap opens the pause menu on its map page */
             static int mouse_prev;
             int down = (mb & SDL_BUTTON_LMASK) != 0, sx, sy;
             int ins = layout_to_screen(&g_layout, SCREEN_TOP, mx * pd, my * pd, &sx, &sy);
-            if (g_os_menu) {
-                hud = 1;
-                tx = sx - (TOP_W - 320) / 2;
-                ty = sy;
-                inside = ins && tx >= 0 && tx < 320;
-                tx = tx < 0 ? 0 : tx > 319 ? 319 : tx;
-            } else if (down && !mouse_prev && ins) {
+            if (down && !mouse_prev && ins) {
                 void albw_minimap_rect(float r[4]);   /* sdk/onescreen.c: top-screen pixels */
                 float r[4];
                 albw_minimap_rect(r);
-                if (sx >= r[0] && sx < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) os_open(SEL_PAGE_MAP);
+                if (sx >= r[0] && sx < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) pause_request(PAUSE_FACE_MAP);
             }
             mouse_prev = down;
         }
@@ -1719,11 +1712,11 @@ static void plat_composite(const Layout *l) {
         glUniform1f(loc_alpha, 1);
         glDisable(GL_BLEND);
     }
-    sel_dim_sides(l);   /* one-screen pause menu: the world beside it darkened (selector.c) */
     sel_composite(l);   /* single-screen selector over the bottom screen (selector.c) */
 }
 
 #include "menu.c"   /* Esc menu overlay (pauses the game inside plat_end_frame) */
+#include "pause.c"  /* one-screen pause menu (Items / Gear / Map), entered from frame_ms_trace */
 
 /* debug: ALBW_FRAME_MS (kept out of plat_end_frame: its stack frame must stay as in older builds,
  * save states resume inside it) */
@@ -1747,6 +1740,7 @@ static __attribute__((noinline)) void frame_ms_trace(void) {
         last = now;
     }
 }
+    pause_frame_hook();   /* one-screen pause menu (pause.c): runs here, modally, once requested */
 }
 
 /* A window whose centre is on no display is moved to the middle of the primary display. WSLg's

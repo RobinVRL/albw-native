@@ -123,7 +123,9 @@ typedef void GLvoid;
     X(void, glRenderbufferStorage, (GLenum, GLenum, GLsizei, GLsizei)) \
     X(void, glFramebufferRenderbuffer, (GLenum, GLenum, GLenum, GLuint)) \
     X(void, glDeleteFramebuffers, (GLsizei, const GLuint *)) \
-    X(void, glDeleteRenderbuffers, (GLsizei, const GLuint *))
+    X(void, glDeleteRenderbuffers, (GLsizei, const GLuint *)) \
+    X(void, glGenerateMipmap, (GLenum)) \
+    X(void, glBlendFuncSeparate, (GLenum, GLenum, GLenum, GLenum))
 
 #define GL_DECLARE(ret, name, args) extern ret (*name) args;
 GL_FUNCS(GL_DECLARE)

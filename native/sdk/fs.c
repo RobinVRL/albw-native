@@ -162,9 +162,9 @@ static int read_exact(int fd, void *buf, size_t n, uint64_t off) {
 }
 
 /* Locate the RomFS level-3 image and the ExeFS inside the ROM.  Called with fs_lock held. */
-static void rom_open_locked(void) {
-    if (rom.ready)
-        return;
+/* The ROM's path: ALBW_ROM, else the one build.sh recorded, else rom.3ds (also read by the
+ * platform's pause menu, which loads layout images and text from the RomFS: albw_rom_path) */
+static const char *rom_path_resolve(void) {
     const char *path = getenv("ALBW_ROM");
     static char cfg_path[4096];
     if (!path || !*path) {
@@ -182,6 +182,15 @@ static void rom_open_locked(void) {
         }
         path = cfg_path[0] ? cfg_path : ROM_DEFAULT_PATH;
     }
+    return path;
+}
+
+const char *albw_rom_path(void) { return rom_path_resolve(); }
+
+static void rom_open_locked(void) {
+    if (rom.ready)
+        return;
+    const char *path = rom_path_resolve();
     int fd = open(path, O_RDONLY | O_CLOEXEC);
     if (fd < 0)
         runtime_fatal("fs: cannot open the ROM '%s' (%s); set ALBW_ROM to your decrypted .3ds/.cxi",

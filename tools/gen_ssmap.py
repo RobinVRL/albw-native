@@ -20,7 +20,7 @@ native game-function overrides, the remaining sdk modules - is saved."""
 import os, re, sys
 
 EXCLUDE = [
-    r"/native/platform/", r"/native/render/", r"/native/audio/output\.o$", r"/native/audio/fx\.o$",
+    r"/native/platform/", r"/native/assets/", r"/native/render/", r"/native/audio/output\.o$", r"/native/audio/fx\.o$",
     r"/native/audio/mixer\.o$",
     r"/native/runtime/(prof|crash|fatal|entry|lowmem|savestate|ss_ctx|ss_convert|pmem)\.o$",
     r"/native/sdk/(os|gfx|fs|memory|snd|light)\.o$",

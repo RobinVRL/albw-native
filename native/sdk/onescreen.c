@@ -146,23 +146,28 @@ static void dump_list(uint32_t m) {
 }
 
 /* ---- the bottom groups ---- */
+int plat_one_screen_view(void);   /* platform.c: 0 bottom UI 1:1 (title, file select), 1 minimap, 2 normal (pause capture) */
+
+/* view 2 (the pause menu's capture, platform.c): the bottom screen drawn as on the 3DS */
+static int bottom_off(void) { return plat_one_screen() && plat_one_screen_view() != 2; }
+
 int func_0012EA48(uint32_t m) {   /* bottom layouts (bottom pass) */
-    if (plat_one_screen()) return 0;
+    if (bottom_off()) return 0;
     return func_0012EA48__decomp(m);
 }
 int func_0012D9A8(uint32_t m) {   /* bottom front layouts (0014A40C, screen 2) */
-    if (plat_one_screen()) return 0;
+    if (bottom_off()) return 0;
     return func_0012D9A8__decomp(m);
 }
 int func_0012E00C(uint32_t m) {   /* the extra bottom layout +0x1844 (end of the bottom pass) */
-    if (plat_one_screen()) return 0;
+    if (bottom_off()) return 0;
     return func_0012E00C__decomp(m);
 }
 
 /* ---- minimap ----
  * In the field the bottom screen's UI is drawn small in the top screen's top-right corner, cut to
- * the map's frame by a clip rectangle, instead of 1:1 over the whole screen; the pause menu
- * (platform.c, Start) draws it 1:1 again. Sizes in top-screen pixels (the layout shader draws
+ * the map's frame by a clip rectangle, instead of 1:1 over the whole screen; for the pause menu
+ * (platform/pause.c) the bottom screen is drawn normally for a few frames (its Map page). Sizes in top-screen pixels (the layout shader draws
  * layout units 1:1, also in widescreen), the source in bottom-screen pixels (320 x 240, y down):
  *   ALBW_MINIMAP="scale margin_right margin_top"   (default 0.42 6 6)
  *   ALBW_MINIMAP_SRC="x y w h"                     (default 48 4 202 200: the map and its frame) */
@@ -208,7 +213,6 @@ static void clip_now(int on, int x, int y, int w, int h) {
     func_00601378((int32_t)((uint8_t *)e - (uint8_t *)(uintptr_t)cur));
 }
 
-int plat_one_screen_view(void);   /* platform.c: 0 bottom UI 1:1 (title, file select), 1 minimap, 2 menu */
 
 /* where the bottom groups land while bottom_ui_on_top draws them: top-screen pixel = a + k *
  * bottom-screen pixel (both x right, y down; the top screen layout_top_w() wide); k = 0: not
@@ -309,7 +313,7 @@ uint32_t func_0048AD08(uint32_t ctx, float x, float y, float w, float h) {
 
 /* 2D layer end of a screen pass: front layouts + screen faders (scr[0] = screen id) */
 int func_0014A40C(uint32_t faders, char *scr) {
-    if (scr && plat_one_screen()) {
+    if (scr && bottom_off()) {
         if (scr[0] == 2) return 0;    /* the bottom screen is not shown: nothing to draw there */
         if (scr[0] == 0) bottom_ui_on_top();
     }

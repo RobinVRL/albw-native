@@ -48,12 +48,15 @@ if [[ "${ALBW_FCONV_INTERIM:-1}" == 1 && ( ! -f $B/fconv_interim.stamp || $B/dec
     python3 tools/fconv_interim.py | tail -1
 fi
 NATIVE=()
-for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c native/audio/fx.c native/audio/output.c $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c native/gameplay/*.c native/compilefix/*.c native/framework/*.c native/core/*.c native/route/*.c 2>/dev/null) $(git ls-files native/hot | grep -E "^native/hot/[^/]+\.c$"); do
+for f in native/platform/platform.c native/assets/{romfs,sarc,yaz0,texture}.c native/runtime/*.c native/audio/mixer.c native/audio/fx.c native/audio/output.c $(ls native/render/*.c native/sdk/*.c native/game/*.c native/robust/*.c native/gameplay/*.c native/compilefix/*.c native/framework/*.c native/core/*.c native/route/*.c 2>/dev/null) $(git ls-files native/hot | grep -E "^native/hot/[^/]+\.c$"); do
     # one object per source path (native/render/h3d.c and native/sdk/h3d.c share a basename)
     o=$NOBJ/${f%.c}.o
     mkdir -p "$(dirname "$o")"
     EXTRA=()
     [[ "$f" == native/game/* || "$f" == native/robust/* || "$f" == native/gameplay/* || "$f" == native/compilefix/* || "$f" == native/framework/* || "$f" == native/core/* || "$f" == native/hot/* || "$f" == native/route/* ]] && EXTRA=(-DALBW_LINK_GAME_003E6AA8 -DALBW_V4 -Inative/route -Inative/robust -Inative/gameplay -Inative/compilefix -Inative/framework -Inative/core -Inative/hot -include native/albw_native.h -I$B/decomp/shared/include -I../albw-decomp-ai/shared/include -w -Wno-error=implicit-function-declaration -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=incompatible-function-pointer-types -Wno-error=return-type)  # decompiled code only
+    # the RomFS / archive / texture readers (asset tools) for the pause menu's images and text:
+    # strcmp / memcmp through SDL (the Windows loader does not provide them)
+    [[ "$f" == native/assets/* ]] && EXTRA=(-include native/assets/libc_compat.h)
     # sound: the real nn::snd layer (native/sdk/snd.c + native/audio) by default; with
     # ALBW_REAL_SND=0 the silent stopgap in snd_silent.c instead (its dsp:: part is always used)
     if [[ "${ALBW_REAL_SND:-1}" == 0 && ( "$f" == native/sdk/snd.c || "$f" == native/audio/* ) ]]; then continue; fi
@@ -65,7 +68,7 @@ for f in native/platform/platform.c native/runtime/*.c native/audio/mixer.c nati
     [[ -f "$o" && "$o" -nt "$f" ]] || stale=1
     # platform.c #includes layout.c, input.c, menu.c (+ menu_font.h): rebuild when any changed
     if [[ "$f" == native/platform/platform.c && $stale == 0 ]]; then
-        for inc in native/platform/{layout,input,menu,selector}.c native/platform/{menu_font,layout,gl,selector_img}.h native/render/render.h; do [[ "$inc" -nt "$o" ]] && stale=1; done
+        for inc in native/platform/{layout,input,menu,selector,pause}.c native/platform/{menu_font,layout,gl,selector_img}.h native/render/render.h; do [[ "$inc" -nt "$o" ]] && stale=1; done
     fi
     [[ $stale == 0 ]] || clang "${CFLAGS[@]}" -Inative/include "${EXTRA[@]}" \
         $(PKG_CONFIG_LIBDIR=$PCP pkg-config --cflags sdl3) -c "$f" -o "$o"

@@ -84,21 +84,18 @@ static uint32_t g_sel_prev;
 static GLuint g_sel_tex;
 
 static int sel_active(void) {
-    if (plat_one_screen()) return g_os_menu;   /* one-screen pause menu: the bottom UI 1:1 on top */
+    if (plat_one_screen()) return 0;   /* one-screen mode: its own pause menu (pause.c), no selector */
     return g_layout_cfg.single_screen && g_layout_cfg.show_bottom && !g_ss_front;
 }
 
-/* one pixel of the bottom screen's picture at 3DS bottom-screen pixel (x, y), y down: from the
- * bottom target, or in one-screen mode from the top target, where the menu draws the bottom UI
- * 1:1 and centred (layout units = top-screen pixels) */
+/* one pixel of the bottom screen's picture at 3DS bottom-screen pixel (x, y), y down */
 static void sel_read(int x, int y, uint8_t out[4]) {
-    const Target *t = &screens[plat_one_screen() ? SCREEN_TOP : SCREEN_BOTTOM];
-    int w = t->w, h = t->h, sw = plat_one_screen() ? TOP_W : 320;
-    if (plat_one_screen()) x += (TOP_W - 320) / 2;
+    const Target *t = &screens[SCREEN_BOTTOM];
+    int w = t->w, h = t->h;
     out[0] = out[1] = out[2] = out[3] = 0;
     if (w <= 0 || h <= 0) return;
     glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, t->fbo);
-    glReadPixels(x * w / sw, h - 1 - y * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, out);
+    glReadPixels(x * w / 320, h - 1 - y * h / 240, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, out);
     glBindFramebuffer(0x8CA8 /* GL_READ_FRAMEBUFFER */, 0);
 }
 
@@ -190,7 +187,7 @@ static int sel_detect_page(void) {
     sel_read(160, 120, b);
     sel_read(28, 226, c);   /* bell icon: pure yellow */
     sel_read(5, 5, d);      /* map frame colour */
-    if (!plat_one_screen() && (screens[SCREEN_BOTTOM].w <= 0)) return SEL_PAGE_OTHER;
+    if (screens[SCREEN_BOTTOM].w <= 0) return SEL_PAGE_OTHER;
     if (getenv("ALBW_SEL_TRACE")) {
         static uint32_t last;
         uint32_t k = (uint32_t)(a[0] ^ a[1] << 4 ^ b[0] << 8 ^ b[2] << 12 ^ c[0] << 16 ^ d[0] << 20 ^ d[2] << 24);
@@ -224,11 +221,10 @@ static void sel_auto_menu(void) {
 
 static __attribute__((noinline)) void sel_composite(const Layout *l) {
     sel_auto_menu();
-    if (!sel_active() || !l->visible[plat_one_screen() ? SCREEN_TOP : SCREEN_BOTTOM]) return;
+    if (!sel_active() || !l->visible[SCREEN_BOTTOM]) return;
     static unsigned frame;
     if (frame++ % 10 == 0) {
         int page = sel_detect_page();
-        g_os_page_fresh = 1;
         if (page != g_sel_page && page == SEL_PAGE_OTHER) {
             g_sel_page = page;
         } else if (page != g_sel_page) {
@@ -268,13 +264,7 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
     if (cs > rw * 0.5f) cs = rw * 0.5f;
     if (cs > rh * 0.5f) cs = rh * 0.5f;
     float sr[4];
-    if (plat_one_screen()) {   /* the 320 centre columns of the top screen */
-        layout_rect_ndc(l, SCREEN_TOP, sr);
-        sr[0] += sr[2] * (TOP_W - 320) / (2.0f * TOP_W);
-        sr[2] *= 320.0f / TOP_W;
-    } else {
-        layout_rect_ndc(l, SCREEN_BOTTOM, sr);   /* x, y (bottom left), w, h of the bottom screen */
-    }
+    layout_rect_ndc(l, SCREEN_BOTTOM, sr);   /* x, y (bottom left), w, h of the bottom screen */
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glUseProgram(prog);
@@ -297,111 +287,19 @@ static __attribute__((noinline)) void sel_composite(const Layout *l) {
     glDisable(GL_BLEND);
 }
 
-/* one-screen pause menu: the world beside the menu (the top screen's strips left and right of
- * the 320 centre columns) darkened, like a paused game behind its menu */
-static __attribute__((noinline)) void sel_dim_sides(const Layout *l) {
-    if (!plat_one_screen() || !g_os_menu || !l->visible[SCREEN_TOP]) return;
-    static GLuint prog, tex;
-    if (!prog) prog = gl_program(SEL_VS, SEL_FS);
-    if (!tex) {
-        static const uint8_t px[4] = {0, 0, 0, 170};
-        glGenTextures(1, &tex);
-        glBindTexture(GL_TEXTURE_2D, tex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    }
-    float sr[4];
-    layout_rect_ndc(l, SCREEN_TOP, sr);
-    float side = sr[2] * (TOP_W - 320) / (2.0f * TOP_W);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glUseProgram(prog);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glBindVertexArray(blit_vao);
-    static const float uv[4] = {0, 0, 1, 1};
-    glUniform4fv(glGetUniformLocation(prog, "uvr"), 1, uv);
-    GLint lr = glGetUniformLocation(prog, "rect");
-    const float a[4] = {sr[0], sr[1], side, sr[3]}, b[4] = {sr[0] + sr[2] - side, sr[1], side, sr[3]};
-    glUniform4fv(lr, 1, a);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glUniform4fv(lr, 1, b);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glDisable(GL_BLEND);
-}
-
-/* one-screen pause menu: page changes by tapping the game's tabs (see g_os_menu, platform.c) */
-static int os_is_map(int page) { return page == SEL_PAGE_MAP || page == SEL_PAGE_MAP_BELL || page == SEL_PAGE_DUNGEON; }
-static void os_goto(int page) { g_os_goal = page; g_os_goal_t = 0; }
-static void os_tap(int x, int y) { g_os_tap = 6; g_os_tap_x = x; g_os_tap_y = y; }
-static void os_open(int page) {
-    g_os_menu = 1;
-    g_os_closing = 0;
-    g_os_page_fresh = 0;
-    g_os_wait = 6;
-    os_goto(page);
-}
-static void os_close_done(void) { g_os_menu = 0; g_os_closing = 0; g_os_goal = -1; }
-
-/* plat_poll, one-screen mode: Start opens / closes the menu, L / R change its page */
+/* plat_poll, one-screen mode: Start opens the pause menu (pause.c) when the game allows it (not
+ * in a cutscene, a conversation or the game's own menus) and is never passed on; Select is the
+ * game's Start (Pause: save / quit). Buttons still held when the pause menu closed stay hidden
+ * from the game until they are released. */
 static __attribute__((noinline)) void onescreen_input(PlatInput *in) {
     static uint32_t prev;
     uint32_t held = in->held, edge = held & ~prev;
     prev = held;
-    if (at_title()) { if (g_os_menu) os_close_done(); return; }   /* the file select: the game's own buttons */
+    g_pause_mask &= held;
+    if (at_title()) return;   /* the file select: the game's own buttons */
     uint32_t out = held & ~(KEY_START | KEY_SELECT);
     if (held & KEY_SELECT) out |= KEY_START;   /* the game's Pause (save / quit) */
-    if (!g_os_menu) {
-        if (edge & KEY_START) os_open(SEL_PAGE_ITEMS);
-        in->held = out;
-        return;
-    }
-    int page = g_sel_page;
-    if (edge & (KEY_START | KEY_B)) {
-        g_os_closing = 1;
-        os_goto(SEL_PAGE_MAP);
-    } else if (edge & (KEY_L | KEY_R)) {   /* round Items -> Map -> Gear */
-        static const int order[3] = {SEL_PAGE_ITEMS, SEL_PAGE_MAP, SEL_PAGE_GEAR};
-        int cur = g_os_goal >= 0 ? g_os_goal : page, k = 1;
-        for (int i = 0; i < 3; i++)
-            if (order[i] == cur || (i == 1 && os_is_map(cur))) k = i;
-        k = (k + ((edge & KEY_R) ? 1 : 2)) % 3;
-        g_os_closing = 0;
-        os_goto(order[k]);
-    }
-    out &= ~(KEY_B | KEY_L | KEY_R);
-    if (g_os_tap > 0) {
-        g_os_tap--;
-        in->touch = 1;
-        in->touch_x = g_os_tap_x;
-        in->touch_y = g_os_tap_y;
-        out |= KEY_TOUCH;
-        if (!g_os_tap) { g_os_wait = 20; g_os_page_fresh = 0; }
-    } else if (g_os_wait > 0) {
-        g_os_wait--;
-    } else if (g_os_goal >= 0 && g_os_page_fresh) {
-        int goal = g_os_goal;
-        if (getenv("ALBW_SEL_TRACE"))
-            fprintf(stderr, "onescreen: f=%ld menu page %d, heading for %d%s\n", g_plat_frames, page, goal,
-                    g_os_closing ? " (closing)" : "");
-        if (page == goal || (goal == SEL_PAGE_MAP && os_is_map(page))) {
-            g_os_goal = -1;
-            if (g_os_closing) os_close_done();
-        } else if (page == SEL_PAGE_ITEMS || page == SEL_PAGE_GEAR) {
-            os_tap(160, 226);   /* Close: back to the map page */
-        } else if (os_is_map(page)) {
-            int gear = goal == SEL_PAGE_GEAR;
-            if (page == SEL_PAGE_MAP_BELL) os_tap(gear ? 124 : 255, 226);
-            else os_tap(gear ? 80 : 240, 226);
-        } else {   /* a page of the game's own (the bell's warp list): left to the player */
-            g_os_goal = -1;
-            if (g_os_closing) os_close_done();
-        }
-    }
-    if (g_os_goal >= 0 && ++g_os_goal_t > 300) {   /* ~5 s without getting there */
-        g_os_goal = -1;
-        if (g_os_closing) os_close_done();
-    }
-    in->held = out;
+    if ((edge & KEY_START) && !g_pause_mask) pause_request(PAUSE_FACE_ITEMS);
+    in->held = out & ~g_pause_mask;
+    if (g_pause_mask & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_CPAD_LEFT | KEY_CPAD_RIGHT)) in->cpad_x = in->cpad_y = 0;
 }
