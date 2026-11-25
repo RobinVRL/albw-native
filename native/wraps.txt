@@ -9,3 +9,4 @@ func_0012EA48   bottom-screen layouts -> sdk/onescreen.c (one-screen mode: drawn
 func_0012D9A8   bottom-screen front layouts -> sdk/onescreen.c
 func_0012E00C   extra bottom-screen layout (+0x1844) -> sdk/onescreen.c
 func_0014A40C   screen 2D layer end (front layouts + faders) -> sdk/onescreen.c
+func_0048AD08   GraphicsContext::SetScissor -> sdk/onescreen.c (the map window's scissor, minimap)

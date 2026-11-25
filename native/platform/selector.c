@@ -191,6 +191,14 @@ static int sel_detect_page(void) {
     sel_read(28, 226, c);   /* bell icon: pure yellow */
     sel_read(5, 5, d);      /* map frame colour */
     if (!plat_one_screen() && (screens[SCREEN_BOTTOM].w <= 0)) return SEL_PAGE_OTHER;
+    if (getenv("ALBW_SEL_TRACE")) {
+        static uint32_t last;
+        uint32_t k = (uint32_t)(a[0] ^ a[1] << 4 ^ b[0] << 8 ^ b[2] << 12 ^ c[0] << 16 ^ d[0] << 20 ^ d[2] << 24);
+        if (k != last)
+            fprintf(stderr, "selector: f=%ld pixels a %d,%d,%d b %d,%d,%d c %d,%d,%d d %d,%d,%d\n", g_plat_frames,
+                    a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2]);
+        last = k;
+    }
     return (a[0] > 90 && a[1] < 45) ? SEL_PAGE_GEAR
          : (b[0] > 150 && b[1] > 120 && b[2] < 120) ? SEL_PAGE_ITEMS
          : (d[2] > 140 && d[2] > d[0] + 10) ? SEL_PAGE_DUNGEON          /* blue-grey dungeon frame */
@@ -374,6 +382,9 @@ static __attribute__((noinline)) void onescreen_input(PlatInput *in) {
         g_os_wait--;
     } else if (g_os_goal >= 0 && g_os_page_fresh) {
         int goal = g_os_goal;
+        if (getenv("ALBW_SEL_TRACE"))
+            fprintf(stderr, "onescreen: f=%ld menu page %d, heading for %d%s\n", g_plat_frames, page, goal,
+                    g_os_closing ? " (closing)" : "");
         if (page == goal || (goal == SEL_PAGE_MAP && os_is_map(page))) {
             g_os_goal = -1;
             if (g_os_closing) os_close_done();

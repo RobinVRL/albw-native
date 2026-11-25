@@ -197,6 +197,9 @@ typedef enum {
     ROP_EXT,         /* executed by the registered extension (render_set_ext; nw::h3d: render/h3d.c) */
     ROP_FL,          /* 3DS fragment lighting state (render/fraglight.h: u.fl.kind FL_*) */
     ROP_FOG,         /* PICA fog (u.fog): mode (0 off, 5 fog), z flip, colour, LUT key (0 = keep) */
+    ROP_CLIP,        /* native clip rectangle (u.rect), intersected with the game's scissor until
+                        turned off: the game's own scissor commands do not lift it (one-screen
+                        minimap, sdk/onescreen.c) */
     ROP_COUNT
 } ROpType;
 
@@ -266,6 +269,10 @@ float albw_ws_factor(void);             /* rows / 400: the game widens its proje
 void render_set_target(uintptr_t color, int cfmt, uintptr_t depth, int dfmt, int w, int h);
 void render_set_viewport(int x, int y, int w, int h);
 void render_set_scissor(int enable, int x, int y, int w, int h);
+/* ROP_CLIP: a clip rectangle (same space as the scissor) applied on top of the game's scissor */
+void render_set_clip(int enable, int x, int y, int w, int h);
+/* record a ROP_CLIP at p (2-word marker), returns p + RENDER_MARK_WORDS */
+uint32_t *render_rec_clip(uint32_t *p, int enable, int x, int y, int w, int h);
 RFragState *render_frag_state(void);     /* modify, then render_frag_dirty() */
 void render_frag_dirty(void);
 void render_set_texunit(int unit, const RTexUnit *t);

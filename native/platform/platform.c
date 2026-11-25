@@ -1519,10 +1519,10 @@ int plat_poll(void) {
                 inside = ins && tx >= 0 && tx < 320;
                 tx = tx < 0 ? 0 : tx > 319 ? 319 : tx;
             } else if (down && !mouse_prev && ins) {
-                void albw_minimap_rect(float r[4]);
-                float r[4], x400 = sx - (TOP_W - 400) / 2.0f;
+                void albw_minimap_rect(float r[4]);   /* sdk/onescreen.c: top-screen pixels */
+                float r[4];
                 albw_minimap_rect(r);
-                if (x400 >= r[0] && x400 < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) os_open(SEL_PAGE_MAP);
+                if (sx >= r[0] && sx < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) os_open(SEL_PAGE_MAP);
             }
             mouse_prev = down;
         }

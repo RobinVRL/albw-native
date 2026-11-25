@@ -271,6 +271,7 @@ static struct {
     GLuint cur_fbo;
     int vp[4];
     bool scissor; int sc[4];
+    bool clip; int cl[4];   /* ROP_CLIP: intersected with the scissor (render_set_clip) */
     RFragState frag; bool frag_dirty;
     struct { uint8_t mode, flip; float rgb[3]; uint32_t key, tex_key; GLuint tex; } fog;
     RTexUnit unit[3]; int tex_enable, tex2_tc1;
@@ -1354,9 +1355,21 @@ static void apply_frag(void) {
     float fy = 1.0f, oy = 0.0f;
     if (vs && sph(vs) != vs->h && R.vp[1] == 0 && R.vp[3] == vs->h) fy = (float)sph(vs) / (float)vs->h;
     g_cur_fy = fy;
-    if (R.scissor) {
+    if (R.scissor || R.clip) {
+        int sx = R.sc[0], sy = R.sc[1], sw = R.sc[2], sh = R.sc[3];
+        if (!R.scissor) {
+            sx = R.cl[0]; sy = R.cl[1]; sw = R.cl[2]; sh = R.cl[3];
+        } else if (R.clip) {   /* both: their intersection */
+            int x1 = sx + sw, y1 = sy + sh, cx1 = R.cl[0] + R.cl[2], cy1 = R.cl[1] + R.cl[3];
+            if (R.cl[0] > sx) sx = R.cl[0];
+            if (R.cl[1] > sy) sy = R.cl[1];
+            if (cx1 < x1) x1 = cx1;
+            if (cy1 < y1) y1 = cy1;
+            sw = x1 > sx ? x1 - sx : 0;
+            sh = y1 > sy ? y1 - sy : 0;
+        }
         glEnable(GL_SCISSOR_TEST);
-        glScissor(R.sc[0] * R.scale, (int)((R.sc[1] * fy + oy) * R.scale), R.sc[2] * R.scale, (int)(R.sc[3] * R.scale * fy + 0.5f));
+        glScissor(sx * R.scale, (int)((sy * fy + oy) * R.scale), sw * R.scale, (int)(sh * R.scale * fy + 0.5f));
     } else {
         glDisable(GL_SCISSOR_TEST);
     }
@@ -1464,6 +1477,12 @@ void render_set_viewport(int x, int y, int w, int h) {
 void render_set_scissor(int enable, int x, int y, int w, int h) {
     R.scissor = enable != 0;
     R.sc[0] = x; R.sc[1] = y; R.sc[2] = w > 0 ? w : 0; R.sc[3] = h > 0 ? h : 0;
+    R.frag_dirty = true;
+}
+
+void render_set_clip(int enable, int x, int y, int w, int h) {
+    R.clip = enable != 0;
+    R.cl[0] = x; R.cl[1] = y; R.cl[2] = w > 0 ? w : 0; R.cl[3] = h > 0 ? h : 0;
     R.frag_dirty = true;
 }
 
@@ -1864,10 +1883,11 @@ static void dump_draw_after(const uint8_t *before, const char *kind, uint32_t co
             rlog("dump:     unit%d tex %#lx %ux%u fmt %u min %u mag %u lvl %u-%u", u, (unsigned long)R.unit[u].addr, R.unit[u].w,
                  R.unit[u].h, R.unit[u].fmt, R.unit[u].min, R.unit[u].mag, R.unit[u].min_level, R.unit[u].max_level);
     const RFragState *f = &R.frag;
-    rlog("dump: %s %u prog %d/%d target %#lx vp %d,%d %dx%d sc %d(%d,%d %dx%d) cmask %x blend %d(%d,%d) depth %d/%d/%d "
+    rlog("dump: %s %u prog %d/%d target %#lx vp %d,%d %dx%d sc %d(%d,%d %dx%d) clip %d(%d,%d %dx%d) cmask %x blend %d(%d,%d) depth %d/%d/%d "
          "stencil %d alpha %d/%d/%d cull %d tex %x eq %d/%d logic %d/%d -> changed %zu lit %zu",
          kind, count, R.prog_id, R.prog_variant, (unsigned long)R.cur_c->addr, R.vp[0], R.vp[1], R.vp[2], R.vp[3],
-         R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
+         R.scissor, R.sc[0], R.sc[1], R.sc[2], R.sc[3], R.clip, R.cl[0], R.cl[1], R.cl[2], R.cl[3],
+         f->color_mask, f->blend_enable, f->src_rgb, f->dst_rgb, f->depth_test, f->depth_func,
          f->depth_write, f->stencil_test, f->alpha_test, f->alpha_func, f->alpha_ref, f->cull, R.tex_enable,
          f->eq_rgb, f->eq_a, f->logic_enable, f->logic_op,
          changed, lit);
@@ -2000,7 +2020,7 @@ static uint32_t *g_htab; static uint32_t g_hcap; /* open addressing: slot+1, 0 e
 static size_t op_len(const ROp *op) {
     switch (op->type) {
     case ROP_TARGET: return OP_LEN(target);
-    case ROP_VIEWPORT: case ROP_SCISSOR: return OP_LEN(rect);
+    case ROP_VIEWPORT: case ROP_SCISSOR: case ROP_CLIP: return OP_LEN(rect);
     case ROP_FRAG: case ROP_BLEND: case ROP_LOGICOP: case ROP_ALPHATEST: case ROP_STENCIL:
     case ROP_DEPTH: case ROP_COLORMASK: case ROP_CULL: case ROP_DEPTHMAP: return OP_LEN(frag);
     case ROP_TEXUNIT: return OP_LEN(tex);
@@ -2112,6 +2132,17 @@ static uint32_t *rec(uint32_t *p, const ROp *op, int pinned) {
 
 uint32_t *render_rec(uint32_t *p, const ROp *op) { return rec(p, op, 0); }
 uint32_t *render_rec_pinned(uint32_t *p, const ROp *op) { return rec(p, op, 1); }
+uint32_t *render_rec_clip(uint32_t *p, int enable, int x, int y, int w, int h) {
+    ROp op;
+    memset(&op, 0, sizeof op);   /* zeroed padding: identical ops share one pool entry */
+    op.type = ROP_CLIP;
+    op.u.rect.enable = enable != 0;
+    op.u.rect.x = x;
+    op.u.rect.y = y;
+    op.u.rect.w = w;
+    op.u.rect.h = h;
+    return rec(p, &op, 1);
+}
 
 static void raw_flush(void);
 void albw_ws_refresh(void) __attribute__((weak));        /* compilefix 0057F6C0 */
@@ -2130,6 +2161,7 @@ void render_frame_end(void) {
         g_light_draws = 0;
     }
     if (dumping()) rlog("dump: ==== end of render frame %lu", (unsigned long)R.frame);
+    R.clip = false;   /* a clip never outlives its frame (its "off" marker is in the same list) */
     R.frame++;
     R.frag_dirty = R.tev_dirty = R.vsf_dirty = true; /* plat_end_frame changed GL state */
     {   /* Pre-build the h3d program variants, one per frame: compiling the ones a new area needs
@@ -2253,6 +2285,9 @@ void render_exec_op(const ROp *op) {
             rlog("dump: op CALL %#lx +%u", (unsigned long)op->u.call.addr, op->u.call.size);
         else if (op->type == ROP_EXT)
             rlog("dump: op EXT kind %u", op->u.ext.kind);
+        else if (op->type == ROP_VIEWPORT || op->type == ROP_SCISSOR || op->type == ROP_CLIP)
+            rlog("dump: op %s %d %d,%d %dx%d", op->type == ROP_VIEWPORT ? "VIEWPORT" : op->type == ROP_SCISSOR ? "SCISSOR" : "CLIP",
+                 op->u.rect.enable, op->u.rect.x, op->u.rect.y, op->u.rect.w, op->u.rect.h);
         else
             rlog("dump: op %u", op->type);
     }
@@ -2264,6 +2299,7 @@ void render_exec_op(const ROp *op) {
         break;
     case ROP_VIEWPORT: render_set_viewport(op->u.rect.x, op->u.rect.y, op->u.rect.w, op->u.rect.h); break;
     case ROP_SCISSOR: render_set_scissor(op->u.rect.enable, op->u.rect.x, op->u.rect.y, op->u.rect.w, op->u.rect.h); break;
+    case ROP_CLIP: render_set_clip(op->u.rect.enable, op->u.rect.x, op->u.rect.y, op->u.rect.w, op->u.rect.h); break;
     case ROP_FRAG: {
         R.frag = op->u.frag;
         R.frag_dirty = true;
