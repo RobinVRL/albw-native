@@ -46,6 +46,7 @@ __attribute__((weak)) const char *albw_rom_path(void);   /* sdk/fs.c: the ROM th
 __attribute__((weak)) _Bool func_003616D4(void *p, uint32_t index, int32_t value);   /* set item slot (1, 2) */
 __attribute__((weak)) unsigned func_00520B48(unsigned mgr);   /* nonzero: something holds the game */
 __attribute__((weak)) int func_0058D888(void *p);              /* nonzero: menus may open */
+__attribute__((weak)) _Bool func_004262AC__bool(uint32_t cell);   /* the Gear screen shows its cell */
 extern uint8_t data_0070FB60[] __attribute__((weak));   /* -> the player data owner (+0x10 = pdata) */
 extern uint8_t data_0070B728[] __attribute__((weak));   /* -> the event manager (+0x44: running event) */
 extern uint8_t data_00712450[] __attribute__((weak));
@@ -529,14 +530,15 @@ static void ps_panel(float x0, float y0, float x1, float y1, const char *frame, 
     ps_quad(c->tex, x1 - cs, y0 + cs, cs, y1 - y0 - 2 * cs, 1, e, 0, e, w);
 }
 
-/* the gold cursor: SRC_CursorLT_00 at the four corners of a cell, breathing */
+/* the gold cursor: SRC_CursorLT_00 at the four corners of a cell, breathing. The image is the
+ * corner bent down on its right (the top-right one), so the left corners are its mirror. */
 static float ps_time;   /* seconds since the menu opened */
 static void ps_cursor(float x, float y, float w, float h) {
     float o = 1.5f + 1.5f * SDL_sinf(ps_time * 6.0f), s = 12;
-    ps_image("SRC_CursorLT_00", x - o, y - o, s, s, 0, PS_WHITE);
-    ps_image("SRC_CursorLT_00", x + w - s + o, y - o, s, s, 1, PS_WHITE);
-    ps_image("SRC_CursorLT_00", x - o, y + h - s + o, s, s, 2, PS_WHITE);
-    ps_image("SRC_CursorLT_00", x + w - s + o, y + h - s + o, s, s, 3, PS_WHITE);
+    ps_image("SRC_CursorLT_00", x - o, y - o, s, s, 1, PS_WHITE);
+    ps_image("SRC_CursorLT_00", x + w - s + o, y - o, s, s, 0, PS_WHITE);
+    ps_image("SRC_CursorLT_00", x - o, y + h - s + o, s, s, 3, PS_WHITE);
+    ps_image("SRC_CursorLT_00", x + w - s + o, y + h - s + o, s, s, 2, PS_WHITE);
 }
 
 /* ================================================================ the game's state */
@@ -545,7 +547,9 @@ static struct {
     uint32_t lv[0x30];     /* item levels (pdata + 0x434): 0 none, 1 rented, 2 owned, 3 upgraded */
     uint32_t bottle[5];    /* bottle contents (pdata + 0x4A0 + 4 * id), 14 = no bottle */
     int slot[3];           /* item on slot 1 / 2 (ps_slot_item), -1 none */
+    int count[7], have[7]; /* the counted things of the Gear page (ps_counts) */
 } ps_st;
+static void ps_read_counts(const uint8_t *pd);
 
 static uint8_t *ps_pdata(void) {
     if (!data_0070FB60) return NULL;
@@ -567,6 +571,7 @@ static void ps_read_state(void) {   /* the core held */
     for (int i = 0; i < 0x30; i++) ps_st.lv[i] = *(uint32_t *)(pd + 0x434 + 4 * i);
     for (int n = 0; n < 5; n++) ps_st.bottle[n] = ps_st.lv[0x12 + n] ? *(uint32_t *)(pd + 0x4A0 + 4 * (0x12 + n)) : 14;
     for (int i = 1; i <= 2; i++) ps_st.slot[i] = ps_slot_item(pd, i);
+    ps_read_counts(pd);
 }
 
 static int ps_slot_of(int y) {   /* the game's slot index of X (y = 0) or Y (y = 1) */
@@ -729,38 +734,95 @@ static const PsGear ps_gear[] = {
     {0x1D, {0, "stonebeauty"}, {0, "CIS_SubeSube_00"}},
     {0x26, {0, "ganbari_power_up"}, {0, "CIS_PowerUpSword_00"}},
 };
-#define PS_NGEAR ((int)(sizeof ps_gear / sizeof ps_gear[0]))
-#define PS_GEAR_COLS 7
+#define PS_NEQUIP ((int)(sizeof ps_gear / sizeof ps_gear[0]))
+
+/* the counted things, as the cells 0xC..0x12 of the game's Gear screen (func_00462E04 writes
+ * their numbers, func_004265BC picks their images, func_004262AC__bool says whether it shows them) */
+static const struct { int cell; const char *key, *icon; } ps_counts[7] = {
+    {0x0C, "heartpiece", "CIS_Heart_00"},       /* pdata + 0x59A: pieces toward the next heart */
+    {0x0D, "rupee", "CIS_Rupee_00"},            /* + 0x4FC (u16) */
+    {0x0E, "kinsta", "II_Kinsuta32_00"},        /* + 0x508: Maiamai, of 100 */
+    {0x0F, "liver_blue", "II_KimoB32_00"},      /* + 0x505 */
+    {0x10, "liver_yellow", "II_KimoY32_00"},    /* + 0x507 */
+    {0x11, "liver_purple", "II_KimoP32_00"},    /* + 0x506 */
+    {0x12, "ore", "CIS_Kouseki_00"},            /* the ore found less the ore the smith used */
+};
+#define PS_NCOUNT 7
+#define PS_NGEAR (PS_NEQUIP + PS_NCOUNT)
+static const int ps_gear_rows[3] = {7, PS_NEQUIP - 7, PS_NCOUNT};   /* cells per row */
+
+static void ps_read_counts(const uint8_t *pd) {
+    int ore = (ps_st.lv[0x28] != 0) + (ps_st.lv[0x29] != 0) + (ps_st.lv[0x2A] != 0) + (ps_st.lv[0x2B] != 0);
+    uint32_t sw = ps_st.lv[0] - 2u;   /* func_00537B38: the Master Sword's upgrades */
+    if (sw > 4) sw = 4;
+    ore -= sw == 2 ? 2 : sw == 3 ? 4 : 0;
+    int v[PS_NCOUNT] = {pd[0x59A], ps_r16(pd, 0x4FC), pd[0x508], pd[0x505], pd[0x507], pd[0x506], ore < 0 ? 0 : ore};
+    for (int i = 0; i < PS_NCOUNT; i++) {
+        ps_st.count[i] = v[i];
+        ps_st.have[i] = func_004262AC__bool ? func_004262AC__bool((uint32_t)ps_counts[i].cell) : (i == 1 || v[i] > 0);
+    }
+    const char *fk = getenv("ALBW_PAUSE_FAKECOUNTS");   /* debug: shown numbers only, the game is not touched */
+    if (fk && *fk) {
+        int *c = ps_st.count;
+        int n = SDL_sscanf(fk, "%d %d %d %d %d %d %d", &c[0], &c[1], &c[2], &c[3], &c[4], &c[5], &c[6]);
+        for (int i = 0; i < n; i++) ps_st.have[i] = 1;
+    }
+}
 
 static int ps_gear_info(int i, const char **key, const char **icon) {
+    *key = *icon = NULL;
+    if (i >= PS_NEQUIP) {
+        int n = i - PS_NEQUIP;
+        if (!ps_st.have[n]) return 0;
+        *key = ps_counts[n].key, *icon = ps_counts[n].icon;
+        if (n == 0) {   /* the heart filled as far as the pieces go */
+            static const char *h[4] = {"CIS_Heart_00", "CIS_Heart_01", "CIS_Heart_02", "CIS_Heart_03"};
+            *icon = h[ps_st.count[0] & 3];
+        }
+        return 1;
+    }
     const PsGear *g = &ps_gear[i];
     int lv = (int)ps_st.lv[g->id];
-    *key = *icon = NULL;
     if (!lv) return 0;
     for (int l = lv > 4 ? 4 : lv; l >= 1 && !*icon; l--) *key = g->key[l], *icon = g->ic[l];
     return *icon != NULL;
 }
 
+static void ps_gear_pos(int i, int *row, int *col) {
+    int r = 0;
+    while (r < 2 && i >= ps_gear_rows[r]) i -= ps_gear_rows[r++];
+    *row = r, *col = i;
+}
+
 static void ps_gear_cell(int i, float *x, float *y) {
-    int row = i / PS_GEAR_COLS, col = i % PS_GEAR_COLS;
-    int n = row ? PS_NGEAR - PS_GEAR_COLS : PS_GEAR_COLS;
-    *x = PS_W / 2 - n * 20.0f + col * 40 + 3.5f;
-    *y = 50 + row * 56.0f;
+    int row, col;
+    ps_gear_pos(i, &row, &col);
+    *x = PS_W / 2 - ps_gear_rows[row] * 20.0f + col * 40 + 3.5f;
+    *y = row < 2 ? 32 + row * 40.0f : 120;
 }
 
 static void ps_face_gear(void) {
     ps_panel(0, 0, PS_W, PS_H, "SRC_WinFrame_01", (float[4]){0.04f, 0.11f, 0.07f, 0.93f}, (float[4]){0.6f, 1, 0.7f, 0.35f});
     ps_text_c(ps_msg_get("TextBox_01", "TextBox_00"), PS_W / 2, 11, 13, PS_GOLD, 1);
+    ps_rect(24, 112, PS_W - 48, 1, 0.6f, 0.9f, 0.6f, 0.3f);   /* equipment above, the counted things below */
     for (int i = 0; i < PS_NGEAR; i++) {
         float x, y;
         ps_gear_cell(i, &x, &y);
         ps_rect(x, y, 33, 33, 0, 0, 0, 0.35f);
         ps_outline(x, y, 33, 33, 1, 0.6f, 0.9f, 0.6f, 0.35f);
         const char *k, *ic;
-        if (ps_gear_info(i, &k, &ic)) {
-            const PsTex *t = ps_img(ic);
-            float s = t && t->w > 32 ? 32.0f / t->w : 1;   /* 40x40 icons (hearts) fit the cell */
-            if (t) ps_image(ic, x + 16.5f - t->w * s * 0.5f, y + 16.5f - t->h * s * 0.5f, t->w * s, t->h * s, 0, PS_WHITE);
+        if (!ps_gear_info(i, &k, &ic)) continue;
+        const PsTex *t = ps_img(ic);
+        float s = t && t->w > 32 ? 32.0f / t->w : 1;   /* 40x40 icons (hearts) fit the cell */
+        if (t) ps_image(ic, x + 16.5f - t->w * s * 0.5f, y + 16.5f - t->h * s * 0.5f, t->w * s, t->h * s, 0, PS_WHITE);
+        if (i >= PS_NEQUIP) {
+            int n = i - PS_NEQUIP, v = ps_st.count[n];
+            char b[16];
+            if (n == 0) SDL_snprintf(b, sizeof b, "%d/4", v & 3);
+            else if (n == 2) SDL_snprintf(b, sizeof b, "%d/100", v);
+            else SDL_snprintf(b, sizeof b, "%d", v);
+            int full = (n == 2 && v >= 100) || (n >= 3 && n <= 5 && v >= 10);   /* the witch takes 10 */
+            ps_text_c(ps_ascii(b), x + 16.5f, y + 36, 11, full ? PS_NAME_COL : PS_TEXT_COL, 1);
         }
     }
     int c = ps_cursor_i[PAUSE_FACE_GEAR];
@@ -768,23 +830,47 @@ static void ps_face_gear(void) {
     ps_gear_cell(c, &x, &y);
     ps_cursor(x, y, 33, 33);
     const char *k, *ic;
-    if (ps_gear_info(c, &k, &ic)) ps_infobox(ps_msgf("cl_name_%s%s", k, ""), ps_msgf("cl_instruction_%s%s", k, ""));
-    else ps_infobox(NULL, NULL);
+    if (ps_gear_info(c, &k, &ic)) {
+        const char *ik = k;
+        if (c == PS_NEQUIP + 2)   /* Maiamai: as func_00426EFC, by the count and the mother's flag (+ 0x509) */
+            ik = ps_st.count[2] >= 100 ? "kinstacomplete" : ps_pdata() && ps_pdata()[0x509] ? "kinstaFlagOn_00" : "kinsta";
+        ps_infobox(ps_msgf("cl_name_%s%s", k, ""), ps_msgf("cl_instruction_%s%s", ik, ""));
+    } else ps_infobox(NULL, NULL);
 }
 
 /* ---------------------------------------------------------------- the Map page */
+/* a sheet of the game's map parchment: ST_PaperCorner (64x64, torn edges) mirrored to the four
+ * corners, its last column / row stretched along the edges and its last pixel over the middle */
+static void ps_parchment(float x0, float y0, float x1, float y1, float cs) {
+    const PsTex *c = ps_img("ST_PaperCorner");
+    if (!c) { ps_rect(x0, y0, x1 - x0, y1 - y0, 0.93f, 0.78f, 0.45f, 1); return; }
+    float e = 62.5f / 64.0f;
+    const float *w = PS_WHITE;
+    ps_quad(c->tex, x0, y0, cs, cs, 0, 0, 1, 1, w);
+    ps_quad(c->tex, x1 - cs, y0, cs, cs, 1, 0, 0, 1, w);
+    ps_quad(c->tex, x0, y1 - cs, cs, cs, 0, 1, 1, 0, w);
+    ps_quad(c->tex, x1 - cs, y1 - cs, cs, cs, 1, 1, 0, 0, w);
+    ps_quad(c->tex, x0 + cs, y0, x1 - x0 - 2 * cs, cs, e, 0, e, 1, w);
+    ps_quad(c->tex, x0 + cs, y1 - cs, x1 - x0 - 2 * cs, cs, e, 1, e, 0, w);
+    ps_quad(c->tex, x0, y0 + cs, cs, y1 - y0 - 2 * cs, 0, e, 1, e, w);
+    ps_quad(c->tex, x1 - cs, y0 + cs, cs, y1 - y0 - 2 * cs, 1, e, 0, e, w);
+    ps_quad(c->tex, x0 + cs, y0 + cs, x1 - x0 - 2 * cs, y1 - y0 - 2 * cs, e, e, e, e, w);
+}
+
 static void ps_face_map(void) {
     ps_panel(0, 0, PS_W, PS_H, "SRC_WinFrame_00", (float[4]){0.14f, 0.05f, 0.04f, 0.93f}, (float[4]){1, 0.7f, 0.6f, 0.35f});
     ps_text_c(ps_ascii("Map"), PS_W / 2, 11, 13, PS_GOLD, 1);
-    /* the bottom screen's map (drawn by the game this frame, view 2): ALBW_MINIMAP_SRC's part */
-    float sx = 48, sy = 4, sw = 202, sh = 200;
-    const char *e = getenv("ALBW_MINIMAP_SRC");
+    /* the bottom screen's map, drawn by the game this frame (view 2). The part inside the
+     * parchment's own edge and the scroll arrows (bottom-screen pixels; ALBW_PAUSE_MAPSRC) */
+    float sx = 60, sy = 14, sw = 178, sh = 178;
+    const char *e = getenv("ALBW_PAUSE_MAPSRC");
     if (e) SDL_sscanf(e, "%f %f %f %f", &sx, &sy, &sw, &sh);
-    float h = 190, w = sw * h / sh, x = (PS_W - w) / 2, y = 32;
-    ps_rect(x - 3, y - 3, w + 6, h + 6, 0, 0, 0, 0.6f);
+    float h = 180, w = sw * h / sh, x = (PS_W - w) / 2, y = 38, m = 10;
+    ps_rect(x - m + 3, y - m + 4, w + 2 * m, h + 2 * m, 0, 0, 0, 0.45f);   /* the sheet's shadow */
+    ps_parchment(x - m, y - m, x + w + m, y + h + m, 22);
     ps_quad(screens[SCREEN_BOTTOM].color, x, y, w, h, sx / BOTTOM_W, 1 - sy / SCREEN_H, (sx + sw) / BOTTOM_W, 1 - (sy + sh) / SCREEN_H,
             PS_WHITE);
-    ps_outline(x - 2, y - 2, w + 4, h + 4, 1.5f, 0.85f, 0.7f, 0.5f, 0.9f);
+    ps_outline(x - 1, y - 1, w + 2, h + 2, 1, 0.45f, 0.27f, 0.1f, 0.8f);
 }
 
 /* ================================================================ the ring of pages */
@@ -1032,11 +1118,13 @@ static void ps_move(int dx, int dy) {
         x = (x + dx + 5) % 5, y = (y + dy + 4) % 4;
         *c = y * 5 + x;
     } else if (f == PAUSE_FACE_GEAR) {
-        int row = *c / PS_GEAR_COLS, col = *c % PS_GEAR_COLS, rows = (PS_NGEAR + PS_GEAR_COLS - 1) / PS_GEAR_COLS;
-        row = (row + dy + rows) % rows;
-        int n = row == rows - 1 ? PS_NGEAR - row * PS_GEAR_COLS : PS_GEAR_COLS;
+        int row, col;
+        ps_gear_pos(*c, &row, &col);
+        row = (row + dy + 3) % 3;
+        int n = ps_gear_rows[row];
         col = dx ? (col + dx + n) % n : (col < n ? col : n - 1);
-        *c = row * PS_GEAR_COLS + col;
+        *c = col;
+        for (int r = 0; r < row; r++) *c += ps_gear_rows[r];
     }
 }
 
@@ -1056,7 +1144,9 @@ static void pause_run(void) {
     uint32_t prev = 0, held = 0;
     int first = 1, esc = 0, sel = 0, rep = 0;
     long n = 0;
-    fprintf(stderr, "pause: open (page %d) at f=%ld\n", face, g_plat_frames);
+    fprintf(stderr, "pause: open (page %d) at f=%ld; counts", face, g_plat_frames);
+    for (int i = 0; i < PS_NCOUNT; i++) fprintf(stderr, " %s=%d%s", ps_counts[i].key, ps_st.count[i], ps_st.have[i] ? "" : "(hidden)");
+    fprintf(stderr, "\n");
     albw_sched_block_begin();   /* the other game threads run meanwhile, as during the Esc menu */
     for (;;) {
         SDL_Event e;
@@ -1196,6 +1286,14 @@ static void ps_trace(void) {
         fprintf(stderr, "%s\n", buf);
     }
     ps_read_state();
+    const char *tr = getenv("ALBW_PAUSE_TRACE");
+    if (ps_st.ok && tr && *tr == '2') {   /* =2: also the player data, as pdata_<frame>.bin */
+        const char *dir = getenv("ALBW_SHOT_DIR");
+        char path[512];
+        SDL_snprintf(path, sizeof path, "%s/pdata_%ld.bin", dir && *dir ? dir : ".", g_plat_frames);
+        FILE *f = fopen(path, "wb");
+        if (f) { fwrite(ps_pdata(), 1, 0x1000, f); fclose(f); }
+    }
     if (ps_st.ok) {
         char buf[400];
         int k = SDL_snprintf(buf, sizeof buf, "pause-trace: slots %d %d lv", ps_st.slot[1], ps_st.slot[2]);
@@ -1208,8 +1306,8 @@ static void ps_trace(void) {
 
 /* end of frame_ms_trace: the app core held */
 static __attribute__((noinline)) void pause_frame_hook(void) {
-    if (!plat_one_screen()) return;
     ps_trace();
+    if (!plat_one_screen()) return;
     if (ps_req >= 0) {
         int f = ps_req;
         ps_req = -1;
