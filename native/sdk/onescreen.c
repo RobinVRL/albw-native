@@ -15,11 +15,14 @@
  * (screen id at its argument's first byte: 0 top left eye, 1 right eye, 2 bottom) also draws the
  * 15 screen faders.
  *
- * In one-screen mode (plat_one_screen): the three bottom layout draws and the bottom faders do
- * nothing in the bottom pass; in the top pass (0014A40C, screen 0: after the 3D, the effects and
+ * In one-screen mode (plat_one_screen), at the title and the file select (view 0): the three
+ * bottom layout draws and the bottom faders do nothing in the bottom pass; in the top pass (0014A40C, screen 0: after the 3D, the effects and
  * the top HUD, before the top's front layouts and faders) they run with +0x179C narrowed from 320
  * to 400 units wide and the top's GPU state block (+0x1834: the 240x400 viewport) in place of the
  * bottom's (+0x183C: 240x320), so a bottom layout appears 1:1, centred on the top screen.
+ * In the field (view 1) and for the pause menu (view 2) the bottom screen is drawn as on the 3DS,
+ * into its target, which the platform does not show: platform/pause.c draws the minimap and the
+ * menu's Map page from it.
  *
  *   ALBW_ONESCREEN_DUMP=1   log each layout of the list once (address, flags, child pane names)
  *                           and the two projections to ~/.local/share/albw-port/layouts.txt
@@ -146,10 +149,12 @@ static void dump_list(uint32_t m) {
 }
 
 /* ---- the bottom groups ---- */
-int plat_one_screen_view(void);   /* platform.c: 0 bottom UI 1:1 (title, file select), 1 minimap, 2 normal (pause capture) */
+int plat_one_screen_view(void);   /* platform.c: 0 bottom UI 1:1 (title, file select), 1 field, 2 pause capture */
 
-/* view 2 (the pause menu's capture, platform.c): the bottom screen drawn as on the 3DS */
-static int bottom_off(void) { return plat_one_screen() && plat_one_screen_view() != 2; }
+/* views 1 (the field) and 2 (the pause menu's capture, platform.c): the bottom screen drawn as on
+ * the 3DS, into its target, which is not shown: the minimap and the menu's Map page are drawn from
+ * it (platform/pause.c). View 0 (title, file select): the bottom UI on the top screen. */
+static int bottom_off(void) { return plat_one_screen() && plat_one_screen_view() == 0; }
 
 int func_0012EA48(uint32_t m) {   /* bottom layouts (bottom pass) */
     if (bottom_off()) return 0;
@@ -164,59 +169,11 @@ int func_0012E00C(uint32_t m) {   /* the extra bottom layout +0x1844 (end of the
     return func_0012E00C__decomp(m);
 }
 
-/* ---- minimap ----
- * In the field the bottom screen's UI is drawn small in the top screen's top-right corner, cut to
- * the map's frame by a clip rectangle, instead of 1:1 over the whole screen; for the pause menu
- * (platform/pause.c) the bottom screen is drawn normally for a few frames (its Map page). Sizes in top-screen pixels (the layout shader draws
- * layout units 1:1, also in widescreen), the source in bottom-screen pixels (320 x 240, y down):
- *   ALBW_MINIMAP="scale margin_right margin_top"   (default 0.42 6 6)
- *   ALBW_MINIMAP_SRC="x y w h"                     (default 48 4 202 200: the map and its frame) */
-static float g_mm_scale = 0.42f, g_mm_mr = 6, g_mm_mt = 6;
-static float g_mm_src[4] = {48, 4, 202, 200};
-
 int layout_top_w(void);   /* platform/layout.c: 400, or wider in widescreen */
 
-static void minimap_cfg(void) {
-    static int done;
-    if (done) return;
-    done = 1;
-    const char *e = getenv("ALBW_MINIMAP");
-    if (e) sscanf(e, "%f %f %f", &g_mm_scale, &g_mm_mr, &g_mm_mt);
-    e = getenv("ALBW_MINIMAP_SRC");
-    if (e) sscanf(e, "%f %f %f %f", &g_mm_src[0], &g_mm_src[1], &g_mm_src[2], &g_mm_src[3]);
-    if (g_mm_scale < 0.05f || g_mm_scale > 1.0f) g_mm_scale = 0.42f;
-}
-
-/* the minimap's rectangle on the top screen in its pixels (layout_top_w() x 240, x from the left,
- * y down): x, y, w, h. Also the platform's mouse hit test (a click opens the menu's map page). */
-void albw_minimap_rect(float r[4]) {
-    minimap_cfg();
-    r[2] = g_mm_src[2] * g_mm_scale;
-    r[3] = g_mm_src[3] * g_mm_scale;
-    r[0] = (float)layout_top_w() - g_mm_mr - r[2];
-    r[1] = g_mm_mt;
-}
-
-void func_006003D8(uint32_t pname, uint32_t *out);   /* sdk/gfx.c: nngxGetCmdlistParameteri */
-void func_00601378(int32_t bytes);                    /* sdk/gfx.c: nngxMoveCommandbufferPointer */
-uint32_t *render_rec_clip(uint32_t *p, int enable, int x, int y, int w, int h);   /* render.c */
-
-/* a clip rectangle (ROP_CLIP: the layouts' own scissor commands do not lift it), straight into
- * the bound command list, so it applies to what is recorded after it. Rectangle in the top
- * buffer's space: portrait, 240 x 400 (x = 240 - screen y, y = rows from the right edge; in
- * widescreen the renderer stretches the 400 rows over the wider screen). */
-static void clip_now(int on, int x, int y, int w, int h) {
-    uint32_t cur = 0;
-    func_006003D8(0x208, &cur);
-    if (!cur) return;
-    uint32_t *e = render_rec_clip((uint32_t *)(uintptr_t)cur, on, x, y, w, h);
-    func_00601378((int32_t)((uint8_t *)e - (uint8_t *)(uintptr_t)cur));
-}
-
-
-/* where the bottom groups land while bottom_ui_on_top draws them: top-screen pixel = a + k *
- * bottom-screen pixel (both x right, y down; the top screen layout_top_w() wide); k = 0: not
- * drawing them. Used for the scissors the game sets meanwhile (func_0048AD08 below). */
+/* where the bottom groups land while bottom_ui_on_top draws them (1:1, centred): top-screen
+ * pixel = a + k * bottom-screen pixel (both x right, y down; the top screen layout_top_w() wide);
+ * k = 0: not drawing them. Used for the scissors the game sets meanwhile (func_0048AD08 below). */
 static float g_bt_k, g_bt_ax, g_bt_ay;
 
 /* the bottom groups, in the top pass: +0x179C maps 320 layout units onto the screen's width;
@@ -235,36 +192,12 @@ static void bottom_ui_on_top(void) {
     uint32_t blk = U32(m, BOTTOM_STATE), len = U32(m, BOTTOM_STATE + 4);
     U32(m, BOTTOM_STATE) = U32(m, TOP_STATE);
     U32(m, BOTTOM_STATE + 4) = U32(m, TOP_STATE + 4);
-    int mini = plat_one_screen_view() == 1;
     g_bt_k = 1.0f;
     g_bt_ax = ((float)layout_top_w() - 320.0f) * 0.5f;   /* 1:1, centred */
     g_bt_ay = 0;
-    if (mini) {
-        float s = g_mm_scale, r[4], tw = (float)layout_top_w();
-        albw_minimap_rect(r);
-        g_bt_k = s;
-        g_bt_ax = r[0] + r[2] * 0.5f - s * (g_mm_src[0] + g_mm_src[2] * 0.5f);
-        g_bt_ay = r[1] + r[3] * 0.5f - s * (g_mm_src[1] + g_mm_src[3] * 0.5f);
-        /* layout point v -> s * (v - c) + d, c the source's centre, d the target's (layout units:
-         * origin at the screen's centre, y up): P' = P * [s 0 0 tx; 0 s 0 ty; 0 0 1 0; 0 0 0 1] */
-        float cx = g_mm_src[0] + g_mm_src[2] * 0.5f - 160.0f, cy = 120.0f - (g_mm_src[1] + g_mm_src[3] * 0.5f);
-        float dx = r[0] + r[2] * 0.5f - tw * 0.5f, dy = 120.0f - (r[1] + r[3] * 0.5f);
-        float tx = dx - s * cx, ty = dy - s * cy;
-        for (int row = 0; row < 4; row++) {
-            float *q = P + row * 4;
-            q[3] += q[0] * tx + q[1] * ty;
-            q[0] *= s;
-            q[1] *= s;
-        }
-        /* the clip: screen y -> buffer x = 240 - y; screen x -> buffer row (tw - x) * 400 / tw */
-        int bx = (int)(240.0f - r[1] - r[3]), bw = (int)(r[3] + 0.5f);
-        int by = (int)((tw - r[0] - r[2]) * 400.0f / tw), bh = (int)(r[2] * 400.0f / tw + 0.5f);
-        clip_now(1, bx, by, bw, bh);
-    }
     func_0012EA48__decomp(m);
     func_0012E00C__decomp(m);
     func_0012D9A8__decomp(m);
-    if (mini) clip_now(0, 0, 0, 0, 0);
     g_bt_k = 0;
     U32(m, BOTTOM_STATE) = blk;
     U32(m, BOTTOM_STATE + 4) = len;
@@ -276,7 +209,7 @@ static void bottom_ui_on_top(void) {
  * projection but from a rectangle in the bottom screen's pixels, put in the bound buffer as on the
  * bottom screen (00580AE8 / 00580C50, rotation 1: column = 240 - y - h, row = H - x - w, H the
  * buffer's height): in the top pass it is moved where bottom_ui_on_top puts the bottom groups (1:1
- * and centred, or the minimap). The whole buffer (no scissor) is left alone.
+ * and centred). The whole buffer (no scissor) is left alone.
  *   ALBW_SCISSOR_TRACE=1   log the first 100 different scissors (caller, rectangle, buffer) */
 uint32_t func_0048AD08__decomp(uint32_t ctx, float x, float y, float w, float h);
 extern uint32_t *DAT_0048ad68;   /* -> the bound buffer's width and height */

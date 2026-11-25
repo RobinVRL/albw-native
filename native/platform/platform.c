@@ -803,8 +803,9 @@ static int g_pause_face_req;     /* the page it opens on (PAUSE_FACE_*) */
 static uint32_t g_pause_mask;    /* buttons held when it closed: hidden from the game until released */
 static void pause_request(int face);
 static int at_title(void);
-/* sdk/onescreen.c: 0 the bottom UI 1:1 (title, file select), 1 minimap, 2 the bottom screen drawn
- * normally and no minimap (the pause menu's capture) */
+/* sdk/onescreen.c: 0 the bottom UI 1:1 on the top screen (title, file select); 1 the field and 2
+ * the pause menu's capture: the bottom screen drawn normally into its (hidden) target, the minimap
+ * (1, pause.c) and the menu's Map page drawn from it */
 int plat_one_screen_view(void) {
     if (!plat_one_screen()) return 0;
     if (g_pause_capture > 0 || g_pause_open) return 2;
@@ -1511,8 +1512,9 @@ int plat_poll(void) {
             static int mouse_prev;
             int down = (mb & SDL_BUTTON_LMASK) != 0, sx, sy;
             int ins = layout_to_screen(&g_layout, SCREEN_TOP, mx * pd, my * pd, &sx, &sy);
-            if (down && !mouse_prev && ins) {
-                void albw_minimap_rect(float r[4]);   /* sdk/onescreen.c: top-screen pixels */
+            int albw_minimap_shown(void);   /* pause.c */
+            if (down && !mouse_prev && ins && albw_minimap_shown()) {
+                void albw_minimap_rect(float r[4]);   /* pause.c: top-screen pixels */
                 float r[4];
                 albw_minimap_rect(r);
                 if (sx >= r[0] && sx < r[0] + r[2] && sy >= r[1] && sy < r[1] + r[3]) pause_request(PAUSE_FACE_MAP);

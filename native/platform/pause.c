@@ -49,6 +49,7 @@ __attribute__((weak)) int func_0058D888(void *p);              /* nonzero: menus
 __attribute__((weak)) _Bool func_004262AC__bool(uint32_t cell);   /* the Gear screen shows its cell */
 extern uint8_t data_0070FB60[] __attribute__((weak));   /* -> the player data owner (+0x10 = pdata) */
 extern uint8_t data_0070B728[] __attribute__((weak));   /* -> the event manager (+0x44: running event) */
+extern char data_00709DF8[];   /* -> the scene manager (+0x18: current course id; as platform.c's route log) */
 extern uint8_t data_00712450[] __attribute__((weak));
 extern uint8_t data_007142C8[] __attribute__((weak));
 void albw_sched_block_begin(void);
@@ -857,20 +858,50 @@ static void ps_parchment(float x0, float y0, float x1, float y1, float cs) {
     ps_quad(c->tex, x0 + cs, y0 + cs, x1 - x0 - 2 * cs, y1 - y0 - 2 * cs, e, e, e, e, w);
 }
 
+/* the map sheet: the bottom screen's map, drawn by the game this frame, on the parchment. The
+ * part inside the map's own edge and the scroll arrows, in bottom-screen pixels
+ * (ALBW_PAUSE_MAPSRC="x y w h"); the map 180 px tall on the sheet, 10 px of parchment around it */
+#define PS_SHEET_MAP_H 180.0f
+#define PS_SHEET_EDGE 10.0f
+#define PS_SHEET_SHADOW_X 3.0f
+#define PS_SHEET_SHADOW_Y 4.0f
+static float ps_mapsrc[4] = {60, 14, 178, 178};
+
+static void ps_mapsrc_cfg(void) {
+    static int done;
+    if (done) return;
+    done = 1;
+    const char *e = getenv("ALBW_PAUSE_MAPSRC");
+    if (e) SDL_sscanf(e, "%f %f %f %f", &ps_mapsrc[0], &ps_mapsrc[1], &ps_mapsrc[2], &ps_mapsrc[3]);
+    if (ps_mapsrc[2] < 8 || ps_mapsrc[3] < 8) ps_mapsrc[2] = ps_mapsrc[3] = 178;
+}
+
+/* the sheet's size (parchment, without its shadow) */
+static void ps_sheet_size(float *w, float *h) {
+    ps_mapsrc_cfg();
+    *w = ps_mapsrc[2] * PS_SHEET_MAP_H / ps_mapsrc[3] + 2 * PS_SHEET_EDGE;
+    *h = PS_SHEET_MAP_H + 2 * PS_SHEET_EDGE;
+}
+
+/* the sheet with its top-left corner at x0, y0 (its shadow to the lower right) */
+static void ps_map_sheet(float x0, float y0) {
+    float sw, sh, m = PS_SHEET_EDGE;
+    ps_sheet_size(&sw, &sh);
+    const float *s = ps_mapsrc;
+    ps_rect(x0 + PS_SHEET_SHADOW_X, y0 + PS_SHEET_SHADOW_Y, sw, sh, 0, 0, 0, 0.45f);   /* the sheet's shadow */
+    ps_parchment(x0, y0, x0 + sw, y0 + sh, 22);
+    float x = x0 + m, y = y0 + m, w = sw - 2 * m, h = sh - 2 * m;
+    ps_quad(screens[SCREEN_BOTTOM].color, x, y, w, h, s[0] / BOTTOM_W, 1 - s[1] / SCREEN_H, (s[0] + s[2]) / BOTTOM_W,
+            1 - (s[1] + s[3]) / SCREEN_H, PS_WHITE);
+    ps_outline(x - 1, y - 1, w + 2, h + 2, 1, 0.45f, 0.27f, 0.1f, 0.8f);
+}
+
 static void ps_face_map(void) {
     ps_panel(0, 0, PS_W, PS_H, "SRC_WinFrame_00", (float[4]){0.14f, 0.05f, 0.04f, 0.93f}, (float[4]){1, 0.7f, 0.6f, 0.35f});
     ps_text_c(ps_ascii("Map"), PS_W / 2, 11, 13, PS_GOLD, 1);
-    /* the bottom screen's map, drawn by the game this frame (view 2). The part inside the
-     * parchment's own edge and the scroll arrows (bottom-screen pixels; ALBW_PAUSE_MAPSRC) */
-    float sx = 60, sy = 14, sw = 178, sh = 178;
-    const char *e = getenv("ALBW_PAUSE_MAPSRC");
-    if (e) SDL_sscanf(e, "%f %f %f %f", &sx, &sy, &sw, &sh);
-    float h = 180, w = sw * h / sh, x = (PS_W - w) / 2, y = 38, m = 10;
-    ps_rect(x - m + 3, y - m + 4, w + 2 * m, h + 2 * m, 0, 0, 0, 0.45f);   /* the sheet's shadow */
-    ps_parchment(x - m, y - m, x + w + m, y + h + m, 22);
-    ps_quad(screens[SCREEN_BOTTOM].color, x, y, w, h, sx / BOTTOM_W, 1 - sy / SCREEN_H, (sx + sw) / BOTTOM_W, 1 - (sy + sh) / SCREEN_H,
-            PS_WHITE);
-    ps_outline(x - 1, y - 1, w + 2, h + 2, 1, 0.45f, 0.27f, 0.1f, 0.8f);
+    float sw, sh;
+    ps_sheet_size(&sw, &sh);
+    ps_map_sheet((PS_W - sw) / 2, 38 - PS_SHEET_EDGE);
 }
 
 /* ================================================================ the ring of pages */
@@ -1245,8 +1276,16 @@ static void pause_request(int face) {
 
 /* the game can pause now: no event (cutscene, dialogue) holds it (as func_00477024, without its
  * side effect) and menus may open (func_0058D888, as the game's menu buttons) */
+/* the current course (route/ROUTE.md: 0 FieldLight .. 8 Demo; -1 none) */
+static int ps_course(void) {
+    uint8_t *sm = *(uint8_t **)data_00709DF8;
+    return sm ? sm[0x18] : -1;
+}
+#define PS_COURSE_DEMO 8   /* the story demos (Link's nightmare, the title's attract demo) */
+
 static int ps_gate(char *why, size_t n) {
     if (at_title()) { SDL_snprintf(why, n, "title"); return 0; }
+    if (ps_course() == PS_COURSE_DEMO) { SDL_snprintf(why, n, "demo course"); return 0; }
     if (func_00520B48 && data_00712450) {
         unsigned m = *(unsigned *)data_00712450;
         if (m && func_00520B48(m)) { SDL_snprintf(why, n, "00520B48"); return 0; }
@@ -1271,7 +1310,7 @@ static void ps_trace(void) {
     unsigned m = data_00712450 ? *(unsigned *)data_00712450 : 0;
     uint8_t *ev = data_0070B728 ? *(uint8_t **)data_0070B728 : NULL;
     void *q = data_007142C8 ? *(void **)data_007142C8 : NULL;
-    fprintf(stderr, "pause-trace: f=%ld gate %d (%s) title %d b48 %u ev44 %#x d888 %d\n", g_plat_frames, ok, why, at_title(),
+    fprintf(stderr, "pause-trace: f=%ld gate %d (%s) title %d course %d b48 %u ev44 %#x d888 %d\n", g_plat_frames, ok, why, at_title(), ps_course(),
             m && func_00520B48 ? func_00520B48(m) : 0, ev ? *(uint32_t *)(ev + 0x44) : 0,
             q && func_0058D888 ? func_0058D888(q) : -1);
     if (ev) {
@@ -1304,10 +1343,110 @@ static void ps_trace(void) {
     }
 }
 
+/* ================================================================ the minimap
+ * The Map page's sheet (ps_map_sheet: the parchment and the bottom screen's map), drawn small in
+ * the top screen's top-right corner, over the game's finished top frame. The game draws its bottom
+ * screen normally in the field (view 1, sdk/onescreen.c), which is never shown, only read here.
+ * The sheet is drawn 1:1 into its own texture (mipmapped, as the menu's pages) and that is scaled
+ * down, so the minimap is the page's image. Sizes in top-screen pixels (TOP_W x 240):
+ *   ALBW_MINIMAP="scale margin_right margin_top"   (default 0.45 6 6; the sheet is 200 x 200) */
+static float ps_mm_scale = 0.45f, ps_mm_mr = 6, ps_mm_mt = 6;
+static GLuint ps_mm_fbo, ps_mm_tex;
+static int ps_mm_tw, ps_mm_th;
+
+static void ps_mm_cfg(void) {
+    static int done;
+    if (done) return;
+    done = 1;
+    const char *e = getenv("ALBW_MINIMAP");
+    if (e) SDL_sscanf(e, "%f %f %f", &ps_mm_scale, &ps_mm_mr, &ps_mm_mt);
+    if (ps_mm_scale < 0.05f || ps_mm_scale > 2.0f) ps_mm_scale = 0.45f;
+}
+
+/* the minimap's rectangle on the top screen (the sheet, without its shadow): x, y, w, h in its
+ * pixels (TOP_W x 240, y down). Also the mouse hit test (platform.c: a click opens the Map page). */
+void albw_minimap_rect(float r[4]) {
+    float sw, sh;
+    ps_mm_cfg();
+    ps_sheet_size(&sw, &sh);
+    r[2] = sw * ps_mm_scale;
+    r[3] = sh * ps_mm_scale;
+    r[0] = (float)TOP_W - ps_mm_mr - r[2];
+    r[1] = ps_mm_mt;
+}
+
+static int ps_minimap_on;   /* drawn this frame (the click test uses it) */
+int albw_minimap_shown(void) { return ps_minimap_on; }
+
+/* the minimap is shown: in the field, no cutscene (as the menu's gate) */
+static int ps_minimap_wanted(void) {
+    if (plat_one_screen_view() != 1 || g_menu_open) return 0;
+    char why[64];
+    return ps_gate(why, sizeof why);
+}
+
+static void ps_minimap_draw(void) {
+    ps_minimap_on = ps_minimap_wanted();
+    if (!ps_minimap_on) return;
+    const Target *top = &screens[SCREEN_TOP];
+    if (!top->fbo || top->w <= 0 || top->h <= 0) return;
+    ps_gl_init();
+    ps_assets_init();   /* the parchment (once: the layout archives, font and messages) */
+    float r[4], sw, sh;
+    albw_minimap_rect(r);
+    ps_sheet_size(&sw, &sh);
+    /* the sheet's texture: page pixels times the top target's scale (whole, >= 1) */
+    int k = (top->h + SCREEN_H - 1) / SCREEN_H;
+    k = k < 1 ? 1 : k > 4 ? 4 : k;
+    int tw = (int)((sw + PS_SHEET_SHADOW_X + 1) * k), th = (int)((sh + PS_SHEET_SHADOW_Y + 1) * k);
+    if (tw != ps_mm_tw || th != ps_mm_th) {
+        if (!ps_mm_tex) { glGenTextures(1, &ps_mm_tex); glGenFramebuffers(1, &ps_mm_fbo); }
+        ps_mm_tw = tw, ps_mm_th = th;
+        glBindTexture(GL_TEXTURE_2D, ps_mm_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, PS_GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindFramebuffer(GL_FRAMEBUFFER, ps_mm_fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ps_mm_tex, 0);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) fprintf(stderr, "pause: minimap target incomplete\n");
+    }
+    float lw = (float)tw / k, lh = (float)th / k;   /* the texture in page pixels */
+    ps_begin();
+    /* 1. the sheet, 1:1 (premultiplied, as the pages) */
+    glBindFramebuffer(GL_FRAMEBUFFER, ps_mm_fbo);
+    glViewport(0, 0, tw, th);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    ps_ortho(lw, lh);
+    glBindTexture(GL_TEXTURE_2D, screens[SCREEN_BOTTOM].color);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    ps_map_sheet(0, 0);
+    ps_flush();
+    glBindTexture(GL_TEXTURE_2D, ps_mm_tex);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    /* 2. scaled into the top screen's corner (its alpha left alone) */
+    glBindFramebuffer(GL_FRAMEBUFFER, top->fbo);
+    glViewport(0, 0, top->w, top->h);
+    glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, PS_GL_ZERO, GL_ONE);
+    ps_ortho((float)TOP_W, SCREEN_H);
+    float s = ps_mm_scale;
+    ps_quad(ps_mm_tex, r[0], r[1], lw * s, lh * s, 0, 1, 1, 0, PS_WHITE);
+    ps_flush();
+    glDisable(GL_BLEND);
+    glBindVertexArray(0);
+    glUseProgram(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 /* end of frame_ms_trace: the app core held */
 static __attribute__((noinline)) void pause_frame_hook(void) {
     ps_trace();
     if (!plat_one_screen()) return;
+    ps_minimap_draw();
     if (ps_req >= 0) {
         int f = ps_req;
         ps_req = -1;
