@@ -17,6 +17,8 @@
 #   ALBW_GFX_TRACE=1  print frame/swap counters once a second
 #   ALBW_GL_DEBUG=1   OpenGL debug messages
 #   ALBW_TRACE_CTORS=1  print every static constructor during startup
+#   ALBW_ONESCREEN=1  one-screen mode (default): one window, minimap top right, Start = pause menu
+#                   (Items / Gear / Map), Select = the game's Start; ALBW_ONESCREEN=0 turns it off
 #   ALBW_WINDOWS=separate|joined   one window per screen (default) or both screens in one window,
 #                   for this run (F5 toggles at runtime and saves the choice in layout.cfg)
 #

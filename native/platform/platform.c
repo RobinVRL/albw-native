@@ -784,11 +784,11 @@ static int g_ss_front;
 
 /* One-screen mode (sdk/onescreen.c): the game draws the bottom screen's UI (its layouts) on the
  * top screen and nothing on the bottom one, which is never shown: no flip, no HUD overlay, no
- * bottom-screen selector, no automatic menu flips. ALBW_ONESCREEN=1 (in development; it is to
- * replace single-screen mode's bottom-screen overlays). Read by game threads every frame. */
+ * bottom-screen selector, no automatic menu flips. On by default; ALBW_ONESCREEN=0 turns it off
+ * (the old two-screen / single-screen layouts). Read by game threads every frame. */
 static int g_one_screen = -1;
 int plat_one_screen(void) {
-    if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = e && *e == '1'; }
+    if (g_one_screen < 0) { const char *e = getenv("ALBW_ONESCREEN"); g_one_screen = !(e && *e == '0'); }
     return g_one_screen;
 }
 /* One-screen pause menu (pause.c, Ocarina of Time style): Start in the field (onescreen_input,
